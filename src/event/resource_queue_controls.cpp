@@ -37,6 +37,8 @@ extern ResourceQueueManager* gResourceQueueManager;
 struct SharedState;
 SharedState* get_shared_state();                      // 0x71002aae3c
 unsigned char shared_state_exiting(SharedState* state); // 0x71002ac7f0
+nn::os::ThreadType* get_current_thread();             // 0x7100600b10 (nn::os::GetCurrentThread)
+nn::os::ThreadType* worker_thread_handle(Worker* worker); // 0x710045e154
 void* get_frame_source();                             // 0x71003ad9cc
 unsigned char frame_source_skipping(void* source);    // 0x71003adbe0
 
@@ -360,9 +362,72 @@ int resource_queue_callback_count() {
     return count;
 }
 
+unsigned char resource_busy() {
+    nn::os::LockMutex(registry_mutex());
+    unsigned char result;
+    for (int i = 0; i < 8; ++i) {
+        ResourceQueueEntry& entry = gResourceQueueRegistry.entries[i];
+        if (entry.argument != 0x1f)
+            continue;
+        if (entry.state != 2)
+            goto process;
+        if (get_current_thread() != worker_thread_handle(&gResourceQueueWorkers[1])) {
+            result = !poll_worker_state(&gResourceQueueWorkers[1]);
+            goto unlock;
+        }
+    }
+    result = 0;
+    goto unlock;
+process : {
+    unsigned char done = poll_worker_state(&gResourceQueueWorkers[1]);
+    void* id = gResourceQueueRegistry.high_worker_callback;
+    unsigned char idle = (id == nullptr) | (done != 0);
+    if (done && id) {
+        complete_resource_callback(id);
+        idle = 1;
+        gResourceQueueRegistry.high_worker_callback = nullptr;
+    }
+    result = 1;
+    ResourceQueueEntry& entry = gResourceQueueRegistry.entries[1];
+    if (entry.argument == 0x1f && entry.callback && idle && entry.state == 1 &&
+        gResourceQueueHighEnabled) {
+        gResourceQueueRegistry.active = 1;
+        gResourceQueueRegistry.flag1 = false;
+        gResourceQueueRegistry.flag2 = false;
+        gResourceQueueRegistry.high_worker_callback = entry.callback;
+        start_worker(&gResourceQueueWorkers[1]);
+        entry.state = 2;
+        entry.elapsed = 0;
+    }
+}
+unlock:
+    nn::os::UnlockMutex(registry_mutex());
+    return result;
+}
 
+void set_resource_waiting(unsigned char waiting) {
+    nn::os::LockMutex(registry_mutex());
+    gResourceQueueHighEnabled = waiting;
+    nn::os::UnlockMutex(registry_mutex());
+}
 
+// Trivial bodies that follow; names are placeholders.
+struct ResourceQueueHandle {
+    RefObject* object;
 
+    void set(RefObject* value) { object = value; }
+    void nop() {}
+    unsigned int count() const { return object ? object->ref_count : 0; }
+};
 
+void resource_queue_handle_set(ResourceQueueHandle* handle, RefObject* value) {
+    handle->set(value);
+}
 
+void resource_queue_handle_nop(ResourceQueueHandle* handle) {
+    handle->nop();
+}
 
+unsigned int resource_queue_handle_count(const ResourceQueueHandle* handle) {
+    return handle->count();
+}

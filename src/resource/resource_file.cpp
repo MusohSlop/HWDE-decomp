@@ -2,6 +2,7 @@
 // Semantics: docs/resource-file.md. Status: matching/README.md.
 
 #include "resource/file_system.h"
+#include "resource/resource_file.h"
 #include "system/object_manager.h"
 #include "system/stopwatch.h"
 
@@ -36,27 +37,6 @@ void set_resource_file_gate(unsigned char gate) {
     gResourceFileGate = gate;
 }
 
-class ResourceFile {
-public:
-    ResourceFile();
-    void close();
-    unsigned char open();
-    unsigned char read();
-    void set_name(const char* name, unsigned char scoped);
-    bool run(void* dest, unsigned long position, unsigned long size);
-
-private:
-    void close_handle();
-
-    unsigned long mPosition;     // +00
-    unsigned long mSize;         // +08
-    unsigned long mDone;         // +10
-    void* mHandle;               // +18
-    void* mDest;                 // +20
-    char mName[0x100];           // +28
-    unsigned char mScoped;       // +128
-    unsigned char mGated;        // +129
-};
 
 static void* const kNoHandle = reinterpret_cast<void*>(~0ul);
 
@@ -147,7 +127,7 @@ unsigned char ResourceFile::read() {
     return true;
 }
 
-void ResourceFile::set_name(const char* name, unsigned char scoped) {
+void ResourceFile::set_name(const char* name, unsigned char scoped, unsigned char) {
     strncpy(mName, name, 0xff);
     mName[0xff] = 0;
     mDone = 0;
@@ -159,7 +139,7 @@ void ResourceFile::set_name(const char* name, unsigned char scoped) {
     mSize = 0;
 }
 
-bool ResourceFile::run(void* dest, unsigned long position, unsigned long size) {
+unsigned char ResourceFile::run(void* dest, unsigned long position, unsigned long size) {
     mDest = dest;
     mPosition = position;
     mSize = size;

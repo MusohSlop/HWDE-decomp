@@ -38,7 +38,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-68 of 77 attempted functions match: 65 inventory functions (5,888 bytes), the worker trampoline `45df64` and the static initializer `25aa0c`, both outside the baseline inventory. The other nine are near misses (`m`).
+77 of 88 attempted functions match: 74 inventory functions (6,276 bytes), the worker trampoline `45df64` and the static initializer `25aa0c`, both outside the baseline inventory. The other eleven are near misses (`m`).
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -60,6 +60,9 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `259260` | `update_resource_queue` | `m`: one word; the `flag2` test is `cbz` instead of `tbz #0` |
 | `259680` | `resource_queue_has_callback` | match |
 | `2599dc` | `shutdown_resource_queue` | match |
+| `259aec` | `resource_busy` | `m`: the rematerialized `result = 1` is placed one instruction later (3 words) |
+| `259e44` | `set_resource_waiting` | match |
+| `259e84`–`259e90` | three trivial handle bodies (placeholders) | match |
 | `25970c` | `resource_queue_callback_state` | match |
 | `2597a8` | `resource_queue_callback_in_state` | match |
 | `25984c` | `resource_queue_callback_count` | match |
@@ -95,8 +98,13 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25a8a0` | `ResourceFile::set_name` | match |
 | `25a8e8` | `ResourceFile::run` | match |
 | `25aa0c` | static initializer of the resource-file unit (outside the inventory) | match |
+| `25aa48` | `ResourceFile::read_direct` | match |
+| `25aad4` | `create_resource_controller` | match |
+| `25ab18` | `destroy_resource_controller` | match |
 | `25ab58` | `ResourceController::resolve_name` | match |
+| `25acdc`, `25ace8` | two trivial bodies (placeholders) | match |
 | `25acec` | `ResourceController::size` | match |
+| `25adf0` | `ResourceController::read` | `m`: register assignment of the offset, size and length values, and argument-setup order before the allocation calls; 179 words vs 180 |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
 | `45dd84`–`45dde8` | `Stopwatch` constructor, `reset`, destructor, `start`, `stop`, `elapsed_ms` | match |
 | `45de40` | `initialize_worker` | match |
@@ -143,6 +151,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `resolve_name` ignores `this`, so dead-argument elimination leaves `x0` unset at its call in `size`. That only happens because both are defined in the same unit.
   - The switch cases are generated from the original jump table (`7f4c48`). Its targets in address order are the cases in increasing identity order.
   - `size` builds its `ResourceName` objects in two inline helpers. Inlined stack slots go first, so the name lands above the 256-byte path buffer, as in the original.
+  - `read` constructs its `ResourceFile` after the allocation, below the 256-byte path buffer. `ResourceFile::set_name` takes a third, unused byte argument, which `read` passes as 1. `read_direct` is a `ResourceFile` method defined in the controller unit, using a 16-byte stack file object (`53e410`-`53e554`).
 - **Resource access and metadata service (`resource/resource_access.cpp`).**
   - The controller cell (`c8b098`, GOT `c2a608`) and the manager cell (GOT `c21de8`) are default-visibility externs. The service cell (`c8b068`) and request block (`c8b070`) are external hidden globals.
   - `resource_free` compares the storage address with the region threshold as integers. A pointer comparison swaps the `cmp` operands.
@@ -154,6 +163,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - The release sequence is an inline `release_object` helper; shutdown uses it twice. It captures the manager cell's GOT slot once, exactly like the queue shutdown.
   - `wait_worker_ready` is `while (!poll_worker_state(w)) sleep_worker_retry();` with the poll inlined. Shutdown inlines the wait again.
   - The trampoline is a default-visibility function, so `create_worker` loads its address from the GOT (`c2bbc8`). `destroy_worker` is a separate one-instruction function that tail-calls `shutdown_worker`.
+- **`resource_busy` (`259aec`).** It repeats the scheduler's high-worker block with the same source order: the eager `idle`, its reset to 1 after a completion, and the `0x1f`/callback/`idle` condition order. That suggests a shared inline helper in the original.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred
