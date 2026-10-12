@@ -1,6 +1,8 @@
 // Matching candidates for the resource queue registry at 0x7100c8af40.
 // Semantics: docs/resource-queue-controls.md.
 
+#include "system/worker.h"
+
 namespace nn {
 namespace os {
 struct MutexType;
@@ -31,17 +33,10 @@ extern unsigned char gResourceQueueHighEnabled __attribute__((visibility("hidden
 // Manager cell, reached through the GOT slot at 0x7100c21de8.
 extern ResourceQueueManager* gResourceQueueManager;
 
-struct ResourceQueueWorker {
-    unsigned char data[0x20];
-};
 
 struct SharedState;
 SharedState* get_shared_state();                      // 0x71002aae3c
 unsigned char shared_state_exiting(SharedState* state); // 0x71002ac7f0
-void wait_worker_ready(ResourceQueueWorker* worker);  // 0x710045e094
-unsigned char poll_worker_state(ResourceQueueWorker* worker); // 0x710045e0d8
-void shutdown_worker(ResourceQueueWorker* worker);    // 0x710045de58
-void start_worker(ResourceQueueWorker* worker);       // 0x710045e114
 void* get_frame_source();                             // 0x71003ad9cc
 unsigned char frame_source_skipping(void* source);    // 0x71003adbe0
 
@@ -69,7 +64,7 @@ struct __attribute__((packed)) ResourceQueueRegistry {
 static_assert(sizeof(ResourceQueueRegistry) == 0x128, "registry size");
 
 // Worker controls at 0x7100c8aef8; defined with the worker lifecycle code.
-extern ResourceQueueWorker gResourceQueueWorkers[2] __attribute__((visibility("hidden")));
+extern Worker gResourceQueueWorkers[2] __attribute__((visibility("hidden")));
 // Registry at 0x7100c8af40, defined in another unit. The declaration has
 // alignment 1 (packed type), which keeps the 16-bit clears unfolded.
 extern ResourceQueueRegistry gResourceQueueRegistry __attribute__((visibility("hidden")));

@@ -1,28 +1,44 @@
 {
   "compiler": ".tools/clang-3.9.1/bin/clang++.exe",
-  "flags": ["-O3", "-g", "-mcpu=cortex-a57+fp+simd+crypto+crc", "-mno-implicit-float", "-stdlib=libc++",
-            "-fPIC", "-fstandalone-debug", "--target=aarch64-linux-elf", "-std=c++14", "-fno-strict-aliasing",
-            "-fno-exceptions"],
+  "flags": [
+    "-O3",
+    "-g",
+    "-mcpu=cortex-a57+fp+simd+crypto+crc",
+    "-mno-implicit-float",
+    "-stdlib=libc++",
+    "-fPIC",
+    "-fstandalone-debug",
+    "--target=aarch64-linux-elf",
+    "-std=c++14",
+    "-fno-strict-aliasing",
+    "-fno-exceptions"
+  ],
   "symbols": {
     "_ZN2nn2os9LockMutexEPNS0_9MutexTypeE": "0x7100600920",
     "_ZN2nn2os11UnlockMutexEPNS0_9MutexTypeE": "0x7100600930",
     "_Z16get_shared_statev": "0x71002aae3c",
     "_Z20shared_state_exitingP11SharedState": "0x71002ac7f0",
-    "_Z17wait_worker_readyP19ResourceQueueWorker": "0x710045e094",
-    "_Z17poll_worker_stateP19ResourceQueueWorker": "0x710045e0d8",
-    "_Z15shutdown_workerP19ResourceQueueWorker": "0x710045de58",
+    "_Z13resource_freePv": "0x710025a1ec",
+    "_Z13resource_readjPvjjS_j": "0x710025a1ac",
+    "_Z13resource_sizej": "0x710025a178",
+    "_Z16get_default_heapv": "0x710045c96c",
+    "_ZN11DefaultHeap7releaseEPvii": "0x710045c2f4",
+    "_ZN11DefaultHeap8allocateEjjii": "0x710045c458",
+    "_ZN13ResourceFrameC1Ev": "0x710025b394",
+    "_ZN13ResourceFrameD1Ev": "0x710025b3ac",
     "got:gResourceQueueManager": "0x7100c21de8",
     "got:gResourceQueueElapsedStep": "0x7100c21df0",
     "gResourceQueueHighEnabled": "0x7100c8af38",
-    "_Z12start_workerP19ResourceQueueWorker": "0x710045e114",
     "_Z16get_frame_sourcev": "0x71003ad9cc",
     "_Z21frame_source_skippingPv": "0x71003adbe0",
-    "_ZN13ResourceFrameC1Ev": "0x710025b394",
-    "_ZN13ResourceFrameD1Ev": "0x710025b3ac",
-    "_ZN13ResourceFrame5closeEv": "0x710025b40c",
-    "_ZN13ResourceFrame4bindEiPv": "0x710025b47c",
-    "_ZNK13ResourceFrame5countEv": "0x710025b6f8",
-    "_ZNK13ResourceFrame6lookupEj": "0x710025b738"
+    "_ZN2nn2os11SignalEventEPNS0_9EventTypeE": "0x7100600af0",
+    "_ZN2nn2os9WaitEventEPNS0_9EventTypeE": "0x71006010f0",
+    "_ZN2nn2os10WaitThreadEPNS0_10ThreadTypeE": "0x7100601150",
+    "_Z18sleep_worker_retryv": "0x7100459d10",
+    "_Z13create_threadP13ObjectManagerPFiP12WorkerThreadP6WorkerES4_miiPKc": "0x71005c3f88",
+    "_Z12create_mutexP13ObjectManager": "0x71005c418c",
+    "got:gObjectManager": "0x7100c21de8",
+    "got:_Z17worker_trampolineP12WorkerThreadP6Worker": "0x7100c2bbc8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -61,7 +77,36 @@
         "_ZN16DemoSequenceItem4loadEP9DemoOwnerPK22DemoSequenceItemSource": "0x71002173c4",
         "_ZN16DemoSequenceItem7releaseEv": "0x71002174d0"
       }
+    },
+    "resource/resource_frame.cpp": {
+      "functions": {
+        "_ZN13ResourceFrameC2Ev": "0x710025b394",
+        "_ZN13ResourceFrameD2Ev": "0x710025b3ac",
+        "_ZN13ResourceFrame5closeEv": "0x710025b40c",
+        "_ZNK13ResourceFrame7is_openEv": "0x710025b46c",
+        "_ZN13ResourceFrame4bindEiPv": "0x710025b47c",
+        "_ZN13ResourceFrame4openEijP17ResourceAllocator": "0x710025b4b4",
+        "_ZN13ResourceFrame10open_tableEijP17ResourceAllocator": "0x710025b5b8",
+        "_ZNK13ResourceFrame5countEv": "0x710025b6f8",
+        "_ZNK13ResourceFrame12entry_offsetEj": "0x710025b704",
+        "_ZNK13ResourceFrame10entry_sizeEj": "0x710025b71c",
+        "_ZNK13ResourceFrame6lookupEj": "0x710025b738",
+        "_ZN13ResourceFrame4loadEjPvj": "0x710025b754"
+      }
+    },
+    "system/worker.cpp": {
+      "functions": {
+        "_Z17initialize_workerP6Worker": "0x710045de40",
+        "_Z14destroy_workerP6Worker": "0x710045de54",
+        "_Z15shutdown_workerP6Worker": "0x710045de58",
+        "_Z17worker_trampolineP12WorkerThreadP6Worker": "0x710045df64",
+        "_Z16set_worker_readyP6Workerh": "0x710045dff0",
+        "_Z13create_workerP6WorkerPFvvEPKciim": "0x710045e028",
+        "_Z17wait_worker_readyP6Worker": "0x710045e094",
+        "_Z17poll_worker_stateP6Worker": "0x710045e0d8",
+        "_Z12start_workerP6Worker": "0x710045e114",
+        "_Z20worker_thread_handleP6Worker": "0x710045e154"
+      }
     }
   }
 }
-

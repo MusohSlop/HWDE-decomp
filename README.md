@@ -38,7 +38,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-17 of 21 attempted functions match: 2,308 bytes. The other four are near misses (`m`).
+36 of 43 attempted functions match: 35 inventory functions (3,348 bytes) plus the worker trampoline `45df64`, which is outside the baseline inventory. The other seven are near misses (`m`).
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -63,6 +63,28 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25970c` | `resource_queue_callback_state` | match |
 | `2597a8` | `resource_queue_callback_in_state` | match |
 | `25984c` | `resource_queue_callback_count` | match |
+| `25b394` | `ResourceFrame::ResourceFrame` | match |
+| `25b3ac` | `ResourceFrame::~ResourceFrame` | match |
+| `25b40c` | `ResourceFrame::close` | match |
+| `25b46c` | `ResourceFrame::is_open` | match |
+| `25b47c` | `ResourceFrame::bind` | match |
+| `25b4b4` | `ResourceFrame::open` | `m`: one extra `mov w8, w0` keeps the resource size out of w0 (66 words vs 65) |
+| `25b5b8` | `ResourceFrame::open_table` | `m`: argument-register setup order before the allocator call (4 words) |
+| `25b6f8` | `ResourceFrame::count` | match |
+| `25b704` | `ResourceFrame::entry_offset` | match |
+| `25b71c` | `ResourceFrame::entry_size` | match |
+| `25b738` | `ResourceFrame::lookup` | match |
+| `25b754` | `ResourceFrame::load` | `m`: argument setup order for the heap allocation and the order of `cset`/`csel` (7 words) |
+| `45de40` | `initialize_worker` | match |
+| `45de54` | `destroy_worker` | match |
+| `45de58` | `shutdown_worker` | match |
+| `45df64` | `worker_trampoline` (outside the inventory) | match |
+| `45dff0` | `set_worker_ready` | match |
+| `45e028` | `create_worker` | match |
+| `45e094` | `wait_worker_ready` | match |
+| `45e0d8` | `poll_worker_state` | match |
+| `45e114` | `start_worker` | match |
+| `45e154` | `worker_thread_handle` | match |
 
 ### Source-shape lessons
 
@@ -85,9 +107,21 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **`25917c`.** It is written as find-then-act: first find the index, then test the state. A combined loop produces per-entry pre-indexed loads. The scheduler's three find-and-mark passes use the same shape through `complete_resource_callback`.
 - **`259680`.** It ORs all eight comparisons (`found |= ...`) instead of returning early.
 - **`259260`.** The "high worker may start" condition is an `unsigned char` computed eagerly with a bitwise OR (`(id == nullptr) | (done != 0)`), reset to 1 after a completion. It is tested third in the condition: after the `0x1f` argument test and the callback test.
+- **Resource frame (`resource/resource_frame.cpp`).**
+  - Close and the destructor are the same body: the destructor calls `close()`, which is inlined.
+  - The layout switch is an inline `set_layout` helper shared by `bind`, `open` and `open_table`. Its two 32-bit stores merge into one 64-bit constant store.
+  - `entry_size` indexes through an entry pointer (`entry[1]`), which gives `ldr w0, [x8, #4]`.
+  - `load` keeps "the caller gave no buffer" in a boolean computed at the top (`bool owned = dest == nullptr;`), and the result in a separate `ret` variable. That keeps the original's `cset`/`tbnz` instead of an `orr` of the two pointers.
+- **Workers (`system/worker.cpp`).**
+  - Thread and mutex objects share a ref-counted base: a vtable, a 32-bit count at `+8`, and destroy at slot `+0x18`. Their payloads start at `+0x10`, so they need `alignas(8)` after the 32-bit count.
+  - The release sequence is an inline `release_object` helper; shutdown uses it twice. It captures the manager cell's GOT slot once, exactly like the queue shutdown.
+  - `wait_worker_ready` is `while (!poll_worker_state(w)) sleep_worker_retry();` with the poll inlined. Shutdown inlines the wait again.
+  - The trampoline is a default-visibility function, so `create_worker` loads its address from the GOT (`c2bbc8`). `destroy_worker` is a separate one-instruction function that tail-calls `shutdown_worker`.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Near misses
+
+`25b4b4`, `25b5b8`, `25b754`: these differ only in argument-register setup order or one register copy. For `load`, about 15 variants of the tail and the allocation call were tried. For `open`, a direct call, a condition-declared size, a helper that checks for zero, and keeping the allocation result were tried. An inline allocation helper fixed the similar problem in `217188`, but here it improves `load` and makes `open_table` worse.
 
 `258b0c`: the original loads `entries[0].callback` before the two `strb wzr` flag clears; ours loads it after the volatile `flag2` store. Non-volatile flags fix the order but let the DAG merge the flag stores in `cancel` and `register`.
 
