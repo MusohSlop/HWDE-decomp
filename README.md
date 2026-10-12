@@ -38,7 +38,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-14 of 17 attempted functions match: 1,732 bytes.
+17 of 21 attempted functions match: 2,308 bytes. The other four are near misses (`m`).
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -53,20 +53,27 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `2174d0` | `DemoSequenceItem::release` | match |
 | `2589b4` | `resource_queue_active` | match |
 | `2589d0` | `cancel_resource_queue` | match |
-| `258b0c` | `register_resource_callback` | `m`: the first callback load is scheduled after the two flag stores instead of before (3 words) |
+| `258a68` | `finish_resource_queue` | match |
+| `258b0c` | `register_resource_callback` | `m`: the first callback load is scheduled after the two flag stores instead of before (7 words) |
+| `258c64` | `process_resource_queue` | `m`: registers of the running count and registry base swapped (w9/w10), plus scheduling in the write-back loops; 328 words vs 326 |
 | `25917c` | `remove_resource_callback` | match |
-| `258a68` | `finish_resource_queue` | `m`: final 16-bit clear and register-address handling (see below) |
+| `259260` | `update_resource_queue` | `m`: one word; the `flag2` test is `cbz` instead of `tbz #0` |
+| `259680` | `resource_queue_has_callback` | match |
+| `2599dc` | `shutdown_resource_queue` | match |
 | `25970c` | `resource_queue_callback_state` | match |
 | `2597a8` | `resource_queue_callback_in_state` | match |
 | `25984c` | `resource_queue_callback_count` | match |
 
 ### Source-shape lessons
 
-- **Translation units.**
+- **Translation units and globals.**
   - `DemoSequenceItem` (`2173c4`, `2174d0`) is a separate unit after the sequence unit. If it is in the same file, `release` gets inlined into `clear`.
-  - The resource queue worker controls (`c8aef8`) are defined outside the queue unit. As two file-static globals, LLVM's GlobalMerge combines them with the registry and addresses one relative to the other.
+  - The queue registry (`c8af40`), the worker controls (`c8aef8`) and the high-worker enable byte (`c8af38`) are external hidden globals. As file-static globals in one unit, LLVM's GlobalMerge combines them and addresses one relative to another.
+  - The registry declaration has alignment 1 (a packed type). LLVM folds the low 12 bits of an address into a halfword access only when the global's alignment is at least 2. With alignment 1, the 16-bit clear of `active`/`flag1` becomes `adrp; add; strh [x8]`, as in the original. Clang raises every definition to at least 4-byte alignment, so this works only through an `extern` declaration.
+  - The manager cell (`c21de8`) and the elapsed step (`c21df0`) are default-visibility externs reached through the GOT. `check_obj.py` resolves GOT relocations through `got:NAME` entries in `units.json`.
 - **Inline helpers change optimization order.**
   - `clear` matches only when the final free goes through an inline `demo_safe_free(owner, ptr)` helper. Writing the null check directly in `clear` changes the loop: the original peels the first `release` and reloads `items` at the top of each later iteration.
+  - `finish_resource_queue` is inlined twice into `update_resource_queue` (the early path and the readiness test). `cancel_resource_queue` is inlined into `shutdown_resource_queue`.
 - **`2173c4`.**
   - The six header words are an array copied in a loop. Named fields of different structs get struct-path TBAA, and their loads merge into 64-bit loads.
   - Each point is copied word by word through per-iteration references (`DemoPoint& dst = points[i]`). A struct assignment turns into 64-bit copies.
@@ -75,15 +82,20 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - The scan stores its result in a separate variable initialized to `n`. A plain `for (j...) break;` lets the compiler drop the original's redundant `j == 0` test on the not-found path.
   - The lerp uses a temporary `g = 1 - f` to get the original scheduling.
 - **`217188`.** The allocation descriptor comes from an inline `demo_alloc` helper. Inlined stack slots go first, so the 40-byte resource frame lands below the descriptor, as in the original. The size is computed into a local first (`unsigned int size = sizeof(DemoSequenceItem) * count;`), which gives the original instruction order.
-- **`25917c`.** It is written as find-then-act: first find the index, then test the state. A combined loop produces per-entry pre-indexed loads.
-- **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. The getter returns the byte. The two cancel flags (`+1`, `+2`) are `volatile`, which keeps their stores separate; other threads poll them. The entry reset is written state, callback, completion, argument, elapsed. The compiler then emits the original store order and pairing.
+- **`25917c`.** It is written as find-then-act: first find the index, then test the state. A combined loop produces per-entry pre-indexed loads. The scheduler's three find-and-mark passes use the same shape through `complete_resource_callback`.
+- **`259680`.** It ORs all eight comparisons (`found |= ...`) instead of returning early.
+- **`259260`.** The "high worker may start" condition is an `unsigned char` computed eagerly with a bitwise OR (`(id == nullptr) | (done != 0)`), reset to 1 after a completion. It is tested third in the condition: after the `0x1f` argument test and the callback test.
+- **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Near misses
 
-`258b0c`: the original loads `entries[0].callback` before the two `strb wzr` flag clears; ours loads it after them because the flags are `volatile`. Making only `flag2` volatile, or using a packed registry without `volatile`, didn't fix it. The packed version also lets the DAG merge the flag stores.
+`258b0c`: the original loads `entries[0].callback` before the two `strb wzr` flag clears; ours loads it after the volatile `flag2` store. Non-volatile flags fix the order but let the DAG merge the flag stores in `cancel` and `register`.
+
+`259260`: the original tests `flag2` with `tbz w8, #0`; ours uses `cbz w8`. An `unsigned char` flag tested with `& 1` produces `tbz`/`tbnz`, but it flips the block layout (59 words differ). Neither branch order fixes that.
 
 `217294`: everything but register allocation matches. The original keeps `n` in w11 and the scan index in x10; we get the reverse. Changing the index type, the variable order, the loop form or the `found`/`goto`/`continue` shape didn't change it.
 
-`258a68`: the original clears `active` and `flag1` with `adrp x8; add x8, #0xf40; strh wzr, [x8]` and keeps nothing in x20. Our compiler either folds the low 12 bits into a 16-bit store, or emits two `strb` stores when it can't merge them.
-- **Alignment evidence:** with a `packed` (alignment 1) registry, the base is materialized and the only remaining difference is two `strb` vs one `strh`. That suggests the original merged two zero-byte stores after instruction selection.
-- **Tried:** an unaligned `u16` store, `memset`, reversed order, byte pointers and partial `volatile`; none matched. The committed source keeps the plain struct with both flags `volatile`.
+`258c64`: the grouping, the three exchange sorts and the write-back match in structure.
+- **Copy blocks:** writing the counter increment after the copy keeps the three copy blocks from being tail-merged.
+- **Priority helper:** written as a ternary, it gives the original block layout.
+- **Still different:** the registry base and the running count use swapped registers. The waiting and empty write-back loops are scheduled differently, giving 328 words vs 326.

@@ -3,7 +3,7 @@
 Usage: check_obj.py OBJECT [--map NAME=ADDRESS ...] SYMBOL=ADDRESS [...]
 
 SYMBOL=ADDRESS pairs name functions to compare. --map gives the original
-address of a relocation target: a symbol name (including file-static
+address of a relocation target: a symbol name, "got:NAME" for the GOT slot of NAME (including file-static
 variables, which are found through their section-relative relocations) or a
 section name such as .bss. Compared functions are mapped automatically.
 Relocations whose target is mapped are applied and the full word compared;
@@ -74,11 +74,16 @@ def apply(word, rtype, value, place):
     if rtype == 275:
         page = ((value >> 12) - (place >> 12)) & 0x1FFFFF
         return (word & ~0x60FFFFE0 & 0xFFFFFFFF) | ((page & 3) << 29) | ((page >> 2) << 5)
+    if rtype == 311:  # ADR_GOT_PAGE: value is the GOT slot address
+        page = ((value >> 12) - (place >> 12)) & 0x1FFFFF
+        return (word & ~0x60FFFFE0 & 0xFFFFFFFF) | ((page & 3) << 29) | ((page >> 2) << 5)
+    if rtype == 312:  # LD64_GOT_LO12_NC
+        return (word & ~0x003FFC00 & 0xFFFFFFFF) | (((value & 0xFFF) >> 3) << 10)
     if rtype in LO12_SHIFT:
         return (word & ~0x003FFC00 & 0xFFFFFFFF) | (((value & 0xFFF) >> LO12_SHIFT[rtype]) << 10)
     if rtype in (282, 283):
         return (word & 0xFC000000) | (((value - place) >> 2) & 0x03FFFFFF)
-    return None  # GOT relocations need the original GOT slot; not handled yet.
+    return None
 
 
 def resolve(symbols, sym, addend, mapping):
@@ -124,7 +129,11 @@ def compare(obj, pairs, mapping):
             rel = srel.get(s.value + k)
             if rel:
                 rtype, symidx, addend = rel
-                target = resolve(symbols, symbols[symidx], addend, mapping)
+                if rtype in (311, 312):
+                    slot = mapping.get("got:" + symbols[symidx].name)
+                    target = slot + addend if slot is not None else None
+                else:
+                    target = resolve(symbols, symbols[symidx], addend, mapping)
                 patched = apply(a, rtype, target, addr + k) if target is not None else None
                 if patched is None:
                     unresolved.add(f"{symbols[symidx].name}+{addend:#x} (type {rtype})")
@@ -132,6 +141,17 @@ def compare(obj, pairs, mapping):
                 else:
                     a = patched
                     struct.pack_into("<I", mine, k, a)
+            elif (a & 0x7C000000) == 0x14000000:
+                # B/BL resolved by the assembler inside this section: retarget
+                # it when it lands on another mapped symbol.
+                imm = a & 0x03FFFFFF
+                dest = s.value + k + ((imm - (1 << 26) if imm & (1 << 25) else imm) << 2)
+                for other in symbols:
+                    if (not other.is_section and other.shndx == s.shndx and other.value == dest
+                            and other is not s and other.name in mapping):
+                        a = (a & 0xFC000000) | (((mapping[other.name] - (addr + k)) >> 2) & 0x03FFFFFF)
+                        struct.pack_into("<I", mine, k, a)
+                        break
             if (a & mask) != (b & mask):
                 diffs.append(k)
         lines = []

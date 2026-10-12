@@ -10,7 +10,13 @@
     "_Z20shared_state_exitingP11SharedState": "0x71002ac7f0",
     "_Z17wait_worker_readyP19ResourceQueueWorker": "0x710045e094",
     "_Z17poll_worker_stateP19ResourceQueueWorker": "0x710045e0d8",
-    "_Z22process_resource_queuev": "0x7100258c64",
+    "_Z15shutdown_workerP19ResourceQueueWorker": "0x710045de58",
+    "got:gResourceQueueManager": "0x7100c21de8",
+    "got:gResourceQueueElapsedStep": "0x7100c21df0",
+    "gResourceQueueHighEnabled": "0x7100c8af38",
+    "_Z12start_workerP19ResourceQueueWorker": "0x710045e114",
+    "_Z16get_frame_sourcev": "0x71003ad9cc",
+    "_Z21frame_source_skippingPv": "0x71003adbe0",
     "_ZN13ResourceFrameC1Ev": "0x710025b394",
     "_ZN13ResourceFrameD1Ev": "0x710025b3ac",
     "_ZN13ResourceFrame5closeEv": "0x710025b40c",
@@ -21,15 +27,19 @@
   "units": {
     "event/resource_queue_controls.cpp": {
       "map": {
-        "_ZL9sRegistry": "0x7100c8af40",
+        "gResourceQueueRegistry": "0x7100c8af40",
         "gResourceQueueWorkers": "0x7100c8aef8"
       },
       "functions": {
         "_Z21resource_queue_activev": "0x71002589b4",
         "_Z21cancel_resource_queuev": "0x71002589d0",
         "_Z21finish_resource_queuehhh": "0x7100258a68",
+        "_Z22process_resource_queuev": "0x7100258c64",
         "_Z26register_resource_callbackPvPFvijEj": "0x7100258b0c",
         "_Z24remove_resource_callbackPv": "0x710025917c",
+        "_Z21update_resource_queuev": "0x7100259260",
+        "_Z27resource_queue_has_callbackPv": "0x7100259680",
+        "_Z23shutdown_resource_queuev": "0x71002599dc",
         "_Z29resource_queue_callback_statePv": "0x710025970c",
         "_Z32resource_queue_callback_in_statePvj": "0x71002597a8",
         "_Z29resource_queue_callback_countv": "0x710025984c"
