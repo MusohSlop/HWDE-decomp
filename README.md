@@ -38,7 +38,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-112 of 125 attempted functions match: 103 inventory functions (9,012 bytes), the worker trampoline `45df64`, the static initializers `25aa0c` and `258970` and the array destructor `258944`, all outside the baseline inventory. The other thirteen are near misses: twelve `m` and one `M`.
+112 of 125 attempted functions match: 103 inventory functions (9,012 bytes) plus 9 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174` and the cache worker callbacks `25b218`/`25b25c`. The other thirteen are near misses: twelve `m` and one `M`.
 
 | Address | Function | Status |
 | --- | --- | --- |
