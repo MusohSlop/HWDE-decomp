@@ -30,7 +30,7 @@ public:
     void close();                                                     // 0x710025b40c
     bool is_open() const;                                             // 0x710025b46c
     void bind(int mode, void* storage);                               // 0x710025b47c
-    bool open(int mode, unsigned int identity, ResourceAllocator* allocator);       // 0x710025b4b4
+    unsigned char open(int mode, unsigned int identity, ResourceAllocator* allocator); // 0x710025b4b4
     bool open_table(int mode, unsigned int identity, ResourceAllocator* allocator); // 0x710025b5b8
     unsigned int count() const;                                       // 0x710025b6f8
     unsigned int entry_offset(unsigned int index) const;              // 0x710025b704

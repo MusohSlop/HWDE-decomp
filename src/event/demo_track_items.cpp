@@ -154,16 +154,6 @@ void TrackLight::interpolate(const TrackLight& to, const TrackLight& from, float
     bytes2e[1] = ((to.value30 & 0x4000) == 0 ? this : &to)->bytes2e[1];
 }
 
-struct TrackSlot {
-    unsigned long value0;     // +00
-    unsigned long value8;     // +08
-    unsigned int value10;     // +10
-    unsigned long value18;    // +18
-    unsigned long id20;       // +20
-
-    TrackSlot();
-};
-
 TrackSlot::TrackSlot() {
     value0 = 0;
     value8 = 0;

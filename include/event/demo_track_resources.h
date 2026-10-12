@@ -9,7 +9,7 @@ struct TrackResources {
     RefObject* extra;         // +10
 
     TrackResources();
-    void update();
+    ~TrackResources();
     void release();
     void reset();
     void clear();

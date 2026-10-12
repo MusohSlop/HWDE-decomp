@@ -154,7 +154,7 @@ void apply_track_light(TrackLightTarget* target, const TrackLight& light, const 
     target->colors[1] = light.color;
     target->colors[2] = light.color;
     target->colors[3] = light.color;
-    target->value78 = 0;
+    target->alpha = 0;
     TrackRenderer* renderer = gTrackRenderer;
     renderer->begin(0x10);
     renderer->write(target, 0x88, -1);

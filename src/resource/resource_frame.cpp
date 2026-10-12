@@ -83,7 +83,7 @@ void ResourceFrame::bind(int mode, void* storage) {
     set_layout(mode);
 }
 
-bool ResourceFrame::open(int mode, unsigned int identity, ResourceAllocator* allocator) {
+unsigned char ResourceFrame::open(int mode, unsigned int identity, ResourceAllocator* allocator) {
     void* data;
     if (allocator) {
         unsigned int size = resource_size(identity);

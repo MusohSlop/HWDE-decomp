@@ -44,13 +44,13 @@ static inline void apply_light(TrackLightChannel* channel, const TrackLight& lig
     TrackLightTable* table;
     switch (channel->mode) {
     case 2:
-        table = tables->tables[2];
+        table = static_cast<TrackLightTable*>(tables->resources.extra);
         break;
     case 1:
-        table = tables->tables[1];
+        table = static_cast<TrackLightTable*>(tables->resources.secondary);
         break;
     case 0:
-        table = tables->tables[0];
+        table = static_cast<TrackLightTable*>(tables->resources.primary);
         break;
     default:
         return;

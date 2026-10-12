@@ -2,6 +2,8 @@
 // channel units. Names are descriptive placeholders.
 #pragma once
 
+#include "system/worker.h"
+
 // Track key data loaded per stage.
 struct TrackKey {
     void* owner;              // +00
@@ -101,8 +103,9 @@ struct TrackLightImage {
     unsigned int size;        // +30
 };
 
-struct TrackLightTable {
-    unsigned char pad[0x18];
+// Reference-counted table of images (loaded by TrackResources).
+struct TrackLightTable : public RefObject {
+    unsigned char pad0c[0xc];
     int count;                // +18
     unsigned int pad1c;       // +1c
     TrackLightImage* items[1]; // +20
@@ -114,7 +117,9 @@ struct TrackLightTarget {
     union {
         unsigned int flags;   // +08
         struct {
-            unsigned int : 16;
+            unsigned int : 7;
+            unsigned int hidden : 1;
+            unsigned int : 8;
             unsigned int blend : 4;
         };
     };
@@ -125,7 +130,7 @@ struct TrackLightTarget {
     TrackColor colors[4];     // +38
     unsigned char pad48[0x10]; // +48
     TrackVec2 quad[4];        // +58
-    unsigned int value78;     // +78
+    float alpha;              // +78
     unsigned char pad7c[0xc]; // +7c
 
     TrackLightTarget();                                                 // 0x71001f0140
@@ -160,3 +165,14 @@ struct TrackLightChannel {
     void update_scaled(const TrackLight& base, float time, TrackVector adjust, unsigned char alpha);
 };
 static_assert(sizeof(TrackLightChannel) == 0x68, "channel size");
+
+// Default-constructed storage for a TrackLightSet (0x28 bytes).
+struct TrackSlot {
+    unsigned long value0;     // +00
+    unsigned long value8;     // +08
+    unsigned int value10;     // +10
+    unsigned long value18;    // +18
+    unsigned long id20;       // +20
+
+    TrackSlot();
+};

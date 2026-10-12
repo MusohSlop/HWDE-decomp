@@ -15,7 +15,7 @@ static inline void release_ref(RefObject*& ref) {
 
 TrackResources::TrackResources() : primary(nullptr), secondary(nullptr), extra(nullptr) {}
 
-void TrackResources::update() {}
+TrackResources::~TrackResources() {}
 
 void TrackResources::release() {
     release_ref(extra);

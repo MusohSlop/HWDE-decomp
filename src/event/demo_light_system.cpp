@@ -2,7 +2,6 @@
 // Names are descriptive placeholders. Status: matching/README.md.
 
 #include "event/demo_light_system.h"
-#include "event/demo_sequence.h"
 
 inline void* operator new(unsigned long, void* where) noexcept { return where; }
 
@@ -155,6 +154,7 @@ public:
     unsigned char busy();                                                   // 0x710038863c
     void request(int id, int a, int b);                                     // 0x7100389178
     void release_caption(int mode);                                         // 0x71003891d0
+    unsigned char captioned();                                              // 0x71003890bc
 };
 SharedResources* shared_state_resources(SharedState* state);               // 0x71002ad1dc
 
@@ -197,6 +197,31 @@ void notify_light_index(int index, int* out);                               // 0
 void notify_light_skipped();                                                // 0x71003fe254
 void notify_light_aborted(int index);                                       // 0x71003fe2d4
 unsigned char demo_skipping();                                              // 0x71003cbe20
+
+class TextRenderer {
+public:
+    void set_area(TrackVec2* pos, TrackVec2* size, int a, int b, int c);    // 0x71001e709c
+    unsigned int draw(void* dest, const char* text, int line, int a, int alpha, float x,
+                      float y);                                             // 0x71001e73c0
+
+    unsigned char pad[0x20b7c];
+    int mode20b7c;            // +20b7c
+    unsigned char pad20b80[0x1c];
+    int mode20b9c;            // +20b9c
+};
+// Reached through the GOT slot at 0x7100c22a30.
+extern TextRenderer* gTextRenderer;
+
+class TrackRenderer {
+public:
+    void write(void* data, unsigned int size, int slot);                    // 0x71001df8c0
+};
+// Reached through the GOT slot at 0x7100c22a40.
+extern TrackRenderer* gTrackRenderer;
+
+int screen_width();                                                         // 0x71003df258
+int screen_height();                                                        // 0x71003df250
+const char* message_text(int id);                                           // 0x7100217d64
 
 // String literals, merged with others by the linker.
 extern const char kEmptyString[] __attribute__((visibility("hidden")));    // 0x7100740512
@@ -496,4 +521,137 @@ void DemoLightSystem::finish() {
     }
     if (screen_fader() && screen_fader())
         screen_fader()->fade(0.0f, 0, 1);
+}
+
+void DemoLightSystem::draw() {
+    if (static_cast<unsigned int>(stage) > 0x3b)
+        return;
+    switch (state) {
+    case 1:
+        draw_intro();
+        break;
+    case 6:
+    case 9:
+    case 11:
+        break;
+    case 10:
+        layout_panel();
+        break;
+    default:
+        layout_frames();
+        layout_panel();
+        draw_text();
+        break;
+    }
+}
+
+void DemoLightSystem::layout_frames() {
+    TrackLightTable* frames = static_cast<TrackLightTable*>(object7278);
+    if (frames && state == 2) {
+        sources[0].image = frames->count >= 1 ? frames->items[0] : nullptr;
+        sources[0].uv0.x = 0.0f;
+        sources[0].uv0.y = 0.0f;
+        sources[0].uv1.x = 0.9375f;
+        sources[0].uv1.y = 0.52734375f;
+        sources[0].min.x = 0.0f;
+        sources[0].min.y = 0.0f;
+        sources[0].max.x = 1920.0f;
+        sources[0].max.y = 1080.0f;
+        sources[0].flags &= ~0x80u;
+    } else {
+        sources[0].flags |= 0x80;
+    }
+    TrackLightTable* logo = static_cast<TrackLightTable*>(object7280);
+    if (logo && state == 2) {
+        sources[1].image = logo->count >= 1 ? logo->items[0] : nullptr;
+        sources[1].uv0.x = 0.0f;
+        sources[1].uv0.y = 0.0f;
+        sources[1].uv1.x = 0.5859375f;
+        sources[1].uv1.y = 0.933852136f;
+        sources[1].min.x = 780.0f;
+        sources[1].max.y = 1020.0f;
+        sources[1].min.y = 60.0f;
+        sources[1].max.x = 1980.0f;
+        sources[1].flags &= ~0x80u;
+    } else {
+        sources[1].flags |= 0x80;
+    }
+    float half_width = screen_width() * 0.5f;
+    float half_height = screen_height() * 0.5f;
+    TrackLightTarget& banner = table_set.banner;
+    banner.hidden = 0;
+    banner.blend = 0;
+    banner.alpha = 1.0f;
+    banner.quad[0].x = half_width - 1024.0f;
+    banner.quad[0].y = half_height - 512.0f;
+    banner.quad[1].x = half_width + 1024.0f;
+    banner.quad[1].y = half_height - 512.0f;
+    banner.quad[2].x = half_width - 1024.0f;
+    banner.quad[2].y = half_height + 512.0f;
+    banner.quad[3].x = half_width + 1024.0f;
+    banner.quad[3].y = half_height + 512.0f;
+    banner.value18[0] = 0.0f;
+    banner.value18[1] = 0.0f;
+    banner.matrix[0] = 1.0f;
+    banner.matrix[1] = 0.0f;
+    banner.matrix[2] = 0.0f;
+    banner.matrix[3] = 1.0f;
+    banner.scale[0] = 1.0f;
+    banner.scale[1] = 1.0f;
+}
+
+void DemoLightSystem::layout_panel() {
+    SharedResources* resources = shared_state_resources(get_shared_state());
+    if ((resources && resources->captioned()) || flags99ec.d) {
+        TrackLightTable* table = static_cast<TrackLightTable*>(table_set.resources.primary);
+        float width = screen_width();
+        float height = screen_height();
+        TrackLightTarget& panel = table_set.panel;
+        panel.hidden = 0;
+        panel.blend = 0;
+        panel.quad[0].x = 0.0f;
+        panel.quad[0].y = 0.0f;
+        panel.quad[1].x = width;
+        panel.quad[1].y = 0.0f;
+        panel.quad[2].x = 0.0f;
+        panel.quad[2].y = height;
+        panel.quad[3].x = width;
+        panel.quad[3].y = height;
+        panel.value18[0] = 0.0f;
+        panel.value18[1] = 0.0f;
+        panel.matrix[0] = 1.0f;
+        panel.matrix[1] = 0.0f;
+        panel.matrix[2] = 0.0f;
+        panel.matrix[3] = 1.0f;
+        panel.scale[0] = 1.0f;
+        panel.scale[1] = 1.0f;
+        panel.colors[0].r = 0;
+        panel.colors[0].g = 0;
+        panel.colors[0].b = 0;
+        panel.colors[0].a = 0x1e;
+        panel.colors[1] = panel.colors[0];
+        panel.colors[2] = panel.colors[0];
+        panel.colors[3] = panel.colors[0];
+        panel.image = table->count >= 3 ? table->items[2] : nullptr;
+    } else {
+        table_set.panel.flags |= 0x80;
+    }
+}
+
+void DemoLightSystem::draw_text() {
+    LightSource* text = table_set.captions;
+    if (!flags99ec.d) {
+        hide_sources(text, 5);
+        return;
+    }
+    show_sources(text, 5);
+    TrackVec2 size = {32.0f, 32.0f};
+    TrackVec2 pos = {screen_width() * 0.5f, 16.0f};
+    const char* message = message_text(0x17c);
+    TextRenderer* renderer = gTextRenderer;
+    renderer->set_area(&pos, &size, 7, 0x20, 0);
+    renderer->mode20b9c = 1;
+    renderer->draw(text, message, 5, 1, 0xff, 0.0f, 0.0f);
+    renderer->mode20b7c = 0;
+    gTrackRenderer->write(text, 0x168, -1);
 }

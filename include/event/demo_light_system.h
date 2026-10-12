@@ -2,10 +2,32 @@
 // placeholders; member types are known only by their out-of-line functions.
 #pragma once
 
+#include "event/demo_sequence.h"
 #include "event/demo_track.h"
+#include "event/demo_track_resources.h"
+
+// Light channels of one track (0x28 bytes).
+struct TrackLightSet {
+    DemoOwner* owner;               // +00
+    TrackLightChannel* channels;    // +08: count + 1
+    unsigned int count;             // +10
+    TrackLight** keys;              // +18: count + 1
+    int value20;                    // +20
+    int value24;                    // +24
+
+    TrackLightSet(DemoOwner* owner, int value24);
+    unsigned int load(void* resource);
+    void update(float time);
+    void release(void* p) {
+        if (p)
+            owner->free(p);
+    }
+    void update_scaled(float time, TrackVector adjust, unsigned char alpha);
+};
+static_assert(sizeof(TrackLightSet) == 0x28, "set size");
 
 // Block allocator over the system's 192 KiB heap block.
-class LightAllocator {
+class LightAllocator : public DemoOwner {
 public:
     LightAllocator();                                                   // 0x71005c2d24
     ~LightAllocator();                                                  // 0x71005c2c8c
@@ -13,8 +35,9 @@ public:
     void finalize();                                                    // 0x71005c2e54
 
 private:
-    unsigned char data[0x60];
+    unsigned char data[0x58];
 };
+static_assert(sizeof(LightAllocator) == 0x60, "allocator size");
 
 class LightSceneBase {
 public:
@@ -53,33 +76,81 @@ public:
 };
 static_assert(sizeof(LightScene) == 0x5bc0, "scene size");
 
-// Light record with a dirty flag (0x80) in its flags word.
+// Textured rectangle; flag 0x80 in +08 hides it.
 class LightSource {
 public:
     LightSource();                                                      // 0x71001ef52c
 
     unsigned char pad0[8];
     unsigned int flags;       // +08
-    unsigned char pad0c[0x3c];
+    unsigned char pad0c[4];
+    TrackLightImage* image;   // +10
+    TrackVec2 uv0;            // +18
+    TrackVec2 uv1;            // +20
+    TrackColor color;         // +28
+    unsigned char pad2c[4];
+    TrackVec2 min;            // +30
+    TrackVec2 max;            // +38
+    unsigned char pad40[8];
 };
 static_assert(sizeof(LightSource) == 0x48, "source size");
 
-// The channels' light tables live at +8.
+void show_sources(LightSource* sources, int count);                     // 0x71001f73e4
+void hide_sources(LightSource* sources, int count);                     // 0x71001f7430
+
+class LightEntry {
+public:
+    LightEntry();
+    void bind(LightAllocator* allocator);                               // 0x7100260740                                                       // 0x7100260648
+    ~LightEntry();                                                      // 0x71002606b8
+    void unload();                                                      // 0x71002606fc
+
+private:
+    unsigned char data[0xd0];
+};
+
+struct LightCounts {
+    union {
+        struct {
+            unsigned int targets; // +0
+            unsigned int entries; // +4
+        };
+        unsigned long raw;
+    };
+};
+
+struct LightSlot {
+    int index = -1;           // +0
+    int a = 0;                // +4
+    int b = 0;                // +8
+    int c = 0;                // +c
+};
+
+// Light tables and the overlay quads drawn over the demo.
 class TrackLightTableSet {
 public:
-    TrackLightTableSet();                                               // 0x710025ffe8
-    ~TrackLightTableSet();                                              // 0x7100260220
-    void init(LightAllocator* allocator);                               // 0x710026026c
-    void finalize();                                                    // 0x7100260288
-    void load(int stage, void* state);                                  // 0x7100260290
-    void unload();                                                      // 0x71002605d0
+    TrackLightTableSet();
+    ~TrackLightTableSet();
+    void init(LightAllocator* allocator);
+    void finalize();
+    void load(int stage, float* times);
+    int load_tracks(unsigned int id, float* times);
+    void unload();
 
-    unsigned char pad0[8];
-    TrackLightTable* tables[3]; // +08
-    unsigned char pad20[0x12710];
+    LightAllocator* allocator;        // +00
+    TrackResources resources;         // +08: primary, secondary, extra tables
+    TrackLightTarget banner;          // +20
+    TrackLightTarget panel;           // +a8
+    LightSource captions[5];          // +130
+    LightCounts counts;               // +298
+    TrackLightTarget targets[256];    // +2a0
+    LightEntry entries[192];          // +8aa0
+    int count126a0;                   // +126a0
+    unsigned char pad126a4[4];
+    void* buffer;                     // +126a8
+    LightSlot slots[8];               // +126b0
 };
 static_assert(sizeof(TrackLightTableSet) == 0x12730, "table set size");
-
 class LightResource {
 public:
     LightResource();                                                    // 0x71005d2744
@@ -147,6 +218,11 @@ struct DemoLightSystem {
     void load(int stage);
     void unload();
     void update();
+    void draw();
+    void draw_intro();
+    void layout_frames();
+    void layout_panel();
+    void draw_text();
     void start();
     void play();
     void finish();

@@ -1,29 +1,10 @@
 // Matching candidates for the demo light set bodies 0x710025c254-0x710025c6c0.
 // Names are descriptive placeholders. Status: matching/README.md.
 
-#include "event/demo_sequence.h"
-#include "event/demo_track.h"
+#include "event/demo_light_system.h"
 #include "resource/resource_frame.h"
 
 inline void* operator new(unsigned long, void* where) noexcept { return where; }
-
-struct TrackLightSet {
-    DemoOwner* owner;               // +00
-    TrackLightChannel* channels;    // +08: count + 1
-    unsigned int count;             // +10
-    TrackLight** keys;              // +18: count + 1
-    int value20;                    // +20
-    int value24;                    // +24
-
-    TrackLightSet(DemoOwner* owner, int value24);
-    unsigned int load(void* resource);
-    void update(float time);
-    void release(void* p) {
-        if (p)
-            owner->free(p);
-    }
-    void update_scaled(float time, TrackVector adjust, unsigned char alpha);
-};
 
 TrackLightSet::TrackLightSet(DemoOwner* owner_, int value24_)
     : owner(owner_), channels(nullptr), count(0), keys(nullptr), value20(-1), value24(value24_) {}
