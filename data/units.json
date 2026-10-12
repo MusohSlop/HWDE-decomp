@@ -306,6 +306,9 @@
       }
     },
     "event/demo_track_items.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073bae8"
+      },
       "functions": {
         "_ZN8TrackKeyC2Ev": "0x710025b828",
         "_ZN8TrackKeyD2Ev": "0x710025b844",
@@ -314,7 +317,13 @@
         "_Z15track_light_nopv": "0x710025bb9c",
         "_ZN10TrackLight5resetEv": "0x710025bba0",
         "_Z14track_item_nopv": "0x710025bd64",
-        "_ZN10TrackLight4copyERKS_": "0x710025bcd0"
+        "_ZN10TrackLight4copyERKS_": "0x710025bcd0",
+        "_ZN10TrackLight6decodeERK16TrackLightRecord": "0x710025bbe8",
+        "_ZN10TrackLight11decode_fullERK16TrackLightRecord": "0x710025bd68",
+        "_ZN10TrackLight9copy_fullERKS_": "0x710025be54",
+        "_ZNK10TrackLight6equalsERKS_": "0x710025bef0",
+        "_ZN9TrackSlotC2Ev": "0x710025c240",
+        "_ZN10TrackLight11interpolateERKS_S1_ff": "0x710025bfdc"
       }
     }
   }

@@ -38,7 +38,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-120 of 133 attempted functions match: 111 inventory functions (9,300 bytes) plus 9 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174` and the cache worker callbacks `25b218`/`25b25c`. The other thirteen are near misses: twelve `m` and one `M`.
+126 of 139 attempted functions match: 117 inventory functions (10,792 bytes) plus 9 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174` and the cache worker callbacks `25b218`/`25b25c`. The other thirteen are near misses: twelve `m` and one `M`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -135,6 +135,11 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25bb9c`, `25bba0` | trivial body, `TrackLight::reset` | match |
 | `25bcd0` | `TrackLight::copy` | match |
 | `25bd64` | trivial body | match |
+| `25bbe8`, `25bd68` | `TrackLight::decode`, `decode_full` | match |
+| `25be54` | `TrackLight::copy_full` | match |
+| `25bef0` | `TrackLight::equals` | match |
+| `25bfdc` | `TrackLight::interpolate` | match |
+| `25c240` | `TrackSlot::TrackSlot` | match |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
 | `45dd84`–`45dde8` | `Stopwatch` constructor, `reset`, destructor, `start`, `stop`, `elapsed_ms` | match |
 | `45de40` | `initialize_worker` | match |
@@ -208,7 +213,13 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `TrackKey`'s field at `+0x10` is a `float`: a float zero doesn't merge with the integer -1 index stores beside it.
   - `TrackLight`'s values are an aggregate assigned at once.
   - Its color at `+0x28` is a union of a raw 32-bit word (cleared with one store) and four bytes. The bytes are copied through `set(TrackColor)` by value, which gives the original 32-bit load and four byte stores.
-  - Deferred: `25b864` (824 bytes) and the packed-record decoder `25bbe8`, which uses vector registers.
+  - The record decoders store the position with one 16-byte vector store. With `-mno-implicit-float` the SLP vectorizer stays off, so the source uses an explicit 16-byte float vector type there; the original's vector type probably has SIMD storage. The record's color bytes are gathered into a local `TrackColor` and assigned through `set()`.
+  - `equals` returns early after each test, with an inlined vector `operator==` for the position.
+  - `interpolate` lerps each field whose bit is set in the target's change mask (`+0x30`). Three source details matter:
+    - the `to` value comes first in the helper's argument order;
+    - `from`'s color is read as one raw word, with the bytes extracted by shifts;
+    - the byte lerp computes its product into a local first.
+  - Deferred: `25b864` (824 bytes), a loader built on a serializer stream with many unknown callees.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred
