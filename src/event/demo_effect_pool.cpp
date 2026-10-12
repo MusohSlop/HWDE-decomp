@@ -20,42 +20,6 @@ extern const char kQuestionLayout[] __attribute__((visibility("hidden")));  // 0
 extern const char kNumberLayout[] __attribute__((visibility("hidden")));    // 0x71007d5ac9
 extern const char kNumberPane[] __attribute__((visibility("hidden")));      // 0x710074129f
 
-class LayoutAnimation {
-public:
-    virtual void v00();
-    virtual void v08();
-    virtual void v10();
-    virtual void v18();
-    virtual void set_active(bool active); // +20
-    virtual void v28();
-    virtual void v30();
-    virtual void v38();
-    virtual void v40();
-    virtual void v48();
-    virtual void v50();
-    virtual void v58();
-    virtual void v60();
-    virtual void v68();
-    virtual void v70();
-    virtual void v78();
-    virtual void v80();
-    virtual void v88();
-    virtual void v90();
-    virtual void v98();
-    virtual void va0();
-    virtual void va8();
-    virtual void set_rate(float rate); // +b0
-    virtual void vb8();
-    virtual void vc0();
-    virtual void vc8();
-    virtual void rewind(); // +d0
-    unsigned short frame_count();                                           // 0x71005ce178
-
-    unsigned char pad8[0x18];
-    float frame;              // +20
-    unsigned char pad24[0x18];
-    float speed;              // +3c
-};
 
 class GameState {
 public:

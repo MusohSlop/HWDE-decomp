@@ -4,6 +4,60 @@
 
 class LightResource;
 class LayoutAnimation;
+class PaneBase;
+
+// Intrusive ring link (prev at +0, next at +8).
+struct ListLink {
+    ListLink* prev;
+    ListLink* next;
+
+    // Splices the ring that starts at node in front of this link.
+    void link_before(ListLink* node) {
+        ListLink* last = node->prev;
+        node->prev = prev;
+        last->next = this;
+        prev->next = node;
+        prev = last;
+    }
+};
+
+// Layout animation (frame state at +20, playback speed at +3c).
+class LayoutAnimation {
+public:
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+    virtual void v18();
+    virtual void set_active(bool active); // +20
+    virtual void v28();
+    virtual void v30();
+    virtual void v38();
+    virtual void v40();
+    virtual void v48();
+    virtual void v50();
+    virtual void v58();
+    virtual void v60();
+    virtual void v68();
+    virtual void v70();
+    virtual void v78();
+    virtual void v80();
+    virtual void v88();
+    virtual void v90();
+    virtual void v98();
+    virtual void va0();
+    virtual void va8();
+    virtual void set_rate(float rate); // +b0
+    virtual void vb8();
+    virtual void vc0();
+    virtual void vc8();
+    virtual void rewind(); // +d0
+    unsigned short frame_count();                                           // 0x71005ce178
+
+    unsigned char pad8[0x18];
+    float frame;              // +20
+    unsigned char pad24[0x18];
+    float speed;              // +3c
+};
 
 class EffectBase {
 public:
@@ -38,7 +92,14 @@ public:
     virtual void v50();
     virtual void v58();
     virtual EffectGroup* find(const char* name, int depth); // +60
+    virtual void v68();
+    virtual void v70();
+    virtual void v78();
+    virtual void bind_animation(void* binding, bool a, bool b); // +80
     void add(EffectBase* effect);                                           // 0x71005da17c
+    void add(EffectGroup* child);                                           // 0x71005da17c
+    void add(PaneBase* pane);                                               // 0x71005da17c
+    EffectGroup* duplicate(void* root);                                     // 0x71005dec80
 
     unsigned char pad8[0x28];
     float offset30;           // +30
@@ -75,9 +136,13 @@ public:
     void detach(void* root);                                                // 0x71005d4408
     void draw(int mode);                                                    // 0x71001e34a0
     LayoutAnimation* create_animation(const char* name, bool loop);    // 0x71001e3820
+    LayoutAnimation* create_window_animation(const char* name, bool loop); // 0x71001e37c8
+    void* find_animation(const char* name);                                // 0x71005d4fec
 
-    unsigned char pad8[0x10];
+    ListLink bindings;        // +08
     EffectGroup* group;       // +18
+    unsigned char pad20[0x20];
+    void* resources;          // +40
 };
 
 class EffectList {
