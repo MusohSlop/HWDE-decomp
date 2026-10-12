@@ -39,8 +39,11 @@ public:
     virtual EffectGroup* find(const char* name, int depth); // +60
     void add(EffectBase* effect);                                           // 0x71005da17c
 
-    unsigned char pad8[0x50];
-    unsigned char flags58;    // +58: bit 0 visible
+    unsigned char pad8[0x28];
+    float offset30;           // +30
+    float offset34;           // +34
+    unsigned char pad38[0x20];
+    unsigned char flags58;    // +58: bit 0 visible, bit 4 moved
 };
 
 class LightEffectNode {
@@ -56,7 +59,7 @@ public:
     virtual void v40();
     virtual void v48();
     virtual void v50();
-    virtual void v58();
+    virtual void advance(float delta); // +58
     virtual void v60();
     virtual void v68();
     virtual void v70();

@@ -218,12 +218,26 @@
     "_ZN13TextureLoader12make_textureEP14LightAllocator8Color4u8Pv9TrackVec2": "0x71004e27bc",
     "_ZN13EffectManager10unregisterEPvi": "0x71001e2218",
     "_ZN13EffectManager15attach_resourceEP13LightResource": "0x71001e26e0",
-    "_ZN14DemoEffectPool12update_slotsEv": "0x7100261024",
-    "_ZN14DemoEffectPool14update_markersEv": "0x7100261290",
     "got:gDemoEffectPool": "0x7100c2a648",
     "kNumberLayout": "0x71007d5ac9",
     "kNumberPane": "0x710074129f",
-    "kQuestionLayout": "0x71007d5ab6"
+    "kQuestionLayout": "0x71007d5ab6",
+    "_ZN15LayoutAnimation11frame_countEv": "0x71005ce178",
+    "got:gFrameDelta": "0x7100c22a28",
+    "_ZN6Player6activeEi": "0x710026a90c",
+    "_ZN4Game5stateEv": "0x7100204c10",
+    "_Z8get_gamev": "0x7100204728",
+    "_ZN9IconTable3getEi": "0x7100283d74",
+    "_ZN9IconTable5applyEP11LightSourceP8IconRectP9TrackVec2": "0x7100283db0",
+    "got:gIconTable": "0x7100c2a650",
+    "_Z9unit_kindii": "0x7100269cfc",
+    "_Z10unit_frameii": "0x710026c730",
+    "_Z13display_widthv": "0x71003cc930",
+    "_Z14display_heightv": "0x71003cc94c",
+    "_Z13project_pointP9TrackVec2ff": "0x71001e412c",
+    "_Z17unit_has_overrideii": "0x710026c924",
+    "_Z18unit_override_kindii": "0x710026c654",
+    "_Z19unit_override_frameii": "0x710026c884"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -555,7 +569,15 @@
         "_Z24destroy_demo_effect_poolv": "0x7100260bac",
         "_ZN14DemoEffectPool10initializeEv": "0x7100260c0c",
         "_ZN14DemoEffectPool5clearEv": "0x7100260d54",
-        "_ZN14DemoEffectPool6updateEv": "0x7100260fe8"
+        "_ZN14DemoEffectPool6updateEv": "0x7100260fe8",
+        "_ZN14DemoEffectPool12update_slotsEv": "0x7100261024",
+        "_ZN14DemoEffectPool14update_markersEv": "0x7100261290",
+        "_ZN14DemoEffectPool11draw_markerEP15LightEffectNodeiii": "0x7100261720",
+        "_ZN14DemoEffectPool13render_markerEP15LightEffectNodeiii": "0x7100261aa8"
+      },
+      "map": {
+        ".rodata": "0x71007f5130",
+        ".rodata.cst4": "0x710073bae8"
       }
     }
   }

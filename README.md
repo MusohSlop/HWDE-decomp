@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-172 of 194 attempted functions match: 162 inventory functions (22,524 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-two are near misses: twenty-one `m` and one `M`.
+174 of 198 attempted functions match: 164 inventory functions (24,312 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-four are near misses: twenty-three `m` and one `M`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -181,6 +181,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `260c0c` | `DemoEffectPool::initialize` | match |
 | `260d54` | `DemoEffectPool::clear` | match |
 | `260fe8` | `DemoEffectPool::update` | match |
+| `261024` | `DemoEffectPool::update_slots` | match |
+| `261290` | `DemoEffectPool::update_markers` | match |
+| `261720` | `DemoEffectPool::draw_marker` | near miss |
+| `261aa8` | `DemoEffectPool::render_marker` | near miss |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -287,11 +291,15 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `load_tracks` holds each channel count in a local, loads `channels` before the counter store, and reads both overflow counters through one 64-bit view (a union), as the original does.
 - **Light system rendering.** `render` dispatches with a switch (cases 1, 10, 11); an if-chain lets SimplifyCFG hoist the shared `begin()` call. Its last two layers go through an inline `draw_layer` helper. `render_ending` keeps a function-local static table of 33 per-stage offsets (guard `c8b2c0`, data `c8b2c8`) built through a constructor, which is why it needs a guard. The stage offset is copied into a local before `begin()`, and the timer test is `<=`-first.
 - **Light entries (`event/demo_light_entry.cpp`, `260648`–`260740`).** These are textured sprites, 0xd0 bytes each, holding a reference-counted texture. They are a separate unit because the table-set loops call their constructor and destructor. `bind` copies a 64-byte table of four RGBA colors (`7f50f0`, mapped as `.rodata`) and stores the allocator in a global (GOT `c2a640`).
-- **Demo effect pool (`event/demo_effect_pool.cpp`, `26086c`–`260fe8`).** A 0x12f0-byte singleton (GOT `c2a648`) holding four arrays of 28 effect slots (two 0x28-byte kinds, two 0x20-byte kinds), 28 caption nodes, a counter node and a `LightResource`.
+- **Demo effect pool (`event/demo_effect_pool.cpp`, `26086c`–`261aa8`).** A 0x12f0-byte singleton (GOT `c2a648`) holding four arrays of 28 effect slots (two 0x28-byte kinds, two 0x20-byte kinds), 28 caption nodes, a counter node and a `LightResource`.
   - The effect-manager types moved to `include/event/demo_effects.h`. `LightEffect` takes its mode (0x10 in the light system, 0x11 here).
   - Releasing a node unregisters its id (0x4211 slots, 0x420f markers, 0x420d captions) before detaching it. The root pointer is read first.
   - The constructor assigns everything in its body, after the `LightResource` member is constructed. Slots are reset by inline `reset()` helpers. The destructor calls `finalize()`, so `destroy_demo_effect_pool` finalizes twice, as in the original.
   - `initialize` binds each caption by reference in its loop and stores `step` before `initialized`.
+  - `update_slots` is a switch on the pool state. Its four advance loops go through one small template helper; with separate helper functions it shrinks enough to be inlined into `update`, which breaks `update`.
+  - `update_markers` copies each node into a local, then fetches the effect root, then makes the virtual call. That gives the original order: node load, `current()` call, vtable load. The caption loop walks a pointer (incremented before the index) and tests `captions[count_e]` (an out-of-range index, as in the original).
+  - `draw_marker` has to be defined in this unit: the original calls it without setting `x0` (dead-argument elimination). `render_marker` is called with `x0` set even though it never reads it, and it is also called from `298c3c`. So it is an inline member (linkonce, which the optimizer leaves alone), emitted where `update_markers` first references it. `DemoEffectPool::draw` (`26302c`) calls both the same way, so it belongs to this unit too.
+  - `unit_has_override` (`26c924`) returns `unsigned char` (`and #0xff; cbz`).
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred
@@ -299,6 +307,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 `45e160` (1,464 bytes) is a 61-case statistics switch with a jump table at `811194`. It calls at least six game functions whose signatures are unknown (`204728`, `203dfc`, `2028b4`, `200fc0`, `2015a8`, `200294`), so it needs its own effort. The four small virtuals at `45dcd0`–`45dd28` need their class and vtable identified first.
 
 ### Near misses
+
+`261720`: the size matches (226 words). Still different: the mode-9 range test (the original builds `cset`/`orr`/`tbnz` without hoisting `kind - 0xde`), the jump-table cases (the original loads 37.0 before the range check and keeps one block per case; ours hoists the constants), and the icon selection (the original keeps `0x1bb7c` in a callee-saved register and `0xbe` in w20). We tried the block order, `|` vs `||`, nested ifs, initializers, declaration order and five forms of the icon selection.
+
+`261aa8`: 139 of 223 words match exactly. The non-mode-8 tests stay branchy in the original, while ours turns the second test into `cset`/`and`. The mode-8 tests merge into a different boolean network. The draw tail matches.
 
 `26031c`: everything but the two overflow tests matches. Every way of writing `next > 0x100` (also `0x100 < next`, `>= 0x101`, `int`, no temporary, inverted arms) comes out as `ult 0x101`.
 
