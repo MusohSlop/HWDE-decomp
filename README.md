@@ -38,7 +38,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-112 of 125 attempted functions match: 103 inventory functions (9,012 bytes) plus 9 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174` and the cache worker callbacks `25b218`/`25b25c`. The other thirteen are near misses: twelve `m` and one `M`.
+120 of 133 attempted functions match: 111 inventory functions (9,300 bytes) plus 9 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174` and the cache worker callbacks `25b218`/`25b25c`. The other thirteen are near misses: twelve `m` and one `M`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -131,6 +131,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25acdc`, `25ace8` | `ResourceController::initialize`, `finalize` | match |
 | `25acec` | `ResourceController::size` | match |
 | `25adf0` | `ResourceController::read` | `m`: block layout of the cancellation/exit tail; 179 words vs 180 |
+| `25b828`–`25b860` | `TrackKey` constructors, destructor and a trivial body | match |
+| `25bb9c`, `25bba0` | trivial body, `TrackLight::reset` | match |
+| `25bcd0` | `TrackLight::copy` | match |
+| `25bd64` | trivial body | match |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
 | `45dd84`–`45dde8` | `Stopwatch` constructor, `reset`, destructor, `start`, `stop`, `elapsed_ms` | match |
 | `45de40` | `initialize_worker` | match |
@@ -200,6 +204,11 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - The two table lookups put the in-range path first (`if (index <= max) {...} return nullptr;`).
   - Deferred: `2584e0` (476 bytes), a 214-case switch that writes two floats through shared tail blocks.
 - **Mergeable constants.** Clang emits a separate literal per function in `.rodata.cst4`; the linker merges equal values. `check_obj.py` now resolves such relocations to the first equal constant at or after the mapped base.
+- **Demo track items (`event/demo_track_items.cpp`, `25b828`–`25bd64`).** These bodies are decided by how stores merge, which depends on field types.
+  - `TrackKey`'s field at `+0x10` is a `float`: a float zero doesn't merge with the integer -1 index stores beside it.
+  - `TrackLight`'s values are an aggregate assigned at once.
+  - Its color at `+0x28` is a union of a raw 32-bit word (cleared with one store) and four bytes. The bytes are copied through `set(TrackColor)` by value, which gives the original 32-bit load and four byte stores.
+  - Deferred: `25b864` (824 bytes) and the packed-record decoder `25bbe8`, which uses vector registers.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred

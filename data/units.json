@@ -97,7 +97,8 @@
     "got:gDemoEventIndex": "0x7100c2a560",
     "got:gObjectTableA": "0x7100c2a518",
     "got:gObjectTableB": "0x7100c2a530",
-    "_Z9copy_namePcPKc": "0x710003ff70"
+    "_Z9copy_namePcPKc": "0x710003ff70",
+    "got:kTrackDefaultVector": "0x7100c216a8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -302,6 +303,18 @@
         "_ZN9FrameHeap8finalizeEv": "0x7100258900",
         "__cxx_global_array_dtor": "0x7100258944",
         "_GLOBAL__sub_I_demo_overrides.cpp": "0x7100258970"
+      }
+    },
+    "event/demo_track_items.cpp": {
+      "functions": {
+        "_ZN8TrackKeyC2Ev": "0x710025b828",
+        "_ZN8TrackKeyD2Ev": "0x710025b844",
+        "_ZN8TrackKeyC2Em": "0x710025b848",
+        "_Z13track_key_nopv": "0x710025b860",
+        "_Z15track_light_nopv": "0x710025bb9c",
+        "_ZN10TrackLight5resetEv": "0x710025bba0",
+        "_Z14track_item_nopv": "0x710025bd64",
+        "_ZN10TrackLight4copyERKS_": "0x710025bcd0"
       }
     }
   }
