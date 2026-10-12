@@ -3,8 +3,9 @@
 Usage: check_obj.py OBJECT [--map NAME=ADDRESS ...] SYMBOL=ADDRESS [...]
 
 SYMBOL=ADDRESS pairs name functions to compare. --map gives the original
-address of a relocation target (a symbol, or a section name such as .bss for
-section-relative relocations); compared functions are mapped automatically.
+address of a relocation target: a symbol name (including file-static
+variables, which are found through their section-relative relocations) or a
+section name such as .bss. Compared functions are mapped automatically.
 Relocations whose target is mapped are applied and the full word compared;
 unmapped ones are compared with the relocated field masked and reported.
 """
@@ -36,6 +37,11 @@ RELOC_MASKS = {
 LO12_SHIFT = {277: 0, 278: 0, 284: 1, 285: 2, 286: 3, 299: 4}
 
 
+class Symbol:
+    def __init__(self, name, shndx, value, size, is_section):
+        self.name, self.shndx, self.value, self.size, self.is_section = name, shndx, value, size, is_section
+
+
 def read_elf(path):
     data = Path(path).read_bytes()
     shoff, = struct.unpack_from("<Q", data, 0x28)
@@ -53,7 +59,8 @@ def read_elf(path):
             for j in range(s[5] // 24):
                 st_name, info, _, shndx, value, size = struct.unpack_from("<IBBHQQ", data, s[4] + j * 24)
                 is_section = (info & 0xF) == 3
-                symbols.append((names[shndx] if is_section else name(st_name, s[6]), shndx, value, size))
+                symbols.append(Symbol(names[shndx] if is_section else name(st_name, s[6]),
+                                      shndx, value, size, is_section))
     for s in sections:
         if s[1] == 4:  # RELA
             for j in range(s[5] // 24):
@@ -74,6 +81,69 @@ def apply(word, rtype, value, place):
     return None  # GOT relocations need the original GOT slot; not handled yet.
 
 
+def resolve(symbols, sym, addend, mapping):
+    """Original address for a relocation target, or None."""
+    if sym.is_section:
+        for other in symbols:
+            if (not other.is_section and other.shndx == sym.shndx and other.name in mapping
+                    and other.value <= addend < other.value + max(other.size, 1)):
+                return mapping[other.name] + addend - other.value
+    if sym.name in mapping:
+        return mapping[sym.name] + addend
+    return None
+
+
+def compare(obj, pairs, mapping):
+    """Compare (symbol, address) pairs. Returns (results, unresolved).
+
+    Each result is (symbol, address, size, diffs, lines) where diffs is the
+    list of differing word offsets and lines describe them.
+    """
+    mapping = dict(mapping)
+    for sym, addr in pairs:
+        mapping.setdefault(sym, addr)
+    data, sections, symbols, relocs = read_elf(obj)
+    image = IMAGE.read_bytes()
+    md = capstone.Cs(capstone.CS_ARCH_ARM64, capstone.CS_MODE_ARM)
+    by_name = {s.name: s for s in symbols if not s.is_section}
+    results, unresolved = [], set()
+    for name, addr in pairs:
+        if name not in by_name:
+            results.append((name, addr, 0, None, [f"  symbol {name} not found in object"]))
+            continue
+        s = by_name[name]
+        sec = sections[s.shndx]
+        mine = bytearray(data[sec[4] + s.value: sec[4] + s.value + s.size])
+        orig = image[addr: addr + s.size]
+        srel = relocs.get(s.shndx, {})
+        diffs = []
+        for k in range(0, s.size, 4):
+            a, = struct.unpack_from("<I", mine, k)
+            b, = struct.unpack_from("<I", orig, k)
+            mask = 0xFFFFFFFF
+            rel = srel.get(s.value + k)
+            if rel:
+                rtype, symidx, addend = rel
+                target = resolve(symbols, symbols[symidx], addend, mapping)
+                patched = apply(a, rtype, target, addr + k) if target is not None else None
+                if patched is None:
+                    unresolved.add(f"{symbols[symidx].name}+{addend:#x} (type {rtype})")
+                    mask = ~RELOC_MASKS.get(rtype, 0xFFFFFFFF) & 0xFFFFFFFF
+                else:
+                    a = patched
+                    struct.pack_into("<I", mine, k, a)
+            if (a & mask) != (b & mask):
+                diffs.append(k)
+        lines = []
+        for k in diffs:
+            mi = next(md.disasm(bytes(mine[k:k + 4]), BASE + addr + k), None)
+            oi = next(md.disasm(orig[k:k + 4], BASE + addr + k), None)
+            fmt = lambda i: f"{i.mnemonic} {i.op_str}" if i else "?"
+            lines.append(f"  +{k:#05x}  ours: {mine[k:k+4].hex()} {fmt(mi):32} | orig: {orig[k:k+4].hex()} {fmt(oi)}")
+        results.append((name, addr, s.size, diffs, lines))
+    return results, unresolved
+
+
 def main():
     args = sys.argv[1:]
     obj = args.pop(0)
@@ -86,46 +156,15 @@ def main():
         else:
             n, v = a.split("=")
             pairs.append((n, int(v, 16) & 0xFFFFFFFF))
-            mapping.setdefault(n, pairs[-1][1])
-
-    data, sections, symbols, relocs = read_elf(obj)
-    image = IMAGE.read_bytes()
-    md = capstone.Cs(capstone.CS_ARCH_ARM64, capstone.CS_MODE_ARM)
-    by_name = {s[0]: s for s in symbols}
-    failures, unresolved = 0, set()
-    for sym, addr in pairs:
-        _, shndx, value, size = by_name[sym]
-        sec = sections[shndx]
-        mine = bytearray(data[sec[4] + value: sec[4] + value + size])
-        orig = image[addr: addr + size]
-        srel = relocs.get(shndx, {})
-        diffs = []
-        for k in range(0, size, 4):
-            a, = struct.unpack_from("<I", mine, k)
-            b, = struct.unpack_from("<I", orig, k)
-            mask = 0xFFFFFFFF
-            rel = srel.get(value + k)
-            if rel:
-                rtype, symidx, addend = rel
-                target = symbols[symidx][0]
-                patched = apply(a, rtype, mapping[target] + addend, addr + k) if target in mapping else None
-                if patched is None:
-                    unresolved.add(f"{target} (type {rtype})")
-                    mask = ~RELOC_MASKS.get(rtype, 0xFFFFFFFF) & 0xFFFFFFFF
-                else:
-                    a = patched
-                    struct.pack_into("<I", mine, k, a)
-            if (a & mask) != (b & mask):
-                diffs.append(k)
-        status = "MATCH" if not diffs else f"MISMATCH ({len(diffs)} of {size // 4} words)"
-        print(f"{addr:x} {sym} size={size:#x}: {status}")
-        if diffs:
-            failures += 1
-            for k in diffs:
-                mi = next(md.disasm(bytes(mine[k:k + 4]), BASE + addr + k), None)
-                oi = next(md.disasm(orig[k:k + 4], BASE + addr + k), None)
-                fmt = lambda i: f"{i.mnemonic} {i.op_str}" if i else "?"
-                print(f"  +{k:#05x}  ours: {mine[k:k+4].hex()} {fmt(mi):32} | orig: {orig[k:k+4].hex()} {fmt(oi)}")
+    results, unresolved = compare(obj, pairs, mapping)
+    failures = 0
+    for name, addr, size, diffs, lines in results:
+        ok = diffs == []
+        failures += not ok
+        status = "MATCH" if ok else ("MISSING" if diffs is None else f"MISMATCH ({len(diffs)} of {size // 4} words)")
+        print(f"{addr:x} {name} size={size:#x}: {status}")
+        for line in lines:
+            print(line)
     if unresolved:
         print("unresolved relocations (masked):", ", ".join(sorted(unresolved)))
     sys.exit(1 if failures else 0)

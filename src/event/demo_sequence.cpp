@@ -1,49 +1,72 @@
-﻿// Matching candidate for the demo sequence clear at 0x71002170fc.
-// Semantics: docs/demo-sequence.md.
+// Matching candidates for the demo sequence bodies 0x7100217054-0x7100217294.
+// Semantics: docs/demo-sequence.md. Status: matching/README.md.
 
-struct DemoSequenceItem {
-    unsigned char data[0x30];
-};
-static_assert(sizeof(DemoSequenceItem) == 0x30, "item size");
+#include "event/demo_sequence.h"
 
-class DemoOwner {
-public:
-    virtual void v00();
-    virtual void v08();
-    virtual void v10();
-    virtual void v18();
-    virtual void v20();
-    virtual void v28();
-    virtual void v30();
-    virtual void v38();
-    virtual void v40();
-    virtual void v48();
-    virtual void v50();
-    virtual void v58();
-    virtual void free(void* ptr); // +0x60
-};
+void DemoSequence::initialize() {
+    count = 0;
+    owner = nullptr;
+    items = nullptr;
+}
 
-void release_demo_sequence_item(DemoSequenceItem* item);
+void DemoSequence::empty_operation() {}
 
-struct DemoSequence {
-    DemoOwner* owner;         // +00
-    DemoSequenceItem* items;  // +08
-    unsigned int count;       // +10
+DemoSequence::DemoSequence(DemoOwner* owner_) : owner(owner_), items(nullptr), count(0) {}
 
-    void clear();
-};
+DemoSequence::~DemoSequence() {
+    clear();
+}
 
 void DemoSequence::clear() {
     if (items) {
-        if (count != 0) {
-            release_demo_sequence_item(&items[0]);
-            for (unsigned int i = 1; i < count; ++i)
-                release_demo_sequence_item(&items[i]);
-        }
-        if (items)
-            owner->free(items);
+        for (unsigned int i = 0; i < count; ++i)
+            items[i].release();
+        demo_safe_free(owner, items);
         items = nullptr;
         count = 0;
     }
 }
 
+// Near miss: only the registers of n and the scan index are swapped (see README).
+float DemoSequence::sample(unsigned int index, float time) {
+    if (count <= index)
+        return 0.0f;
+    DemoSequenceItem* item = &items[index];
+    unsigned int n = static_cast<unsigned int>(item->header[0]);
+    if (n == 0) {
+        float v = item->header[2];
+        if (item->header[3] > v)
+            v = item->header[3];
+        if (v > item->header[4])
+            v = item->header[4];
+        return v;
+    }
+    float value;
+    unsigned int j = n;
+    for (unsigned int k = 0; k < n; ++k) {
+        if (item->points[k].w[0] > time) {
+            j = k;
+            break;
+        }
+    }
+    if (j == 0) {
+        value = item->points[0].w[1];
+    } else if (j == n) {
+        value = item->points[j - 1].w[4];
+    } else {
+        const DemoPoint& prev = item->points[j - 1];
+        const DemoPoint& cur = item->points[j];
+        float f = (time - prev.w[0]) / (cur.w[0] - prev.w[0]);
+        if (f < 0.0f)
+            f = 0.0f;
+        if (f > 1.0f)
+            f = 1.0f;
+        float g = 1.0f - f;
+        value = cur.w[1] * f + prev.w[1] * g;
+    }
+    if (item->header[3] > value)
+        value = item->header[3];
+    if (value > item->header[4])
+        value = item->header[4];
+    return value;
+}

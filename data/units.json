@@ -1,0 +1,47 @@
+{
+  "compiler": ".tools/clang-3.9.1/bin/clang++.exe",
+  "flags": ["-O3", "-g", "-mcpu=cortex-a57+fp+simd+crypto+crc", "-mno-implicit-float", "-stdlib=libc++",
+            "-fPIC", "-fstandalone-debug", "--target=aarch64-linux-elf", "-std=c++14", "-fno-strict-aliasing",
+            "-fno-exceptions"],
+  "symbols": {
+    "_ZN2nn2os9LockMutexEPNS0_9MutexTypeE": "0x7100600920",
+    "_ZN2nn2os11UnlockMutexEPNS0_9MutexTypeE": "0x7100600930",
+    "_Z16get_shared_statev": "0x71002aae3c",
+    "_Z20shared_state_exitingP11SharedState": "0x71002ac7f0",
+    "_Z17wait_worker_readyP19ResourceQueueWorker": "0x710045e094",
+    "_Z17poll_worker_stateP19ResourceQueueWorker": "0x710045e0d8"
+  },
+  "units": {
+    "event/resource_queue_controls.cpp": {
+      "map": {
+        "_ZL9sRegistry": "0x7100c8af40",
+        "gResourceQueueWorkers": "0x7100c8aef8"
+      },
+      "functions": {
+        "_Z21resource_queue_activev": "0x71002589b4",
+        "_Z21cancel_resource_queuev": "0x71002589d0",
+        "_Z21finish_resource_queuehhh": "0x7100258a68",
+        "_Z29resource_queue_callback_statePv": "0x710025970c",
+        "_Z32resource_queue_callback_in_statePvj": "0x71002597a8",
+        "_Z29resource_queue_callback_countv": "0x710025984c"
+      }
+    },
+    "event/demo_sequence.cpp": {
+      "functions": {
+        "_ZN12DemoSequence10initializeEv": "0x7100217054",
+        "_ZN12DemoSequence15empty_operationEv": "0x7100217060",
+        "_ZN12DemoSequenceC2EP9DemoOwner": "0x7100217064",
+        "_ZN12DemoSequenceD2Ev": "0x7100217070",
+        "_ZN12DemoSequence5clearEv": "0x71002170fc",
+        "_ZN12DemoSequence6sampleEjf": "0x7100217294"
+      }
+    },
+    "event/demo_sequence_item.cpp": {
+      "functions": {
+        "_ZN16DemoSequenceItem4loadEP9DemoOwnerPK22DemoSequenceItemSource": "0x71002173c4",
+        "_ZN16DemoSequenceItem7releaseEv": "0x71002174d0"
+      }
+    }
+  }
+}
+
