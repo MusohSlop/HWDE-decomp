@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-185 of 210 attempted functions match: 175 inventory functions (28,336 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-five are near misses, all `m`.
+185 of 212 attempted functions match: 175 inventory functions (28,336 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-seven are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -197,6 +197,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `263d58` | `DemoPanelSystem::initialize` | near miss |
 | `2648dc` | `DemoPanelSystem::update` | match |
 | `2649cc` | `DemoPanelSystem::update_state` | near miss |
+| `264c28` | `DemoPanelSystem::update_icons` | near miss |
+| `26514c` | `DemoPanelSystem::update_cells` | near miss |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -321,14 +323,22 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `initialize` (`263d58`) creates the window, attribute, number and (in modes 5 and 6) wall layouts. It looks up the arrow, lock and dummy panes by name tables, binds the attribute and number animations, and adds five 0x180-byte text panes. An animation binding (0x58 bytes, vtable GOT `c2a698`) is spliced into the node's binding ring with an inline `ListLink::link_before`. Its source (`5cfac8`) is a 0x20-byte local whose block pointer is copied into a local before the calls. `LayoutAnimation` moved to `include/event/demo_effects.h`, and `LightEffectNode` gained its binding ring (`+08`) and resources (`+40`).
   - The wall record at `+0x26b68` is plain members, so `initialize` addresses each field separately. The constructor clears it through a cast to a three-field record with an inline `reset()`, which keeps `create`'s store order.
   - `update` (`2648dc`) advances and updates the window node, then calls three per-group updates (`264c28`, `26514c`, `2653dc`). `update_state` (`2649cc`) finds the player's entry among 128 and reads the unit's size and value from the unit database (`20ec80`/`20eeb8`).
+  - `update_icons` (`264c28`) hides the four item panes. If the player has the unit's attribute unlocked, it derives character, weapon and grade icons from the unit record (`+04`, `+24`, `+06`) and places them on the two front panes, using a centred, larger layout when only one icon shows. It then sets the rank icon (`0xc0`-`0xc2`) and the question mark. Icons go through `gIconTable` and `apply_icon` (`1f7fe4`).
+  - `update_cells` (`26514c`) drives the two attribute icons. They are {pane, animation} pairs at `+0x26b20`, and an `AnimBinding` is a `LayoutAnimation` (`frame_count`, `set_frame` at `+c0`). Each pair's frame is `size[i]` (`+0x0c`); an icon shows only while that frame is within the animation and the attribute is unlocked.
   - `finalize` releases two nodes with id 0x420d (unregister, then the children list) and two plain nodes (the nodes list, no unregister). `+0x26b08` and `+0x26b68` are {pointer, pointer, int} records, reset by an inline helper.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred
 
+`2653dc` (4,964 bytes) is the panel system's large draw routine. It calls about twenty functions that aren't identified yet (`217d64`, `1e709c`, `1e73c0`, `1e41d8`, `2183c8`, ...) and needs its own round.
+
 `45e160` (1,464 bytes) is a 61-case statistics switch with a jump table at `811194`. It calls at least six game functions whose signatures are unknown (`204728`, `203dfc`, `2028b4`, `200fc0`, `2015a8`, `200294`), so it needs its own effort. The four small virtuals at `45dcd0`–`45dd28` need their class and vtable identified first.
 
 ### Near misses
+
+`26514c`: the original keeps the two-pass loop rolled; ours is fully unrolled unless `#pragma clang loop unroll(disable)` is used. That pragma is in the source as a marked workaround, and with it the remaining differences are register allocation (the player base recomputed per pass, two spilled addresses).
+
+`264c28`: the icon arithmetic and layout logic are in place. Still different: the scale is selected as integer bits in the original (`csel w`) but as a float here (`fcsel s`), the grade icon's range branch has the other polarity, and the rank tests compile to a different compare chain.
 
 `263d58`: the structure, frame and calls match. Still different is register allocation: the original materializes the 0.66 scale constant early (in w28) and keeps `&panes[0]` in a callee-saved register.
 

@@ -24,15 +24,16 @@ struct ListLink {
 // Layout animation (frame state at +20, playback speed at +3c).
 class LayoutAnimation {
 public:
-    virtual void v00();
-    virtual void v08();
+    static void* operator new(unsigned long size) noexcept;                 // 0x71005d4380
+    LayoutAnimation();                                                      // 0x71005d026c
+    virtual ~LayoutAnimation();
     virtual void v10();
     virtual void v18();
     virtual void set_active(bool active); // +20
     virtual void v28();
     virtual void v30();
     virtual void v38();
-    virtual void v40();
+    virtual void bind(void* root, void* resources, void* block); // +40
     virtual void v48();
     virtual void v50();
     virtual void v58();
@@ -48,15 +49,17 @@ public:
     virtual void va8();
     virtual void set_rate(float rate); // +b0
     virtual void vb8();
-    virtual void vc0();
+    virtual void set_frame(float frame); // +c0
     virtual void vc8();
     virtual void rewind(); // +d0
     unsigned short frame_count();                                           // 0x71005ce178
 
-    unsigned char pad8[0x18];
+    ListLink link;            // +08: binding ring of the owning node
+    unsigned char pad18[8];
     float frame;              // +20
     unsigned char pad24[0x18];
     float speed;              // +3c
+    unsigned char pad40[8];
 };
 
 class EffectBase {

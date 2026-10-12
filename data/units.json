@@ -251,8 +251,6 @@
     "_ZN13EffectManager5flushEv": "0x71001e26e4",
     "got:_ZTV12LayoutHandle": "0x7100c22f00",
     "_ZN13TextureLoader12make_textureEP14LightAllocatorjPv9TrackVec2": "0x71004e27bc",
-    "_ZN15DemoPanelSystem12update_iconsEv": "0x7100264c28",
-    "_ZN15DemoPanelSystem12update_cellsEv": "0x710026514c",
     "_ZN15DemoPanelSystem12update_marksEv": "0x71002653dc",
     "_ZN11PlayerEntry5validEv": "0x7100202164",
     "_ZN4Unit5widthEv": "0x710020da0c",
@@ -260,9 +258,7 @@
     "_ZN4Unit8set_flagEib": "0x710020dc10",
     "_ZN12UnitDatabase4unitEi": "0x710020eeb8",
     "_Z17get_unit_databasev": "0x710020ec80",
-    "_ZN15AnimBindingBasenwEm": "0x71005d4380",
     "_ZN8PaneBasenwEm": "0x71005d4380",
-    "_ZN15AnimBindingBaseC2Ev": "0x71005d026c",
     "_ZN8PaneBaseC2Ev": "0x71005dc664",
     "_ZN10AnimSourceC1EPv": "0x71005cfac8",
     "_ZN11EffectGroup3addEPS_": "0x71005da17c",
@@ -289,7 +285,12 @@
     "got:kLockPanes": "0x7100c2a688",
     "got:kDummyPanes": "0x7100c2a690",
     "got:kWindowAnims": "0x7100c2a6a0",
-    "got:kArrowLoops": "0x7100c2a6a8"
+    "got:kArrowLoops": "0x7100c2a6a8",
+    "_ZN15LayoutAnimationnwEm": "0x71005d4380",
+    "_ZN15LayoutAnimationC2Ev": "0x71005d026c",
+    "_Z16unit_info_hiddenv": "0x710026b374",
+    "kQuestionMark": "0x71007d5c98",
+    "_Z10apply_iconP11EffectGroupP12LayoutHandleP9IconTablePK8IconRect": "0x71001f7fe4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -645,7 +646,13 @@
         "_Z25destroy_demo_panel_systemv": "0x7100263cfc",
         "_ZN15DemoPanelSystem6updateEv": "0x71002648dc",
         "_ZN15DemoPanelSystem12update_stateEv": "0x71002649cc",
-        "_ZN15DemoPanelSystem10initializeEv": "0x7100263d58"
+        "_ZN15DemoPanelSystem10initializeEv": "0x7100263d58",
+        "_ZN15DemoPanelSystem12update_cellsEv": "0x710026514c",
+        "_ZN15DemoPanelSystem12update_iconsEv": "0x7100264c28"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073bae8",
+        ".rodata.cst8": "0x710073ced4"
       }
     }
   }

@@ -64,25 +64,8 @@ static_assert(sizeof(PanelTargets) == 0x26a68, "targets size");
 
 PanelTargets::PanelTargets() {}
 
-// Animation binding attached to a node's binding ring (0x58 bytes).
-class AnimBindingBase {
-public:
-    static void* operator new(unsigned long size) noexcept;                 // 0x71005d4380
-    AnimBindingBase();                                                      // 0x71005d026c
-    virtual ~AnimBindingBase();
-    virtual void v10();
-    virtual void v18();
-    virtual void v20();
-    virtual void v28();
-    virtual void v30();
-    virtual void v38();
-    virtual void bind(void* root, void* resources, void* block);  // +40
-
-    ListLink link;            // +08
-    unsigned char pad18[0x30];
-};
-
-class AnimBinding : public AnimBindingBase {
+// Animation bound to a node's binding ring (0x58 bytes, vtable GOT 0x7100c2a698).
+class AnimBinding : public LayoutAnimation {
 public:
     AnimBinding() : value48(nullptr), value50(0) {}
     ~AnimBinding();
@@ -92,6 +75,11 @@ public:
 };
 static_assert(sizeof(AnimBinding) == 0x58, "binding size");
 
+// Attribute icon: a duplicated pane and its bound animation.
+struct AttributeSlot {
+    EffectGroup* pane;        // +00
+    LayoutAnimation* anim;    // +08
+};
 struct AnimSource {
     void* data;               // +00
     void* block;              // +08
@@ -192,8 +180,7 @@ public:
     unsigned char flag9;              // +09
     unsigned char flag_a;             // +0a
     unsigned char padb;
-    int value0c;                      // +0c
-    int value10;                      // +10
+    int size[2];                      // +0c
     int value14;                      // +14
     unsigned char flag18;             // +18
     unsigned char pad19[3];
@@ -206,10 +193,7 @@ public:
     LayoutAnimation* window_anim;     // +26ad8
     PanelPane* panes[5];              // +26ae0
     PanelLink link26b08;              // +26b08
-    EffectGroup* value26b20;          // +26b20
-    AnimBinding* value26b28;          // +26b28
-    EffectGroup* value26b30;          // +26b30
-    AnimBinding* value26b38;          // +26b38
+    AttributeSlot attributes[2];      // +26b20
     LightEffectNode* node26b40;       // +26b40
     LightEffectNode* node26b48;       // +26b48
     LayoutAnimation* value26b50;      // +26b50
@@ -252,10 +236,12 @@ class Player {
 public:
     unsigned char active(int id);                                           // 0x710026a90c
 
-    unsigned int id;          // +00
-    unsigned char pad4[0xb64];
+    int id;                   // +00
+    unsigned char pad4[0x8e4];
+    int ranks[0xa0];          // +8e8: by unit
+
     PlayerEntry entries[128]; // +b68
-    unsigned char pad2968[0x164];
+    unsigned char unlocked[0x164]; // +2968: by attribute
     PlayerStage stage;        // +2acc
     unsigned char pad2ace[0x16a];
 };
@@ -272,7 +258,14 @@ Game* get_game();                                                           // 0
 
 struct UnitRecord {
     short unit;               // +00
-    unsigned char pad2[0x1de];
+    unsigned char pad2[2];
+    unsigned short character; // +04
+    unsigned short grade;     // +06
+    unsigned char pad8[0x16];
+    short attribute;          // +1e
+    unsigned char pad20[4];
+    unsigned short weapon;    // +24
+    unsigned char pad26[0x1ba];
 };
 
 class Unit {
@@ -293,6 +286,20 @@ public:
     UnitRecord records[1];    // +db608
 };
 UnitDatabase* get_unit_database();                                          // 0x710020ec80
+unsigned char unit_info_hidden();                                           // 0x710026b374
+
+struct IconRect {
+    unsigned short v[8];
+};
+
+class IconTable {
+public:
+    const IconRect* get(int id);                                            // 0x7100283d74
+};
+// Reached through the GOT slot at 0x7100c2a650.
+extern IconTable* gIconTable;
+
+extern const char kQuestionMark[] __attribute__((visibility("hidden")));         // 0x71007d5c98
 // Frame delta, reached through the GOT slot at 0x7100c22a28.
 extern float gFrameDelta;
 
@@ -337,8 +344,8 @@ inline DemoPanelSystem::DemoPanelSystem() {
     link26b08.reset();
     flag8 = 0;
     flag9 = 0;
-    value0c = 0;
-    value10 = 0;
+    size[0] = 0;
+    size[1] = 0;
     value14 = -1;
     value1c = -1;
     flag18 = 0;
@@ -349,10 +356,10 @@ inline DemoPanelSystem::DemoPanelSystem() {
     value26b50 = nullptr;
     node26b48 = nullptr;
     node26b40 = nullptr;
-    value26b38 = nullptr;
-    value26b30 = nullptr;
-    value26b28 = nullptr;
-    value26b20 = nullptr;
+    attributes[1].anim = nullptr;
+    attributes[1].pane = nullptr;
+    attributes[0].anim = nullptr;
+    attributes[0].pane = nullptr;
 }
 
 void DemoPanelSystem::finalize() {
@@ -434,14 +441,14 @@ void DemoPanelSystem::initialize() {
     gEffectManager->flush();
     void* root = gResourceLoader->layout->root;
 
-    value26b20 = node26b40->group->find(kAttributeIcon, 1)->duplicate(gResourceLoader->layout->root);
-    targets.attribute_pos->add(value26b20);
-    value26b28 = bind_animation(node26b40, root, kAttributeAnim);
-    value26b20->bind_animation(value26b28, true, true);
-    value26b30 = node26b40->group->find(kAttributeIcon, 1)->duplicate(gResourceLoader->layout->root);
-    targets.attribute_pos->add(value26b30);
-    value26b38 = bind_animation(node26b40, root, kAttributeAnim);
-    value26b30->bind_animation(value26b38, true, true);
+    attributes[0].pane = node26b40->group->find(kAttributeIcon, 1)->duplicate(gResourceLoader->layout->root);
+    targets.attribute_pos->add(attributes[0].pane);
+    attributes[0].anim = bind_animation(node26b40, root, kAttributeAnim);
+    attributes[0].pane->bind_animation(attributes[0].anim, true, true);
+    attributes[1].pane = node26b40->group->find(kAttributeIcon, 1)->duplicate(gResourceLoader->layout->root);
+    targets.attribute_pos->add(attributes[1].pane);
+    attributes[1].anim = bind_animation(node26b40, root, kAttributeAnim);
+    attributes[1].pane->bind_animation(attributes[1].anim, true, true);
     show_group(node26b40->group->find(kAttributeIcon, 1));
     gEffectManager->finish(0x41e5);
     EffectGroup* pos = targets.attribute_pos;
@@ -528,8 +535,8 @@ void DemoPanelSystem::update_state() {
     }
     flag9 = player->active(id);
     if (!flag9) {
-        value0c = -1;
-        value10 = -1;
+        size[0] = -1;
+        size[1] = -1;
     } else {
         unsigned char special = false;
         if (get_game()->state()->mode == 8) {
@@ -544,14 +551,194 @@ void DemoPanelSystem::update_state() {
         Unit* target = get_unit_database()->unit(unit);
         if (special) {
             target->set_flag(0x11, true);
-            value0c = get_unit_database()->unit(unit)->width();
-            value10 = get_unit_database()->unit(unit)->height();
+            size[0] = get_unit_database()->unit(unit)->width();
+            size[1] = get_unit_database()->unit(unit)->height();
             target->set_flag(0x11, false);
         } else {
-            value0c = target->width();
-            value10 = get_unit_database()->unit(unit)->height();
+            size[0] = target->width();
+            size[1] = get_unit_database()->unit(unit)->height();
         }
     }
     int last = value1c;
     value14 = get_unit_database()->unit(last)->value0c;
+}
+
+static inline void move_x(EffectGroup* group, float x) {
+    group->offset30 = x;
+    group->flags58 |= 0x10;
+}
+
+void DemoPanelSystem::update_cells() {
+    if (!attributes[0].pane && !attributes[0].anim)
+        return;
+    UnitDatabase* database = get_unit_database();
+    Game* game = get_game();
+    unsigned int mode = get_game()->state()->mode;
+    short* attribute = &database->records[game->players[mode].id].attribute;
+    if (node26b40) {
+        // Workaround: the original keeps this two-pass loop rolled.
+        #pragma clang loop unroll(disable)
+        for (int i = 0; i < 2; ++i) {
+            AttributeSlot& slot = attributes[i];
+            if (game->players[mode].unlocked[*attribute]) {
+                int frame = size[i];
+                if (frame >= 0 && frame <= slot.anim->frame_count()) {
+                    if (slot.anim)
+                        slot.anim->set_frame(size[i]);
+                    if (slot.anim)
+                        slot.anim->set_active(true);
+                    slot.pane->flags58 |= 1;
+                    continue;
+                }
+            }
+            if (slot.anim)
+                slot.anim->set_active(false);
+            slot.pane->flags58 &= ~1;
+        }
+        node26b40->advance(gFrameDelta);
+        LightEffectNode* target = node26b40;
+        void* root = gEffectManager->current();
+        target->update(root, 0);
+    } else {
+        if (!game->players[mode].unlocked[*attribute])
+            attributes[0].pane->flags58 &= ~1;
+        if (!game->players[mode].unlocked[*attribute])
+            attributes[1].pane->flags58 &= ~1;
+    }
+    if (size[1] != -1) {
+        move_x(attributes[0].pane, -48.0f);
+        move_x(attributes[1].pane, 12.0f);
+    } else {
+        move_x(attributes[0].pane, 0.0f);
+    }
+}
+
+void apply_icon(EffectGroup* pane, LayoutHandle* handle, IconTable* table, const IconRect* rect); // 0x71001f7fe4
+
+static inline void show_icon(PanelItem& item, int icon) {
+    const IconRect* rect = gIconTable->get(icon);
+    apply_icon(item.object, &item.handle, gIconTable, rect);
+    item.object->flags58 |= 1;
+}
+
+static inline void set_icon(PanelItem& item, int icon) {
+    if (static_cast<unsigned int>(icon) >= 0x106)
+        item.object->flags58 &= ~1;
+    else
+        show_icon(item, icon);
+}
+
+// Icon of a character or weapon id (0-30); ids 19 and 20 share slots with their neighbours.
+static inline int unit_icon(unsigned short id) {
+    if (id <= 0x1e) {
+        short value = id;
+        int slot = value < 0x13 ? value : value - 2;
+        if (static_cast<unsigned int>(slot) > 0xb)
+            ++slot;
+        return slot + 0x64;
+    }
+    return -1;
+}
+
+static inline int grade_icon(unsigned short grade) {
+    unsigned short slot = grade - (static_cast<short>(grade) > 0x13);
+    if (static_cast<short>(slot) > 0x1d)
+        slot += 0xfffe;
+    int icon = static_cast<short>(slot) + 0x82;
+    return slot < 0x40 ? icon : -1;
+}
+
+static inline void place_icon(EffectGroup* pane, float x) {
+    pane->offset30 = x;
+    pane->offset34 = -2.0f;
+    pane->offset38 = 0.0f;
+    pane->flags58 |= 0x10;
+}
+
+static inline void scale_icon(EffectGroup* pane, float scale) {
+    pane->scale48 = scale;
+    pane->scale4c = scale;
+    pane->flags58 |= 0x10;
+}
+
+static const float kSingleLeft[2] = {44.0f, 58.0f};
+static const float kSingleRight[2] = {96.0f, 110.0f};
+
+void DemoPanelSystem::update_icons() {
+    UnitDatabase* database = get_unit_database();
+    Game* game = get_game();
+    unsigned int mode = get_game()->state()->mode;
+    int id = game->players[mode].id;
+    for (int i = 0; i < 4; ++i)
+        targets.items[i].object->flags58 &= ~1;
+    node26b48->group->flags58 &= ~1;
+    if (game->players[mode].unlocked[database->records[id].attribute] && !flag18) {
+        unsigned short character = get_unit_database()->records[static_cast<unsigned int>(id)].character;
+        unsigned short weapon = get_unit_database()->records[static_cast<unsigned int>(id)].weapon;
+        unsigned short grade = get_unit_database()->records[static_cast<unsigned int>(id)].grade;
+        if (unit_info_hidden()) {
+            character = 0xffff;
+            weapon = 0xffff;
+            grade = 0xffff;
+        }
+        int first;
+        if (get_game()->state()->mode == 8 && game->players[mode].stage.step == 5) {
+            first = -1;
+            weapon = 0xffff;
+            grade = 0xffff;
+        } else {
+            first = unit_icon(character);
+        }
+        float scale = 0.8f;
+        int second = unit_icon(weapon);
+        int third = grade_icon(grade);
+        bool paired = false;
+        bool placed = false;
+        if (first != -1) {
+            set_icon(targets.items[0], first);
+            if (second != -1) {
+                set_icon(targets.items[1], second);
+                placed = true;
+            }
+        } else {
+            paired = second != -1;
+        }
+        float left = 44.0f;
+        float right = 96.0f;
+        if (!placed) {
+            bool single = third == -1;
+            if (!single) {
+                if (static_cast<unsigned int>(third) <= 0x105)
+                    show_icon(targets.items[1], third);
+                else
+                    targets.items[1].object->flags58 &= ~1;
+            }
+            if (!paired) {
+                if (single)
+                    scale = 1.0f;
+                left = kSingleLeft[single];
+                right = kSingleRight[single];
+            }
+        }
+        place_icon(targets.items[0].object, left);
+        scale_icon(targets.items[0].object, scale);
+        place_icon(targets.items[1].object, right);
+        scale_icon(targets.items[1].object, scale);
+    }
+    if (!flag18) {
+        int rank = game->players[mode].ranks[id];
+        if (rank == 1)
+            show_icon(targets.items[2], 0xc2);
+        else if (rank == 2)
+            show_icon(targets.items[2], 0xc1);
+        else if (rank == 3)
+            show_icon(targets.items[2], 0xc0);
+    }
+    if (flag9 && value14 >= 1)
+        show_icon(targets.items[3], 0xc7);
+    EffectGroup* question = targets.node->group->find(kQuestionMark, 1);
+    if (!flag9)
+        question->flags58 |= 1;
+    else
+        question->flags58 &= ~1;
 }
