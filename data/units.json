@@ -290,7 +290,17 @@
     "_ZN15LayoutAnimationC2Ev": "0x71005d026c",
     "_Z16unit_info_hiddenv": "0x710026b374",
     "kQuestionMark": "0x71007d5c98",
-    "_Z10apply_iconP11EffectGroupP12LayoutHandleP9IconTablePK8IconRect": "0x71001f7fe4"
+    "_Z10apply_iconP11EffectGroupP12LayoutHandleP9IconTablePK8IconRect": "0x71001f7fe4",
+    "kWallLeft": "0x71007d5cb5",
+    "kWallRight": "0x71007d5cbc",
+    "kWallUp": "0x71007d5cc3",
+    "kWallDown": "0x71007d5cca",
+    "_Z14wall_directioni": "0x710026a100",
+    "_Z10play_soundiPv": "0x71003fef50",
+    "got:gAdvCaption": "0x7100c2a6b0",
+    "kFontRight": "0x7100740072",
+    "kFontLeft": "0x7100740079",
+    "kAdvCaptionLayout": "0x710074000f"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -648,11 +658,29 @@
         "_ZN15DemoPanelSystem12update_stateEv": "0x71002649cc",
         "_ZN15DemoPanelSystem10initializeEv": "0x7100263d58",
         "_ZN15DemoPanelSystem12update_cellsEv": "0x710026514c",
-        "_ZN15DemoPanelSystem12update_iconsEv": "0x7100264c28"
+        "_ZN15DemoPanelSystem12update_iconsEv": "0x7100264c28",
+        "_ZN15DemoPanelSystem4drawEv": "0x7100266740",
+        "_ZN15DemoPanelSystem9draw_wallEv": "0x7100266810",
+        "_ZN15DemoPanelSystem11open_windowEv": "0x71002669c0"
       },
       "map": {
         ".rodata.cst4": "0x710073bae8",
-        ".rodata.cst8": "0x710073ced4"
+        ".rodata.cst8": "0x710073ced4",
+        ".rodata": "0x71007f5150"
+      }
+    },
+    "event/adv_caption.cpp": {
+      "functions": {
+        "_ZN10AdvCaption8finalizeEv": "0x7100266a20",
+        "_Z18create_adv_captionv": "0x7100266aac",
+        "_Z19destroy_adv_captionv": "0x7100266b98",
+        "_ZN10AdvCaption10initializeEv": "0x7100266cd8",
+        "_ZN10AdvCaption11set_value0cEi": "0x7100266ec0",
+        "_ZN10AdvCaption11get_value0cEv": "0x7100266ed4",
+        "_ZN10AdvCaption11set_value10Ei": "0x7100266edc",
+        "_ZN10AdvCaption11get_value10Ev": "0x7100266ef0",
+        "_ZN10AdvCaption13clear_value10Ev": "0x7100266ef8",
+        "_ZN10AdvCaption6updateEv": "0x7100266f04"
       }
     }
   }

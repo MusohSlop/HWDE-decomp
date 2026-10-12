@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-185 of 212 attempted functions match: 175 inventory functions (28,336 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-seven are near misses, all `m`.
+196 of 225 attempted functions match: 186 inventory functions (29,988 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-nine are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -199,6 +199,15 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `2649cc` | `DemoPanelSystem::update_state` | near miss |
 | `264c28` | `DemoPanelSystem::update_icons` | near miss |
 | `26514c` | `DemoPanelSystem::update_cells` | near miss |
+| `266740` | `DemoPanelSystem::draw` | match |
+| `266810` | `DemoPanelSystem::draw_wall` | match |
+| `2669c0` | `DemoPanelSystem::open_window` | near miss |
+| `266a20` | `AdvCaption::finalize` | match |
+| `266aac` | `create_adv_caption` | match |
+| `266b98` | `destroy_adv_caption` | near miss |
+| `266cd8` | `AdvCaption::initialize` | match |
+| `266ec0`-`266ef8` | `AdvCaption` value accessors (5) | match |
+| `266f04` | `AdvCaption::update` | match |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -325,7 +334,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `update` (`2648dc`) advances and updates the window node, then calls three per-group updates (`264c28`, `26514c`, `2653dc`). `update_state` (`2649cc`) finds the player's entry among 128 and reads the unit's size and value from the unit database (`20ec80`/`20eeb8`).
   - `update_icons` (`264c28`) hides the four item panes. If the player has the unit's attribute unlocked, it derives character, weapon and grade icons from the unit record (`+04`, `+24`, `+06`) and places them on the two front panes, using a centred, larger layout when only one icon shows. It then sets the rank icon (`0xc0`-`0xc2`) and the question mark. Icons go through `gIconTable` and `apply_icon` (`1f7fe4`).
   - `update_cells` (`26514c`) drives the two attribute icons. They are {pane, animation} pairs at `+0x26b20`, and an `AnimBinding` is a `LayoutAnimation` (`frame_count`, `set_frame` at `+c0`). Each pair's frame is `size[i]` (`+0x0c`); an icon shows only while that frame is within the animation and the attribute is unlocked.
+  - `draw` (`266740`) places the number pane with `value14 > 9 ? 245.0f : 273.0f`. A select of two float constants compiles to a load from a two-entry constant-pool pair indexed by the condition, which is what the original shows (no table in the source). `draw_wall` shows one of `wall_u`/`wall_l`/`wall_r`/`wall_d` by `wall_direction` (`26a100`, a jump table at `7f5150`). `open_window` restarts the window animation and plays sound 0x17ec.
+  - The pane classes moved to `include/event/layout_panes.h`.
   - `finalize` releases two nodes with id 0x420d (unregister, then the children list) and two plain nodes (the nodes list, no unregister). `+0x26b08` and `+0x26b68` are {pointer, pointer, int} records, reset by an inline helper.
+- **Adventure caption (`event/adv_caption.cpp`, `266a20`–`266f04`).** A 0x8a80-byte singleton (GOT `c2a6b0`) for `adv_caption.bflyt`: two arrays of 128 `TrackLightTarget`s, two text panes (`font_r`, `font_l`), a node and two `LightResource`s. `initialize` calls both size functions before storing their results. The symbol names in `units.json` are global, so the layout name is `kAdvCaptionLayout`: reusing `kCaptionLayout` silently remapped the light system's literal and broke its `initialize`.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred
@@ -336,7 +348,11 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ### Near misses
 
-`26514c`: the original keeps the two-pass loop rolled; ours is fully unrolled unless `#pragma clang loop unroll(disable)` is used. That pragma is in the source as a marked workaround, and with it the remaining differences are register allocation (the player base recomputed per pass, two spilled addresses).
+`2669c0`: as in `262e78`, the original keeps the null check on the window animation before the unconditional `set_rate`, and we drop it. A reference helper made no difference.
+
+`266b98`: one instruction short. Registers around the two inlined `finalize` copies and the `LightResource` destructors differ.
+
+`26514c`: the original keeps the two-pass loop rolled; ours is fully unrolled. Disabling unrolling with a pragma (tried, not kept) leaves only register-allocation differences, so the loop shape is the main gap. What keeps the original's loop rolled is not known yet.
 
 `264c28`: the icon arithmetic and layout logic are in place. Still different: the scale is selected as integer bits in the original (`csel w`) but as a float here (`fcsel s`), the grade icon's range branch has the other polarity, and the rank tests compile to a different compare chain.
 

@@ -3,6 +3,7 @@
 
 #include "event/demo_effects.h"
 #include "event/demo_light_system.h"
+#include "event/layout_panes.h"
 
 inline void* operator new(unsigned long, void* where) noexcept { return where; }
 
@@ -88,31 +89,6 @@ struct AnimSource {
     explicit AnimSource(void* resource);                                    // 0x71005cfac8
 };
 
-class PaneBase {
-public:
-    static void* operator new(unsigned long size) noexcept;                 // 0x71005d4380
-    PaneBase();                                                             // 0x71005dc664
-    virtual ~PaneBase();
-
-    unsigned char pad8[0x53];
-    unsigned char : 2;
-    unsigned char align : 2;  // +5b bits 2-3
-    unsigned char : 4;
-    unsigned char pad5c[0x104];
-};
-
-// Text pane (0x180 bytes); vtable reached through the GOT slot at 0x7100c22f68.
-class PanelPane : public PaneBase {
-public:
-    PanelPane() : value160(nullptr), value168(nullptr), value170(nullptr) {}
-    ~PanelPane();
-
-    void* value160;           // +160
-    void* value168;           // +168
-    void* value170;           // +170
-    unsigned char pad178[8];
-};
-static_assert(sizeof(PanelPane) == 0x180, "pane size");
 
 // Layout, pane and animation names, merged with other literals by the linker.
 extern const char kInfoWindowLayout[] __attribute__((visibility("hidden")));    // 0x71007d5bf5
@@ -174,6 +150,9 @@ public:
     void update_icons();                                                    // 0x7100264c28
     void update_cells();                                                    // 0x710026514c
     void update_marks();                                                    // 0x71002653dc
+    void draw();                                                            // 0x7100266740
+    void draw_wall();                                                       // 0x7100266810
+    void open_window();                                                     // 0x71002669c0
 
     void* value0;                     // +00
     unsigned char flag8;              // +08
@@ -298,6 +277,13 @@ public:
 };
 // Reached through the GOT slot at 0x7100c2a650.
 extern IconTable* gIconTable;
+
+extern const char kWallLeft[] __attribute__((visibility("hidden")));            // 0x71007d5cb5
+extern const char kWallRight[] __attribute__((visibility("hidden")));           // 0x71007d5cbc
+extern const char kWallUp[] __attribute__((visibility("hidden")));              // 0x71007d5cc3
+extern const char kWallDown[] __attribute__((visibility("hidden")));            // 0x71007d5cca
+int wall_direction(int player);                                             // 0x710026a100
+void play_sound(int id, void* source);                                      // 0x71003fef50
 
 extern const char kQuestionMark[] __attribute__((visibility("hidden")));         // 0x71007d5c98
 // Frame delta, reached through the GOT slot at 0x7100c22a28.
@@ -576,8 +562,6 @@ void DemoPanelSystem::update_cells() {
     unsigned int mode = get_game()->state()->mode;
     short* attribute = &database->records[game->players[mode].id].attribute;
     if (node26b40) {
-        // Workaround: the original keeps this two-pass loop rolled.
-        #pragma clang loop unroll(disable)
         for (int i = 0; i < 2; ++i) {
             AttributeSlot& slot = attributes[i];
             if (game->players[mode].unlocked[*attribute]) {
@@ -661,9 +645,6 @@ static inline void scale_icon(EffectGroup* pane, float scale) {
     pane->flags58 |= 0x10;
 }
 
-static const float kSingleLeft[2] = {44.0f, 58.0f};
-static const float kSingleRight[2] = {96.0f, 110.0f};
-
 void DemoPanelSystem::update_icons() {
     UnitDatabase* database = get_unit_database();
     Game* game = get_game();
@@ -716,8 +697,8 @@ void DemoPanelSystem::update_icons() {
             if (!paired) {
                 if (single)
                     scale = 1.0f;
-                left = kSingleLeft[single];
-                right = kSingleRight[single];
+                left = single ? 58.0f : 44.0f;
+                right = single ? 110.0f : 96.0f;
             }
         }
         place_icon(targets.items[0].object, left);
@@ -741,4 +722,56 @@ void DemoPanelSystem::update_icons() {
         question->flags58 |= 1;
     else
         question->flags58 &= ~1;
+}
+
+void DemoPanelSystem::draw() {
+    if (!flag8)
+        return;
+    if (wall_node)
+        draw_wall();
+    EffectGroup* number = targets.items[3].object;
+    number->offset30 = value14 > 9 ? 245.0f : 273.0f;
+    number->flags58 |= 0x10;
+    EffectGroup* pos = targets.node->group->find(kNumberPos, 1);
+    pos->offset30 = 335.0f;
+    pos->flags58 |= 0x10;
+    if (targets.node)
+        targets.node->draw(0);
+    if (node26b48)
+        node26b48->draw(0);
+}
+
+void DemoPanelSystem::draw_wall() {
+    Game* game = get_game();
+    int direction = wall_direction(game->players[get_game()->state()->mode].id);
+    show_group(wall_node->group->find(kWallLeft, 1));
+    show_group(wall_node->group->find(kWallRight, 1));
+    show_group(wall_node->group->find(kWallUp, 1));
+    show_group(wall_node->group->find(kWallDown, 1));
+    switch (direction) {
+    case 0:
+        wall_node->group->find(kWallUp, 1)->flags58 |= 1;
+        break;
+    case 1:
+        wall_node->group->find(kWallLeft, 1)->flags58 |= 1;
+        break;
+    case 2:
+        wall_node->group->find(kWallRight, 1)->flags58 |= 1;
+        break;
+    case 3:
+        wall_node->group->find(kWallDown, 1)->flags58 |= 1;
+        break;
+    }
+    wall_node->draw(0);
+}
+
+static inline void restart_animation(LayoutAnimation*& animation, const float& rate) {
+    if (animation)
+        animation->rewind();
+    animation->set_rate(rate);
+}
+
+void DemoPanelSystem::open_window() {
+    restart_animation(window_anim, step);
+    play_sound(0x17ec, nullptr);
 }
