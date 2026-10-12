@@ -81,7 +81,23 @@
     "got:gResourceCache": "0x7100c2a610",
     "_ZN11DefaultHeap8allocateEjmii": "0x710045c458",
     "got:_Z23run_resource_cache_readv": "0x7100c2a628",
-    "got:_Z25run_resource_cache_directv": "0x7100c2a630"
+    "got:_Z25run_resource_cache_directv": "0x7100c2a630",
+    "_ZN9GameState5queryEj": "0x7100252f54",
+    "got:gGameState": "0x7100c22d68",
+    "got:gStageNumber": "0x7100c2a590",
+    "got:gFrameHeap": "0x7100c2a5f0",
+    "_Z18get_platform_flagsv": "0x710016ef34",
+    "_ZN13FrameHeapImplC1Ev": "0x71005c2d24",
+    "_ZN13FrameHeapImplD1Ev": "0x71005c2c8c",
+    "_ZN13FrameHeapImpl10initializeEPvmiii": "0x71005c2d40",
+    "_ZN13FrameHeapImpl8finalizeEv": "0x71005c2e54",
+    "_ZN11QueueWorkerC1Ev": "0x710045de40",
+    "_ZN11QueueWorkerD1Ev": "0x710045de54",
+    "got:gDemoPlayer": "0x7100c2a5a8",
+    "got:gDemoEventIndex": "0x7100c2a560",
+    "got:gObjectTableA": "0x7100c2a518",
+    "got:gObjectTableB": "0x7100c2a530",
+    "_Z9copy_namePcPKc": "0x710003ff70"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -256,6 +272,36 @@
         "_Z23run_resource_cache_readv": "0x710025b218",
         "_Z25run_resource_cache_directv": "0x710025b25c",
         "_ZN13ResourceCache5startEv": "0x710025b2a0"
+      }
+    },
+    "event/demo_overrides.cpp": {
+      "map": {
+        "gResourceQueueWorkers": "0x7100c8aef8",
+        ".rodata.cst4": "0x710073bfb4"
+      },
+      "functions": {
+        "_Z14lookup_table_ai": "0x71002581d4",
+        "_Z14lookup_table_bi": "0x7100258210",
+        "_Z18demo_player_targetv": "0x7100258240",
+        "_Z24demo_player_target_statev": "0x7100258280",
+        "_Z16demo_speed_scalev": "0x710025834c",
+        "_Z16demo_player_pairPm": "0x710025839c",
+        "_Z16demo_player_namePc": "0x71002583bc",
+        "_Z20demo_player_value180v": "0x71002583e0",
+        "_Z20demo_player_value184v": "0x710025841c",
+        "_Z20demo_player_value188v": "0x7100258458",
+        "_Z18demo_tuning_vectorPj": "0x7100258494",
+        "_Z17apply_demo_tuningP10DemoTuning": "0x71002586bc",
+        "_Z15demo_tuning_nopv": "0x7100258760",
+        "_Z16apply_demo_limitPj": "0x7100258764",
+        "_Z16query_game_statej": "0x71002587b4",
+        "_Z19demo_overrides_zerov": "0x71002587cc",
+        "_Z17create_frame_heapv": "0x71002587d4",
+        "_Z18destroy_frame_heapv": "0x7100258824",
+        "_ZN9FrameHeap10initializeEv": "0x710025886c",
+        "_ZN9FrameHeap8finalizeEv": "0x7100258900",
+        "__cxx_global_array_dtor": "0x7100258944",
+        "_GLOBAL__sub_I_demo_overrides.cpp": "0x7100258970"
       }
     }
   }

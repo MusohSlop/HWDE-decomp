@@ -38,7 +38,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-93 of 103 attempted functions match: 86 inventory functions (7,904 bytes), the worker trampoline `45df64` and the static initializer `25aa0c`, both outside the baseline inventory. The other ten are near misses: nine `m` and one `M`.
+112 of 125 attempted functions match: 103 inventory functions (9,012 bytes), the worker trampoline `45df64`, the static initializers `25aa0c` and `258970` and the array destructor `258944`, all outside the baseline inventory. The other thirteen are near misses: twelve `m` and one `M`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -51,6 +51,19 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `217294` | `DemoSequence::sample` | `m`: registers of `n` and the scan index swapped (w10/w11); 65 of 76 words equal |
 | `2173c4` | `DemoSequenceItem::load` | match |
 | `2174d0` | `DemoSequenceItem::release` | match |
+| `2581d4`, `258210` | `lookup_table_a`, `lookup_table_b` | match |
+| `258240` | `demo_player_target` | match |
+| `258280` | `demo_player_target_state` | `m`: the mode test uses separate `b.hi`/`cbz` branches instead of the original `ccmp` |
+| `25834c` | `demo_speed_scale` | `m`: same mode-test difference (6 words) |
+| `25839c` | `demo_player_pair` | match |
+| `2583bc` | `demo_player_name` | `m`: ours tail-calls `copy_name`; the original makes a normal call with a frame |
+| `2583e0`–`258458` | `demo_player_value180/184/188` | match |
+| `258494` | `demo_tuning_vector` | match |
+| `2586bc` | `apply_demo_tuning` | match |
+| `258760`–`2587cc` | `demo_tuning_nop`, `apply_demo_limit`, `query_game_state`, `demo_overrides_zero` | match |
+| `2587d4`, `258824` | `create_frame_heap`, `destroy_frame_heap` | match |
+| `25886c`, `258900` | `FrameHeap::initialize`, `finalize` | match |
+| `258944`, `258970` | array destructor and static initializer of the queue workers (outside the inventory) | match |
 | `2589b4` | `resource_queue_active` | match |
 | `2589d0` | `cancel_resource_queue` | match |
 | `258a68` | `finish_resource_queue` | match |
@@ -181,6 +194,12 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Units in `259ea8`–`25b390`.** `resource/resource_system.cpp` (`259e84`–`25a174`: chunked data plus system init/shutdown), `resource/resource_cache.cpp` (`25b0c0`–`25b2a0`, with three workers named `FileReader`/`FileWriter` and callbacks referenced through the GOT). `25b390` opens the resource-frame unit. The placeholder bodies at `259e84`–`259e90` are `ChunkedData` methods (their size getter is inlined into `25a070`), and `25acdc`/`25ace8` are `ResourceController::initialize`/`finalize`.
 - **Static initializer `25b36c` (not attempted).** It clears 0x202 bytes at `c8b0a8` with a non-tail `memset` call. A global whose constructor does that gets removed by clang's global-constructor evaluator, which treats a zero `memset` of a zero-initialized global as a no-op. The original kept it, so it may come from a different form.
 - **Queue initializer.** The entry reset uses the same order as `cancel` (state, callback, completion, argument, elapsed). The worker entry points are static functions that tail-call the active callback. The registry's reference is created with `create_mutex`.
+- **Demo overrides unit (`event/demo_overrides.cpp`, `2581d4`–`258970`).** It ends with the static initializer `258970`, which constructs the two queue workers at `c8aef8` and registers their array destructor `258944` with `__cxa_atexit`. So the workers are defined here, which is why the queue unit refers to them as an external hidden global. `45de40`/`45de54` are the `Worker` constructor and destructor.
+  - `apply_demo_tuning` lists its cases in the order 2, 0x20, 0x13.
+  - `FrameHeap::initialize` calls `get_default_heap()` on each side of the size condition. The base size is `0x14000`.
+  - The two table lookups put the in-range path first (`if (index <= max) {...} return nullptr;`).
+  - Deferred: `2584e0` (476 bytes), a 214-case switch that writes two floats through shared tail blocks.
+- **Mergeable constants.** Clang emits a separate literal per function in `.rodata.cst4`; the linker merges equal values. `check_obj.py` now resolves such relocations to the first equal constant at or after the mapped base.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred

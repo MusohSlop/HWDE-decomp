@@ -86,8 +86,19 @@ def apply(word, rtype, value, place):
     return None
 
 
-def resolve(symbols, sym, addend, mapping):
+def resolve(symbols, sym, addend, mapping, data=None, sections=None, image=None):
     """Original address for a relocation target, or None."""
+    if sym.is_section and sym.name.startswith(".rodata.cst") and sym.name in mapping and image is not None:
+        # Mergeable constants: the linker keeps one copy of each value, so map
+        # the constant to the first equal entry at or after the mapped base.
+        width = int(sym.name[len(".rodata.cst"):] or 4)
+        sec = sections[sym.shndx]
+        value = data[sec[4] + addend: sec[4] + addend + width]
+        base = mapping[sym.name]
+        for k in range(0, addend + width, width):
+            if image[base + k: base + k + width] == value:
+                return base + k
+        return base + addend
     if sym.is_section:
         for other in symbols:
             if (not other.is_section and other.shndx == sym.shndx and other.name in mapping
@@ -133,7 +144,7 @@ def compare(obj, pairs, mapping):
                     slot = mapping.get("got:" + symbols[symidx].name)
                     target = slot + addend if slot is not None else None
                 else:
-                    target = resolve(symbols, symbols[symidx], addend, mapping)
+                    target = resolve(symbols, symbols[symidx], addend, mapping, data, sections, image)
                 patched = apply(a, rtype, target, addr + k) if target is not None else None
                 if patched is None:
                     unresolved.add(f"{symbols[symidx].name}+{addend:#x} (type {rtype})")
