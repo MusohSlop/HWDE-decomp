@@ -18,9 +18,6 @@
     "_ZN2nn2os11UnlockMutexEPNS0_9MutexTypeE": "0x7100600930",
     "_Z16get_shared_statev": "0x71002aae3c",
     "_Z20shared_state_exitingP11SharedState": "0x71002ac7f0",
-    "_Z13resource_freePv": "0x710025a1ec",
-    "_Z13resource_readjPvjjS_j": "0x710025a1ac",
-    "_Z13resource_sizej": "0x710025a178",
     "_Z16get_default_heapv": "0x710045c96c",
     "_ZN11DefaultHeap7releaseEPvii": "0x710045c2f4",
     "_ZN11DefaultHeap8allocateEjjii": "0x710045c458",
@@ -38,7 +35,24 @@
     "_Z13create_threadP13ObjectManagerPFiP12WorkerThreadP6WorkerES4_miiPKc": "0x71005c3f88",
     "_Z12create_mutexP13ObjectManager": "0x71005c418c",
     "got:gObjectManager": "0x7100c21de8",
-    "got:_Z17worker_trampolineP12WorkerThreadP6Worker": "0x7100c2bbc8"
+    "got:_Z17worker_trampolineP12WorkerThreadP6Worker": "0x7100c2bbc8",
+    "__cxa_guard_acquire": "0x71006008f0",
+    "__cxa_guard_release": "0x7100600900",
+    "_Z15get_system_tickv": "0x71006009e0",
+    "_Z25get_system_tick_frequencyv": "0x71006009f0",
+    "_Z22shared_state_resourcesP11SharedState": "0x71002ad1dc",
+    "_ZN18ResourceController4sizeEj": "0x710025acec",
+    "_ZN18ResourceController4readEjPvjjS0_j": "0x710025adf0",
+    "got:gResourceController": "0x7100c2a608",
+    "_Z17get_memory_regionv": "0x710045c1dc",
+    "_ZN17HeapAllocatorSlot3getEv": "0x710045c2ec",
+    "memset": "0x7100600890",
+    "_Znwm": "0x71003ccb94",
+    "_ZdlPv": "0x71003ccc84",
+    "_Z15nn_yield_threadv": "0x7100600b20",
+    "_ZN10FileSystem4openEPKciiPPvS2_i": "0x71005374a4",
+    "_ZN10FileSystem4sizeEPv": "0x71005374d0",
+    "_ZN10FileSystem5closeEPPvi": "0x71005374ac"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -106,6 +120,45 @@
         "_Z17poll_worker_stateP6Worker": "0x710045e0d8",
         "_Z12start_workerP6Worker": "0x710045e114",
         "_Z20worker_thread_handleP6Worker": "0x710045e154"
+      }
+    },
+    "system/stopwatch.cpp": {
+      "map": {
+        "_ZGVZ12get_dummy_idvE6sDummy": "0x7100cf05f0",
+        "_ZZ12get_dummy_idvE6sDummy": "0x7100cf05f8",
+        ".rodata.str1.1": "0x71007d6a21",
+        ".rodata.cst4": "0x710073bbd4"
+      },
+      "functions": {
+        "_Z12get_dummy_idv": "0x710045dd2c",
+        "_ZN9StopwatchC2Ev": "0x710045dd84",
+        "_ZN9Stopwatch5resetEv": "0x710045dd90",
+        "_ZN9StopwatchD2Ev": "0x710045dd9c",
+        "_ZN9Stopwatch5startEv": "0x710045dda0",
+        "_ZN9Stopwatch4stopEv": "0x710045ddc4",
+        "_ZNK9Stopwatch10elapsed_msEv": "0x710045dde8"
+      }
+    },
+    "resource/resource_access.cpp": {
+      "map": {
+        "gResourceService": "0x7100c8b068",
+        "gResourceRequest": "0x7100c8b070",
+        ".rodata.str1.1": "0x71007d52ee"
+      },
+      "functions": {
+        "_Z13resource_sizej": "0x710025a178",
+        "_Z13resource_readjPvjjS_j": "0x710025a1ac",
+        "_Z13resource_freePv": "0x710025a1ec",
+        "_ZN14ResourceHandleC2Ev": "0x710025a248",
+        "_ZN14ResourceHandleD2Ev": "0x710025a250",
+        "_ZN14ResourceHandle15empty_operationEv": "0x710025a254",
+        "_ZN14ResourceHandle3setEPv": "0x710025a258",
+        "_Z20resource_info_existsPK12ResourceName": "0x710025a260",
+        "_Z19query_resource_infoP15ResourceServicePKcP12ResourceInfo": "0x710025a2a0",
+        "_Z18resource_info_sizePK12ResourceName": "0x710025a344",
+        "_Z27initialize_resource_servicev": "0x710025a388",
+        "_Z25shutdown_resource_servicev": "0x710025a404",
+        "_ZL28run_resource_metadata_workerv": "0x710025a4a8"
       }
     }
   }

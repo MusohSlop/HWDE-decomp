@@ -38,7 +38,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-36 of 43 attempted functions match: 35 inventory functions (3,348 bytes) plus the worker trampoline `45df64`, which is outside the baseline inventory. The other seven are near misses (`m`).
+56 of 63 attempted functions match: 54 inventory functions (4,584 bytes) plus the worker trampoline `45df64`, which is outside the baseline inventory. The other seven are near misses (`m`).
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -75,6 +75,18 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25b71c` | `ResourceFrame::entry_size` | match |
 | `25b738` | `ResourceFrame::lookup` | match |
 | `25b754` | `ResourceFrame::load` | `m`: argument setup order for the heap allocation and the order of `cset`/`csel` (7 words) |
+| `25a178` | `resource_size` | match |
+| `25a1ac` | `resource_read` | match |
+| `25a1ec` | `resource_free` | match |
+| `25a248`–`25a258` | four trivial bodies (`ResourceHandle` placeholders) | match |
+| `25a260` | `resource_info_exists` | match |
+| `25a2a0` | `query_resource_info` | match |
+| `25a344` | `resource_info_size` | match |
+| `25a388` | `initialize_resource_service` | match |
+| `25a404` | `shutdown_resource_service` | match |
+| `25a4a8` | `run_resource_metadata_worker` (static) | match |
+| `45dd2c` | `get_dummy_id` (function-local static) | match |
+| `45dd84`–`45dde8` | `Stopwatch` constructor, `reset`, destructor, `start`, `stop`, `elapsed_ms` | match |
 | `45de40` | `initialize_worker` | match |
 | `45de54` | `destroy_worker` | match |
 | `45de58` | `shutdown_worker` | match |
@@ -112,12 +124,22 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - The layout switch is an inline `set_layout` helper shared by `bind`, `open` and `open_table`. Its two 32-bit stores merge into one 64-bit constant store.
   - `entry_size` indexes through an entry pointer (`entry[1]`), which gives `ldr w0, [x8, #4]`.
   - `load` keeps "the caller gave no buffer" in a boolean computed at the top (`bool owned = dest == nullptr;`), and the result in a separate `ret` variable. That keeps the original's `cset`/`tbnz` instead of an `orr` of the two pointers.
+- **Resource access and metadata service (`resource/resource_access.cpp`).**
+  - The controller cell (`c8b098`, GOT `c2a608`) and the manager cell (GOT `c21de8`) are default-visibility externs. The service cell (`c8b068`) and request block (`c8b070`) are external hidden globals.
+  - `resource_free` compares the storage address with the region threshold as integers. A pointer comparison swaps the `cmp` operands.
+  - `45de40` is the `Worker` constructor and `45de54` the `Worker` destructor: the service's constructor calls the former before clearing its mutex pointer, and its destructor calls the latter.
+  - The query ignores the result of a second `shared_state_exiting(get_shared_state())` call. The worker callback is a static function, referenced with ADRP/ADD.
+- **Stopwatch and singleton (`system/stopwatch.cpp`).** The function-local static's guard and object are merged into one block, with the guard first (`cf05f0`, object at `cf05f8`). `elapsed_ms` converts ticks with `frequency / 1000000` and a `1000.0f` literal (`73bbd4`). String and float literals are mapped by section name in `units.json`.
 - **Workers (`system/worker.cpp`).**
   - Thread and mutex objects share a ref-counted base: a vtable, a 32-bit count at `+8`, and destroy at slot `+0x18`. Their payloads start at `+0x10`, so they need `alignas(8)` after the 32-bit count.
   - The release sequence is an inline `release_object` helper; shutdown uses it twice. It captures the manager cell's GOT slot once, exactly like the queue shutdown.
   - `wait_worker_ready` is `while (!poll_worker_state(w)) sleep_worker_retry();` with the poll inlined. Shutdown inlines the wait again.
   - The trampoline is a default-visibility function, so `create_worker` loads its address from the GOT (`c2bbc8`). `destroy_worker` is a separate one-instruction function that tail-calls `shutdown_worker`.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
+
+### Deferred
+
+`45e160` (1,464 bytes) is a 61-case statistics switch with a jump table at `811194`. It calls at least six game functions whose signatures are unknown (`204728`, `203dfc`, `2028b4`, `200fc0`, `2015a8`, `200294`), so it needs its own effort. The four small virtuals at `45dcd0`–`45dd28` need their class and vtable identified first.
 
 ### Near misses
 
