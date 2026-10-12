@@ -68,6 +68,7 @@ public:
     virtual void v88();
     virtual void update(void* context, int mode); // +90
     void detach(void* root);                                                // 0x71005d4408
+    void draw(int mode);                                                    // 0x71001e34a0
 
     unsigned char pad8[0x10];
     EffectGroup* group;       // +18
@@ -83,6 +84,8 @@ public:
     void create_node(LightEffectNode** out, int id, const char* layout);    // 0x71001e2360
     void attach(LightResource* resource, void* owner);                      // 0x71001e26dc
     void* current();                                                        // 0x71001e26ec
+    void begin();                                                           // 0x71001e22e0
+    void end();                                                             // 0x71001e22d8
 
     unsigned char pad[0x68];
     EffectList nodes;         // +68
@@ -172,6 +175,9 @@ InputDevice* input_device();                                                // 0
 class Fader {
 public:
     void fade(float duration, int mode, int flags);                         // 0x71001e526c
+
+    unsigned char pad[0x204];
+    unsigned char fading;     // +204
 };
 Fader* screen_fader();                                                      // 0x71001e50b0
 
@@ -204,10 +210,19 @@ public:
     unsigned int draw(void* dest, const char* text, int line, int a, int alpha, float x,
                       float y);                                             // 0x71001e73c0
 
+    unsigned int measure(const char* text, TrackVec2* size, TrackVec2* extent, float x,
+                         float width);                                      // 0x71001e5e08
+
     unsigned char pad[0x20b7c];
     int mode20b7c;            // +20b7c
-    unsigned char pad20b80[0x1c];
+    unsigned char pad20b80[0xc];
+    int mode20b8c;            // +20b8c
+    unsigned char pad20b90[8];
+    int mode20b98;            // +20b98
     int mode20b9c;            // +20b9c
+    unsigned char pad20ba0[0x29];
+    unsigned char flag20bc9;  // +20bc9
+    unsigned char flag20bca;  // +20bca
 };
 // Reached through the GOT slot at 0x7100c22a30.
 extern TextRenderer* gTextRenderer;
@@ -215,6 +230,9 @@ extern TextRenderer* gTextRenderer;
 class TrackRenderer {
 public:
     void write(void* data, unsigned int size, int slot);                    // 0x71001df8c0
+    void flush(int slot);                                                   // 0x71001df128
+    void begin(int mode);                                                   // 0x71001df744
+    void end();                                                             // 0x71001df838
 };
 // Reached through the GOT slot at 0x7100c22a40.
 extern TrackRenderer* gTrackRenderer;
@@ -222,6 +240,9 @@ extern TrackRenderer* gTrackRenderer;
 int screen_width();                                                         // 0x71003df258
 int screen_height();                                                        // 0x71003df250
 const char* message_text(int id);                                           // 0x7100217d64
+float lerp_float(float from, float to, float t);                            // 0x71001f6b40
+int lerp_int(int from, int to, int frame, int frames);                      // 0x71001f6b50
+void play_demo_sound(int id, int a, void* b, int c, float volume, float pan, float pitch); // 0x71003fbe44
 
 // String literals, merged with others by the linker.
 extern const char kEmptyString[] __attribute__((visibility("hidden")));    // 0x7100740512
@@ -654,4 +675,271 @@ void DemoLightSystem::draw_text() {
     renderer->draw(text, message, 5, 1, 0xff, 0.0f, 0.0f);
     renderer->mode20b7c = 0;
     gTrackRenderer->write(text, 0x168, -1);
+}
+
+static inline void draw_layer(void* data, unsigned int size) {
+    gEffectManager->begin();
+    gTrackRenderer->write(data, size, -1);
+    gTrackRenderer->flush(-1);
+    gEffectManager->end();
+}
+
+void DemoLightSystem::render() {
+    if (static_cast<unsigned int>(stage) > 0x3b)
+        return;
+    switch (state) {
+    case 1:
+        gEffectManager->begin();
+        gTrackRenderer->flush(-1);
+        gEffectManager->end();
+        return;
+    case 10:
+        render_ending();
+        return;
+    case 11:
+        return;
+    }
+    gEffectManager->begin();
+    gTrackRenderer->write(&sources[0], 0x48, -1);
+    gTrackRenderer->write(&sources[1], 0x48, -1);
+    gTrackRenderer->flush(-1);
+    gEffectManager->end();
+    unsigned int count = table_set.count126a0;
+    for (unsigned int i = 1; i < count; ++i) {
+        TrackLightSet* set =
+            table_set.count126a0 > i ? &static_cast<TrackLightSet*>(table_set.buffer)[i] : nullptr;
+        set->update(time);
+    }
+    if (time < 4.0f) {
+        gTrackRenderer->begin(0xf);
+        gTrackRenderer->write(targets, value99f8 * 0x88, -1);
+        gTrackRenderer->end();
+    }
+    if (effect)
+        effect->draw(0);
+    scene.draw(0, -1);
+    scene.draw_overlay(-1);
+    draw_layer(&table_set.panel, 0x88);
+    draw_layer(table_set.captions, 0x168);
+}
+
+struct StageOffset {
+    float x, y;
+
+    StageOffset(float x_, float y_) : x(x_), y(y_) {}
+};
+
+void DemoLightSystem::render_ending() {
+    static const StageOffset kOffsets[] = {
+        StageOffset(-3.0f, 3.0f),     StageOffset(60.0f, 36.0f),    StageOffset(-18.0f, 99.0f),
+        StageOffset(148.5f, 106.5f),  StageOffset(148.5f, 106.5f),  StageOffset(97.5f, 79.5f),
+        StageOffset(154.5f, 3.0f),    StageOffset(-85.5f, -30.0f),  StageOffset(-148.5f, 1.5f),
+        StageOffset(-84.0f, 108.0f),  StageOffset(-175.5f, 123.0f), StageOffset(-136.5f, 61.5f),
+        StageOffset(45.0f, 108.0f),   StageOffset(148.5f, 106.5f),  StageOffset(133.5f, -48.0f),
+        StageOffset(148.5f, 106.5f),  StageOffset(-3.0f, 3.0f),     StageOffset(133.5f, -48.0f),
+        StageOffset(-3.0f, 3.0f),     StageOffset(60.0f, 36.0f),    StageOffset(-3.0f, 3.0f),
+        StageOffset(-148.5f, 1.5f),   StageOffset(-84.0f, 108.0f),  StageOffset(148.5f, 106.5f),
+        StageOffset(-18.0f, 99.0f),   StageOffset(154.5f, 3.0f),    StageOffset(-175.5f, 123.0f),
+        StageOffset(-148.5f, 1.5f),   StageOffset(-3.0f, 3.0f),     StageOffset(-184.5f, -46.5f),
+        StageOffset(133.5f, -48.0f),  StageOffset(45.0f, 108.0f),   StageOffset(-219.0f, 6.0f),
+    };
+    float timer = timer7294;
+    float scale;
+    if (timer <= 12.0f) {
+        if (timer == 12.0f) {
+            play_demo_sound(0x3f, 0, nullptr, 0x3c, 1.0f, 0.0f, 0.0f);
+            timer = timer7294;
+        }
+        scale = lerp_float(0.0f, 2.0f, timer / 36.0f);
+        scale = scale < 0.0f ? 0.0f : scale;
+        scale = scale > 2.0f ? 2.0f : scale;
+    } else if (timer <= 36.0f) {
+        float elapsed = timer - 12.0f;
+        scale = lerp_float(0.0f, 2.0f, timer / 36.0f);
+        scale = scale < 0.0f ? 0.0f : scale;
+        scale = scale > 2.0f ? 2.0f : scale;
+        lerp_int(0xff, 0, static_cast<int>(elapsed), 0x18);
+        if (!(screen_fader() && screen_fader()->fading) && screen_fader() && screen_fader())
+            screen_fader()->fade(0.4f, 1, 1);
+    } else {
+        scale = 0.0f;
+    }
+    StageOffset offset = kOffsets[stage];
+    gEffectManager->begin();
+    unsigned int count = table_set.count126a0;
+    if (count >= 2) {
+        TrackVector adjust;
+        adjust.x = scale + 1.0f;
+        adjust.y = scale + 1.0f;
+        adjust.z = -(scale * offset.x);
+        adjust.w = scale * offset.y;
+        for (unsigned int i = 1; i < count; ++i) {
+            TrackLightSet* set =
+                table_set.count126a0 > i ? &static_cast<TrackLightSet*>(table_set.buffer)[i] : nullptr;
+            set->update_scaled(time, adjust, 0xff);
+        }
+    }
+    gTrackRenderer->flush(-1);
+    gEffectManager->end();
+    if (effect)
+        effect->draw(0);
+    TrackLightTarget* panel = &table_set.panel;
+    gEffectManager->begin();
+    gTrackRenderer->write(panel, 0x88, -1);
+    gTrackRenderer->flush(-1);
+    gEffectManager->end();
+}
+
+static inline float logo_limit() {
+    return screen_width() - 1380.0f + 600.0f;
+}
+
+void DemoLightSystem::draw_intro() {
+    if (state != 1)
+        return;
+    TrackLightTarget* banner = &table_set.banner;
+    banner->flags |= 0x80;
+    sources[2].flags |= 0x80;
+    sources[0].flags |= 0x80;
+    sources[1].flags |= 0x80;
+    for (int i = 0; i < 40; ++i)
+        targets[i].flags |= 0x80;
+    LightSource* layers[3] = {&sources[0], &sources[1], &sources[2]};
+    unsigned int banner_alpha;
+    unsigned int frame_alpha;
+    bool show_name;
+    float logo_x;
+    float name_x;
+    if (timer7290 <= 102.0f) {
+        int frame_index = static_cast<int>(timer7290);
+        unsigned int a = lerp_int(0, 0xff, frame_index, 0x1e);
+        banner_alpha = a > 0xff ? 0xff : a;
+        unsigned int b = lerp_int(0, 0xff, frame_index, 0x3c);
+        name_x = 120.0f;
+        show_name = false;
+        frame_alpha = b > 0xff ? 0xff : b;
+        logo_x = 0.0f;
+    } else if (timer7290 <= 138.0f) {
+        float elapsed = timer7290 - 102.0f;
+        logo_x = lerp_float(logo_limit(), 0.0f, elapsed / 6.0f);
+        logo_x = logo_x < 0.0f ? 0.0f : logo_x;
+        if (logo_x > logo_limit())
+            logo_x = logo_limit();
+        TextRenderer* renderer = gTextRenderer;
+        const char* text = name;
+        TrackVec2 size = {54.0f, 54.0f};
+        TrackVec2 extent;
+        unsigned int width = renderer->measure(text, &size, &extent, 0.0f, screen_width());
+        double start = width * -54.0 - 80.0;
+        double x = lerp_float(start, 0.0f, elapsed / 6.0f);
+        x = x < start ? start : x;
+        x = x > 0.0 ? 0.0 : x;
+        name_x = static_cast<float>(x) + 120.0f;
+        frame_alpha = 0xff;
+        show_name = true;
+        banner_alpha = 0xff;
+    } else {
+        name_x = 120.0f;
+        show_name = false;
+        frame_alpha = 0xff;
+        logo_x = 0.0f;
+        banner_alpha = 0xff;
+    }
+    if (timer7290 == 102.0f)
+        play_demo_sound(0x3e, 0, nullptr, 0x3c, 1.0f, 0.0f, 0.0f);
+    float half_width = screen_width() * 0.5f;
+    float half_height = screen_height() * 0.5f;
+    banner->hidden = 0;
+    banner->blend = 0;
+    banner->alpha = 1.0f;
+    banner->quad[0].x = half_width - 1024.0f;
+    banner->quad[0].y = half_height - 512.0f;
+    banner->quad[1].x = half_width + 1024.0f;
+    banner->quad[1].y = half_height - 512.0f;
+    banner->quad[2].x = half_width - 1024.0f;
+    banner->quad[2].y = half_height + 512.0f;
+    banner->quad[3].x = half_width + 1024.0f;
+    banner->quad[3].y = half_height + 512.0f;
+    banner->value18[0] = 0.0f;
+    banner->value18[1] = 0.0f;
+    banner->matrix[0] = 1.0f;
+    banner->matrix[1] = 0.0f;
+    banner->matrix[2] = 0.0f;
+    banner->matrix[3] = 1.0f;
+    banner->scale[0] = 1.0f;
+    banner->scale[1] = 1.0f;
+    banner->colors[0].a = banner_alpha;
+    banner->colors[1].a = banner_alpha;
+    banner->colors[2].a = banner_alpha;
+    banner->colors[3].a = banner_alpha;
+    TrackLightTable* table = static_cast<TrackLightTable*>(table_set.resources.primary);
+    if (table) {
+        unsigned int size = table->items[3]->size;
+        float image_width = (size & 0xffff) >> 1;
+        float image_height = size >> 17;
+        float center_x = image_width * 0.25f + screen_width() * 0.5f;
+        float center_y = image_height * 0.25f + screen_height() * 0.5f;
+        sources[2].image = table->count >= 4 ? table->items[3] : nullptr;
+        sources[2].uv0.x = 0.0f;
+        sources[2].uv0.y = 0.0f;
+        sources[2].uv1.x = 1.0f;
+        sources[2].uv1.y = 1.0f;
+        sources[2].flags &= ~0x80u;
+        sources[2].min.x = center_x - image_width;
+        sources[2].min.y = center_y - image_height;
+        sources[2].max.x = image_width + center_x;
+        sources[2].max.y = image_height + center_y;
+        sources[2].color.a = banner_alpha;
+    }
+    TrackLightTable* frames = static_cast<TrackLightTable*>(object7278);
+    if (frames) {
+        sources[0].image = frames->count >= 1 ? frames->items[0] : nullptr;
+        sources[0].uv0.x = 0.0f;
+        sources[0].uv0.y = 0.0f;
+        sources[0].uv1.x = 0.9375f;
+        sources[0].uv1.y = 0.52734375f;
+        sources[0].min.x = 0.0f;
+        sources[0].min.y = 0.0f;
+        sources[0].max.x = 1920.0f;
+        sources[0].max.y = 1080.0f;
+        sources[0].color.a = frame_alpha;
+        sources[0].flags &= ~0x80u;
+    }
+    TrackLightTable* logos = static_cast<TrackLightTable*>(object7280);
+    if (show_name && logos) {
+        float x = logo_x + 1380.0f;
+        sources[1].image = logos->count >= 1 ? logos->items[0] : nullptr;
+        sources[1].uv0.x = 0.0f;
+        sources[1].uv0.y = 0.0f;
+        sources[1].uv1.x = 0.5859375f;
+        sources[1].uv1.y = 0.933852136f;
+        sources[1].min.x = x - 600.0f;
+        sources[1].min.y = 60.0f;
+        sources[1].max.x = x + 600.0f;
+        sources[1].max.y = 1020.0f;
+        sources[1].flags &= ~0x80u;
+    }
+    value99f8 = 0;
+    if (show_name) {
+        TextRenderer* renderer = gTextRenderer;
+        TrackVec2 pos;
+        TrackVec2 size;
+        pos.x = name_x;
+        size.x = 54.0f;
+        size.y = 54.0f;
+        pos.y = 81.0f;
+        renderer->set_area(&pos, &size, 0x58, 0x4f, 0);
+        renderer->flag20bc9 = 1;
+        renderer->flag20bca = 1;
+        renderer->mode20b8c = 0x59;
+        renderer->mode20b98 = 2;
+        value99f8 = renderer->draw(targets, name, 0x28, 1, 0xff, 0.0f, 0.0f);
+        renderer->mode20b7c = 0;
+        for (unsigned int i = 0; i < static_cast<unsigned int>(value99f8); ++i)
+            targets[i].flags &= ~0x80u;
+    }
+    gTrackRenderer->write(banner, 0x88, -1);
+    for (int i = 0; i < 3; ++i)
+        gTrackRenderer->write(layers[i], 0x48, -1);
+    gTrackRenderer->write(targets, value99f8 * 0x88, -1);
 }

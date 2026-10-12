@@ -65,6 +65,8 @@ public:
     void* environment();                                                // 0x71001f6820
     void advance(float time, float speed);                              // 0x71001f594c
     void stop();                                                        // 0x71001f5fa4
+    void draw(int layer, int slot);                                     // 0x71001f5fc4
+    void draw_overlay(int slot);                                        // 0x71001f6344
 
     unsigned char pad5910[4];
     unsigned char flag5914;   // +5914
@@ -98,16 +100,48 @@ static_assert(sizeof(LightSource) == 0x48, "source size");
 void show_sources(LightSource* sources, int count);                     // 0x71001f73e4
 void hide_sources(LightSource* sources, int count);                     // 0x71001f7430
 
+// Color as four bytes.
+struct Color4u8 {
+    unsigned char r, g, b, a;
+
+    Color4u8() : r(0), g(0), b(0), a(0) {}
+    Color4u8(unsigned char r_, unsigned char g_, unsigned char b_, unsigned char a_)
+        : r(r_), g(g_), b(b_), a(a_) {}
+};
+
+// Four RGBA colors.
+struct LightMatrix {
+    float m[16];
+};
+
+// Textured sprite bound to a texture made by the resource loader (0xd0 bytes).
 class LightEntry {
 public:
     LightEntry();
-    void bind(LightAllocator* allocator);                               // 0x7100260740                                                       // 0x7100260648
-    ~LightEntry();                                                      // 0x71002606b8
-    void unload();                                                      // 0x71002606fc
+    ~LightEntry();
+    void unload();
+    void bind(LightAllocator* allocator);
 
-private:
-    unsigned char data[0xd0];
+    RefObject* texture;               // +00
+    unsigned long value8;             // +08
+    unsigned long value10;            // +10
+    unsigned short modes[6];          // +18
+    unsigned char pad24[0xc];
+    TrackVector position;             // +30
+    TrackVector target;               // +40
+    TrackVec2 offset;                 // +50
+    unsigned long value58;            // +58
+    TrackVec2 scale;                  // +60
+    Color4u8 color;                   // +68
+    int count6c;                      // +6c
+    int count70;                      // +70
+    int flags74;                      // +74
+    unsigned char pad78[8];
+    LightMatrix matrix;               // +80: colors
+    unsigned char visible;            // +c0
+    unsigned char padc1[0xf];
 };
+static_assert(sizeof(LightEntry) == 0xd0, "entry size");
 
 struct LightCounts {
     union {
@@ -223,6 +257,8 @@ struct DemoLightSystem {
     void layout_frames();
     void layout_panel();
     void draw_text();
+    void render();
+    void render_ending();
     void start();
     void play();
     void finish();

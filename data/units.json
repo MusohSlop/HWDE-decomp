@@ -191,20 +191,31 @@
     "_Z13screen_heightv": "0x71003df250",
     "_ZN12TextRenderer4drawEPvPKciiiff": "0x71001e73c0",
     "_ZN12TextRenderer8set_areaEP9TrackVec2S1_iii": "0x71001e709c",
-    "_ZN15DemoLightSystem10draw_introEv": "0x710025ecd4",
     "_ZN15SharedResources9captionedEv": "0x71003890bc",
     "got:gTextRenderer": "0x7100c22a30",
     "_ZN14TrackResourcesD1Ev": "0x710025cd50",
     "_Z12show_sourcesP11LightSourcei": "0x71001f73e4",
     "_Z12hide_sourcesP11LightSourcei": "0x71001f7430",
     "_ZN18ResourceLoaderCore5flushEv": "0x710052ad98",
-    "_ZN10LightEntryC1Ev": "0x7100260648",
-    "_ZN10LightEntryD1Ev": "0x71002606b8",
-    "_ZN10LightEntry6unloadEv": "0x71002606fc",
     "_ZN14TrackResourcesC1Ev": "0x710025cd44",
     "_ZN13TrackLightSetC1EP9DemoOwneri": "0x710025c254",
     "_ZN9TrackSlotC1Ev": "0x710025c240",
-    "_ZN10LightEntry4bindEP14LightAllocator": "0x7100260740"
+    "_Z10lerp_floatfff": "0x71001f6b40",
+    "_Z15play_demo_soundiiPvifff": "0x71003fbe44",
+    "_Z8lerp_intiiii": "0x71001f6b50",
+    "_ZN10LightScene12draw_overlayEi": "0x71001f6344",
+    "_ZN10LightScene4drawEii": "0x71001f5fc4",
+    "_ZN13EffectManager3endEv": "0x71001e22d8",
+    "_ZN13EffectManager5beginEv": "0x71001e22e0",
+    "_ZN13TrackRenderer5flushEi": "0x71001df128",
+    "_ZN15LightEffectNode4drawEi": "0x71001e34a0",
+    "_ZN18TrackLightTableSetC1Ev": "0x710025ffe8",
+    "_ZN18TrackLightTableSetD1Ev": "0x7100260220",
+    "_ZN12TextRenderer7measureEPKcP9TrackVec2S3_ff": "0x71001e5e08",
+    "got:gLightEntryAllocator": "0x7100c2a640",
+    "_ZN10LightEntryC1Ev": "0x7100260648",
+    "_ZN10LightEntryD1Ev": "0x71002606b8",
+    "_ZN13TextureLoader12make_textureEP14LightAllocator8Color4u8Pv9TrackVec2": "0x71004e27bc"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -493,11 +504,17 @@
         "_ZN15DemoLightSystem4drawEv": "0x710025ec3c",
         "_ZN15DemoLightSystem13layout_framesEv": "0x710025f44c",
         "_ZN15DemoLightSystem12layout_panelEv": "0x710025f6b8",
-        "_ZN15DemoLightSystem9draw_textEv": "0x710025f820"
+        "_ZN15DemoLightSystem9draw_textEv": "0x710025f820",
+        "_ZN15DemoLightSystem6renderEv": "0x710025f944",
+        "_ZN15DemoLightSystem13render_endingEv": "0x710025fbfc",
+        "_ZN15DemoLightSystem10draw_introEv": "0x710025ecd4"
       },
       "map": {
         ".rodata": "0x71007f508c",
-        ".rodata.cst4": "0x710073bae8"
+        ".rodata.cst4": "0x710073bae8",
+        "_ZGVZN15DemoLightSystem13render_endingEvE8kOffsets": "0x7100c8b2c0",
+        "_ZZN15DemoLightSystem13render_endingEvE8kOffsets": "0x7100c8b2c8",
+        ".rodata.cst8": "0x71007e2178"
       }
     },
     "event/demo_light_table_set.cpp": {
@@ -509,6 +526,17 @@
         "_ZN18TrackLightTableSet6unloadEv": "0x71002605d0",
         "_ZN18TrackLightTableSet4loadEiPf": "0x7100260290",
         "_ZN18TrackLightTableSet11load_tracksEjPf": "0x710026031c"
+      }
+    },
+    "event/demo_light_entry.cpp": {
+      "map": {
+        ".rodata": "0x71007f50f0"
+      },
+      "functions": {
+        "_ZN10LightEntryC2Ev": "0x7100260648",
+        "_ZN10LightEntryD2Ev": "0x71002606b8",
+        "_ZN10LightEntry6unloadEv": "0x71002606fc",
+        "_ZN10LightEntry4bindEP14LightAllocator": "0x7100260740"
       }
     }
   }

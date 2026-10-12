@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-161 of 180 attempted functions match: 151 inventory functions (18,776 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other nineteen are near misses: eighteen `m` and one `M`.
+165 of 187 attempted functions match: 155 inventory functions (20,548 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-two are near misses: twenty-one `m` and one `M`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -163,12 +163,18 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25e8a0` | `DemoLightSystem::play` | `m`: the final clamp becomes `fmax` plus `fcsel`; the original keeps an `fcsel`/`fccmp` chain (3 instructions) |
 | `25eb70` | `DemoLightSystem::finish` | match |
 | `25ec3c` | `DemoLightSystem::draw` (152 bytes; the inventory merged it with `25ecd4`) | match |
+| `25ecd4` | `DemoLightSystem::draw_intro` | `m`: same size; the pointer setup and flag stores at the top are scheduled differently, which shifts register allocation |
 | `25f44c` | `DemoLightSystem::layout_frames` | `m`: one merged 64-bit rectangle store comes out before the `max.y` store instead of after (8 words) |
 | `25f6b8` | `DemoLightSystem::layout_panel` | match |
 | `25f820` | `DemoLightSystem::draw_text` | match |
+| `25f944` | `DemoLightSystem::render` (696 bytes; the inventory merged it with `25fbfc`) | match |
+| `25fbfc` | `DemoLightSystem::render_ending` | match |
 | `25ffe8`, `260220` | `TrackLightTableSet` constructor, destructor (76 bytes; the inventory said 80) | match |
 | `26026c`, `260288`, `2605d0` | `TrackLightTableSet::init`, `finalize`, `unload` | match |
 | `260290` | `TrackLightTableSet::load` (140 bytes; the inventory merged it with `26031c`) | match |
+| `260648` | `LightEntry::LightEntry` | `m`: the scale and color stores merge differently (10 words) |
+| `2606b8`, `2606fc` | `LightEntry` destructor, `unload` | match |
+| `260740` | `LightEntry::bind` | `m`: everything up to the texture call matches; the color argument is built from one word load instead of four byte loads |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -269,10 +275,12 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `+0x199ec` is a 4-byte flag group plus an index, value-initialized as one struct, so the zero store is 64-bit. The tail fields are assigned in the constructor body in the order 9b20, 9b24, 9b30, 9b28, 9b38, 9b27, 9b25, 9b26. Only `9b25`/`9b26` merge.
   - `update` dispatches through a 12-entry jump table (`7f508c`, mapped as `.rodata`). States 3–5, 7 and 8 share the tail that sets state 9.
   - Two strings are linker-merged literals (`""` at `740512`, `"font_caption.bflyt"` at `741e21`), declared as hidden externs.
-- **Inventory corrections.** Three rows were wrong because Ghidra merged a function with the one it tail-calls, or misjudged an end. `25ec3c` (2,064 bytes) is now `25ec3c` (152) plus `25ecd4` (1,912). `260290` (832) is now `260290` (140) plus `26031c` (692). `260220` is 76 bytes, not 80 (80 would overlap `26026c`). `functions.csv` has 17,278 rows now.
+- **Inventory corrections.** Three rows were wrong because Ghidra merged a function with the one it tail-calls, or misjudged an end. `25ec3c` (2,064 bytes) is now `25ec3c` (152) plus `25ecd4` (1,912). `25f944` (1,636) is now `25f944` (696) plus `25fbfc` (940). `260290` (832) is now `260290` (140) plus `26031c` (692). `260220` is 76 bytes, not 80 (80 would overlap `26026c`). `functions.csv` has 17,279 rows now.
 - **Light table set (`event/demo_light_table_set.cpp`, `25ffe8`–`2605d0`).** It holds the light system's `TrackResources` at `+8`; the three handles are the channels' tables, so `TrackLightTable` derives from `RefObject`. The empty `25cd50` is `~TrackResources`. `25c240` (`TrackSlot`) default-constructs each `TrackLightSet`'s storage before placement. The `LightAllocator` is a `DemoOwner`.
   - `ResourceFrame::open` returns `unsigned char`, which gives the caller's `and #0xff`. The frame unit still matches.
   - `load_tracks` holds each channel count in a local, loads `channels` before the counter store, and reads both overflow counters through one 64-bit view (a union), as the original does.
+- **Light system rendering.** `render` dispatches with a switch (cases 1, 10, 11); an if-chain lets SimplifyCFG hoist the shared `begin()` call. Its last two layers go through an inline `draw_layer` helper. `render_ending` keeps a function-local static table of 33 per-stage offsets (guard `c8b2c0`, data `c8b2c8`) built through a constructor, which is why it needs a guard. The stage offset is copied into a local before `begin()`, and the timer test is `<=`-first.
+- **Light entries (`event/demo_light_entry.cpp`, `260648`–`260740`).** These are textured sprites, 0xd0 bytes each, holding a reference-counted texture. They are a separate unit because the table-set loops call their constructor and destructor. `bind` copies a 64-byte table of four RGBA colors (`7f50f0`, mapped as `.rodata`) and stores the allocator in a global (GOT `c2a640`).
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred
