@@ -7010,7 +7010,7 @@ Address,Quality,Size,Name
 0x7100217064,O,12,_ZN12DemoSequenceC2EP9DemoOwner
 0x7100217070,O,140,_ZN12DemoSequenceD2Ev
 0x71002170fc,O,140,_ZN12DemoSequence5clearEv
-0x7100217188,U,268,FUN_7100217188
+0x7100217188,O,268,_ZN12DemoSequence4loadEPv
 0x7100217294,m,304,_ZN12DemoSequence6sampleEjf
 0x71002173c4,O,268,_ZN16DemoSequenceItem4loadEP9DemoOwnerPK22DemoSequenceItemSource
 0x71002174d0,O,56,_ZN16DemoSequenceItem7releaseEv
@@ -7919,9 +7919,9 @@ Address,Quality,Size,Name
 0x71002589c0,U,16,FUN_71002589c0
 0x71002589d0,O,152,_Z21cancel_resource_queuev
 0x7100258a68,m,164,_Z21finish_resource_queuehhh
-0x7100258b0c,U,344,FUN_7100258b0c
+0x7100258b0c,m,344,_Z26register_resource_callbackPvPFvijEj
 0x7100258c64,U,1304,FUN_7100258c64
-0x710025917c,U,228,FUN_710025917c
+0x710025917c,O,228,_Z24remove_resource_callbackPv
 0x7100259260,U,1056,FUN_7100259260
 0x7100259680,U,140,FUN_7100259680
 0x710025970c,O,156,_Z29resource_queue_callback_statePv

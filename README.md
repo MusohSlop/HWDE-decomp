@@ -38,7 +38,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-12 of 14 attempted functions match: 1,236 bytes.
+14 of 17 attempted functions match: 1,732 bytes.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -47,11 +47,14 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `217064` | `DemoSequence::DemoSequence(DemoOwner*)` | match |
 | `217070` | `DemoSequence::~DemoSequence` | match |
 | `2170fc` | `DemoSequence::clear` | match |
+| `217188` | `DemoSequence::load(void*)` | match |
 | `217294` | `DemoSequence::sample` | `m`: registers of `n` and the scan index swapped (w10/w11); 65 of 76 words equal |
 | `2173c4` | `DemoSequenceItem::load` | match |
 | `2174d0` | `DemoSequenceItem::release` | match |
 | `2589b4` | `resource_queue_active` | match |
 | `2589d0` | `cancel_resource_queue` | match |
+| `258b0c` | `register_resource_callback` | `m`: the first callback load is scheduled after the two flag stores instead of before (3 words) |
+| `25917c` | `remove_resource_callback` | match |
 | `258a68` | `finish_resource_queue` | `m`: final 16-bit clear and register-address handling (see below) |
 | `25970c` | `resource_queue_callback_state` | match |
 | `2597a8` | `resource_queue_callback_in_state` | match |
@@ -71,9 +74,13 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - The `n == 0` case returns early with its own written-out clamp. A shared clamp tail, or a helper, produces one merged tail.
   - The scan stores its result in a separate variable initialized to `n`. A plain `for (j...) break;` lets the compiler drop the original's redundant `j == 0` test on the not-found path.
   - The lerp uses a temporary `g = 1 - f` to get the original scheduling.
+- **`217188`.** The allocation descriptor comes from an inline `demo_alloc` helper. Inlined stack slots go first, so the 40-byte resource frame lands below the descriptor, as in the original. The size is computed into a local first (`unsigned int size = sizeof(DemoSequenceItem) * count;`), which gives the original instruction order.
+- **`25917c`.** It is written as find-then-act: first find the index, then test the state. A combined loop produces per-entry pre-indexed loads.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. The getter returns the byte. The two cancel flags (`+1`, `+2`) are `volatile`, which keeps their stores separate; other threads poll them. The entry reset is written state, callback, completion, argument, elapsed. The compiler then emits the original store order and pairing.
 
 ### Near misses
+
+`258b0c`: the original loads `entries[0].callback` before the two `strb wzr` flag clears; ours loads it after them because the flags are `volatile`. Making only `flag2` volatile, or using a packed registry without `volatile`, didn't fix it. The packed version also lets the DAG merge the flag stores.
 
 `217294`: everything but register allocation matches. The original keeps `n` in w11 and the scan index in x10; we get the reverse. Changing the index type, the variable order, the loop form or the `found`/`goto`/`continue` shape didn't change it.
 

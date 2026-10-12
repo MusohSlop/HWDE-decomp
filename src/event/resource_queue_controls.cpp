@@ -1,4 +1,4 @@
-﻿// Matching candidates for the resource queue registry at 0x7100c8af40.
+// Matching candidates for the resource queue registry at 0x7100c8af40.
 // Semantics: docs/resource-queue-controls.md.
 
 namespace nn {
@@ -23,6 +23,7 @@ SharedState* get_shared_state();                      // 0x71002aae3c
 unsigned char shared_state_exiting(SharedState* state); // 0x71002ac7f0
 void wait_worker_ready(ResourceQueueWorker* worker);  // 0x710045e094
 unsigned char poll_worker_state(ResourceQueueWorker* worker); // 0x710045e0d8
+void process_resource_queue();                        // 0x7100258c64, not matched yet
 
 struct ResourceQueueEntry {
     unsigned int state;       // +00
@@ -75,6 +76,49 @@ void cancel_resource_queue() {
         entry.argument = 0x100;
         entry.elapsed = 0;
     }
+    nn::os::UnlockMutex(registry_mutex());
+}
+
+void register_resource_callback(void* callback, void (*completion)(int, unsigned int),
+                                unsigned int argument) {
+    nn::os::LockMutex(registry_mutex());
+    sRegistry.flag1 = false;
+    sRegistry.flag2 = false;
+    for (int i = 0; i < 8; ++i) {
+        ResourceQueueEntry& entry = sRegistry.entries[i];
+        if (entry.callback == callback)
+            break;
+        if (entry.state == 0) {
+            entry.state = 1;
+            entry.callback = callback;
+            entry.completion = completion;
+            entry.argument = argument;
+            entry.elapsed = 0;
+            break;
+        }
+    }
+    process_resource_queue();
+    nn::os::UnlockMutex(registry_mutex());
+}
+
+void remove_resource_callback(void* callback) {
+    nn::os::LockMutex(registry_mutex());
+    int i;
+    for (i = 0; i < 8; ++i) {
+        if (sRegistry.entries[i].callback == callback)
+            break;
+    }
+    if (i != 8) {
+        ResourceQueueEntry& entry = sRegistry.entries[i];
+        if (entry.state != 2) {
+            entry.state = 0;
+            entry.callback = nullptr;
+            entry.completion = nullptr;
+            entry.argument = 0x100;
+            entry.elapsed = 0;
+        }
+    }
+    process_resource_queue();
     nn::os::UnlockMutex(registry_mutex());
 }
 

@@ -26,6 +26,11 @@ public:
     virtual void free(void* ptr);                                         // +0x60
 };
 
+// Allocates kind-0x2e storage through the owner.
+inline void* demo_alloc(DemoOwner* owner, unsigned int size) {
+    return owner->alloc(size, AllocDescriptor(0x2e));
+}
+
 // Frees through the owner when the pointer is set. The null check must stay
 // in this helper: written inline in the caller it changes loop optimization.
 inline void demo_safe_free(DemoOwner* owner, void* ptr) {
@@ -65,5 +70,6 @@ struct DemoSequence {
     void initialize();
     void empty_operation();
     void clear();
+    void load(void* resource);
     float sample(unsigned int index, float time);
 };

@@ -2,6 +2,7 @@
 // Semantics: docs/demo-sequence.md. Status: matching/README.md.
 
 #include "event/demo_sequence.h"
+#include "resource/resource_frame.h"
 
 void DemoSequence::initialize() {
     count = 0;
@@ -25,6 +26,22 @@ void DemoSequence::clear() {
         items = nullptr;
         count = 0;
     }
+}
+
+void DemoSequence::load(void* resource) {
+    ResourceFrame frame;
+    frame.bind(0, resource);
+    count = frame.count();
+    if (count != 0) {
+        unsigned int size = sizeof(DemoSequenceItem) * count;
+        items = static_cast<DemoSequenceItem*>(demo_alloc(owner, size));
+        for (unsigned int i = 0; i < count; ++i) {
+            DemoSequenceItem& item = items[i];
+            const void* source = frame.lookup(i);
+            item.load(owner, static_cast<const DemoSequenceItemSource*>(source));
+        }
+    }
+    frame.close();
 }
 
 // Near miss: only the registers of n and the scan index are swapped (see README).
