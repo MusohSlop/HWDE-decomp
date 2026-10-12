@@ -11,7 +11,9 @@
     "--target=aarch64-linux-elf",
     "-std=c++14",
     "-fno-strict-aliasing",
-    "-fno-exceptions"
+    "-fno-exceptions",
+    "-mllvm",
+    "-regalloc=greedy"
   ],
   "symbols": {
     "_ZN2nn2os9LockMutexEPNS0_9MutexTypeE": "0x7100600920",
@@ -98,7 +100,17 @@
     "got:gObjectTableA": "0x7100c2a518",
     "got:gObjectTableB": "0x7100c2a530",
     "_Z9copy_namePcPKc": "0x710003ff70",
-    "got:kTrackDefaultVector": "0x7100c216a8"
+    "got:kTrackDefaultVector": "0x7100c216a8",
+    "_ZN10TrackLightD1Ev": "0x710025bd64",
+    "_ZN17TrackLightChannelC1Ev": "0x710025c7ac",
+    "got:gTrackLightTables": "0x7100c22d98",
+    "_ZN16TrackLightTarget5applyERK10TrackLightS2_Pvi": "0x710025d19c",
+    "_ZN12MemoryStreamC1Ev": "0x710053d304",
+    "_ZN12MemoryStreamD1Ev": "0x710053d338",
+    "_ZN12MemoryStream4openEPKvPvj": "0x710053d360",
+    "_ZN12MemoryStream5closeEv": "0x710053d388",
+    "_ZN14ResourceLoader4loadEP12MemoryStream": "0x710051ad9c",
+    "got:gResourceLoader": "0x7100c21db0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -316,14 +328,50 @@
         "_Z13track_key_nopv": "0x710025b860",
         "_Z15track_light_nopv": "0x710025bb9c",
         "_ZN10TrackLight5resetEv": "0x710025bba0",
-        "_Z14track_item_nopv": "0x710025bd64",
         "_ZN10TrackLight4copyERKS_": "0x710025bcd0",
         "_ZN10TrackLight6decodeERK16TrackLightRecord": "0x710025bbe8",
         "_ZN10TrackLight11decode_fullERK16TrackLightRecord": "0x710025bd68",
         "_ZN10TrackLight9copy_fullERKS_": "0x710025be54",
         "_ZNK10TrackLight6equalsERKS_": "0x710025bef0",
         "_ZN9TrackSlotC2Ev": "0x710025c240",
-        "_ZN10TrackLight11interpolateERKS_S1_ff": "0x710025bfdc"
+        "_ZN10TrackLight11interpolateERKS_S1_ff": "0x710025bfdc",
+        "_ZN10TrackLightD2Ev": "0x710025bd64"
+      }
+    },
+    "event/demo_light_set.cpp": {
+      "functions": {
+        "_ZN13TrackLightSetC2EP9DemoOwneri": "0x710025c254",
+        "_ZN13TrackLightSet4loadEPv": "0x710025c26c",
+        "_ZN13TrackLightSet6updateEf": "0x710025c634",
+        "_ZN13TrackLightSet13update_scaledEf11TrackVectorh": "0x710025c6c0"
+      }
+    },
+    "event/demo_light_channel.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073bae8"
+      },
+      "functions": {
+        "_ZN17TrackLightChannelC2Ev": "0x710025c7ac",
+        "_ZN17TrackLightChannel5clearEv": "0x710025c7e0",
+        "_ZN17TrackLightChannel8set_keysEP10TrackLightj": "0x710025c814",
+        "_ZN17TrackLightChannel6updateERK10TrackLightf": "0x710025c820",
+        "_ZN17TrackLightChannel6sampleEP10TrackLightf": "0x710025c96c",
+        "_ZN17TrackLightChannel13update_scaledERK10TrackLightf11TrackVectorh": "0x710025cb98"
+      }
+    },
+    "event/demo_track_resources.cpp": {
+      "functions": {
+        "_ZN14TrackResourcesC2Ev": "0x710025cd44",
+        "_ZN14TrackResources6updateEv": "0x710025cd50",
+        "_ZN14TrackResources7releaseEv": "0x710025cd54",
+        "_ZN14TrackResources5resetEv": "0x710025cde8",
+        "_ZN14TrackResources5clearEv": "0x710025ce7c",
+        "_ZN14TrackResources4loadEj": "0x710025cf10"
+      }
+    },
+    "event/demo_track_resource_load.cpp": {
+      "functions": {
+        "_ZN14TrackResources8load_oneEj": "0x710025cf50"
       }
     }
   }

@@ -19,6 +19,8 @@ import capstone  # noqa: E402
 
 IMAGE = ROOT / "analysis/extracted/update/decompressed/main.memory.bin"
 BASE = 0x7100000000
+# Bytes after a mapped mergeable-constant base searched for an equal value.
+MERGE_SEARCH = 0x1000
 
 # Relocation type -> mask of the bits the relocation fills in.
 RELOC_MASKS = {
@@ -95,7 +97,7 @@ def resolve(symbols, sym, addend, mapping, data=None, sections=None, image=None)
         sec = sections[sym.shndx]
         value = data[sec[4] + addend: sec[4] + addend + width]
         base = mapping[sym.name]
-        for k in range(0, addend + width, width):
+        for k in range(0, max(addend + width, MERGE_SEARCH), width):
             if image[base + k: base + k + width] == value:
                 return base + k
         return base + addend

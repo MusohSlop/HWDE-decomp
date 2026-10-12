@@ -2,6 +2,8 @@
 // frame (0x710025b828-0x710025bd64). Names are descriptive placeholders.
 // Status: matching/README.md.
 
+#include "event/demo_track.h"
+
 struct TrackKey {
     unsigned long value0;     // +00
     unsigned long value8;     // +08
@@ -41,67 +43,6 @@ TrackKey::TrackKey(unsigned long value) {
 }
 
 void track_key_nop() {}
-
-struct TrackVector {
-    float x, y, z, w;
-};
-// Default vector, reached through the GOT slot at 0x7100c216a8.
-extern const TrackVector kTrackDefaultVector;
-
-struct TrackColor {
-    union {
-        unsigned int raw;
-        struct {
-            unsigned char r, g, b, a;
-        };
-    };
-
-    void set(TrackColor value) {
-        r = value.r;
-        g = value.g;
-        b = value.b;
-        a = value.a;
-    }
-};
-
-// Packed light record as stored in track data.
-struct TrackLightRecord {
-    unsigned short value0;    // +00
-    unsigned short value1;    // +02
-    short value2;             // +04
-    short value3;             // +06
-    short position[3];        // +08
-    unsigned short scale20;   // +0e: hundredths
-    unsigned short scale24;   // +10: hundredths
-    unsigned char color[4];   // +12
-    unsigned char flag2c;     // +16
-    unsigned char level2d;    // +17
-    unsigned char bytes2e[2]; // +18
-    unsigned short value30;   // +1a
-    unsigned int value34;     // +1c
-};
-
-struct TrackLight {
-    TrackVector position;     // +00
-    TrackVector values;       // +10
-    float scale20;            // +20
-    float scale24;            // +24
-    TrackColor color;         // +28
-    unsigned char flag2c;     // +2c
-    unsigned char level2d;    // +2d
-    unsigned char bytes2e[2]; // +2e
-    unsigned short value30;   // +30
-    unsigned int value34;     // +34
-    unsigned char flag38;     // +38
-
-    void reset();
-    void decode(const TrackLightRecord& record);
-    void copy(const TrackLight& other);
-    void decode_full(const TrackLightRecord& record);
-    void copy_full(const TrackLight& other);
-    bool equals(const TrackLight& other) const;
-    void interpolate(const TrackLight& to, const TrackLight& from, float t, float alpha_t);
-};
 
 static inline void decode_light(TrackLight* light, const TrackLightRecord& record) {
     light->values.x = record.value0;
@@ -166,7 +107,7 @@ void TrackLight::copy(const TrackLight& other) {
     color.set(other.color);
 }
 
-void track_item_nop() {}
+TrackLight::~TrackLight() {}
 
 void TrackLight::decode_full(const TrackLightRecord& record) {
     decode_light(this, record);
@@ -182,7 +123,7 @@ static inline bool vector_equal(const TrackVector& a, const TrackVector& b) {
     return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
 }
 
-bool TrackLight::equals(const TrackLight& other) const {
+unsigned char TrackLight::equals(const TrackLight& other) const {
     if (other.values.z != values.z)
         return false;
     if (other.values.w != values.w)

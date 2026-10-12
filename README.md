@@ -27,18 +27,19 @@ A function matches only when its compiled size equals the inventory size and eve
 Clang 3.9.1 with:
 
 ```
--O3 -g -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -stdlib=libc++ -fPIC -fstandalone-debug --target=aarch64-linux-elf -std=c++14 -fno-strict-aliasing -fno-exceptions
+-O3 -g -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -stdlib=libc++ -fPIC -fstandalone-debug --target=aarch64-linux-elf -std=c++14 -fno-strict-aliasing -fno-exceptions -mllvm -regalloc=greedy
 ```
 
 The last two flags are not in the BotW/SMO set. Koei Tecmo built this game, so its flags can differ.
 - `-fno-strict-aliasing`: needed for `2173c4`. Without it, the loop keeps the point-array pointer in a register instead of reloading it, and the two arguments swap registers.
 - `-fno-exceptions`: the destructor `217070` is identical to `clear` (`2170fc`). With exceptions enabled, it gains a `__clang_call_terminate` landing pad.
+- `-mllvm -regalloc=greedy`: greedy is already the default allocator, so allocation doesn't change. Naming an allocator explicitly makes Clang 3.9 skip its Cortex-A57 FP load-balancing pass (`AArch64A57FPLoadBalancing`, added only with the default allocator). That pass renames FP registers in multiply chains, which lets the load/store pairer merge stores the original keeps separate (`25cb98`). No earlier match changes.
 
 Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 14 functions (see `docs/toolchain.md`).
 
 ## Results
 
-126 of 139 attempted functions match: 117 inventory functions (10,792 bytes) plus 9 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174` and the cache worker callbacks `25b218`/`25b25c`. The other thirteen are near misses: twelve `m` and one `M`.
+142 of 156 attempted functions match: 132 inventory functions (14,072 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other fourteen are near misses: thirteen `m` and one `M`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -140,6 +141,18 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25bef0` | `TrackLight::equals` | match |
 | `25bfdc` | `TrackLight::interpolate` | match |
 | `25c240` | `TrackSlot::TrackSlot` | match |
+| `25c254` | `TrackLightSet::TrackLightSet` | match |
+| `25c26c` | `TrackLightSet::load` | match |
+| `25c634` | `TrackLightSet::update` | match |
+| `25c6c0` | `TrackLightSet::update_scaled` | `m`: the original loads `values.w` with `scale20` (one `ldp`) and pairs its store with `values.z`; 4 instructions differ |
+| `25c7ac`, `25c7e0`, `25c814` | `TrackLightChannel` constructor, `clear`, `set_keys` | match |
+| `25c820` | `TrackLightChannel::update` | match |
+| `25c96c` | `TrackLightChannel::sample` | match |
+| `25cb98` | `TrackLightChannel::update_scaled` | match |
+| `25cd44`, `25cd50` | `TrackResources` constructor, empty `update` (outside the inventory) | match |
+| `25cd54`, `25cde8`, `25ce7c` | `TrackResources::release`, `reset`, `clear` | match |
+| `25cf10` | `TrackResources::load` | match |
+| `25cf50` | `TrackResources::load_one` | match |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
 | `45dd84`–`45dde8` | `Stopwatch` constructor, `reset`, destructor, `start`, `stop`, `elapsed_ms` | match |
 | `45de40` | `initialize_worker` | match |
@@ -208,7 +221,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `FrameHeap::initialize` calls `get_default_heap()` on each side of the size condition. The base size is `0x14000`.
   - The two table lookups put the in-range path first (`if (index <= max) {...} return nullptr;`).
   - Deferred: `2584e0` (476 bytes), a 214-case switch that writes two floats through shared tail blocks.
-- **Mergeable constants.** Clang emits a separate literal per function in `.rodata.cst4`; the linker merges equal values. `check_obj.py` now resolves such relocations to the first equal constant at or after the mapped base.
+- **Mergeable constants.** Clang emits a separate literal per function in `.rodata.cst4`; the linker merges equal values. `check_obj.py` resolves such relocations to the first equal constant in the 4 KiB after the mapped base.
 - **Demo track items (`event/demo_track_items.cpp`, `25b828`–`25bd64`).** These bodies are decided by how stores merge, which depends on field types.
   - `TrackKey`'s field at `+0x10` is a `float`: a float zero doesn't merge with the integer -1 index stores beside it.
   - `TrackLight`'s values are an aggregate assigned at once.
@@ -220,6 +233,14 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
     - `from`'s color is read as one raw word, with the bytes extracted by shifts;
     - the byte lerp computes its product into a local first.
   - Deferred: `25b864` (824 bytes), a loader built on a serializer stream with many unknown callees.
+- **Demo light set, channels and resources (`25c254`–`25cf50`).** These are four units: `event/demo_light_set.cpp` (`25c254`–`25c6c0`), `event/demo_light_channel.cpp` (`25c7ac`–`25cb98`), `event/demo_track_resources.cpp` (`25cd44`–`25cf10`) and `event/demo_track_resource_load.cpp` (`25cf50`). The shared types are in `include/event/demo_track.h`.
+  - The boundaries come from calls. The set calls `TrackLight` methods, the channel functions and even the empty `~TrackLight` (`25bd64`) instead of inlining them. `TrackResources::load` sets `x0` for `load_one`, so dead-argument elimination couldn't see that `load_one` ignores `this`.
+  - `TrackVector` is 16-byte aligned, which makes `TrackLight` 0x40 bytes and puts the stack copies at 16-byte offsets. `TrackLight`'s default constructor calls `reset()`, its copy constructor `copy()`, and a record constructor `decode()`.
+  - `load` constructs only the first channel and the first key of each list with placement `new`. It releases its arrays through a member `release(void*)` helper. A free helper or inline code makes GVN merge the field address into a PHI. The allocation size is computed into an `unsigned int` local. Merged keys are counted with an inverted condition (`if (!same || !flag38)`).
+  - The scale functions take their adjustment as a `TrackVector` by value (an HFA in `v1`–`v4`) after the time, with the alpha byte last. That gives the original argument copy order and `adjust.x * field` operand order.
+  - `sample` takes the output pointer first. It finds the key with a search whose default is the count, and binds the previous key by reference before copying the current one. The ease is `t * (t * (1 - k)) + t * k`, clamped through two selects (`fmax`/`fmin`).
+  - The table switch lists its cases 2, 1, 0; the original then tests 0 first.
+  - The handle release copies the member into a local before decrementing the count. The loader's `MemoryStream::open` takes a 64-bit size.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred
@@ -227,6 +248,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 `45e160` (1,464 bytes) is a 61-case statistics switch with a jump table at `811194`. It calls at least six game functions whose signatures are unknown (`204728`, `203dfc`, `2028b4`, `200fc0`, `2015a8`, `200294`), so it needs its own effort. The four small virtuals at `45dcd0`–`45dd28` need their class and vtable identified first.
 
 ### Near misses
+
+`25c6c0`: the original loads `values.w` together with `scale20`, adds early and pairs the `values.w` store with `values.z` at the end. All 24 orders of the four statements were tried, plus 180 orderings that split out the loads. The closest (`values.w` computed into a temporary first) differs in 4 instructions: its store pairs with `scale20` instead.
 
 `25b4b4`, `25b5b8`, `25b754`: these differ only in argument-register setup order or one register copy. For `load`, about 15 variants of the tail and the allocation call were tried. For `open`, a direct call, a condition-declared size, a helper that checks for zero, and keeping the allocation result were tried. An inline allocation helper fixed the similar problem in `217188`, but here it improves `load` and makes `open_table` worse.
 
