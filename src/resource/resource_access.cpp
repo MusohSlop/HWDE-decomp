@@ -67,11 +67,13 @@ SharedState* get_shared_state();                                 // 0x71002aae3c
 void* shared_state_resources(SharedState* state);                // 0x71002ad1dc
 unsigned char shared_state_exiting(SharedState* state);          // 0x71002ac7f0
 
+class DefaultHeap;
+
 class ResourceController {
 public:
     unsigned int size(unsigned int identity);                    // 0x710025acec
-    void* read(unsigned int identity, void* dest, unsigned int offset, unsigned int size,
-               void* owner, unsigned int flags);                 // 0x710025adf0
+    void* read(int identity, void* dest, unsigned int offset, unsigned int size,
+               DefaultHeap* heap, int flags);                    // 0x710025adf0
 };
 // Controller cell at 0x7100c8b098, reached through the GOT slot at 0x7100c2a608.
 extern ResourceController* gResourceController;
@@ -89,7 +91,7 @@ struct HeapAllocatorSlot {
 
 class DefaultHeap {
 public:
-    void* allocate(unsigned int alignment, unsigned int size, int a, int b); // 0x710045c458
+    void* allocate(unsigned int alignment, unsigned long size, int a, int b); // 0x710045c458
     void release(void* ptr, int a, int b);                                  // 0x710045c2f4
 
     unsigned char unknown[0x38];
@@ -104,7 +106,8 @@ unsigned int resource_size(unsigned int identity) {
 
 void* resource_read(unsigned int identity, void* dest, unsigned int offset, unsigned int size,
                     void* owner, unsigned int flags) {
-    return gResourceController->read(identity, dest, offset, size, owner, flags);
+    return gResourceController->read(identity, dest, offset, size, static_cast<DefaultHeap*>(owner),
+                                     flags);
 }
 
 void resource_free(void* storage) {

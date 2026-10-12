@@ -22,7 +22,7 @@ public:
     virtual void v28();
     virtual void v30();
     virtual void v38();
-    virtual void* alloc_aligned(unsigned int size, unsigned int alignment,
+    virtual void* alloc_aligned(unsigned long size, unsigned int alignment,
                                 const AllocDescriptor& desc);   // +0x40
     virtual void v48();
     virtual void v50();
@@ -37,7 +37,7 @@ struct HeapAllocatorSlot {
 class DefaultHeap {
 public:
     unsigned int budget();                                                  // 0x710045c450
-    void* allocate(unsigned int alignment, unsigned int size, int a, int b); // 0x710045c458
+    void* allocate(unsigned int alignment, unsigned long size, int a, int b); // 0x710045c458
     void release(void* ptr, int a, int b);                                  // 0x710045c2f4
 
     unsigned char unknown[0x38];
@@ -82,6 +82,8 @@ void set_resource_file_gate(unsigned char gate);      // 0x710025a578
 class ResourceController {
 public:
     void resolve_name(char* buffer, int identity);            // 0x710025ab58
+    unsigned char initialize();                               // 0x710025acdc
+    void finalize();                                          // 0x710025ace8
     unsigned int size(unsigned int identity);                 // 0x710025acec
     void* read(int identity, void* dest, unsigned int offset, unsigned int size,
                DefaultHeap* heap, int flags);                 // 0x710025adf0
@@ -244,13 +246,12 @@ void ResourceController::resolve_name(char* buffer, int identity) {
         buffer[0] = 0;
 }
 
-// Trivial bodies between the name resolver and the size query; names are placeholders.
-unsigned char resource_controller_query(unsigned int* out) {
-    *out = 0;
+unsigned char ResourceController::initialize() {
+    mLastReadTime = 0;
     return 1;
 }
 
-void resource_controller_nop() {}
+void ResourceController::finalize() {}
 
 unsigned int ResourceController::size(unsigned int identity) {
     unsigned char gate = resource_file_gate();

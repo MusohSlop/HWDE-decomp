@@ -20,10 +20,8 @@
     "_Z20shared_state_exitingP11SharedState": "0x71002ac7f0",
     "_Z16get_default_heapv": "0x710045c96c",
     "_ZN11DefaultHeap7releaseEPvii": "0x710045c2f4",
-    "_ZN11DefaultHeap8allocateEjjii": "0x710045c458",
     "_ZN13ResourceFrameC1Ev": "0x710025b394",
     "_ZN13ResourceFrameD1Ev": "0x710025b3ac",
-    "got:gResourceQueueManager": "0x7100c21de8",
     "got:gResourceQueueElapsedStep": "0x7100c21df0",
     "gResourceQueueHighEnabled": "0x7100c8af38",
     "_Z16get_frame_sourcev": "0x71003ad9cc",
@@ -78,13 +76,19 @@
     "_ZN10DirectFile4readEPvmm": "0x710053e554",
     "_Z18sleep_millisecondsj": "0x7100459d18",
     "_ZN12ResourceFileC1Ev": "0x710025a584",
-    "_Z18get_current_threadv": "0x7100600b10"
+    "_Z18get_current_threadv": "0x7100600b10",
+    "memcpy": "0x7100600870",
+    "got:gResourceCache": "0x7100c2a610",
+    "_ZN11DefaultHeap8allocateEjmii": "0x710045c458",
+    "got:_Z23run_resource_cache_readv": "0x7100c2a628",
+    "got:_Z25run_resource_cache_directv": "0x7100c2a630"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
       "map": {
         "gResourceQueueRegistry": "0x7100c8af40",
-        "gResourceQueueWorkers": "0x7100c8aef8"
+        "gResourceQueueWorkers": "0x7100c8aef8",
+        ".rodata.str1.1": "0x710075b010"
       },
       "functions": {
         "_Z24resource_queue_cancelledv": "0x71002589c0",
@@ -102,9 +106,9 @@
         "_Z29resource_queue_callback_countv": "0x710025984c",
         "_Z13resource_busyv": "0x7100259aec",
         "_Z20set_resource_waitingh": "0x7100259e44",
-        "_Z25resource_queue_handle_setP19ResourceQueueHandleP9RefObject": "0x7100259e84",
-        "_Z25resource_queue_handle_nopP19ResourceQueueHandle": "0x7100259e8c",
-        "_Z27resource_queue_handle_countPK19ResourceQueueHandle": "0x7100259e90"
+        "_Z25initialize_resource_queuev": "0x71002598c4",
+        "_ZL25run_resource_queue_workerv": "0x71002599ac",
+        "_ZL30run_resource_queue_high_workerv": "0x71002599c4"
       }
     },
     "event/demo_sequence.cpp": {
@@ -126,6 +130,7 @@
     },
     "resource/resource_frame.cpp": {
       "functions": {
+        "_Z18resource_frame_nopv": "0x710025b390",
         "_ZN13ResourceFrameC2Ev": "0x710025b394",
         "_ZN13ResourceFrameD2Ev": "0x710025b3ac",
         "_ZN13ResourceFrame5closeEv": "0x710025b40c",
@@ -222,10 +227,35 @@
         "_Z26create_resource_controllerv": "0x710025aad4",
         "_Z27destroy_resource_controllerv": "0x710025ab18",
         "_ZN18ResourceController12resolve_nameEPci": "0x710025ab58",
-        "_Z25resource_controller_queryPj": "0x710025acdc",
-        "_Z23resource_controller_nopv": "0x710025ace8",
         "_ZN18ResourceController4sizeEj": "0x710025acec",
-        "_ZN18ResourceController4readEiPvjjP11DefaultHeapi": "0x710025adf0"
+        "_ZN18ResourceController4readEiPvjjP11DefaultHeapi": "0x710025adf0",
+        "_ZN18ResourceController10initializeEv": "0x710025acdc",
+        "_ZN18ResourceController8finalizeEv": "0x710025ace8"
+      }
+    },
+    "resource/resource_system.cpp": {
+      "functions": {
+        "_ZN11ChunkedData3setEP13ChunkedHeader": "0x7100259e84",
+        "_ZN11ChunkedData3nopEv": "0x7100259e8c",
+        "_ZNK11ChunkedData4sizeEv": "0x7100259e90",
+        "_ZN11ChunkedData7extractEPv": "0x7100259ea8",
+        "_ZN11ChunkedData17extract_allocatedEP11DefaultHeap": "0x710025a070",
+        "_Z26initialize_resource_systemv": "0x710025a0d8",
+        "_Z24shutdown_resource_systemv": "0x710025a134",
+        "_Z24set_resource_system_gateh": "0x710025a174"
+      }
+    },
+    "resource/resource_cache.cpp": {
+      "map": {
+        ".rodata.str1.1": "0x71007d531b"
+      },
+      "functions": {
+        "_Z25initialize_resource_cachev": "0x710025b0c0",
+        "_Z23shutdown_resource_cachev": "0x710025b120",
+        "_ZN13ResourceCache4stopEv": "0x710025b180",
+        "_Z23run_resource_cache_readv": "0x710025b218",
+        "_Z25run_resource_cache_directv": "0x710025b25c",
+        "_ZN13ResourceCache5startEv": "0x710025b2a0"
       }
     }
   }

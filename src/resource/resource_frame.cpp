@@ -13,7 +13,7 @@ struct AllocDescriptor {
 
 class DefaultHeap {
 public:
-    void* allocate(unsigned int alignment, unsigned int size, int a, int b); // 0x710045c458
+    void* allocate(unsigned int alignment, unsigned long size, int a, int b); // 0x710045c458
     void release(void* ptr, int a, int b);                                  // 0x710045c2f4
 };
 DefaultHeap* get_default_heap();                                            // 0x710045c96c
@@ -30,6 +30,9 @@ static inline void* frame_alloc(ResourceAllocator* allocator, unsigned int size)
 static inline void* heap_alloc(unsigned int size) {
     return get_default_heap()->allocate(0x10, size, 1, 0);
 }
+
+// First body of the unit (0x710025b390); its name is a placeholder.
+void resource_frame_nop() {}
 
 ResourceFrame::ResourceFrame()
     : mStorage(nullptr), mHeaderWords(0), mStride(0), mIdentity(0xffffffff), mAllocator(nullptr),

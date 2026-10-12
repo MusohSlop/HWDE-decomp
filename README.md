@@ -38,7 +38,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-77 of 88 attempted functions match: 74 inventory functions (6,276 bytes), the worker trampoline `45df64` and the static initializer `25aa0c`, both outside the baseline inventory. The other eleven are near misses (`m`).
+93 of 103 attempted functions match: 86 inventory functions (7,904 bytes), the worker trampoline `45df64` and the static initializer `25aa0c`, both outside the baseline inventory. The other ten are near misses: nine `m` and one `M`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -62,7 +62,19 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `2599dc` | `shutdown_resource_queue` | match |
 | `259aec` | `resource_busy` | `m`: the rematerialized `result = 1` is placed one instruction later (3 words) |
 | `259e44` | `set_resource_waiting` | match |
-| `259e84`–`259e90` | three trivial handle bodies (placeholders) | match |
+| `2598c4` | `initialize_resource_queue` | match |
+| `2599ac`, `2599c4` | `run_resource_queue_worker`, `run_resource_queue_high_worker` (static) | match |
+| `259e84`–`259e90` | `ChunkedData::set`, `nop`, `size` | match |
+| `259ea8` | `ChunkedData::extract` | `M`: same size (114 words) but register and block layout differ in 72 words |
+| `25a070` | `ChunkedData::extract_allocated` | match |
+| `25a0d8` | `initialize_resource_system` | match |
+| `25a134` | `shutdown_resource_system` | match |
+| `25a174` | `set_resource_system_gate` | match |
+| `25b0c0` | `initialize_resource_cache` | match |
+| `25b120` | `shutdown_resource_cache` | match |
+| `25b180` | `ResourceCache::stop` | match |
+| `25b218`, `25b25c` | `run_resource_cache_read`, `run_resource_cache_direct` | match |
+| `25b2a0` | `ResourceCache::start` | match |
 | `25970c` | `resource_queue_callback_state` | match |
 | `2597a8` | `resource_queue_callback_in_state` | match |
 | `25984c` | `resource_queue_callback_count` | match |
@@ -71,13 +83,14 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25b40c` | `ResourceFrame::close` | match |
 | `25b46c` | `ResourceFrame::is_open` | match |
 | `25b47c` | `ResourceFrame::bind` | match |
-| `25b4b4` | `ResourceFrame::open` | `m`: one extra `mov w8, w0` keeps the resource size out of w0 (66 words vs 65) |
-| `25b5b8` | `ResourceFrame::open_table` | `m`: argument-register setup order before the allocator call (4 words) |
+| `25b390` | first body of the resource-frame unit (empty; placeholder name) | match |
+| `25b4b4` | `ResourceFrame::open` | match |
+| `25b5b8` | `ResourceFrame::open_table` | match |
 | `25b6f8` | `ResourceFrame::count` | match |
 | `25b704` | `ResourceFrame::entry_offset` | match |
 | `25b71c` | `ResourceFrame::entry_size` | match |
 | `25b738` | `ResourceFrame::lookup` | match |
-| `25b754` | `ResourceFrame::load` | `m`: argument setup order for the heap allocation and the order of `cset`/`csel` (7 words) |
+| `25b754` | `ResourceFrame::load` | `m`: the order of one `cset`/`csel` pair (4 words) |
 | `25a178` | `resource_size` | match |
 | `25a1ac` | `resource_read` | match |
 | `25a1ec` | `resource_free` | match |
@@ -102,9 +115,9 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25aad4` | `create_resource_controller` | match |
 | `25ab18` | `destroy_resource_controller` | match |
 | `25ab58` | `ResourceController::resolve_name` | match |
-| `25acdc`, `25ace8` | two trivial bodies (placeholders) | match |
+| `25acdc`, `25ace8` | `ResourceController::initialize`, `finalize` | match |
 | `25acec` | `ResourceController::size` | match |
-| `25adf0` | `ResourceController::read` | `m`: register assignment of the offset, size and length values, and argument-setup order before the allocation calls; 179 words vs 180 |
+| `25adf0` | `ResourceController::read` | `m`: block layout of the cancellation/exit tail; 179 words vs 180 |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
 | `45dd84`–`45dde8` | `Stopwatch` constructor, `reset`, destructor, `start`, `stop`, `elapsed_ms` | match |
 | `45de40` | `initialize_worker` | match |
@@ -163,7 +176,11 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - The release sequence is an inline `release_object` helper; shutdown uses it twice. It captures the manager cell's GOT slot once, exactly like the queue shutdown.
   - `wait_worker_ready` is `while (!poll_worker_state(w)) sleep_worker_retry();` with the poll inlined. Shutdown inlines the wait again.
   - The trampoline is a default-visibility function, so `create_worker` loads its address from the GOT (`c2bbc8`). `destroy_worker` is a separate one-instruction function that tail-calls `shutdown_worker`.
-- **`resource_busy` (`259aec`).** It repeats the scheduler's high-worker block with the same source order: the eager `idle`, its reset to 1 after a completion, and the `0x1f`/callback/`idle` condition order. That suggests a shared inline helper in the original.
+- **`resource_busy` (`259aec`).** It repeats the scheduler's high-worker block with the same source order: the eager `idle`, its reset to 1 after a completion, and the `0x1f`/callback/`idle` condition order. The source now shares one inline helper (`run_high_worker`) between the two; that produces the same code and leaves both near misses as they were.
+- **Allocation sizes are 64-bit.** `DefaultHeap::allocate` and `ResourceAllocator::alloc_aligned` take `unsigned long` sizes; the original sets up those arguments with 64-bit moves. Fixing that closed `ResourceFrame::open` and `open_table` and the register rotation in `ResourceController::read`.
+- **Units in `259ea8`–`25b390`.** `resource/resource_system.cpp` (`259e84`–`25a174`: chunked data plus system init/shutdown), `resource/resource_cache.cpp` (`25b0c0`–`25b2a0`, with three workers named `FileReader`/`FileWriter` and callbacks referenced through the GOT). `25b390` opens the resource-frame unit. The placeholder bodies at `259e84`–`259e90` are `ChunkedData` methods (their size getter is inlined into `25a070`), and `25acdc`/`25ace8` are `ResourceController::initialize`/`finalize`.
+- **Static initializer `25b36c` (not attempted).** It clears 0x202 bytes at `c8b0a8` with a non-tail `memset` call. A global whose constructor does that gets removed by clang's global-constructor evaluator, which treats a zero `memset` of a zero-initialized global as a no-op. The original kept it, so it may come from a different form.
+- **Queue initializer.** The entry reset uses the same order as `cancel` (state, callback, completion, argument, elapsed). The worker entry points are static functions that tail-call the active callback. The registry's reference is created with `create_mutex`.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred

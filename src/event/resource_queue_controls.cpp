@@ -1,6 +1,7 @@
 // Matching candidates for the resource queue registry at 0x7100c8af40.
 // Semantics: docs/resource-queue-controls.md.
 
+#include "system/object_manager.h"
 #include "system/worker.h"
 
 namespace nn {
@@ -22,16 +23,14 @@ public:
     nn::os::MutexType* mutex_storage[1]; // +10: the mutex object itself
 };
 
-struct ResourceQueueManager {
-    unsigned char unknown[0x80];
-    nn::os::MutexType* mutex_storage[1]; // +80
-};
+WorkerMutex* create_mutex(ObjectManager* manager);       // 0x71005c418c
+void create_worker(Worker* worker, void (*callback)(), const char* name, int setting1,
+                   int setting2, unsigned long stack_size);  // 0x710045e028
+
 // Elapsed step added to running entries, reached through the GOT slot at 0x7100c21df0.
 extern unsigned int gResourceQueueElapsedStep;
 // Byte at 0x7100c8af38 that enables the high worker.
 extern unsigned char gResourceQueueHighEnabled __attribute__((visibility("hidden")));
-// Manager cell, reached through the GOT slot at 0x7100c21de8.
-extern ResourceQueueManager* gResourceQueueManager;
 
 
 struct SharedState;
@@ -81,6 +80,32 @@ unsigned char resource_queue_cancelled() {
 
 unsigned char resource_queue_active() {
     return gResourceQueueRegistry.active;
+}
+
+static void run_resource_queue_worker() {
+    if (void (*callback)() = reinterpret_cast<void (*)()>(gResourceQueueRegistry.worker_callback))
+        callback();
+}
+
+static void run_resource_queue_high_worker() {
+    if (void (*callback)() = reinterpret_cast<void (*)()>(gResourceQueueRegistry.high_worker_callback))
+        callback();
+}
+
+void initialize_resource_queue() {
+    gResourceQueueRegistry.reference =
+        reinterpret_cast<ResourceQueueReference*>(create_mutex(gObjectManager));
+    for (int i = 0; i < 8; ++i) {
+        ResourceQueueEntry& entry = gResourceQueueRegistry.entries[i];
+        entry.state = 0;
+        entry.callback = nullptr;
+        entry.completion = nullptr;
+        entry.argument = 0x100;
+        entry.elapsed = 0;
+    }
+    create_worker(&gResourceQueueWorkers[0], run_resource_queue_worker, "BackRead", 2, 2, 0x100000);
+    create_worker(&gResourceQueueWorkers[1], run_resource_queue_high_worker, "BackReadHigh", 2, 2,
+                  0x10000);
 }
 
 static inline unsigned int entry_priority(const ResourceQueueEntry& entry) {
@@ -229,10 +254,10 @@ void shutdown_resource_queue() {
     ResourceQueueReference* reference = gResourceQueueRegistry.reference;
     if (!reference)
         return;
-    ResourceQueueManager** manager = &gResourceQueueManager;
-    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>((*manager)->mutex_storage));
+    ObjectManager** manager = &gObjectManager;
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>((*manager)->mutex));
     unsigned int count = --reference->ref_count;
-    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>((*manager)->mutex_storage));
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>((*manager)->mutex));
     if (count == 0)
         reference->destroy();
     gResourceQueueRegistry.reference = nullptr;
@@ -276,6 +301,30 @@ static void complete_resource_callback(void* callback) {
     process_resource_queue();
 }
 
+// Polls the high worker, completes its finished callback and starts the next
+// high-priority entry. Shared by the scheduler and the busy check.
+static inline void run_high_worker() {
+    unsigned char done = poll_worker_state(&gResourceQueueWorkers[1]);
+    void* id = gResourceQueueRegistry.high_worker_callback;
+    unsigned char idle = (id == nullptr) | (done != 0);
+    if (done && id) {
+        complete_resource_callback(id);
+        idle = 1;
+        gResourceQueueRegistry.high_worker_callback = nullptr;
+    }
+    ResourceQueueEntry& entry = gResourceQueueRegistry.entries[1];
+    if (entry.argument == 0x1f && entry.callback && idle && entry.state == 1 &&
+        gResourceQueueHighEnabled) {
+        gResourceQueueRegistry.active = 1;
+        gResourceQueueRegistry.flag1 = false;
+        gResourceQueueRegistry.flag2 = false;
+        gResourceQueueRegistry.high_worker_callback = entry.callback;
+        start_worker(&gResourceQueueWorkers[1]);
+        entry.state = 2;
+        entry.elapsed = 0;
+    }
+}
+
 void update_resource_queue() {
     if (frame_source_skipping(get_frame_source())) {
         finish_resource_queue(0, 0, 0);
@@ -283,24 +332,7 @@ void update_resource_queue() {
     }
     nn::os::LockMutex(registry_mutex());
     if (!finish_resource_queue(0, 0, 0) || gResourceQueueRegistry.flag2) {
-        unsigned char done = poll_worker_state(&gResourceQueueWorkers[1]);
-        void* id = gResourceQueueRegistry.high_worker_callback;
-        unsigned char idle = (id == nullptr) | (done != 0);
-        if (done && id) {
-            complete_resource_callback(id);
-            idle = 1;
-            gResourceQueueRegistry.high_worker_callback = nullptr;
-        }
-        ResourceQueueEntry& entry = gResourceQueueRegistry.entries[1];
-        if (entry.argument == 0x1f && entry.callback && idle && entry.state == 1 && gResourceQueueHighEnabled) {
-            gResourceQueueRegistry.active = 1;
-            gResourceQueueRegistry.flag1 = false;
-            gResourceQueueRegistry.flag2 = false;
-            gResourceQueueRegistry.high_worker_callback = entry.callback;
-            start_worker(&gResourceQueueWorkers[1]);
-            entry.state = 2;
-            entry.elapsed = 0;
-        }
+        run_high_worker();
     } else {
         if (void* id = gResourceQueueRegistry.worker_callback) {
             complete_resource_callback(id);
@@ -378,28 +410,9 @@ unsigned char resource_busy() {
     }
     result = 0;
     goto unlock;
-process : {
-    unsigned char done = poll_worker_state(&gResourceQueueWorkers[1]);
-    void* id = gResourceQueueRegistry.high_worker_callback;
-    unsigned char idle = (id == nullptr) | (done != 0);
-    if (done && id) {
-        complete_resource_callback(id);
-        idle = 1;
-        gResourceQueueRegistry.high_worker_callback = nullptr;
-    }
+process:
+    run_high_worker();
     result = 1;
-    ResourceQueueEntry& entry = gResourceQueueRegistry.entries[1];
-    if (entry.argument == 0x1f && entry.callback && idle && entry.state == 1 &&
-        gResourceQueueHighEnabled) {
-        gResourceQueueRegistry.active = 1;
-        gResourceQueueRegistry.flag1 = false;
-        gResourceQueueRegistry.flag2 = false;
-        gResourceQueueRegistry.high_worker_callback = entry.callback;
-        start_worker(&gResourceQueueWorkers[1]);
-        entry.state = 2;
-        entry.elapsed = 0;
-    }
-}
 unlock:
     nn::os::UnlockMutex(registry_mutex());
     return result;
@@ -409,25 +422,4 @@ void set_resource_waiting(unsigned char waiting) {
     nn::os::LockMutex(registry_mutex());
     gResourceQueueHighEnabled = waiting;
     nn::os::UnlockMutex(registry_mutex());
-}
-
-// Trivial bodies that follow; names are placeholders.
-struct ResourceQueueHandle {
-    RefObject* object;
-
-    void set(RefObject* value) { object = value; }
-    void nop() {}
-    unsigned int count() const { return object ? object->ref_count : 0; }
-};
-
-void resource_queue_handle_set(ResourceQueueHandle* handle, RefObject* value) {
-    handle->set(value);
-}
-
-void resource_queue_handle_nop(ResourceQueueHandle* handle) {
-    handle->nop();
-}
-
-unsigned int resource_queue_handle_count(const ResourceQueueHandle* handle) {
-    return handle->count();
 }

@@ -15,7 +15,7 @@ public:
     virtual void v28();
     virtual void v30();
     virtual void v38();
-    virtual void* alloc_aligned(unsigned int size, unsigned int alignment,
+    virtual void* alloc_aligned(unsigned long size, unsigned int alignment,
                                 const AllocDescriptor& desc);   // +0x40
     virtual void v48();
     virtual void v50();
