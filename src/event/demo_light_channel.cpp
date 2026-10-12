@@ -2,7 +2,7 @@
 // 0x710025c7ac-0x710025cb98. Names are descriptive placeholders.
 // Status: matching/README.md.
 
-#include "event/demo_track.h"
+#include "event/demo_light_system.h"
 
 TrackLightChannel::TrackLightChannel()
     : mode(-1), value4(0), count(0), index(0), targets(), nodes(), value50(0), keys(nullptr),
@@ -40,7 +40,7 @@ static inline void mark_targets(TrackLightChannel* channel) {
 
 static inline void apply_light(TrackLightChannel* channel, const TrackLight& light,
                                const TrackLight& base) {
-    TrackLightTables* tables = gTrackLightTables;
+    TrackLightTableSet* tables = &gDemoLightSystem->table_set;
     TrackLightTable* table;
     switch (channel->mode) {
     case 2:

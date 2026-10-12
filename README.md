@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-143 of 158 attempted functions match: 133 inventory functions (14,464 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other fifteen are near misses: fourteen `m` and one `M`.
+152 of 169 attempted functions match: 142 inventory functions (17,032 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other seventeen are near misses: sixteen `m` and one `M`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -154,6 +154,14 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25cf10` | `TrackResources::load` | match |
 | `25cf50` | `TrackResources::load_one` | match |
 | `25d014` | `TrackLightTarget::build_quad` | match |
+| `25dc08` | `DemoLightSystem::DemoLightSystem` | `m`: the stores to `+0x199ec`, `+0x199f4` and `+0x19a00` come out in reverse order (7 words) |
+| `25df64`, `25dfb4` | `create_demo_light_system`, `destroy_demo_light_system` | match |
+| `25e02c`, `25e284` | `DemoLightSystem::initialize`, `finalize` | match |
+| `25e370`, `25e4d0` | `DemoLightSystem::load`, `unload` | match |
+| `25e538` | `DemoLightSystem::update` | match |
+| `25e78c` | `DemoLightSystem::start` | match |
+| `25e8a0` | `DemoLightSystem::play` | `m`: the final clamp becomes `fmax` plus `fcsel`; the original keeps an `fcsel`/`fccmp` chain (3 instructions) |
+| `25eb70` | `DemoLightSystem::finish` | match |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
 | `45dd84`–`45dde8` | `Stopwatch` constructor, `reset`, destructor, `start`, `stop`, `elapsed_ms` | match |
@@ -246,6 +254,13 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Demo light target (`event/demo_light_target.cpp`, `25d014`–`25d19c`).** `apply_track_light` positions a light's quad. It is a free function with a null check on the target. With an angle it inlines a polynomial cosine and sine (range reduction by 2π and π, then Taylor terms to x⁶ or x⁵), written once in each branch. `build_quad` builds the corners and rotates them with `rotate_point` (`1f714c`).
   - `build_quad`: the field at `+0x18` is two floats, so the two zero stores merge into one 64-bit store while the 1.0/0.0 matrix stores stay 32-bit. `scale[1]` is written before `scale[0]`, which keeps that pair from merging. The corner halves go into four locals.
   - `apply_track_light`: the range-reduction selects use inverted compares (`!(a >= kPi)`), which gives `fcsel lt`. `dy` is computed before `dx`. The no-angle path reads the image size inline.
+- **Demo light system (`event/demo_light_system.cpp`, `25dc08`–`25eb70`).** This is the 0x19b40-byte singleton behind the GOT slot `c22d98`; the light channels reach their tables through it (`+0x72a8`). Its layout is in `include/event/demo_light_system.h`. Member types are known only from their out-of-line constructors, destructors and methods. The implicit destructor, inlined in `destroy_demo_light_system`, gives the member order.
+  - `TrackKey` (`+0x5c28`) moved into `demo_track.h`. Its empty bodies are `TrackKey::finalize` (`25b860`) and `TrackKey::unload` (`25bb9c`), and `25b864` is `TrackKey::load(int)`. The pointer constructor is placed with `new`.
+  - The scene at `+0x68` has an implicit constructor around an out-of-line base constructor and a vtable from elsewhere, so it is value-initialized (`scene()`): memset, base constructor, vtable store.
+  - The default heap's allocator is a base at `+0xb0`, reached through a reference. As a member, clang devirtualizes the calls; through a pointer, it adds a null check.
+  - `+0x199ec` is a 4-byte flag group plus an index, value-initialized as one struct, so the zero store is 64-bit. The tail fields are assigned in the constructor body in the order 9b20, 9b24, 9b30, 9b28, 9b38, 9b27, 9b25, 9b26. Only `9b25`/`9b26` merge.
+  - `update` dispatches through a 12-entry jump table (`7f508c`, mapped as `.rodata`). States 3–5, 7 and 8 share the tail that sets state 9.
+  - Two strings are linker-merged literals (`""` at `740512`, `"font_caption.bflyt"` at `741e21`), declared as hidden externs.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred
@@ -253,6 +268,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 `45e160` (1,464 bytes) is a 61-case statistics switch with a jump table at `811194`. It calls at least six game functions whose signatures are unknown (`204728`, `203dfc`, `2028b4`, `200fc0`, `2015a8`, `200294`), so it needs its own effort. The four small virtuals at `45dcd0`–`45dd28` need their class and vtable identified first.
 
 ### Near misses
+
+`25e8a0`: everything but the final `time` clamp matches. The original keeps the `t < 0` compare alive for a second use, so the select is not turned into `fmax`. Ternaries, `if` chains, `std::max`-style helpers and an extra variable all compile to the single-use form.
+
+`25dc08`: three independent stores before the `LightResource` constructor call come out in reverse order. Brace and value initialization, moving fields into the body, and a 12-byte flag struct were tried.
 
 `25d19c`: the size matches (491 words). The original computes the cosine's sign as `eor` of two re-emitted compares and tests it with `tbz`/`tst #1`. Our DAG folds the same `xor i1` into a `cmp`. Typing the flag as `int`/`unsigned char`, keeping it in a local, or writing it differently in each branch made no difference. The sine's second select and the polynomial blocks also differ in register choice and order.
 

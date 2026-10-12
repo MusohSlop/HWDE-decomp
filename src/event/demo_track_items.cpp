@@ -4,23 +4,8 @@
 
 #include "event/demo_track.h"
 
-struct TrackKey {
-    unsigned long value0;     // +00
-    unsigned long value8;     // +08
-    float value10;            // +10
-    unsigned int index14;     // +14
-    unsigned int index18;     // +18
-    unsigned int value1c;     // +1c
-    unsigned long id20;       // +20
-    unsigned long id28;       // +28
-
-    TrackKey();
-    explicit TrackKey(unsigned long value);
-    ~TrackKey();
-};
-
 TrackKey::TrackKey() {
-    value0 = 0;
+    owner = nullptr;
     value8 = 0;
     value10 = 0;
     index14 = 0xffffffff;
@@ -32,8 +17,8 @@ TrackKey::TrackKey() {
 
 TrackKey::~TrackKey() {}
 
-TrackKey::TrackKey(unsigned long value) {
-    value0 = value;
+TrackKey::TrackKey(void* owner_) {
+    owner = owner_;
     value8 = 0;
     value10 = 0;
     index14 = 0xffffffff;
@@ -42,7 +27,7 @@ TrackKey::TrackKey(unsigned long value) {
     id28 = ~0ul;
 }
 
-void track_key_nop() {}
+void TrackKey::finalize() {}
 
 static inline void decode_light(TrackLight* light, const TrackLightRecord& record) {
     light->values.x = record.value0;
@@ -69,7 +54,7 @@ static inline void decode_light(TrackLight* light, const TrackLightRecord& recor
     light->color.set(color);
 }
 
-void track_light_nop() {}
+void TrackKey::unload() {}
 
 void TrackLight::reset() {
     position = kTrackDefaultVector;

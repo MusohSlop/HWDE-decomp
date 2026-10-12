@@ -2,6 +2,26 @@
 // channel units. Names are descriptive placeholders.
 #pragma once
 
+// Track key data loaded per stage.
+struct TrackKey {
+    void* owner;              // +00
+    unsigned long value8;     // +08
+    float value10;            // +10
+    unsigned int index14;     // +14
+    unsigned int index18;     // +18
+    unsigned int value1c;     // +1c
+    unsigned long id20;       // +20
+    unsigned long id28;       // +28
+
+    TrackKey();
+    explicit TrackKey(void* owner);
+    ~TrackKey();
+    void finalize();
+    void unload();
+    void load(int stage);     // 0x710025b864
+};
+static_assert(sizeof(TrackKey) == 0x30, "key size");
+
 struct alignas(16) TrackVector {
     float x, y, z, w;
 };
@@ -108,6 +128,7 @@ struct TrackLightTarget {
     unsigned int value78;     // +78
     unsigned char pad7c[0xc]; // +7c
 
+    TrackLightTarget();                                                 // 0x71001f0140
     void build_quad(TrackLightTable* table, const TrackLight& light, int index);
 };
 static_assert(sizeof(TrackLightTarget) == 0x88, "target size");
@@ -119,14 +140,6 @@ struct TrackLightNode {
     unsigned char pad[0xc0];
     unsigned char dirty;      // +c0
 };
-
-// Light tables selected by a channel's mode, reached through the GOT slot at
-// 0x7100c22d98.
-struct TrackLightTables {
-    unsigned char pad[0x72a8];
-    TrackLightTable* tables[3]; // +72a8
-};
-extern TrackLightTables* gTrackLightTables;
 
 struct TrackLightChannel {
     int mode;                       // +00: table 0-2
