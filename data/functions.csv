@@ -7897,8 +7897,8 @@ Address,Quality,Size,Name
 0x71002581d4,O,60,_Z14lookup_table_ai
 0x7100258210,O,48,_Z14lookup_table_bi
 0x7100258240,O,64,_Z18demo_player_targetv
-0x7100258280,m,204,_Z24demo_player_target_statev
-0x710025834c,m,80,_Z16demo_speed_scalev
+0x7100258280,O,204,_Z24demo_player_target_statev
+0x710025834c,O,80,_Z16demo_speed_scalev
 0x710025839c,O,32,_Z16demo_player_pairPm
 0x71002583bc,m,36,_Z16demo_player_namePc
 0x71002583e0,O,60,_Z20demo_player_value180v
@@ -7934,7 +7934,7 @@ Address,Quality,Size,Name
 0x7100259e84,O,8,_ZN11ChunkedData3setEP13ChunkedHeader
 0x7100259e8c,O,4,_ZN11ChunkedData3nopEv
 0x7100259e90,O,24,_ZNK11ChunkedData4sizeEv
-0x7100259ea8,M,456,_ZN11ChunkedData7extractEPv
+0x7100259ea8,m,456,_ZN11ChunkedData7extractEPv
 0x710025a070,O,104,_ZN11ChunkedData17extract_allocatedEP11DefaultHeap
 0x710025a0d8,O,92,_Z26initialize_resource_systemv
 0x710025a134,O,64,_Z24shutdown_resource_systemv
@@ -7958,7 +7958,7 @@ Address,Quality,Size,Name
 0x710025a578,O,12,_Z22set_resource_file_gateh
 0x710025a584,O,64,_ZN12ResourceFileC2Ev
 0x710025a5c4,O,140,_ZN12ResourceFile5closeEv
-0x710025a650,m,276,_ZN12ResourceFile4openEv
+0x710025a650,O,276,_ZN12ResourceFile4openEv
 0x710025a764,m,316,_ZN12ResourceFile4readEv
 0x710025a8a0,O,72,_ZN12ResourceFile8set_nameEPKchh
 0x710025a8e8,O,292,_ZN12ResourceFile3runEPvmm
@@ -8051,7 +8051,7 @@ Address,Quality,Size,Name
 0x7100260648,m,112,_ZN10LightEntryC2Ev
 0x71002606b8,O,68,_ZN10LightEntryD2Ev
 0x71002606fc,O,68,_ZN10LightEntry6unloadEv
-0x7100260740,m,300,_ZN10LightEntry4bindEP14LightAllocator
+0x7100260740,O,300,_ZN10LightEntry4bindEP14LightAllocator
 0x710026086c,O,476,_ZN14DemoEffectPoolC2Ev
 0x7100260a48,O,280,_ZN14DemoEffectPool8finalizeEv
 0x7100260b60,O,76,_Z23create_demo_effect_poolv

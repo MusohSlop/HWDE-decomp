@@ -337,9 +337,10 @@ void* ResourceController::read(int identity, void* dest, unsigned int offset, un
         if (dest)
             return nullptr;
     } else {
+        bool keep = dest != nullptr;
         unsigned char exiting = shared_state_exiting(get_shared_state());
         void* ret = exiting ? nullptr : buffer;
-        if (!exiting || dest)
+        if (!exiting || keep)
             return ret;
     }
     DefaultHeap* release_heap = get_default_heap();

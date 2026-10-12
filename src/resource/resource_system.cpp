@@ -84,9 +84,11 @@ void ChunkedData::extract(void* dest) {
     if (scratch_size < chunk * 2)
         scratch_size = chunk * 2;
     void* scratch = nullptr;
-    if (allocator)
+    bool from_allocator = false;
+    if (allocator) {
         scratch = allocator->alloc_aligned(scratch_size, 0x80, AllocDescriptor(0x2e));
-    bool from_allocator = scratch != nullptr;
+        from_allocator = scratch != nullptr;
+    }
     if (!scratch)
         scratch = get_default_heap()->allocate(0x10, scratch_size, 1, 0);
     if (!scratch)

@@ -130,15 +130,34 @@ static inline bool large_platform() {
 int demo_player_target_state() {
     if (!large_platform())
         return -1;
-    if (!tuning_mode_active())
-        return -1;
-    return player_target() ? 3 : -1;
+    GameState* game = gGameState;
+    if (game) {
+        switch (game->mode) {
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 12:
+            return player_target() ? 3 : -1;
+        }
+    }
+    return -1;
 }
 
+// Written as a switch on the mode; the shared helper's bit test gives a branch here.
 float demo_speed_scale() {
-    if (!tuning_mode_active())
-        return 0.0f;
-    return gGameState->speed * gDemoPlayer->speed_scale;
+    GameState* game = gGameState;
+    if (game) {
+        switch (game->mode) {
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 12:
+            return game->speed * gDemoPlayer->speed_scale;
+        }
+    }
+    return 0.0f;
 }
 
 void demo_player_pair(unsigned long* out) {

@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-180 of 207 attempted functions match: 170 inventory functions (27,236 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-seven are near misses: twenty-six `m` and one `M`.
+184 of 207 attempted functions match: 174 inventory functions (28,096 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-three are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -54,10 +54,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `2174d0` | `DemoSequenceItem::release` | match |
 | `2581d4`, `258210` | `lookup_table_a`, `lookup_table_b` | match |
 | `258240` | `demo_player_target` | match |
-| `258280` | `demo_player_target_state` | `m`: the mode test uses separate `b.hi`/`cbz` branches instead of the original `ccmp` |
-| `25834c` | `demo_speed_scale` | `m`: same mode-test difference (6 words) |
+| `258280` | `demo_player_target_state` | match: the mode test is a `switch` on modes 7, 8, 9, 10 and 12 (gives the `ccmp`) |
+| `25834c` | `demo_speed_scale` | match: same `switch` |
 | `25839c` | `demo_player_pair` | match |
-| `2583bc` | `demo_player_name` | `m`: ours tail-calls `copy_name`; the original makes a normal call with a frame |
+| `2583bc` | `demo_player_name` | `m`: ours tail-calls `copy_name`; the original makes a normal call with a frame. `3ff70` is not a string copy (it does float math on `[x1+8]`), so the name is a placeholder |
 | `2583e0`–`258458` | `demo_player_value180/184/188` | match |
 | `258494` | `demo_tuning_vector` | match |
 | `2586bc` | `apply_demo_tuning` | match |
@@ -79,7 +79,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `2598c4` | `initialize_resource_queue` | match |
 | `2599ac`, `2599c4` | `run_resource_queue_worker`, `run_resource_queue_high_worker` (static) | match |
 | `259e84`–`259e90` | `ChunkedData::set`, `nop`, `size` | match |
-| `259ea8` | `ChunkedData::extract` | `M`: same size (114 words) but register and block layout differ in 72 words |
+| `259ea8` | `ChunkedData::extract` | `m`: `from_allocator` is set inside the allocator branch (gives the original's `cset`); the original still re-checks the scratch pointer after the loop. 111 words vs 114 |
 | `25a070` | `ChunkedData::extract_allocated` | match |
 | `25a0d8` | `initialize_resource_system` | match |
 | `25a134` | `shutdown_resource_system` | match |
@@ -120,7 +120,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25a568`–`25a578` | `resource_file_nop`, `resource_file_gate`, `set_resource_file_gate` | match |
 | `25a584` | `ResourceFile::ResourceFile` | match |
 | `25a5c4` | `ResourceFile::close` | match |
-| `25a650` | `ResourceFile::open` | `m`: one `csel` with swapped operands and inverted condition |
+| `25a650` | `ResourceFile::open` | match: the size clamp is `mSize == 0 \|\| mSize > size`, which InstCombine folds into the original's `mSize - 1 >= size` |
 | `25a764` | `ResourceFile::read` | `m`: the seek failure gets its own `return 0` (81 words vs 79) |
 | `25a8a0` | `ResourceFile::set_name` | match |
 | `25a8e8` | `ResourceFile::run` | match |
@@ -131,7 +131,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25ab58` | `ResourceController::resolve_name` | match |
 | `25acdc`, `25ace8` | `ResourceController::initialize`, `finalize` | match |
 | `25acec` | `ResourceController::size` | match |
-| `25adf0` | `ResourceController::read` | `m`: block layout of the cancellation/exit tail; 179 words vs 180 |
+| `25adf0` | `ResourceController::read` | `m`: block layout of the cancellation/exit tail. A `keep = dest != nullptr` flag gives the original's `cset`, but the two return tests still come out in the other order |
 | `25b828`–`25b860` | `TrackKey` constructors, destructor and a trivial body | match |
 | `25bb9c`, `25bba0` | trivial body, `TrackLight::reset` | match |
 | `25bcd0` | `TrackLight::copy` | match |
@@ -172,9 +172,9 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25ffe8`, `260220` | `TrackLightTableSet` constructor, destructor (76 bytes; the inventory said 80) | match |
 | `26026c`, `260288`, `2605d0` | `TrackLightTableSet::init`, `finalize`, `unload` | match |
 | `260290` | `TrackLightTableSet::load` (140 bytes; the inventory merged it with `26031c`) | match |
-| `260648` | `LightEntry::LightEntry` | `m`: the scale and color stores merge differently (10 words) |
+| `260648` | `LightEntry::LightEntry` | `m`: `scale` is set in the initializer list, which fixes its store; the color is still zeroed as one word where the original uses two halfword stores |
 | `2606b8`, `2606fc` | `LightEntry` destructor, `unload` | match |
-| `260740` | `LightEntry::bind` | `m`: everything up to the texture call matches; the color argument is built from one word load instead of four byte loads |
+| `260740` | `LightEntry::bind` | match: `make_texture` takes the color packed as an `unsigned int`, built in the call from the four bytes |
 | `26086c` | `DemoEffectPool::DemoEffectPool` | match |
 | `260a48` | `DemoEffectPool::finalize` | match |
 | `260b60`, `260bac` | `create_demo_effect_pool`, `destroy_demo_effect_pool` | match |

@@ -215,7 +215,6 @@
     "got:gLightEntryAllocator": "0x7100c2a640",
     "_ZN10LightEntryC1Ev": "0x7100260648",
     "_ZN10LightEntryD1Ev": "0x71002606b8",
-    "_ZN13TextureLoader12make_textureEP14LightAllocator8Color4u8Pv9TrackVec2": "0x71004e27bc",
     "_ZN13EffectManager10unregisterEPvi": "0x71001e2218",
     "_ZN13EffectManager15attach_resourceEP13LightResource": "0x71001e26e0",
     "got:gDemoEffectPool": "0x7100c2a648",
@@ -250,7 +249,8 @@
     "got:gDemoPanelSystem": "0x7100c2a678",
     "_Z12hide_targetsP16TrackLightTargetj": "0x71001f7530",
     "_ZN13EffectManager5flushEv": "0x71001e26e4",
-    "got:_ZTV12LayoutHandle": "0x7100c22f00"
+    "got:_ZTV12LayoutHandle": "0x7100c22f00",
+    "_ZN13TextureLoader12make_textureEP14LightAllocatorjPv9TrackVec2": "0x71004e27bc"
   },
   "units": {
     "event/resource_queue_controls.cpp": {

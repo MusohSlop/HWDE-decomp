@@ -88,7 +88,7 @@ unsigned char ResourceFile::open() {
         }
     }
     unsigned long size = fs->size(mHandle);
-    mSize = mSize - 1 >= size ? size : mSize;
+    mSize = mSize == 0 || mSize > size ? size : mSize;
     mDone = 0;
     return true;
 }

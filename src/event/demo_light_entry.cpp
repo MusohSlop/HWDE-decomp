@@ -5,7 +5,7 @@
 
 class TextureLoader {
 public:
-    RefObject* make_texture(LightAllocator* allocator, Color4u8 color, void* source,
+    RefObject* make_texture(LightAllocator* allocator, unsigned int color, void* source,
                             TrackVec2 offset);                              // 0x71004e27bc
 };
 // Reached through the GOT slot at 0x7100c21db0.
@@ -33,10 +33,8 @@ static inline void release_texture(RefObject*& ref) {
 
 LightEntry::LightEntry()
     : texture(nullptr), value8(0), value10(0), modes(), position(kTrackDefaultVector),
-      target(kTrackDefaultVector), offset(), value58(0), color(), count6c(3), count70(3),
+      target(kTrackDefaultVector), offset(), value58(0), scale{1.0f, 1.0f}, color(), count6c(3), count70(3),
       flags74(0), matrix(), visible(1) {
-    scale.x = 1.0f;
-    scale.y = 1.0f;
 }
 
 LightEntry::~LightEntry() {
@@ -66,6 +64,6 @@ void LightEntry::bind(LightAllocator* allocator) {
     modes[4] = 3;
     modes[5] = 3;
     release_texture(texture);
-    texture = gResourceLoader->make_texture(allocator, Color4u8(color.r, color.g, color.b, color.a),
+    texture = gResourceLoader->make_texture(allocator, color.a << 24 | color.b << 16 | color.g << 8 | color.r,
                                             nullptr, offset);
 }
