@@ -215,7 +215,15 @@
     "got:gLightEntryAllocator": "0x7100c2a640",
     "_ZN10LightEntryC1Ev": "0x7100260648",
     "_ZN10LightEntryD1Ev": "0x71002606b8",
-    "_ZN13TextureLoader12make_textureEP14LightAllocator8Color4u8Pv9TrackVec2": "0x71004e27bc"
+    "_ZN13TextureLoader12make_textureEP14LightAllocator8Color4u8Pv9TrackVec2": "0x71004e27bc",
+    "_ZN13EffectManager10unregisterEPvi": "0x71001e2218",
+    "_ZN13EffectManager15attach_resourceEP13LightResource": "0x71001e26e0",
+    "_ZN14DemoEffectPool12update_slotsEv": "0x7100261024",
+    "_ZN14DemoEffectPool14update_markersEv": "0x7100261290",
+    "got:gDemoEffectPool": "0x7100c2a648",
+    "kNumberLayout": "0x71007d5ac9",
+    "kNumberPane": "0x710074129f",
+    "kQuestionLayout": "0x71007d5ab6"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -537,6 +545,17 @@
         "_ZN10LightEntryD2Ev": "0x71002606b8",
         "_ZN10LightEntry6unloadEv": "0x71002606fc",
         "_ZN10LightEntry4bindEP14LightAllocator": "0x7100260740"
+      }
+    },
+    "event/demo_effect_pool.cpp": {
+      "functions": {
+        "_ZN14DemoEffectPoolC2Ev": "0x710026086c",
+        "_ZN14DemoEffectPool8finalizeEv": "0x7100260a48",
+        "_Z23create_demo_effect_poolv": "0x7100260b60",
+        "_Z24destroy_demo_effect_poolv": "0x7100260bac",
+        "_ZN14DemoEffectPool10initializeEv": "0x7100260c0c",
+        "_ZN14DemoEffectPool5clearEv": "0x7100260d54",
+        "_ZN14DemoEffectPool6updateEv": "0x7100260fe8"
       }
     }
   }

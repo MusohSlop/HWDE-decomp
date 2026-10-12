@@ -1,6 +1,7 @@
 // Matching candidates for the demo light system bodies 0x710025dc08-0x710025e4d0.
 // Names are descriptive placeholders. Status: matching/README.md.
 
+#include "event/demo_effects.h"
 #include "event/demo_light_system.h"
 
 inline void* operator new(unsigned long, void* where) noexcept { return where; }
@@ -23,76 +24,6 @@ DefaultHeap* get_default_heap();                                            // 0
 
 unsigned char resource_queue_cancelled();                                   // 0x71002589c0
 
-class EffectBase {
-public:
-    static void* operator new(unsigned long size) noexcept;                 // 0x71005d4380
-    EffectBase();                                                           // 0x71005d9690
-    virtual ~EffectBase();
-
-private:
-    unsigned char data[0xd4];
-};
-
-class LightEffect : public EffectBase {
-public:
-    LightEffect() : mode(0x10) {}
-    virtual void v10();
-
-    int mode;                 // +dc
-};
-
-class EffectGroup {
-public:
-    void add(EffectBase* effect);                                           // 0x71005da17c
-};
-
-class LightEffectNode {
-public:
-    virtual void v00();
-    virtual void release();
-    virtual void v10();
-    virtual void v18();
-    virtual void v20();
-    virtual void v28();
-    virtual void v30();
-    virtual void v38();
-    virtual void v40();
-    virtual void v48();
-    virtual void v50();
-    virtual void v58();
-    virtual void v60();
-    virtual void v68();
-    virtual void v70();
-    virtual void v78();
-    virtual void v80();
-    virtual void v88();
-    virtual void update(void* context, int mode); // +90
-    void detach(void* root);                                                // 0x71005d4408
-    void draw(int mode);                                                    // 0x71001e34a0
-
-    unsigned char pad8[0x10];
-    EffectGroup* group;       // +18
-};
-
-class EffectList {
-public:
-    void remove(LightEffectNode* node);                                     // 0x71005c3774
-};
-
-class EffectManager {
-public:
-    void create_node(LightEffectNode** out, int id, const char* layout);    // 0x71001e2360
-    void attach(LightResource* resource, void* owner);                      // 0x71001e26dc
-    void* current();                                                        // 0x71001e26ec
-    void begin();                                                           // 0x71001e22e0
-    void end();                                                             // 0x71001e22d8
-
-    unsigned char pad[0x68];
-    EffectList nodes;         // +68
-};
-// Reached through the GOT slot at 0x7100c22a00.
-extern EffectManager* gEffectManager;
-
 class CaptionLayer {
 public:
     void refresh(int mode);                                                 // 0x71001de418
@@ -107,17 +38,6 @@ public:
 };
 // Reached through the GOT slot at 0x7100c22ef8.
 extern CaptionLayer* gCaptionLayer;
-
-struct LayoutRoot {
-    unsigned char pad[0x10];
-    unsigned char root[1];    // +10
-};
-struct ResourceLoaderView {
-    unsigned char pad[0x2af8];
-    LayoutRoot* layout;       // +2af8
-};
-// Reached through the GOT slot at 0x7100c21db0.
-extern ResourceLoaderView* gResourceLoader;
 
 class LightPreset {
 public:
@@ -313,7 +233,7 @@ void DemoLightSystem::initialize() {
     manager->create_node(&effect, 0x41e5, kCaptionLayout);
     gEffectManager->attach(&resource, nullptr);
     EffectGroup* group = effect->group;
-    group->add(new LightEffect);
+    group->add(new LightEffect(0x10));
     initialized = 1;
     sources[0].flags |= 0x80;
     sources[1].flags |= 0x80;

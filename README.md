@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-165 of 187 attempted functions match: 155 inventory functions (20,548 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-two are near misses: twenty-one `m` and one `M`.
+172 of 194 attempted functions match: 162 inventory functions (22,524 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-two are near misses: twenty-one `m` and one `M`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -175,6 +175,12 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `260648` | `LightEntry::LightEntry` | `m`: the scale and color stores merge differently (10 words) |
 | `2606b8`, `2606fc` | `LightEntry` destructor, `unload` | match |
 | `260740` | `LightEntry::bind` | `m`: everything up to the texture call matches; the color argument is built from one word load instead of four byte loads |
+| `26086c` | `DemoEffectPool::DemoEffectPool` | match |
+| `260a48` | `DemoEffectPool::finalize` | match |
+| `260b60`, `260bac` | `create_demo_effect_pool`, `destroy_demo_effect_pool` | match |
+| `260c0c` | `DemoEffectPool::initialize` | match |
+| `260d54` | `DemoEffectPool::clear` | match |
+| `260fe8` | `DemoEffectPool::update` | match |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -281,6 +287,11 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `load_tracks` holds each channel count in a local, loads `channels` before the counter store, and reads both overflow counters through one 64-bit view (a union), as the original does.
 - **Light system rendering.** `render` dispatches with a switch (cases 1, 10, 11); an if-chain lets SimplifyCFG hoist the shared `begin()` call. Its last two layers go through an inline `draw_layer` helper. `render_ending` keeps a function-local static table of 33 per-stage offsets (guard `c8b2c0`, data `c8b2c8`) built through a constructor, which is why it needs a guard. The stage offset is copied into a local before `begin()`, and the timer test is `<=`-first.
 - **Light entries (`event/demo_light_entry.cpp`, `260648`–`260740`).** These are textured sprites, 0xd0 bytes each, holding a reference-counted texture. They are a separate unit because the table-set loops call their constructor and destructor. `bind` copies a 64-byte table of four RGBA colors (`7f50f0`, mapped as `.rodata`) and stores the allocator in a global (GOT `c2a640`).
+- **Demo effect pool (`event/demo_effect_pool.cpp`, `26086c`–`260fe8`).** A 0x12f0-byte singleton (GOT `c2a648`) holding four arrays of 28 effect slots (two 0x28-byte kinds, two 0x20-byte kinds), 28 caption nodes, a counter node and a `LightResource`.
+  - The effect-manager types moved to `include/event/demo_effects.h`. `LightEffect` takes its mode (0x10 in the light system, 0x11 here).
+  - Releasing a node unregisters its id (0x4211 slots, 0x420f markers, 0x420d captions) before detaching it. The root pointer is read first.
+  - The constructor assigns everything in its body, after the `LightResource` member is constructed. Slots are reset by inline `reset()` helpers. The destructor calls `finalize()`, so `destroy_demo_effect_pool` finalizes twice, as in the original.
+  - `initialize` binds each caption by reference in its loop and stores `step` before `initialized`.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred
