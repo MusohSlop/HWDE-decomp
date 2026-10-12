@@ -94,6 +94,7 @@ public:
     void end();                                                             // 0x71001e22d8
     void attach_resource(LightResource* resource);                          // 0x71001e26e0
     void unregister(void* registry, int id);                                // 0x71001e2218
+    void flush();                                                           // 0x71001e26e4
     void sync();                                                            // 0x71001e26e8
     void finish(int id);                                                    // 0x71001e22e4
 

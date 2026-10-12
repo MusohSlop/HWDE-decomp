@@ -246,7 +246,11 @@
     "got:kSlotAnimations": "0x7100c2a660",
     "got:kMarkerLayouts": "0x7100c2a668",
     "got:kMarkerAnimations": "0x7100c2a670",
-    "kEnemyDetailLayout": "0x71007d5ad7"
+    "kEnemyDetailLayout": "0x71007d5ad7",
+    "got:gDemoPanelSystem": "0x7100c2a678",
+    "_Z12hide_targetsP16TrackLightTargetj": "0x71001f7530",
+    "_ZN13EffectManager5flushEv": "0x71001e26e4",
+    "got:_ZTV12LayoutHandle": "0x7100c22f00"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -591,6 +595,15 @@
       "map": {
         ".rodata": "0x71007f5130",
         ".rodata.cst4": "0x710073bae8"
+      }
+    },
+    "event/demo_panel_system.cpp": {
+      "functions": {
+        "_ZN12PanelTargetsC2Ev": "0x71002632cc",
+        "_ZN15DemoPanelSystem8finalizeEv": "0x71002637fc",
+        "_ZN12PanelTargetsD2Ev": "0x71002639a8",
+        "_Z24create_demo_panel_systemv": "0x7100263b3c",
+        "_Z25destroy_demo_panel_systemv": "0x7100263cfc"
       }
     }
   }

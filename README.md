@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-176 of 202 attempted functions match: 166 inventory functions (24,984 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-six are near misses: twenty-five `m` and one `M`.
+180 of 207 attempted functions match: 170 inventory functions (27,236 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other twenty-seven are near misses: twenty-six `m` and one `M`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -189,6 +189,11 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `262e78` | `DemoEffectPool::restart` | near miss |
 | `26302c` | `DemoEffectPool::draw` | match |
 | `26303c` | `DemoEffectPool::draw_nodes` | match |
+| `2632cc` | `PanelTargets::PanelTargets` | match |
+| `2637fc` | `DemoPanelSystem::finalize` | match |
+| `2639a8` | `PanelTargets::~PanelTargets` | match |
+| `263b3c` | `create_demo_panel_system` | near miss |
+| `263cfc` | `destroy_demo_panel_system` | match |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -308,6 +313,9 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `setup` (`261e24`) runs two passes. Each asks the roster (`26b3cc`) for five {kind, value, flag} records and exchange-sorts them by value, then fills slots, markers and captions. Values above 1000 or equal to -1 clear the kind. Kinds 0x28–0x2a map to slot layouts 0xd–0xf. The cell value gives the grid position: x = (col·56 − 420)·1.5, y = (304 − row·56)·1.5. The two passes differ only in their arrays and in the animation and kind indices (`2 + pass`, `6 + pass`, `pass`).
   - In the sort, the swap saves `records[j]`'s fields, copies `records[i]` over `records[j]` as a whole struct (an 8+4-byte copy), then stores the saved fields into `records[i]`. That gives the original's mix of 64-bit and field-wise moves. A marker uses one of two `create_node` calls (the special enemy layout for marker 0x1e in modes 7 and up), which the optimizer merges. The 0.6525 scale has to be written as `0.652500033f`, which gives the original's 0x3f270a3e.
   - The `26302c` inventory row was two functions: `draw` (16 bytes) checks `initialized` and tail-calls `draw_nodes` (`26303c`, 656 bytes). `draw_nodes` mirrors `update_markers`, with `draw(0)` in place of `update`. Its helper takes the node, index and value by reference, which gives the original's loop pointer.
+- **Demo panel system (`event/demo_panel_system.cpp`, `2632cc`–`263cfc`).** A second 0x26b80-byte singleton (GOT `c2a678`) built like the effect pool. Its member at `+0x30` (`PanelTargets`, out-of-line constructor and destructor) holds a node, a `LightResource`, two groups of four {pointer, `LayoutHandle`} items and five `TrackLightTarget` arrays (24, 544, 544, 24, 24). `hide_targets` (`1f7530`) sets the hidden bit on a run of targets.
+  - `LayoutHandle` derives from a plain state base ({id = -1, two shorts}), so its vtable pointer is stored after the fields. Its destructor is an inline virtual (vtable slots 0 and 1) that calls virtual slot 3, `release(root)`. Because the class has an inline virtual function, Clang can't emit the vtable `available_externally`, and the call goes through a load from the external vtable (GOT `c22f00`), as in the original.
+  - `finalize` releases two nodes with id 0x420d (unregister, then the children list) and two plain nodes (the nodes list, no unregister). `+0x26b08` and `+0x26b68` are {pointer, pointer, int} records, reset by an inline helper.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
 ### Deferred
@@ -315,6 +323,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 `45e160` (1,464 bytes) is a 61-case statistics switch with a jump table at `811194`. It calls at least six game functions whose signatures are unknown (`204728`, `203dfc`, `2028b4`, `200fc0`, `2015a8`, `200294`), so it needs its own effort. The four small virtuals at `45dcd0`–`45dd28` need their class and vtable identified first.
 
 ### Near misses
+
+`263b3c`: the inlined outer constructor's stores differ only in order. The store at `+0x26b78` comes later, and the constant for one `+0x26a78` store is set up earlier. The order doesn't follow the source order: reversing the source, permuting the groups and splitting the records were all tried.
 
 `261e24`: the passes, slot, marker and caption blocks match in structure. Still different: the frame is 16 bytes larger (one extra spill), the unrolled sort addresses `records[j]` through the pointers kept for the roster calls instead of through `sp`, and two instruction-schedule spots (the marker position pair and the caption position). We tried pointer forms of the query and sort loops, struct copies, `operator=` and field-wise swaps.
 
