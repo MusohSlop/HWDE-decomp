@@ -3,6 +3,7 @@
 #pragma once
 
 class LightResource;
+class LayoutAnimation;
 
 class EffectBase {
 public:
@@ -42,7 +43,11 @@ public:
     unsigned char pad8[0x28];
     float offset30;           // +30
     float offset34;           // +34
-    unsigned char pad38[0x20];
+    float offset38;           // +38
+    unsigned char pad3c[0xc];
+    float scale48;            // +48
+    float scale4c;            // +4c
+    unsigned char pad50[8];
     unsigned char flags58;    // +58: bit 0 visible, bit 4 moved
 };
 
@@ -69,6 +74,7 @@ public:
     virtual void update(void* context, int mode); // +90
     void detach(void* root);                                                // 0x71005d4408
     void draw(int mode);                                                    // 0x71001e34a0
+    LayoutAnimation* create_animation(const char* name, bool loop);    // 0x71001e3820
 
     unsigned char pad8[0x10];
     EffectGroup* group;       // +18
@@ -88,6 +94,8 @@ public:
     void end();                                                             // 0x71001e22d8
     void attach_resource(LightResource* resource);                          // 0x71001e26e0
     void unregister(void* registry, int id);                                // 0x71001e2218
+    void sync();                                                            // 0x71001e26e8
+    void finish(int id);                                                    // 0x71001e22e4
 
     unsigned char pad[0x68];
     EffectList nodes;         // +68

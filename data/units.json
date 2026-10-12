@@ -237,7 +237,16 @@
     "_Z13project_pointP9TrackVec2ff": "0x71001e412c",
     "_Z17unit_has_overrideii": "0x710026c924",
     "_Z18unit_override_kindii": "0x710026c654",
-    "_Z19unit_override_frameii": "0x710026c884"
+    "_Z19unit_override_frameii": "0x710026c884",
+    "_ZN10UnitRoster5queryEiiiPiS0_S0_": "0x710026b3cc",
+    "_ZN13EffectManager4syncEv": "0x71001e26e8",
+    "_ZN13EffectManager6finishEi": "0x71001e22e4",
+    "_ZN15LightEffectNode16create_animationEPKcb": "0x71001e3820",
+    "got:kSlotLayouts": "0x7100c2a658",
+    "got:kSlotAnimations": "0x7100c2a660",
+    "got:kMarkerLayouts": "0x7100c2a668",
+    "got:kMarkerAnimations": "0x7100c2a670",
+    "kEnemyDetailLayout": "0x71007d5ad7"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -573,7 +582,11 @@
         "_ZN14DemoEffectPool12update_slotsEv": "0x7100261024",
         "_ZN14DemoEffectPool14update_markersEv": "0x7100261290",
         "_ZN14DemoEffectPool11draw_markerEP15LightEffectNodeiii": "0x7100261720",
-        "_ZN14DemoEffectPool13render_markerEP15LightEffectNodeiii": "0x7100261aa8"
+        "_ZN14DemoEffectPool13render_markerEP15LightEffectNodeiii": "0x7100261aa8",
+        "_ZN14DemoEffectPool5setupEv": "0x7100261e24",
+        "_ZN14DemoEffectPool7restartEv": "0x7100262e78",
+        "_ZN14DemoEffectPool4drawEv": "0x710026302c",
+        "_ZN14DemoEffectPool10draw_nodesEv": "0x710026303c"
       },
       "map": {
         ".rodata": "0x71007f5130",

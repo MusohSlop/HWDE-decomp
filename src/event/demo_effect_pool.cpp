@@ -22,9 +22,36 @@ extern const char kNumberPane[] __attribute__((visibility("hidden")));      // 0
 
 class LayoutAnimation {
 public:
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+    virtual void v18();
+    virtual void set_active(bool active); // +20
+    virtual void v28();
+    virtual void v30();
+    virtual void v38();
+    virtual void v40();
+    virtual void v48();
+    virtual void v50();
+    virtual void v58();
+    virtual void v60();
+    virtual void v68();
+    virtual void v70();
+    virtual void v78();
+    virtual void v80();
+    virtual void v88();
+    virtual void v90();
+    virtual void v98();
+    virtual void va0();
+    virtual void va8();
+    virtual void set_rate(float rate); // +b0
+    virtual void vb8();
+    virtual void vc0();
+    virtual void vc8();
+    virtual void rewind(); // +d0
     unsigned short frame_count();                                           // 0x71005ce178
 
-    unsigned char pad[0x20];
+    unsigned char pad8[0x18];
     float frame;              // +20
     unsigned char pad24[0x18];
     float speed;              // +3c
@@ -41,7 +68,9 @@ public:
     unsigned char active(int id);                                           // 0x710026a90c
 
     int id;                   // +00
-    unsigned char pad4[0x2c34];
+    unsigned char pad4[0x764];
+    unsigned char enabled[8]; // +768
+    unsigned char pad770[0x24c8];
 };
 
 class Game {
@@ -83,12 +112,24 @@ unsigned int display_width();                                               // 0
 unsigned int display_height();                                              // 0x71003cc94c
 TrackVec2 project_point(TrackVec2* position, float width, float height);    // 0x71001e412c
 
+class UnitRoster {
+public:
+    void query(int player, int slot, int pass, int* kind, int* value, int* flag); // 0x710026b3cc
+};
+
+// Layout and animation names, reached through the GOT slots at 0x7100c2a658-0x7100c2a670.
+extern const char* const kSlotLayouts[];
+extern const char* const kSlotAnimations[];
+extern const char* const kMarkerLayouts[];
+extern const char* const kMarkerAnimations[];
+extern const char kEnemyDetailLayout[] __attribute__((visibility("hidden"))); // 0x71007d5ad7
+
 // Frame delta, reached through the GOT slot at 0x7100c22a28.
 extern float gFrameDelta;
 
 struct EffectSlot {
     LightEffectNode* node;    // +00
-    unsigned long value8;     // +08
+    LayoutAnimation* value8;  // +08
     LayoutAnimation* animation; // +10
     int index;                // +18
     int value;                // +1c
@@ -108,7 +149,7 @@ static_assert(sizeof(EffectSlot) == 0x28, "slot size");
 
 struct EffectMarker {
     LightEffectNode* node;    // +00
-    unsigned long value8;     // +08
+    LayoutAnimation* value8;  // +08
     int index;                // +10
     int value;                // +14
     int kind;                 // +18
@@ -131,8 +172,8 @@ struct EffectCaption {
 };
 
 template <class T>
-static inline void advance_nodes(T* items, const int& count) {
-    for (int i = 0; static_cast<unsigned int>(i) < static_cast<unsigned int>(count); ++i)
+static inline void advance_nodes(T* items, const unsigned int& count) {
+    for (int i = 0; static_cast<unsigned int>(i) < count; ++i)
         items[i].node->advance(gFrameDelta);
 }
 
@@ -146,6 +187,10 @@ public:
     void update();
     void update_slots();
     void update_markers();
+    void setup();
+    bool restart();
+    void draw();
+    void draw_nodes();
     void draw_marker(LightEffectNode* node, int index, int value, int player); // 0x7100261720
     // Defined in the class, so it is emitted as an inline function the optimizer cannot rewrite.
     void render_marker(LightEffectNode* node, int index, int value, int player) { // 0x7100261aa8
@@ -215,25 +260,26 @@ public:
         gTrackRenderer->end();
     }
 
-    unsigned long value0;             // +00
+    UnitRoster* roster;               // +00
     unsigned char initialized;        // +08
     unsigned char pad9[3];
     int count0c;                      // +0c
-    unsigned char pad10[8];
+    int value10;                      // +10
+    unsigned char pad14[4];
     EffectSlot slots_a[28];           // +18
-    int count_a;                      // +478
+    unsigned int count_a;                      // +478
     unsigned char pad47c[4];
     EffectSlot slots_b[28];           // +480
-    int count_b;                      // +8e0
+    unsigned int count_b;                      // +8e0
     unsigned char pad8e4[4];
     EffectMarker markers_c[28];       // +8e8
-    int count_c;                      // +c68
+    unsigned int count_c;                      // +c68
     unsigned char padc6c[4];
     EffectMarker markers_d[28];       // +c70
-    int count_d;                      // +ff0
+    unsigned int count_d;                      // +ff0
     unsigned char padff4[4];
     EffectCaption captions[28];       // +ff8
-    int count_e;                      // +11b8
+    unsigned int count_e;                      // +11b8
     unsigned char pad11bc[4];
     LightEffectNode* node;            // +11c0
     unsigned char pad11c8[8];
@@ -261,7 +307,7 @@ static inline void release_node(LightEffectNode*& node, int id) {
 DemoEffectPool::DemoEffectPool() {
     step = 0;
     initialized = 0;
-    value0 = 0;
+    roster = nullptr;
     count0c = 0;
     for (int i = 0; i < 28; ++i)
         slots_a[i].reset();
@@ -299,7 +345,7 @@ void DemoEffectPool::finalize() {
         captions[i].value = 0;
     }
     count0c = 0;
-    value0 = 0;
+    roster = nullptr;
     initialized = 0;
 }
 
@@ -536,4 +582,280 @@ void DemoEffectPool::draw_marker(LightEffectNode* node, int index, int value, in
     gTrackRenderer->begin(0x11);
     gTrackRenderer->write(&source, 0x48, -1);
     gTrackRenderer->end();
+}
+
+struct UnitRecord {
+    int kind;
+    int value;
+    int flag;
+
+    UnitRecord() : kind(-1), value(-1), flag(0) {}
+
+};
+
+// Places a node on the 16-column grid encoded in `cell`.
+static inline void place_node(LightEffectNode* node, unsigned int cell) {
+    EffectGroup* group = node->group;
+    float x = static_cast<float>(cell & 0xf) * 56.0f + -420.0f;
+    float y = 304.0f - static_cast<float>(cell >> 4) * 56.0f;
+    group->offset38 = 0.0f;
+    group->flags58 |= 0x10;
+    group->offset30 = x * 1.5f;
+    group->offset34 = y * 1.5f;
+}
+
+static inline void set_scale(LightEffectNode* node, const float& scale) {
+    EffectGroup* group = node->group;
+    group->scale48 = scale;
+    group->scale4c = scale;
+    group->flags58 |= 0x10;
+}
+
+static inline void rewind_animation(LayoutAnimation*& animation) {
+    if (animation)
+        animation->rewind();
+    if (animation)
+        animation->set_active(false);
+}
+
+void DemoEffectPool::setup() {
+    if (value10 != 0 || count0c != 0)
+        return;
+    count_a = 0;
+    count_c = 0;
+    count_b = 0;
+    count_d = 0;
+    count_e = 0;
+    Game* game = get_game();
+    Player* player = &game->players[get_game()->state()->mode];
+    int id = player->id;
+    if (!player->active(id))
+        return;
+    if (!player->enabled[player->id])
+        return;
+
+    UnitRecord first[5];
+    for (int i = 0; i < 5; ++i)
+        roster->query(id, i, 0, &first[i].kind, &first[i].value, &first[i].flag);
+    for (int i = 0; i < 4; ++i) {
+        for (int j = i + 1; j < 5; ++j) {
+            if (first[i].value > first[j].value) {
+                int kind = first[j].kind;
+                int value = first[j].value;
+                int flag = first[j].flag;
+                first[j] = first[i];
+                first[i].kind = kind;
+                first[i].value = value;
+                first[i].flag = flag;
+            }
+        }
+    }
+    gEffectManager->sync();
+    for (int i = 0; i < 5; ++i) {
+        int flag = first[i].flag;
+        int value = first[i].value;
+        unsigned int kind = first[i].kind;
+        if (value == -1 || value > 1000)
+            kind = -1;
+        if (static_cast<unsigned int>(kind) <= 0x2a) {
+            if (kind == 0x28)
+                kind = 0xd;
+            if (kind == 0x29)
+                kind = 0xe;
+            if (kind == 0x2a)
+                kind = 0xf;
+            slots_a[count_a].index = kind;
+            slots_a[count_a].value = value;
+            gEffectManager->create_node(&slots_a[count_a].node, 0x4211, kSlotLayouts[kind]);
+            gEffectManager->sync();
+            place_node(slots_a[count_a].node, slots_a[count_a].value);
+            set_scale(slots_a[count_a].node, 1.3125f);
+            slots_a[count_a].value8 = slots_a[count_a].node->create_animation(kSlotAnimations[2], true);
+            slots_a[count_a].animation = slots_a[count_a].node->create_animation(kSlotAnimations[6], true);
+            slots_a[count_a].kind = 2;
+            gEffectManager->finish(0x4211);
+            EffectSlot& slot = slots_a[count_a];
+            rewind_animation(slot.value8);
+            rewind_animation(slot.animation);
+            slots_a[count_a].value8->set_rate(0.5f);
+            if (slots_a[count_a].value8)
+                slots_a[count_a].value8->set_active(true);
+            ++count_a;
+        }
+        unsigned int marker = kind - 0x28;
+        if (marker <= 0x3b && static_cast<unsigned int>(kind - 0x42) >= 3) {
+            markers_c[count_c].index = kind;
+            markers_c[count_c].value = value;
+            unsigned int mode = get_game()->state()->mode;
+            if (marker == 0x1e && mode >= 7)
+                gEffectManager->create_node(&markers_c[count_c].node, 0x420f, kEnemyDetailLayout);
+            else
+                gEffectManager->create_node(&markers_c[count_c].node, 0x420f, kMarkerLayouts[marker]);
+            gEffectManager->sync();
+            place_node(markers_c[count_c].node, markers_c[count_c].value);
+            if (kind == 0x41)
+                set_scale(markers_c[count_c].node, 0.652500033f);
+            else
+                set_scale(markers_c[count_c].node, 1.3125f);
+            markers_c[count_c].value8 = markers_c[count_c].node->create_animation(kMarkerAnimations[0], true);
+            markers_c[count_c].kind = 0;
+            gEffectManager->finish(0x420f);
+            rewind_animation(markers_c[count_c].value8);
+            markers_c[count_c].value8->set_rate(0.5f);
+            if (markers_c[count_c].value8)
+                markers_c[count_c].value8->set_active(true);
+            ++count_c;
+        }
+        if (flag == 1 && captions[count_e].node) {
+            place_node(captions[count_e].node, value);
+            captions[count_e].node->group->flags58 |= 1;
+            ++count_e;
+        }
+    }
+
+    UnitRecord second[5];
+    for (int i = 0; i < 5; ++i)
+        roster->query(id, i, 1, &second[i].kind, &second[i].value, &second[i].flag);
+    for (int i = 0; i < 4; ++i) {
+        for (int j = i + 1; j < 5; ++j) {
+            if (second[i].value > second[j].value) {
+                int kind = second[j].kind;
+                int value = second[j].value;
+                int flag = second[j].flag;
+                second[j] = second[i];
+                second[i].kind = kind;
+                second[i].value = value;
+                second[i].flag = flag;
+            }
+        }
+    }    for (int i = 0; i < 5; ++i) {
+        int flag = second[i].flag;
+        int value = second[i].value;
+        unsigned int kind = second[i].kind;
+        if (value == -1 || value > 1000)
+            kind = -1;
+        if (static_cast<unsigned int>(kind) <= 0x2a) {
+            if (kind == 0x28)
+                kind = 0xd;
+            if (kind == 0x29)
+                kind = 0xe;
+            if (kind == 0x2a)
+                kind = 0xf;
+            slots_b[count_b].index = kind;
+            slots_b[count_b].value = value;
+            gEffectManager->create_node(&slots_b[count_b].node, 0x4211, kSlotLayouts[kind]);
+            gEffectManager->sync();
+            place_node(slots_b[count_b].node, slots_b[count_b].value);
+            set_scale(slots_b[count_b].node, 1.3125f);
+            slots_b[count_b].value8 = slots_b[count_b].node->create_animation(kSlotAnimations[3], true);
+            slots_b[count_b].animation = slots_b[count_b].node->create_animation(kSlotAnimations[7], true);
+            slots_b[count_b].kind = 3;
+            gEffectManager->finish(0x4211);
+            EffectSlot& slot = slots_b[count_b];
+            rewind_animation(slot.value8);
+            rewind_animation(slot.animation);
+            slots_b[count_b].value8->set_rate(0.5f);
+            if (slots_b[count_b].value8)
+                slots_b[count_b].value8->set_active(true);
+            ++count_b;
+        }
+        unsigned int marker = kind - 0x28;
+        if (marker <= 0x3b && static_cast<unsigned int>(kind - 0x42) >= 3) {
+            markers_d[count_d].index = kind;
+            markers_d[count_d].value = value;
+            unsigned int mode = get_game()->state()->mode;
+            if (marker == 0x1e && mode >= 7)
+                gEffectManager->create_node(&markers_d[count_d].node, 0x420f, kEnemyDetailLayout);
+            else
+                gEffectManager->create_node(&markers_d[count_d].node, 0x420f, kMarkerLayouts[marker]);
+            gEffectManager->sync();
+            place_node(markers_d[count_d].node, markers_d[count_d].value);
+            if (kind == 0x41)
+                set_scale(markers_d[count_d].node, 0.652500033f);
+            else
+                set_scale(markers_d[count_d].node, 1.3125f);
+            markers_d[count_d].value8 = markers_d[count_d].node->create_animation(kMarkerAnimations[1], true);
+            markers_d[count_d].kind = 1;
+            gEffectManager->finish(0x420f);
+            rewind_animation(markers_d[count_d].value8);
+            markers_d[count_d].value8->set_rate(0.5f);
+            if (markers_d[count_d].value8)
+                markers_d[count_d].value8->set_active(true);
+            ++count_d;
+        }
+        if (flag == 1 && captions[count_e].node) {
+            place_node(captions[count_e].node, value);
+            captions[count_e].node->group->flags58 |= 1;
+            ++count_e;
+        }
+    }
+    count0c = 1;
+}
+
+bool DemoEffectPool::restart() {
+    if (static_cast<unsigned int>(value10 - 5) > 1)
+        return false;
+    if (count0c != 1)
+        return false;
+    for (int i = 0; static_cast<unsigned int>(i) < count_a; ++i) {
+        rewind_animation(slots_a[i].value8);
+        rewind_animation(slots_a[i].animation);
+        slots_a[i].animation->set_rate(2.0f);
+        if (slots_a[i].animation)
+            slots_a[i].animation->set_active(true);
+    }
+    for (int i = 0; static_cast<unsigned int>(i) < count_b; ++i) {
+        rewind_animation(slots_b[i].value8);
+        rewind_animation(slots_b[i].animation);
+        slots_b[i].animation->set_rate(2.0f);
+        if (slots_b[i].animation)
+            slots_b[i].animation->set_active(true);
+    }
+    count0c = 3;
+    return true;
+}
+
+// The fields are passed by reference, so each call reloads them.
+static inline void draw_node(DemoEffectPool* pool, LightEffectNode* const& node, const int& index,
+                             const int& value, Player* player) {
+    node->draw(0);
+    pool->draw_marker(node, index, value, player->id);
+    pool->render_marker(node, index, value, player->id);
+}
+
+void DemoEffectPool::draw() {
+    if (initialized)
+        draw_nodes();
+}
+
+void DemoEffectPool::draw_nodes() {
+    if (count0c == 0)
+        return;
+    Game* game = get_game();
+    Player* player = &game->players[get_game()->state()->mode];
+    if (player->active(player->id)) {
+        EffectCaption* caption = captions;
+        for (unsigned int i = 0; i < count_e; ++caption, ++i) {
+            if (captions[count_e].node)
+                caption->node->draw(0);
+        }
+    }
+    if (player->active(player->id)) {
+        for (int i = 0; static_cast<unsigned int>(i) < count_d; ++i)
+            draw_node(this, markers_d[i].node, markers_d[i].index, markers_d[i].value, player);
+    }
+    if (player->active(player->id)) {
+        for (int i = 0; static_cast<unsigned int>(i) < count_b; ++i)
+            draw_node(this, slots_b[i].node, slots_b[i].index, slots_b[i].value, player);
+    }
+    if (player->active(player->id) && count_a != 0) {
+        for (int i = 0; static_cast<unsigned int>(i) < count_c; ++i)
+            draw_node(this, markers_c[i].node, markers_c[i].index, markers_c[i].value, player);
+        for (int i = 1; static_cast<unsigned int>(i) < count_a; ++i)
+            draw_node(this, slots_a[i].node, slots_a[i].index, slots_a[i].value, player);
+        if (slots_a[0].node)
+            draw_node(this, slots_a[0].node, slots_a[0].index, slots_a[0].value, player);
+    }
+    if (node)
+        node->draw(0);
 }
