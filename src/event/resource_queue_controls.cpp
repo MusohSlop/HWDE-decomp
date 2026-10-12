@@ -73,6 +73,10 @@ static nn::os::MutexType* registry_mutex() {
     return reinterpret_cast<nn::os::MutexType*>(gResourceQueueRegistry.reference->mutex_storage);
 }
 
+unsigned char resource_queue_cancelled() {
+    return gResourceQueueRegistry.flag1;
+}
+
 unsigned char resource_queue_active() {
     return gResourceQueueRegistry.active;
 }

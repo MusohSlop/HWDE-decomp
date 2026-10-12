@@ -39,9 +39,7 @@ struct ResourceInfo {
 };
 static_assert(sizeof(ResourceInfo) == 0x428, "info size");
 
-struct ResourceName {
-    const char* path;
-};
+#include "resource/resource_name.h"
 
 struct ResourceRequest {
     unsigned int result;         // +00
@@ -129,9 +127,9 @@ static inline void release_object(RefObject* object) {
 
 unsigned int query_resource_info(ResourceService* service, const char* path, ResourceInfo* info);
 
-bool resource_info_exists(const ResourceName* name) {
+unsigned char ResourceName::exists() const {
     ResourceInfo info;
-    return query_resource_info(gResourceService, name->path, &info) == 0;
+    return query_resource_info(gResourceService, path, &info) == 0;
 }
 
 unsigned int query_resource_info(ResourceService* service, const char* path, ResourceInfo* info) {
@@ -152,9 +150,9 @@ unsigned int query_resource_info(ResourceService* service, const char* path, Res
     return gResourceRequest.result;
 }
 
-unsigned long resource_info_size(const ResourceName* name) {
+unsigned long ResourceName::size() const {
     ResourceInfo info;
-    if (query_resource_info(gResourceService, name->path, &info) != 0)
+    if (query_resource_info(gResourceService, path, &info) != 0)
         return 0;
     return info.size;
 }
@@ -195,19 +193,10 @@ static void run_resource_metadata_worker() {
     }
 }
 
-// Trivial bodies that follow; names are placeholders.
-struct ResourceHandle {
-    void* ptr;
-
-    ResourceHandle();
-    ~ResourceHandle();
-    void empty_operation();
-    void set(void* value);
-};
-
-ResourceHandle::ResourceHandle() : ptr(nullptr) {}
-ResourceHandle::~ResourceHandle() {}
-void ResourceHandle::empty_operation() {}
-void ResourceHandle::set(void* value) {
-    ptr = value;
+// ResourceName's trivial bodies sit between the access helpers and the metadata query.
+ResourceName::ResourceName() : path(nullptr) {}
+ResourceName::~ResourceName() {}
+void ResourceName::finish() {}
+void ResourceName::set(const char* value) {
+    path = value;
 }

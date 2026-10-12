@@ -38,7 +38,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-56 of 63 attempted functions match: 54 inventory functions (4,584 bytes) plus the worker trampoline `45df64`, which is outside the baseline inventory. The other seven are near misses (`m`).
+68 of 77 attempted functions match: 65 inventory functions (5,888 bytes), the worker trampoline `45df64` and the static initializer `25aa0c`, both outside the baseline inventory. The other nine are near misses (`m`).
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -78,13 +78,25 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `25a178` | `resource_size` | match |
 | `25a1ac` | `resource_read` | match |
 | `25a1ec` | `resource_free` | match |
-| `25a248`–`25a258` | four trivial bodies (`ResourceHandle` placeholders) | match |
-| `25a260` | `resource_info_exists` | match |
+| `25a248`–`25a258` | `ResourceName` constructor, destructor, `finish`, `set` | match |
+| `25a260` | `ResourceName::exists` | match |
 | `25a2a0` | `query_resource_info` | match |
-| `25a344` | `resource_info_size` | match |
+| `25a344` | `ResourceName::size` | match |
 | `25a388` | `initialize_resource_service` | match |
 | `25a404` | `shutdown_resource_service` | match |
 | `25a4a8` | `run_resource_metadata_worker` (static) | match |
+| `2589c0` | `resource_queue_cancelled` | match |
+| `25a53c` | `restart_resource_timer` | match |
+| `25a568`–`25a578` | `resource_file_nop`, `resource_file_gate`, `set_resource_file_gate` | match |
+| `25a584` | `ResourceFile::ResourceFile` | match |
+| `25a5c4` | `ResourceFile::close` | match |
+| `25a650` | `ResourceFile::open` | `m`: one `csel` with swapped operands and inverted condition |
+| `25a764` | `ResourceFile::read` | `m`: the seek failure gets its own `return 0` (81 words vs 79) |
+| `25a8a0` | `ResourceFile::set_name` | match |
+| `25a8e8` | `ResourceFile::run` | match |
+| `25aa0c` | static initializer of the resource-file unit (outside the inventory) | match |
+| `25ab58` | `ResourceController::resolve_name` | match |
+| `25acec` | `ResourceController::size` | match |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
 | `45dd84`–`45dde8` | `Stopwatch` constructor, `reset`, destructor, `start`, `stop`, `elapsed_ms` | match |
 | `45de40` | `initialize_worker` | match |
@@ -124,6 +136,13 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - The layout switch is an inline `set_layout` helper shared by `bind`, `open` and `open_table`. Its two 32-bit stores merge into one 64-bit constant store.
   - `entry_size` indexes through an entry pointer (`entry[1]`), which gives `ldr w0, [x8, #4]`.
   - `load` keeps "the caller gave no buffer" in a boolean computed at the top (`bool owned = dest == nullptr;`), and the result in a separate `ret` variable. That keeps the original's `cset`/`tbnz` instead of an `orr` of the two pointers.
+- **Resource file (`resource/resource_file.cpp`, `25a53c`–`25aa0c`).**
+  - The unit ends with its static initializer at `25aa0c`: it constructs the file-gate stopwatch (`c8b088`) and registers its destructor with `__cxa_atexit`, taking the destructor's address and `__dso_handle` from the GOT. Clang emits a unit's static initializer after its functions, which marks the unit boundary.
+  - `open()` and `read()` return `unsigned char`. `close()` wraps an inline `close_handle()` that `run()` also uses; the inlined copy lacks `close()`'s leading handle check.
+- **Resource controller (`resource/resource_controller.cpp`).**
+  - `resolve_name` ignores `this`, so dead-argument elimination leaves `x0` unset at its call in `size`. That only happens because both are defined in the same unit.
+  - The switch cases are generated from the original jump table (`7f4c48`). Its targets in address order are the cases in increasing identity order.
+  - `size` builds its `ResourceName` objects in two inline helpers. Inlined stack slots go first, so the name lands above the 256-byte path buffer, as in the original.
 - **Resource access and metadata service (`resource/resource_access.cpp`).**
   - The controller cell (`c8b098`, GOT `c2a608`) and the manager cell (GOT `c21de8`) are default-visibility externs. The service cell (`c8b068`) and request block (`c8b070`) are external hidden globals.
   - `resource_free` compares the storage address with the region threshold as integers. A pointer comparison swaps the `cmp` operands.

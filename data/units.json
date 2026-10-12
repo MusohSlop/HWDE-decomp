@@ -41,7 +41,6 @@
     "_Z15get_system_tickv": "0x71006009e0",
     "_Z25get_system_tick_frequencyv": "0x71006009f0",
     "_Z22shared_state_resourcesP11SharedState": "0x71002ad1dc",
-    "_ZN18ResourceController4sizeEj": "0x710025acec",
     "_ZN18ResourceController4readEjPvjjS0_j": "0x710025adf0",
     "got:gResourceController": "0x7100c2a608",
     "_Z17get_memory_regionv": "0x710045c1dc",
@@ -52,7 +51,26 @@
     "_Z15nn_yield_threadv": "0x7100600b20",
     "_ZN10FileSystem4openEPKciiPPvS2_i": "0x71005374a4",
     "_ZN10FileSystem4sizeEPv": "0x71005374d0",
-    "_ZN10FileSystem5closeEPPvi": "0x71005374ac"
+    "_ZN10FileSystem5closeEPPvi": "0x71005374ac",
+    "strncpy": "0x7100600a10",
+    "__cxa_atexit": "0x710000019c",
+    "got:__dso_handle": "0x7100c22498",
+    "got:_ZN9StopwatchD1Ev": "0x7100c2a618",
+    "_ZN9StopwatchC1Ev": "0x710045dd84",
+    "_ZN9StopwatchD1Ev": "0x710045dd9c",
+    "_ZN10FileSystem4readEPvS0_mPmi": "0x71005374b4",
+    "_ZN10FileSystem4seekEPvmiPmi": "0x71005374c4",
+    "_ZN10FileSystem6statusEPvS0_": "0x71005374cc",
+    "_ZN10FileSystem7releaseEPv": "0x71005374b0",
+    "_Z21shared_state_stoppingP11SharedState": "0x71002aca94",
+    "_Z16begin_file_scopev": "0x71003fa364",
+    "_Z14end_file_scopev": "0x71003fa368",
+    "_ZN12ResourceNameC1Ev": "0x710025a248",
+    "_ZN12ResourceNameD1Ev": "0x710025a250",
+    "snprintf": "0x7100600b30",
+    "_Z19get_region_settingsv": "0x710020bd74",
+    "_Z11region_kindP14RegionSettings": "0x710020c22c",
+    "got:gResourceNames": "0x7100c2a620"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -61,6 +79,7 @@
         "gResourceQueueWorkers": "0x7100c8aef8"
       },
       "functions": {
+        "_Z24resource_queue_cancelledv": "0x71002589c0",
         "_Z21resource_queue_activev": "0x71002589b4",
         "_Z21cancel_resource_queuev": "0x71002589d0",
         "_Z21finish_resource_queuehhh": "0x7100258a68",
@@ -149,16 +168,45 @@
         "_Z13resource_sizej": "0x710025a178",
         "_Z13resource_readjPvjjS_j": "0x710025a1ac",
         "_Z13resource_freePv": "0x710025a1ec",
-        "_ZN14ResourceHandleC2Ev": "0x710025a248",
-        "_ZN14ResourceHandleD2Ev": "0x710025a250",
-        "_ZN14ResourceHandle15empty_operationEv": "0x710025a254",
-        "_ZN14ResourceHandle3setEPv": "0x710025a258",
-        "_Z20resource_info_existsPK12ResourceName": "0x710025a260",
+        "_ZN12ResourceNameC2Ev": "0x710025a248",
+        "_ZN12ResourceNameD2Ev": "0x710025a250",
+        "_ZN12ResourceName6finishEv": "0x710025a254",
+        "_ZN12ResourceName3setEPKc": "0x710025a258",
+        "_ZNK12ResourceName6existsEv": "0x710025a260",
         "_Z19query_resource_infoP15ResourceServicePKcP12ResourceInfo": "0x710025a2a0",
-        "_Z18resource_info_sizePK12ResourceName": "0x710025a344",
+        "_ZNK12ResourceName4sizeEv": "0x710025a344",
         "_Z27initialize_resource_servicev": "0x710025a388",
         "_Z25shutdown_resource_servicev": "0x710025a404",
         "_ZL28run_resource_metadata_workerv": "0x710025a4a8"
+      }
+    },
+    "resource/resource_file.cpp": {
+      "map": {
+        "_ZL14sResourceTimer": "0x7100c8b088",
+        "gResourceFileGate": "0x7100bd0a10"
+      },
+      "functions": {
+        "_Z22restart_resource_timerv": "0x710025a53c",
+        "_Z17resource_file_nopv": "0x710025a568",
+        "_Z18resource_file_gatev": "0x710025a56c",
+        "_Z22set_resource_file_gateh": "0x710025a578",
+        "_ZN12ResourceFileC2Ev": "0x710025a584",
+        "_ZN12ResourceFile5closeEv": "0x710025a5c4",
+        "_ZN12ResourceFile4openEv": "0x710025a650",
+        "_ZN12ResourceFile4readEv": "0x710025a764",
+        "_ZN12ResourceFile8set_nameEPKch": "0x710025a8a0",
+        "_ZN12ResourceFile3runEPvmm": "0x710025a8e8",
+        "_GLOBAL__sub_I_resource_file.cpp": "0x710025aa0c"
+      }
+    },
+    "resource/resource_controller.cpp": {
+      "map": {
+        ".rodata.str1.1": "0x71007d52fd",
+        ".rodata": "0x71007f4c48"
+      },
+      "functions": {
+        "_ZN18ResourceController12resolve_nameEPci": "0x710025ab58",
+        "_ZN18ResourceController4sizeEj": "0x710025acec"
       }
     }
   }
