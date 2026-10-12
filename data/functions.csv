@@ -8019,8 +8019,8 @@ Address,Quality,Size,Name
 0x710025ce7c,O,148,_ZN14TrackResources5clearEv
 0x710025cf10,O,64,_ZN14TrackResources4loadEj
 0x710025cf50,O,196,_ZN14TrackResources8load_oneEj
-0x710025d014,U,392,FUN_710025d014
-0x710025d19c,U,1964,FUN_710025d19c
+0x710025d014,O,392,_ZN16TrackLightTarget10build_quadEP15TrackLightTableRK10TrackLighti
+0x710025d19c,m,1964,_Z17apply_track_lightP16TrackLightTargetRK10TrackLightS3_P15TrackLightTablei
 0x710025d948,U,408,FUN_710025d948
 0x710025dae4,U,292,FUN_710025dae4
 0x710025dc08,U,860,FUN_710025dc08

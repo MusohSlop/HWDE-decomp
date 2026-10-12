@@ -104,13 +104,18 @@
     "_ZN10TrackLightD1Ev": "0x710025bd64",
     "_ZN17TrackLightChannelC1Ev": "0x710025c7ac",
     "got:gTrackLightTables": "0x7100c22d98",
-    "_ZN16TrackLightTarget5applyERK10TrackLightS2_Pvi": "0x710025d19c",
     "_ZN12MemoryStreamC1Ev": "0x710053d304",
     "_ZN12MemoryStreamD1Ev": "0x710053d338",
     "_ZN12MemoryStream4openEPKvPvj": "0x710053d360",
     "_ZN12MemoryStream5closeEv": "0x710053d388",
     "_ZN14ResourceLoader4loadEP12MemoryStream": "0x710051ad9c",
-    "got:gResourceLoader": "0x7100c21db0"
+    "got:gResourceLoader": "0x7100c21db0",
+    "_Z12rotate_pointP9TrackVec2PKS_S2_f": "0x71001f714c",
+    "_ZN13TrackRenderer5beginEi": "0x71001df744",
+    "_ZN13TrackRenderer5writeEPvji": "0x71001df8c0",
+    "_ZN13TrackRenderer3endEv": "0x71001df838",
+    "sqrtf": "0x71006008a0",
+    "got:gTrackRenderer": "0x7100c22a40"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -372,6 +377,15 @@
     "event/demo_track_resource_load.cpp": {
       "functions": {
         "_ZN14TrackResources8load_oneEj": "0x710025cf50"
+      }
+    },
+    "event/demo_light_target.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073bae8"
+      },
+      "functions": {
+        "_ZN16TrackLightTarget10build_quadEP15TrackLightTableRK10TrackLighti": "0x710025d014",
+        "_Z17apply_track_lightP16TrackLightTargetRK10TrackLightS3_P15TrackLightTablei": "0x710025d19c"
       }
     }
   }

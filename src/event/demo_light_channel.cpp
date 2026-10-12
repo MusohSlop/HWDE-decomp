@@ -41,7 +41,7 @@ static inline void mark_targets(TrackLightChannel* channel) {
 static inline void apply_light(TrackLightChannel* channel, const TrackLight& light,
                                const TrackLight& base) {
     TrackLightTables* tables = gTrackLightTables;
-    void* table;
+    TrackLightTable* table;
     switch (channel->mode) {
     case 2:
         table = tables->tables[2];
@@ -55,7 +55,7 @@ static inline void apply_light(TrackLightChannel* channel, const TrackLight& lig
     default:
         return;
     }
-    channel->targets[0]->apply(light, base, table, channel->value4);
+    apply_track_light(channel->targets[0], light, base, table, channel->value4);
 }
 
 void TrackLightChannel::update(const TrackLight& base, float time) {

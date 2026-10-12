@@ -70,13 +70,50 @@ struct TrackLight {
 };
 static_assert(sizeof(TrackLight) == 0x40, "light size");
 
-// Object lit by a channel; flag 0x80 in +08 marks it for update.
+struct TrackVec2 {
+    float x, y;
+};
+
+// Image of a light table; size holds the width in the low and the height in
+// the high 16 bits.
+struct TrackLightImage {
+    unsigned char pad[0x30];
+    unsigned int size;        // +30
+};
+
+struct TrackLightTable {
+    unsigned char pad[0x18];
+    int count;                // +18
+    unsigned int pad1c;       // +1c
+    TrackLightImage* items[1]; // +20
+};
+
+// Quad lit by a channel; flag 0x80 in +08 marks it for update.
 struct TrackLightTarget {
     void* vtable;             // +00
-    unsigned int flags;       // +08
+    union {
+        unsigned int flags;   // +08
+        struct {
+            unsigned int : 16;
+            unsigned int blend : 4;
+        };
+    };
+    TrackLightImage* image;   // +10
+    float value18[2];         // +18
+    float matrix[4];          // +20
+    float scale[2];           // +30
+    TrackColor colors[4];     // +38
+    unsigned char pad48[0x10]; // +48
+    TrackVec2 quad[4];        // +58
+    unsigned int value78;     // +78
+    unsigned char pad7c[0xc]; // +7c
 
-    void apply(const TrackLight& light, const TrackLight& base, void* table, int value); // 0x710025d19c
+    void build_quad(TrackLightTable* table, const TrackLight& light, int index);
 };
+static_assert(sizeof(TrackLightTarget) == 0x88, "target size");
+
+void apply_track_light(TrackLightTarget* target, const TrackLight& light, const TrackLight& base,
+                       TrackLightTable* table, int index);
 
 struct TrackLightNode {
     unsigned char pad[0xc0];
@@ -87,7 +124,7 @@ struct TrackLightNode {
 // 0x7100c22d98.
 struct TrackLightTables {
     unsigned char pad[0x72a8];
-    void* tables[3];          // +72a8
+    TrackLightTable* tables[3]; // +72a8
 };
 extern TrackLightTables* gTrackLightTables;
 
