@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-319 of 399 attempted functions match: 309 inventory functions (49,608 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty are near misses, all `m`.
+332 of 414 attempted functions match: 322 inventory functions (50,156 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-two are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -271,6 +271,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `283dc4`, `283e10`, `283f78` | `create_menu_board`, `release_menu_units`, `release_menu_board` | match |
 | `283fd0` | `EventTask::EventTask` | match |
 | 35 functions in `misc/accessors.cpp` | global getters (`get_game`, `get_unit_database`, `get_item_table`, ...), `Game::state`, `ItemTable` queries, `DataStream` byte/halfword read and write, text lookups, bitset tests, board positions | match |
+| 3 more in `misc/accessors.cpp` | `shared_state_exiting`, `shared_state_stopping`, `shared_state_resources` | match |
+| 8 in `misc/layout_elements.cpp` | `LayoutRect` constructor, `make_light_list`, `LightSceneBase` destructor, `LightScene::finalize`, `lerp_float`, `lerp_int`, `StageLights::lookup`, `release_light`, `show_sources` | match |
+| `1ef52c`, `1f1e0c` | `LayoutSprite`, `LayoutBox` constructors | near miss |
+| `202164` | `CellRecord::cleared` (`misc/cell_record.cpp`) | match |
 | `2877f4`, `2906dc`, `290778`, `288e7c` | `SaveTask::SaveTask`, `ResultTask::ResultTask`, `ResultTask::prepare`, `destroy_board_cursor` | match |
 | `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
 | `280200` | `BoardLayerView::draw` | near miss |
@@ -439,6 +443,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Sprites are polymorphic.** `LayoutSprite` has a vtable; both overlay draws call each sprite's `draw(target, fader)` (slot `+18`) for two 9x176 layers in one interleaved loop.
 - **Target ranking (`tools/rank_targets.py`).** Ranks the `U` functions up to a size limit by size, the share of their direct callees already named in `units.json`, whether a matched function calls them, and distance to existing unit code. Working from the top of its list, this round matched 39 functions: mostly global getters and small accessors that earlier units already called by name, now in `misc/accessors.cpp` (grouped for convenience; they come from several game source files) and `event/adv_tasks.cpp`.
   - Several earlier placeholder signatures were wrong in ways that did not matter to their callers: `0x203d00` is a byte setter (`Game::set_dlc_seen`), not `Game::profile`; the item and weapon queries take signed `int` indices; `bgm_length` reads a member. The units define the corrected names and keep the old names as aliases in the symbol table.
+  - `misc/accessors.cpp` and `misc/layout_elements.cpp` group functions from several original files; each definition carries a comment with its address and the address range of the original file it likely belongs to, so they can be split once whole files are linked.
+  - Unit placement matters for inlining: `CellRecord::cleared` calls the option-source accessors, which the original does not inline, so it cannot share a unit with them (`misc/cell_record.cpp`).
   - Small bounds-checked lookups match with the in-range path written first. Bitset tests shift a 64-bit one and truncate the mask to 32 bits (`bits & static_cast<unsigned int>(1ul << (n % 32))`). `destroy_board_cursor`'s three layout groups are an array, like `destroy_adv_caption`'s resources.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
@@ -492,6 +498,8 @@ Large functions deferred under the rule "over about 1,000 bytes and calling many
 `26e824`: nine words, three byte stores scheduled earlier. `28386c`: the code matches; the original shares one pair of byte temporaries between the two loops (frame 0x30) and passes an undefined value for the first on writes. Locals scoped inside each loop get separate slots in 3.9.1 (it emits no lifetime markers for small locals), so the frame and register use differ. `280f6c`: `BoardOverlay`'s constructor (two 9x176 sprite layers marked dirty in one interleaved loop); 8 words, the header stores pair as `value18`/`value20` in ours and `owner`/`value18` in the original.
 
 `280200`: `BoardLayerView::draw` (sprite arrays at `+e8`, so a different class from `BoardOverlay`); one word, the draw-order flag is tested with `cbz` in ours and `tbz #0` in the original. `282484`: `BoardOverlay::update` (confirm/cancel input in state 5); scheduling. `282df8`: three words, the order of three case blocks; the 19-entry unit/slot table is defined in the unit (its kinds are folded into the compares) and lives in its own section anchored at `7f68b4`.
+
+`1ef52c`, `1f1e0c`: the layout element constructors. The original stores adjacent constant fields with separate 32-bit registers (`stp w, w`), ours merges them into 64-bit constants across field boundaries; field types and order made no difference, so this is likely a store-merging difference in the compiler.
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 

@@ -19,7 +19,6 @@
     "_ZN2nn2os9LockMutexEPNS0_9MutexTypeE": "0x7100600920",
     "_ZN2nn2os11UnlockMutexEPNS0_9MutexTypeE": "0x7100600930",
     "_Z16get_shared_statev": "0x71002aae3c",
-    "_Z20shared_state_exitingP11SharedState": "0x71002ac7f0",
     "_Z16get_default_heapv": "0x710045c96c",
     "_ZN11DefaultHeap7releaseEPvii": "0x710045c2f4",
     "_ZN13ResourceFrameC1Ev": "0x710025b394",
@@ -39,7 +38,6 @@
     "__cxa_guard_release": "0x7100600900",
     "_Z15get_system_tickv": "0x71006009e0",
     "_Z25get_system_tick_frequencyv": "0x71006009f0",
-    "_Z22shared_state_resourcesP11SharedState": "0x71002ad1dc",
     "got:gResourceController": "0x7100c2a608",
     "_Z17get_memory_regionv": "0x710045c1dc",
     "memset": "0x7100600890",
@@ -59,7 +57,6 @@
     "_ZN10FileSystem4seekEPvmiPmi": "0x71005374c4",
     "_ZN10FileSystem6statusEPvS0_": "0x71005374cc",
     "_ZN10FileSystem7releaseEPv": "0x71005374b0",
-    "_Z21shared_state_stoppingP11SharedState": "0x71002aca94",
     "_Z16begin_file_scopev": "0x71003fa364",
     "_Z14end_file_scopev": "0x71003fa368",
     "_ZN12ResourceNameC1Ev": "0x710025a248",
@@ -118,8 +115,6 @@
     "_ZN8TrackKey4loadEi": "0x710025b864",
     "got:gDemoLightSystem": "0x7100c22d98",
     "_Z12retain_lightPv": "0x71001f7868",
-    "_Z13release_lightPPv": "0x71001f7960",
-    "_Z15make_light_listj": "0x71001f4e70",
     "_Z17make_light_objectPv": "0x71001f4ee0",
     "_Z20current_light_presetv": "0x71001a8c38",
     "_Z20notify_lights_loadedi": "0x71003ff128",
@@ -131,13 +126,10 @@
     "_ZN10LightScene4initEP14LightAllocator": "0x71001f5670",
     "_ZN10LightScene4loadEii": "0x71001f5738",
     "_ZN10LightScene6unloadEv": "0x71001f58e4",
-    "_ZN10LightScene8finalizeEv": "0x71001f56fc",
-    "_ZN10LightSceneD1Ev": "0x71001f560c",
     "_ZN11EffectGroup3addEP10EffectBase": "0x71005da17c",
     "_ZN11LightPreset5countEv": "0x71001a8d7c",
     "_ZN11LightPreset5valueEi": "0x71001a8d3c",
     "_ZN11LightSourceC1Ev": "0x71001ef52c",
-    "_ZN11StageLights6lookupEi": "0x71001fb23c",
     "_ZN12CaptionLayer7refreshEi": "0x71001de418",
     "_ZN13EffectManager11create_nodeEPP15LightEffectNodeiPKc": "0x71001e2360",
     "_ZN13EffectManager6attachEP13LightResourcePv": "0x71001e26dc",
@@ -189,15 +181,12 @@
     "_ZN15SharedResources9captionedEv": "0x71003890bc",
     "got:gTextRenderer": "0x7100c22a30",
     "_ZN14TrackResourcesD1Ev": "0x710025cd50",
-    "_Z12show_sourcesP11LightSourcei": "0x71001f73e4",
     "_Z12hide_sourcesP11LightSourcei": "0x71001f7430",
     "_ZN18ResourceLoaderCore5flushEv": "0x710052ad98",
     "_ZN14TrackResourcesC1Ev": "0x710025cd44",
     "_ZN13TrackLightSetC1EP9DemoOwneri": "0x710025c254",
     "_ZN9TrackSlotC1Ev": "0x710025c240",
-    "_Z10lerp_floatfff": "0x71001f6b40",
     "_Z15play_demo_soundiiPvifff": "0x71003fbe44",
-    "_Z8lerp_intiiii": "0x71001f6b50",
     "_ZN10LightScene12draw_overlayEi": "0x71001f6344",
     "_ZN10LightScene4drawEii": "0x71001f5fc4",
     "_ZN13EffectManager3endEv": "0x71001e22d8",
@@ -342,7 +331,6 @@
     "_Z11get_unlocksv": "0x71002248a0",
     "kNeighborOffsets": "0x71007e1ff0",
     "kGatePairs": "0x71007e3c08",
-    "_ZN10CellRecord7clearedEv": "0x7100202164",
     "_ZN8Progress10base_levelEi": "0x7100203550",
     "_ZN9ItemTable8has_rareEi": "0x71001ff280",
     "_ZN9ItemTable10has_commonEi": "0x71001ff25c",
@@ -505,9 +493,6 @@
     "_ZN10AdvCaption10initializeEv": "0x7100266cd8",
     "_ZN10AdvCaption11set_value0cEi": "0x7100266ec0",
     "_ZN10AdvEffects10initializeEv": "0x71002676ec",
-    "_ZN10LayoutRectC1Ev": "0x71001f1cd8",
-    "_ZN9LayoutBoxC1Ev": "0x71001f1e0c",
-    "_ZN12LayoutSpriteC1Ev": "0x71001ef52c",
     "_ZN11LayoutFrameC1Ev": "0x71001f0140",
     "got:_ZTV9BoardView": "0x7100c2a7b0",
     "_ZN15DemoPanelSystem8finalizeEv": "0x71002637fc",
@@ -581,7 +566,17 @@
     "_ZN10ResultTaskC1Ev": "0x71002906dc",
     "_ZN8SaveTaskC1Ev": "0x71002877f4",
     "got:gGame": "0x7100c23258",
-    "got:gItemTable": "0x7100c23228"
+    "got:gItemTable": "0x7100c23228",
+    "_ZN12LayoutSpriteC1Ev": "0x71001ef52c",
+    "_ZN10LayoutRectC1Ev": "0x71001f1cd8",
+    "_ZN9LayoutBoxC1Ev": "0x71001f1e0c",
+    "_ZN10LightSceneD1Ev": "0x71001f560c",
+    "_ZN11ChunkHolderD1Ev": "0x7100218ac0",
+    "got:_ZTV12LayoutSprite": "0x7100c23110",
+    "got:_ZTV10LayoutRect": "0x7100c23158",
+    "got:_ZTV9LayoutBox": "0x7100c23160",
+    "got:_ZTV14LightSceneBase": "0x7100c231d0",
+    "_Z12show_sourcesP11LightSourcei": "0x71001f73e4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -1182,7 +1177,10 @@
         "_ZN8Progress3hasEi": "0x7100203180",
         "_Z13game_has_flagP4Gamei": "0x71002026fc",
         "_ZN8AdvBoard14start_positionEi": "0x710029f8ec",
-        "_ZN8AdvBoard20environment_positionEj": "0x710029fd90"
+        "_ZN8AdvBoard20environment_positionEj": "0x710029fd90",
+        "_Z20shared_state_exitingP11SharedState": "0x71002ac7f0",
+        "_Z21shared_state_stoppingP11SharedState": "0x71002aca94",
+        "_Z22shared_state_resourcesP11SharedState": "0x71002ad1dc"
       },
       "map": {
         ".rodata.cst4": "0x710073bc58"
@@ -1194,6 +1192,26 @@
         "_ZN10ResultTaskC2Ev": "0x71002906dc",
         "_ZN10ResultTask7prepareEv": "0x7100290778",
         "_Z20destroy_board_cursorv": "0x7100288e7c"
+      }
+    },
+    "misc/layout_elements.cpp": {
+      "functions": {
+        "_ZN12LayoutSpriteC2Ev": "0x71001ef52c",
+        "_ZN10LayoutRectC2Ev": "0x71001f1cd8",
+        "_ZN9LayoutBoxC2Ev": "0x71001f1e0c",
+        "_Z15make_light_listj": "0x71001f4e70",
+        "_ZN14LightSceneBaseD2Ev": "0x71001f560c",
+        "_Z10lerp_floatfff": "0x71001f6b40",
+        "_Z8lerp_intiiii": "0x71001f6b50",
+        "_ZN11StageLights6lookupEi": "0x71001fb23c",
+        "_ZN10LightScene8finalizeEv": "0x71001f56fc",
+        "_Z13release_lightPPv": "0x71001f7960",
+        "_Z12show_sourcesP12LayoutSpritej": "0x71001f73e4"
+      }
+    },
+    "misc/cell_record.cpp": {
+      "functions": {
+        "_ZN10CellRecord7clearedEv": "0x7100202164"
       }
     }
   }
