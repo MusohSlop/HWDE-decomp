@@ -1818,7 +1818,10 @@
     "got:gOptional_3ced74": "0x7100c2b550",
     "got:gOptional_3cedbc": "0x7100c2b550",
     "got:gOptional_3ceddc": "0x7100c2b550",
-    "got:gOptional_3cee04": "0x7100c2b550"
+    "got:gOptional_3cee04": "0x7100c2b550",
+    "kDefaultCell": "0x7100be2098",
+    "got:gOffsetHook_c2c730": "0x7100c2c730",
+    "got:gOffsetHook_c2c748": "0x7100c2c748"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -4897,6 +4900,37 @@
         "_Z19current_slot_3d6f10P13Triples3d6f10i": "0x71003d6f10",
         "_Z19current_slot_3d6f50P13Triples3d6f50i": "0x71003d6f50",
         "_Z19current_slot_3d6f90P13Triples3d6f90i": "0x71003d6f90"
+      }
+    },
+    "misc/object_helpers2.cpp": {
+      "functions": {
+        "_Z14dispose_49bfacP16Disposable49bfac": "0x710049bfac",
+        "_Z14dispose_4a1d88P16Disposable4a1d88": "0x71004a1d88",
+        "_Z14dispose_4c9c58P16Disposable4c9c58": "0x71004c9c58",
+        "_Z14dispose_594584P16Disposable594584": "0x7100594584",
+        "_Z14dispose_5bc8a8P16Disposable5bc8a8": "0x71005bc8a8",
+        "_Z16apply_item_2113cP12ItemSet2113csf": "0x710002113c",
+        "_Z16apply_item_2118cP12ItemSet2118csf": "0x710002118c",
+        "_Z16apply_item_22d08P12ItemSet22d08sf": "0x7100022d08",
+        "_Z16apply_item_230c8P12ItemSet230c8sf": "0x71000230c8",
+        "_Z20set_byte_flag_1a7f88P15ByteFlags1a7f88jh": "0x71001a7f88",
+        "_Z20set_byte_flag_2027b0P15ByteFlags2027b0jh": "0x71002027b0",
+        "_Z20set_byte_flag_203b88P15ByteFlags203b88jh": "0x7100203b88",
+        "_Z20set_byte_flag_203c10P15ByteFlags203c10jh": "0x7100203c10",
+        "_Z16cell_byte_45664cP8CellGridjj": "0x710045664c",
+        "_Z16cell_byte_456af4P8CellGridjj": "0x7100456af4",
+        "_Z16cell_byte_456b40P8CellGridjj": "0x7100456b40",
+        "_Z16cell_byte_457fb8P8CellGridjj": "0x7100457fb8",
+        "_Z18fill_offset_527070P15HookTable527070i": "0x7100527070",
+        "_Z18fill_offset_5271c8P15HookTable5271c8i": "0x71005271c8",
+        "_Z18fill_offset_5275a8P15HookTable5275a8i": "0x71005275a8",
+        "_Z18fill_offset_527700P15HookTable527700i": "0x7100527700",
+        "_Z23special_in_state_1ff358P12SpecialItemsi": "0x71001ff358",
+        "_Z23special_in_state_1ff3bcP12SpecialItemsi": "0x71001ff3bc",
+        "_Z23special_in_state_1ff420P12SpecialItemsi": "0x71001ff420",
+        "_Z14ring_pop_21ee8P9Ring21ee8": "0x7100021ee8",
+        "_Z14ring_pop_21f48P9Ring21f48": "0x7100021f48",
+        "_Z14ring_pop_21fa8P9Ring21fa8": "0x7100021fa8"
       }
     }
   }
