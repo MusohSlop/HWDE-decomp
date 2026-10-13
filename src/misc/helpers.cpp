@@ -5,6 +5,13 @@
 
 extern "C" void* memset(void* dest, int value, unsigned long size);
 
+// A byte block cleared by value-initialization (`block = {}`). Where the original clears an
+// array after storing other fields, this keeps the stores in front of the memset; a loop or an
+// explicit memset lets them move behind it (matching/scratch/memset_probe).
+template <unsigned long N> struct ByteBlock {
+    unsigned char bytes[N];
+};
+
 class BattleSetup {
 public:
     void clear_flags(int flags);                                            // 0x710016f29c
@@ -958,7 +965,7 @@ struct CountedBlock {
     long value10;             // +10
     int value18;              // +18
     unsigned char pad1c[4];
-    unsigned char bytes[0x1f4]; // +20
+    ByteBlock<0x1f4> bytes;   // +20
 };
 
 void CountedBlock::reset() {
@@ -966,8 +973,7 @@ void CountedBlock::reset() {
     value0 = 0;
     value8 = 0;
     value10 = 0;
-    for (unsigned int i = 0; i < sizeof(bytes); ++i)
-        bytes[i] = 0;
+    bytes = {};
 }
 
 unsigned int index_3d6fd0(void* global);                                    // 0x71003d6fd0
@@ -1063,7 +1069,7 @@ int LazyId::resolve() {
 struct TrailerTable {
     void reset();
 
-    unsigned char bytes[0x300]; // +000
+    ByteBlock<0x300> bytes;   // +000
     long value300;            // +300
     long value308;            // +308
     long value310;            // +310
@@ -1077,8 +1083,7 @@ void TrailerTable::reset() {
     value318 = 0;
     value310 = 0;
     value308 = 0;
-    for (unsigned int i = 0; i < sizeof(bytes); ++i)
-        bytes[i] = 0;
+    bytes = {};
 }
 
 struct Block40 {
@@ -1170,12 +1175,11 @@ struct BigCleared {
 
     unsigned char pad[0x30];
     SubInit sub;              // +30
-    unsigned char bytes[0xecb0]; // +40
+    ByteBlock<0xecb0> bytes;  // +40
 };
 
 void BigCleared::reset() {
-    for (unsigned int i = 0; i < sizeof(bytes); ++i)
-        bytes[i] = 0;
+    bytes = {};
     sub.init();
 }
 
@@ -1266,17 +1270,14 @@ void LargeRecord::copy_to(LargeRecord* out) {
 struct SplitTable {
     void clear();
 
-    unsigned char head[0x110]; // +000
+    ByteBlock<0x110> head;    // +000
     unsigned char pad110[0x70];
-    unsigned char tail[0x300]; // +180
+    ByteBlock<0x300> tail;    // +180
 };
 
 void SplitTable::clear() {
-    unsigned char* rest = tail;
-    for (unsigned int i = 0; i < sizeof(head); ++i)
-        head[i] = 0;
-    for (unsigned int i = 0; i < sizeof(tail); ++i)
-        rest[i] = 0;
+    head = {};
+    tail = {};
 }
 
 struct SubRelease {

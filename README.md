@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,221 of 1,318 attempted functions match: 1,211 inventory functions (101,960 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-seven are near misses, all `m`.
+1,223 of 1,318 attempted functions match: 1,213 inventory functions (102,060 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-five are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -320,7 +320,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 20 more in `misc/helpers.cpp` | table clears and resets, record copies, global part forwarders, preset and material lookups, layout loads, fader and resource queries | match |
 | `3b5ac8` | `draw_node_and_flush` | near miss |
 | 18 more in `misc/helpers.cpp`, 2 in `misc/ranked_small.cpp` | table resets, global forwarders and record lookups, a sprite widget and chunk-pair constructor, battle-setup wrappers, `FileReader` constructor | match |
-| `4c054`, `5ec504` | `CountedBlock::reset`, `TrailerTable::reset` | near miss |
+| `4c054`, `5ec504` | `CountedBlock::reset`, `TrailerTable::reset` (array cleared by value-initialization) | match |
 | 8 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | random row pick, light-pair release, entry copy, locked pointer and queue reads, three small constructors | match |
 | `d0930`, `6fdb8` | `BigCleared::reset`, `battle_timer_seconds` | near miss |
 | 9 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | heap-client and quad-slot constructors, trophy select, owned-table init, record copy, light release, wide panel draw, a guarded forwarder, a unit level test | match |
@@ -525,6 +525,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `misc/small_families3.cpp` and `misc/skinned_overrides.cpp` (46 functions). The family scan masks call targets, so a family can mix callees: four of the skinned overrides call a different base (`591150`), which the check caught; they use a second base class.
   - `misc/heap_operators.cpp` holds the global allocation entry points: `malloc` and the `operator new` forms allocate from the default heap's back frame heap (`+110`) with alignment code 0x2e. As with the posting handlers, a member's address has to be taken before an intervening call to get the original's register use (`CheckHost::idle`).
   - Destructors whose body is empty in the source skip the vtable store in Clang (`CanSkipVTablePointerInitialization`); twelve originals keep it, so their bodies did something that inlined away. An empty inline call (`on_finish`) stands in for it.
+  - **Clearing probe (`scratch/memset_probe`).** A probe compiles one reset written several ways and compares each with `CountedBlock::reset` (`4c054`), with `HeaderTable::reset` as a control: a loop, an explicit `memset` of the array member, `memset(&array[0], ...)`, value-initialization of the array as a member struct (`block = Block()` or `block = {}`), a hand-written fill, and value-initialization of the whole object, each with the header stores before and after. Only value-initialization of the member struct with the header first reproduces the original (header stores, then a non-tail `memset`); every other form lets the stores move behind the `memset`. Applied with a small `ByteBlock<N>` template, it fixes `CountedBlock::reset` and `TrailerTable::reset`. `BigCleared::reset` (`d0930`) and `SplitTable::clear` (`3dd0e4`) do not change: their difference is the kept address of the region used after the clear, which has another cause.
   - Derived classes whose first field sits inside the base's size reuse the base's tail padding (allowed for a non-POD base in the Itanium ABI); the bases are declared with a size that leaves those bytes as padding (`Base_5325e4`, `Base_41be40`).
   - `get_battle_setup` builds its setup in a function-local static that the original addresses separately from its guard. The global merge pass keeps it out of the merged block only if its IR type is packed, which an `int` at the end (leaving tail padding) gives; the same packed-type rule as the default heap, used the other way round.
   - The scan masked the offset of a load whose base register had been loaded from a GOT slot (a field of the global rather than the pointer); it now stops tracking a register once a load replaces its page address. Two getters that read the second word of their global were found that way.
@@ -599,7 +600,7 @@ Counts re-measured after the family rounds (distinct direct callees not yet name
 
 `3b5ac8`: `draw_node_and_flush`, the same placement difference as `287be4`: the original loads the renderer's GOT slot after restoring the frame for the tail call, ours before.
 
-`4c054`, `5ec504`: `CountedBlock::reset` and `TrailerTable::reset`; the zero header stores (`+0`, `+8`, `+10`, `+18`) come before the clearing `memset` in the original and after it in ours, whichever order the source uses; similar resets with fewer header fields match.
+(Resolved: `4c054`, `5ec504`, see the memset probe below.) Previously: the zero header stores (`+0`, `+8`, `+10`, `+18`) come before the clearing `memset` in the original and after it in ours, whichever order the source uses; similar resets with fewer header fields match.
 
 `3dd0e4`: `SplitTable::clear`, the same pattern as `d0930` below (the second region's address kept across the first clear). `d0930`: `BigCleared::reset` keeps `this + 0x30` (the sub-object it initializes after the clear) in a register across the `memset`; ours keeps `this` and adds afterwards, with a local pointer and with a member call. `6fdb8`: `battle_timer_seconds` tests a hidden flag byte against the negated mode bit with `tst w9, w8`; ours folds the two tests into `bic`/`tst #1`, with the flag as `unsigned char` and `&`, and as `bool` and `&&`.
 
