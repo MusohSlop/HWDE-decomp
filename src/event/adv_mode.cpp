@@ -72,7 +72,12 @@ public:
 class SceneTask {
 public:
     SceneTask();                                                            // 0x7100387524
-    virtual ~SceneTask();
+    virtual ~SceneTask();                                                   // 0x710038763c
+
+    static void operator delete(void* ptr) {
+        if (ptr)
+            get_default_heap()->release(ptr, 1, 0);
+    }
 };
 
 class SharedState {
@@ -144,8 +149,12 @@ extern unsigned char gEndingSeen;
 class TitleTask : public SceneTask {
 public:
     TitleTask() { closing = 0; }
+    ~TitleTask();                                                           // 0x71002725bc (deleting)
+    void start();                                                           // 0x71002725fc
+    void update();                                                          // 0x710027270c
 
-    unsigned char pad8[0x2d419];
+    int state;                // +08
+    unsigned char padc[0x2d415];
     unsigned char closing;    // +2d421
     unsigned char pad2d422[0xe];
 };
@@ -849,3 +858,63 @@ unsigned char cell_available(int cell, int a, int b, unsigned char any, unsigned
     }
     return 1;
 }
+
+bool is_final_cell() {
+    if (get_shared_state()->screen != 4)
+        return false;
+    unsigned int player = final_player();
+    if (player == 1)
+        return false;
+    int cell = get_game()->players[player].id;
+    unsigned char kind = board_row(cell)->kind;
+    return kind == 0x10 || kind == 2;
+}
+
+TitleTask::~TitleTask() {}
+
+void register_resource_callback(void* callback, void (*completion)(int, unsigned int),
+                                unsigned int flags);                        // 0x7100258b0c
+void remove_resource_callback(void* callback);                              // 0x710025917c
+unsigned char resource_queue_has_callback(void* callback);                  // 0x7100259680
+unsigned char resource_queue_callback_in_state(void* callback, unsigned int state); // 0x71002597a8
+void dialog_open(void* resources, int a, int b);                            // 0x710038861c
+void dialog_close(void* resources, int a);                                  // 0x710038862c
+// Title resource request, reached through the GOT slot at 0x7100c2a750.
+extern unsigned char gTitleRequest[];
+
+void TitleTask::start() {
+    closing = 0;
+    register_resource_callback(gTitleRequest, nullptr, 0x20);
+    if (void* resources = shared_state_resources(get_shared_state()))
+        dialog_open(resources, 1, 1);
+}
+
+void reload_boards() {
+    for (int stage = 0; stage < 10; ++stage) {
+        get_game()->state()->mode = stage;
+        load_board(game_mode());
+        Game* game = get_game();
+        player_setup(&game->players[game_mode()], get_unit_database()->rows, stage);
+    }
+    get_game()->state()->mode = 0;
+    load_board(game_mode());
+}
+
+void TitleTask::update() {
+    if (closing) {
+        if (void* resources = shared_state_resources(get_shared_state()))
+            dialog_close(resources, 1);
+        state = 1;
+    } else if (resource_queue_has_callback(gTitleRequest) &&
+               resource_queue_callback_in_state(gTitleRequest, 3)) {
+        remove_resource_callback(gTitleRequest);
+        closing = 1;
+    }
+}
+
+class OptionTaskView : public SceneTask {
+public:
+    ~OptionTaskView();                                                      // 0x7100272890 (deleting)
+};
+
+OptionTaskView::~OptionTaskView() {}

@@ -490,7 +490,39 @@
     "_Z11cell_existsi": "0x7100283b54",
     "_ZN10LevelTable8level_ofEi": "0x71001ff218",
     "_Z15get_level_tablev": "0x71001ff050",
-    "_Z13database_unitP12UnitDatabasei": "0x710020eeb8"
+    "_Z13database_unitP12UnitDatabasei": "0x710020eeb8",
+    "_ZN9SceneTaskD2Ev": "0x710038763c",
+    "_Z11dialog_openPvii": "0x710038861c",
+    "_Z12dialog_closePvi": "0x710038862c",
+    "got:gTitleRequest": "0x7100c2a750",
+    "strcat": "0x7100600b40",
+    "_ZN12BattleParams5clearEv": "0x71001a8e1c",
+    "_Z18prepare_menu_boardji": "0x7100283e88",
+    "_ZN11TitleBanner9set_layerEi": "0x71001e1e2c",
+    "_ZN11TitleBanner12show_defaultEv": "0x71001e1fd8",
+    "_ZN11TitleBanner9show_textEi": "0x71001e216c",
+    "got:gTitleBanner": "0x7100c22a00",
+    "got:gMenuFrame": "0x7100c2a798",
+    "_ZN5Fader5beginEi": "0x71001df744",
+    "_ZN5Fader3endEv": "0x71001df838",
+    "got:gFader": "0x7100c22a40",
+    "_ZN8Renderer5beginEPvP10DrawParams": "0x71003dfec8",
+    "_ZN8Renderer3endEPv": "0x71003dff50",
+    "got:gRenderer": "0x7100c22db8",
+    "got:gRenderTarget": "0x7100c21db0",
+    "_ZN10AdvCaption6updateEv": "0x7100266f04",
+    "_ZN10AdvEffects6updateEv": "0x7100267c44",
+    "_ZN8AdvBoard6updateEv": "0x71002a016c",
+    "_ZN11BoardCursor6updateEv": "0x7100289714",
+    "_ZN10BoardUnits6updateEv": "0x7100292694",
+    "_ZN11BoardPopups6updateEv": "0x71002a7a80",
+    "_ZN11BoardCamera6updateEv": "0x7100288a18",
+    "got:gBoardCursor": "0x7100c2a778",
+    "got:gBoardUnits": "0x7100c2a780",
+    "got:gBoardPopups": "0x7100c2a788",
+    "got:gBoardCamera": "0x7100c2a790",
+    "_ZN13BoardOverride6framesEv": "0x7100290f94",
+    "_ZN13BoardOverride5frameEt": "0x7100290f9c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -987,11 +1019,26 @@
         "_Z16run_board_endingv": "0x710026fdf8",
         "_Z14show_dlc_totalv": "0x710027042c",
         "_Z13adv_mode_idlev": "0x710027052c",
-        "_Z14cell_availableiiihhi": "0x7100271894"
+        "_Z14cell_availableiiihhi": "0x7100271894",
+        "_Z13is_final_cellv": "0x7100272534",
+        "_ZN9TitleTaskD0Ev": "0x71002725bc",
+        "_ZN9TitleTask5startEv": "0x71002725fc",
+        "_Z13reload_boardsv": "0x7100272648",
+        "_ZN9TitleTask6updateEv": "0x710027270c",
+        "_ZN14OptionTaskViewD0Ev": "0x7100272890"
       },
       "map": {
         ".rodata": "0x71007f5718",
         ".rodata.cst4": "0x710073c188"
+      }
+    },
+    "event/adv_menu.cpp": {
+      "functions": {
+        "_Z15load_menu_scenev": "0x71002734bc",
+        "_ZN9MenuScene7refreshEv": "0x7100273ccc",
+        "_ZN9MenuScene4drawEv": "0x7100273e1c",
+        "_ZN10BoardScene6updateEv": "0x7100273efc",
+        "_ZN10BoardScene8frame_ofEi": "0x7100274080"
       }
     }
   }

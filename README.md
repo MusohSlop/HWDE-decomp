@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-255 of 320 attempted functions match: 245 inventory functions (41,792 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other sixty-five are near misses, all `m`.
+262 of 331 attempted functions match: 252 inventory functions (42,636 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other sixty-nine are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -254,6 +254,11 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `26fdf8` | `run_board_ending` | near miss |
 | `27042c`, `27052c` | `show_dlc_total`, `adv_mode_idle` | match |
 | `271894` | `cell_available` | near miss |
+| `272534` | `is_final_cell` | near miss |
+| `2725bc`, `2725fc`, `27270c` | `TitleTask` deleting destructor, `start`, `update` | match |
+| `272648`, `272890` | `reload_boards`, `OptionTaskView` deleting destructor | match |
+| `2734bc`, `273ccc` | `load_menu_scene`, `MenuScene::refresh` | match |
+| `273e1c`, `273efc`, `274080` | `MenuScene::draw`, `BoardScene::update`, `BoardScene::frame_of` | near miss |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -405,6 +410,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - The stage fade message (mode 3 to 9) is one inline helper shared by the menu, event and result tasks. It matches with `int message = 1` before the switch instead of a `default`: with a `default` the compiler folds the case-3 constant into the dispatch block. `run_board_battle` needs the first branch to start with a different store than the second, so the shared `previous_step = step` is not hoisted. `run_board_result` matched once `AdvModeTask::run`'s jump table had six entries (steps 6-10 tested with `if`s), which puts the following tables at the original offsets.
   - `cell_available` (`271894`) calls `held_kind` instead of inlining it, so it is not in `adv_board.cpp`; it sits with the state machine for now. `show_dlc_total` needed the count loaded before the first `get_game` and reloaded at the end of each pass, and its three text buffers declared largest-offset first.
   - `run_save` matches with the failure branch written `step = 12; state = 2;`: in the other order the two `step` stores are sunk into one, while the original keeps `state`/`step` as one 64-bit store.
+- **Scene tasks and the menu scene (`event/adv_mode.cpp`, `event/adv_menu.cpp`).** `SceneTask` has a class `operator delete` that releases to the default heap with a null check; with a virtual destructor defined in the unit, that reproduces the deleting destructors at `2725bc` and `272890`. `TitleTask::start`/`update` register, poll and remove the title resource request. `MenuScene::refresh` re-reads the `gFader` pointer for each call, as the original does. `adv_menu.cpp` starts at `2734bc`.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
@@ -413,6 +419,18 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 `2653dc` (4,964 bytes) is the panel system's large draw routine. It calls about twenty functions that aren't identified yet (`217d64`, `1e709c`, `1e73c0`, `1e41d8`, `2183c8`, ...) and needs its own round.
 
 `26f214` (3,044 bytes) is `run_board_shop`, the step 6/7 sub-task. It sets up the battle unit from the current cell (about 30 calls into the unit, item, battle-parameter and progress systems, none identified yet) before running its task, and needs its own round.
+
+Large functions deferred under the rule "over about 1,000 bytes and calling many unidentified systems"; they come back once more of their callees are named:
+
+| Address | Size | Why |
+| --- | --- | --- |
+| `26f214` | 3,044 | `run_board_shop`: 204 calls to 54 functions, 23 of them unidentified |
+| `270530` | 1,200 | 49 calls to 16 functions, 6 unidentified |
+| `271aac` | 2,696 | `board_finish_turn` (end of turn): 162 calls to 27 functions, 11 unidentified |
+| `2728d0` | 2,324 | 78 calls to 33 functions, 14 unidentified |
+| `274530` | 244 | Constructor of a 1.7 MB board view object (arrays of 22,528 and 1,584 sub-objects, a virtual call from the constructor); its layout needs the sub-object classes first |
+
+`2709e0` (3,764 bytes, 57 calls to 12 functions) and `2736e0` (1,516 bytes, 6 calls to 3 functions) call only named functions and are next in line.
 
 `45e160` (1,464 bytes) is a 61-case statistics switch with a jump table at `811194`. It calls at least six game functions whose signatures are unknown (`204728`, `203dfc`, `2028b4`, `200fc0`, `2015a8`, `200294`), so it needs its own effort. The four small virtuals at `45dcd0`–`45dd28` need their class and vtable identified first.
 
@@ -438,7 +456,9 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 `26c154`: `load_board` reads the board rows, cells, unit records, reward pairs and two short lists from two resource frames through a read/write stream. The logic matches; the resource id is a `csel` in ours and a branch in the original, and `ResourceFrame::is_open` is tested as a byte. `26c924`: `unit_has_override` (three jump tables, `is_fort_kind` inlined again); the logic matches, register use differs. Both capped at two attempts.
 
-`26e824`: nine words, three byte stores scheduled earlier. `271894`: the logic matches; 85 of 134 words after two attempts (register use around the final-player lookups).
+`26e824`: nine words, three byte stores scheduled earlier. `272534`: two words, the final boolean is `orr` of two `cset`s in ours and a `csel` in the original. `273e1c`: the two `2` stores of the draw parameters are paired into `stp` in ours. `273efc`: the original loads each tick/clock pair as one 64-bit value; plain fields, an 8-byte struct copy and an `int : 32` bitfield pair all failed to reproduce it. `274080`: the logic matches (frame lookup unswitched on `kind == 0xda`), 42 of 110 words.
+
+`271894`: the logic matches; 85 of 134 words after two attempts (register use around the final-player lookups).
 
 `26fdf8`: `run_board_ending` (final-cell check inlined three times, reward stock update, completion notices); the structure matches, 214 of 386 words after one attempt.
 
