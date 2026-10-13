@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-800 of 886 attempted functions match: 790 inventory functions (79,484 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-six are near misses, all `m`.
+917 of 1005 attempted functions match: 907 inventory functions (86,220 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-eight are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -305,6 +305,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `72768` | `create_model_72768` (`misc/model_builders.cpp`) | near miss |
 | 66 in `misc/command_handlers.cpp` | command handlers: virtual slot `+3e8`, then a constant return or a post with two fields | match |
 | 25 in `misc/small_families.cpp` | guarded global forwarders, id filters, paired global resets, buffer releases | match |
+| 81 in `misc/small_families2.cpp` | vtable-only constructors, getter-to-call chains, null-guarded global calls, two allocator disposals | match |
+| 25 in `misc/static_families.cpp` | paired singleton teardowns, function-local statics in inline helpers (single and nested) | match |
+| 11 of 13 in `misc/static_objects/` | static objects built on first use, one unit each | match |
+| `5aea74`, `5afb1c` | two of the static objects | near miss |
 | `45c1dc`, `45c96c`, `45ca24` | `get_heap_registry`, `get_default_heap` (function-local statics), `SystemHeap::initialize` | match |
 | `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
 | `280200` | `BoardLayerView::draw` | near miss |
@@ -494,6 +498,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - Placeholder names: classes and functions are named after their address, callees after theirs; the names carry no meaning beyond the shape.
   - Seven seed families next (164 functions): each takes the shape of an already matched function (`screen_fader`, `end_sprite_batch`, `query_game_state`, `game_query`, the scene tasks' deleting destructor, `destroy_adv_board`, `EffectRecord::stop`). Generated definitions are ordinary source, one per function, and go through the same compile-and-check path as hand-written ones; the full check shows no masked relocations.
   - Two more rounds of families (91 functions): command handlers that call virtual slot `+3e8` (one shared base class declares the 125 slots before it) and four small families. In the posting handlers the queue address has to be taken before the kind field, which gives the original's register order. The full check shows no masked relocations.
+  - Further families (117 functions): `misc/small_families2.cpp` and `misc/static_families.cpp`. Statics reached through the GOT are function-local statics of inline (linkonce) helpers; a dynamic initializer that yields null (`null_value()`) gives the guard and the plain zero store. Static objects built on first use each need their own unit, as in the original: in one unit LLVM's global merge pass puts all their guards and objects into one block, which changes every offset. The full check shows no masked relocations.
   - The scan masked the offset of a load whose base register had been loaded from a GOT slot (a field of the global rather than the pointer); it now stops tracking a register once a load replaces its page address. Two getters that read the second word of their global were found that way.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
@@ -557,6 +562,8 @@ Large functions deferred under the rule "over about 1,000 bytes and calling many
 `287be4`: `flush_track_renderer`, two calls through the same global. The original rematerializes the GOT load and the -1 argument for the second call; ours keeps both in callee-saved registers (register allocation).
 
 `72768`: `create_model_72768`, a 948-byte model builder (sizes the model from its resource's tables, allocates it, constructs the skinned or plain variant, lays out the tables). The code matches in structure. The original's frame is 0x10 bytes smaller because the allocation parameters and the four-entry object array share one stack slot; declaring the array after the allocation gives both non-overlapping lifetime markers and the frame then matches (stack colouring). What is left is register allocation at entry: the original keeps the loader and user arguments in registers until the first check and spills them afterwards, ours spills them first (an early-return layout made it worse). Its family siblings (`450710`, and the 948/964-byte families around the object loaders) are left until that is solved.
+
+`5aea74`, `5afb1c`: two static objects built on first use whose object sits 16 bytes after its guard (8 in ours). `alignas(16)` on the class stops the guard and object from merging at all, which is worse; the original probably has another 8-byte static in that unit.
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 
