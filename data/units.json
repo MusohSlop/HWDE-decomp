@@ -1667,7 +1667,13 @@
     "_Z18handle_slot_2066fcP15TableSlot207068iPv": "0x71002066fc",
     "_Z18handle_slot_213d4cP15TableSlot2141b4iPv": "0x7100213d4c",
     "_Z18handle_slot_214214P15TableSlot214a5ciPv": "0x7100214214",
-    "_Z18handle_slot_214f78P15TableSlot215308iPv": "0x7100214f78"
+    "_Z18handle_slot_214f78P15TableSlot215308iPv": "0x7100214f78",
+    "_Z10stat_queryiiPjS_": "0x71000011ec",
+    "got:gRandomSource_c22c00": "0x7100c22c00",
+    "_ZN12RandomSource4rollEv": "0x71003336c4",
+    "_Z24handle_entry_part_20ca64P15EntryPart20dd84jPv": "0x710020ca64",
+    "_Z24handle_entry_part_20cb40P15EntryPart20de00jPv": "0x710020cb40",
+    "_Z24handle_entry_part_20cff8P15EntryPart20de7cjPv": "0x710020cff8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -4064,6 +4070,72 @@
         "_Z23apply_cell_phase_3d663cP10PhasedGridii": "0x71003d663c",
         "_Z23apply_cell_phase_3d6688P10PhasedGridii": "0x71003d6688",
         "_Z23apply_cell_phase_3d6818P10PhasedGridii": "0x71003d6818"
+      }
+    },
+    "misc/stat_fractions.cpp": {
+      "functions": {
+        "_Z18stat_fraction_1198i": "0x7100001198",
+        "_Z18stat_fraction_16c8i": "0x71000016c8",
+        "_Z18stat_fraction_171ci": "0x710000171c",
+        "_Z18stat_fraction_1770i": "0x7100001770",
+        "_Z18stat_fraction_17c4i": "0x71000017c4",
+        "_Z18stat_fraction_1818i": "0x7100001818"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073bae8"
+      }
+    },
+    "misc/grade_ids.cpp": {
+      "functions": {
+        "_Z15grade_id_20f978jj": "0x710020f978",
+        "_Z15grade_id_20faa8jj": "0x710020faa8",
+        "_Z15grade_id_20fb0cjj": "0x710020fb0c",
+        "_Z15grade_id_20fb70jj": "0x710020fb70"
+      }
+    },
+    "misc/side_choices.cpp": {
+      "functions": {
+        "_Z18choose_side_3005a0P11Sided3005a0j": "0x71003005a0",
+        "_Z18choose_side_31ce10P11Sided31ce10j": "0x710031ce10",
+        "_Z18choose_side_3259e0P11Sided3259e0j": "0x71003259e0",
+        "_Z18choose_side_32dfe4P11Sided32dfe4j": "0x710032dfe4",
+        "_Z18choose_side_333284P11Sided333284j": "0x7100333284"
+      }
+    },
+    "misc/entry_passes.cpp": {
+      "functions": {
+        "_Z21for_each_entry_20dd84P10RecordListPv": "0x710020dd84",
+        "_Z21for_each_entry_20de00P10RecordListPv": "0x710020de00",
+        "_Z21for_each_entry_20de7cP10RecordListPv": "0x710020de7c"
+      }
+    },
+    "misc/worker_barriers.cpp": {
+      "functions": {
+        "_Z13arrive_55610cP16WorkerPool55610c": "0x710055610c",
+        "_Z13arrive_556188P16WorkerPool556188": "0x7100556188",
+        "_Z13arrive_556204P16WorkerPool556204": "0x7100556204"
+      }
+    },
+    "misc/mirror_flags.cpp": {
+      "functions": {
+        "_Z18mirror_flag_203d40P15SaveFlags203d40ih": "0x7100203d40",
+        "_Z18mirror_flag_203e30P15SaveFlags203e30ih": "0x7100203e30",
+        "_Z18mirror_flag_203f08P15SaveFlags203f08ih": "0x7100203f08"
+      }
+    },
+    "misc/keyed_values.cpp": {
+      "functions": {
+        "_Z18keyed_value_251820P16KeyedTable251820ii": "0x7100251820",
+        "_Z18keyed_value_2518c4P16KeyedTable2518c4ii": "0x71002518c4",
+        "_Z18keyed_value_251968P16KeyedTable251968ii": "0x7100251968"
+      }
+    },
+    "misc/node_releases.cpp": {
+      "functions": {
+        "_Z19release_node_1ef138P15NodeOwner1ef138": "0x71001ef138",
+        "_Z19release_node_1f21f8P15NodeOwner1f21f8": "0x71001f21f8",
+        "_Z19release_node_336da8P15NodeOwner336da8": "0x7100336da8",
+        "_Z19release_node_35ca18P15NodeOwner35ca18": "0x710035ca18"
       }
     }
   }

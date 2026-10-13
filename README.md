@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,665 of 1,782 attempted functions match: 1,655 inventory functions (139,020 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 117 are near misses, all `m`.
+1,696 of 1,813 attempted functions match: 1,686 inventory functions (142,468 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 117 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -324,6 +324,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 19 in `misc/checked_ids.cpp` | 16-bit id fields with a table-end check (`-1` past the end) | match |
 | 52 in `misc/base_teardowns2.cpp` | more destructor bodies reached through a secondary base (pattern scan) | match |
 | 6 in `misc/owned_buffers.cpp`, 5 in `misc/slot_passes.cpp`, 5 in `misc/phased_cells.cpp` | owned-buffer releases through the slot allocator; per-slot table passes; frame-phase forwards to a grid cell's virtual | match |
+| 6 in `misc/stat_fractions.cpp`, 4 in `misc/grade_ids.cpp`, 5 in `misc/side_choices.cpp`, 3 in `misc/entry_passes.cpp` | stat percentages; grade-table ids (early-return form keeps the loads in each branch); side choices with random rolls; per-entry passes over a virtual list | match |
+| 3 in `misc/worker_barriers.cpp`, 3 in `misc/mirror_flags.cpp`, 3 in `misc/keyed_values.cpp`, 4 in `misc/node_releases.cpp` | worker barriers (volatile arrival count); flags mirrored into the live game object; values by lazy id; effect-node releases | match |
 | 48 in `misc/skinned_overrides.cpp` | skinned-model overrides (base version, then the skin set's), 28 of them at other skin-set offsets | match |
 | 14 in `misc/small_families4.cpp`, 16 in `misc/small_families5.cpp` | nine-sprite constructors, swapped-argument solves, pool disposals, singleton deletes and creations, command checks, calls under the object manager's lock | match |
 | `3cca08`-`3cccb8` | `malloc`, `operator new` (plain and `nothrow`), `operator new[]`, `operator delete`, `operator delete[]` (`misc/heap_operators.cpp`) | match |
