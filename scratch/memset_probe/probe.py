@@ -36,7 +36,7 @@ for line in lines:
     if cur and line.startswith(".Lfunc_end"):
         cur = None
 
-targets = {"Control": (0x5fad40, 48)}
+targets = {"Control": (0x5fad40, 48), "SplitBlocks": (0x3dd0e4, 56), "SplitRef": (0x3dd0e4, 56), "SplitPtrLoop": (0x3dd0e4, 56), "SplitMemset": (0x3dd0e4, 56)}
 for name, body in funcs.items():
     cls = re.match(r"_ZN\d+(\w+?)5resetEv", name).group(1)
     addr, size = targets.get(cls, (0x4c054, 48))
