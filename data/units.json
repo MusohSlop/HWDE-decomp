@@ -1276,7 +1276,24 @@
     "_ZN7SkinSet7refreshEPv": "0x7100595dd0",
     "_ZN9ModelCore5applyEiPvS0_": "0x710059456c",
     "_ZN9ModelCore7prepareEv": "0x7100592f04",
-    "_ZN12ModelCoreAlt5applyEiPvS0_": "0x7100591150"
+    "_ZN12ModelCoreAlt5applyEiPvS0_": "0x7100591150",
+    "_Z12solve_4e730cPvS_S_S_": "0x71004e730c",
+    "_Z12solve_501658PvS_S_S_": "0x7100501658",
+    "_Z12solve_510ae8PvS_S_S_": "0x7100510ae8",
+    "_Z12solve_510d20PvS_S_S_": "0x7100510d20",
+    "_Z12solve_511210PvS_S_S_": "0x7100511210",
+    "_Z13detach_471e90P4Pool": "0x7100471e90",
+    "got:gGlobal_c2af58": "0x7100c2af58",
+    "got:gGlobal_c2a9c8": "0x7100c2a9c8",
+    "got:gGlobal_c2ada0": "0x7100c2ada0",
+    "_Z18locked_call_5c2f18Pv": "0x71005c2f18",
+    "_Z18locked_call_5c2f5cPv": "0x71005c2f5c",
+    "_Z18locked_call_5c2fd0Pv": "0x71005c2fd0",
+    "_Z18locked_call_5c3a14Pv": "0x71005c3a14",
+    "_ZN16Deletable_189448D1Ev": "0x7100188838",
+    "_ZN16Deletable_3d2f8cD1Ev": "0x71003d23a8",
+    "_ZN16Deletable_4449a4D1Ev": "0x71004446b8",
+    "_ZN16Deletable_4585ecD1Ev": "0x71004583b8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2775,6 +2792,52 @@
         "_Z22prepare_skinned_21e464P12SkinHost12e0": "0x710021e464",
         "_Z22prepare_skinned_220064P12SkinHost12e0": "0x7100220064",
         "_Z22prepare_skinned_220724P12SkinHost12e0": "0x7100220724"
+      }
+    },
+    "misc/small_families4.cpp": {
+      "functions": {
+        "_ZN15SpriteRow_f2f08C2Ev": "0x71000f2f08",
+        "_ZN16SpriteRow_11fa70C2Ev": "0x710011fa70",
+        "_ZN16SpriteRow_132a90C2Ev": "0x7100132a90",
+        "_ZN16SpriteRow_2d64a0C2Ev": "0x71002d64a0",
+        "_Z21solve_reversed_4e78d0PvS_S_S_Pf": "0x71004e78d0",
+        "_Z21solve_reversed_502714PvS_S_S_Pf": "0x7100502714",
+        "_Z21solve_reversed_5114dcPvS_S_S_Pf": "0x71005114dc",
+        "_Z21solve_reversed_5115b8PvS_S_S_Pf": "0x71005115b8",
+        "_Z21solve_reversed_511a34PvS_S_S_Pf": "0x7100511a34",
+        "_ZN13Pooled_472ba07releaseEv": "0x7100472ba0",
+        "_ZN13Pooled_47a5d87releaseEv": "0x710047a5d8",
+        "_ZN13Pooled_4801c87releaseEv": "0x71004801c8",
+        "_ZN13Pooled_4834607releaseEv": "0x7100483460",
+        "_ZN13Pooled_48a3407releaseEv": "0x710048a340"
+      }
+    },
+    "misc/heap_operators.cpp": {
+      "functions": {
+        "malloc": "0x71003cca08",
+        "_Znwm": "0x71003ccb94",
+        "_ZnwmRKSt9nothrow_t": "0x71003ccbe4",
+        "_Znam": "0x71003ccc34"
+      }
+    },
+    "misc/small_families5.cpp": {
+      "functions": {
+        "_Z23delete_singleton_189448v": "0x7100189448",
+        "_Z23delete_singleton_3d2f8cv": "0x71003d2f8c",
+        "_Z23delete_singleton_4449a4v": "0x71004449a4",
+        "_Z23delete_singleton_4585ecv": "0x71004585ec",
+        "_Z20create_record_3799b8v": "0x71003799b8",
+        "_Z20create_record_37ab94v": "0x710037ab94",
+        "_Z20create_record_37acd0v": "0x710037acd0",
+        "_Z20create_record_451548v": "0x7100451548",
+        "_ZN15CheckHost_26d4c4idleEv": "0x7100026d4c",
+        "_ZN15CheckHost_2a6d04idleEv": "0x710002a6d0",
+        "_ZN15CheckHost_ca6d84idleEv": "0x71000ca6d8",
+        "_ZN15CheckHost_ccb504idleEv": "0x71000ccb50",
+        "_ZN13Locked_5c441c5fetchEv": "0x71005c441c",
+        "_ZN13Locked_5c44685fetchEv": "0x71005c4468",
+        "_ZN13Locked_5c45105fetchEv": "0x71005c4510",
+        "_ZN13Locked_5c48a85fetchEv": "0x71005c48a8"
       }
     }
   }
