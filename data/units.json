@@ -1554,7 +1554,27 @@
     "_ZN15ModelCore2220705applyEiPvS0_": "0x7100222070",
     "_ZN15ModelCore54b0445applyEiPvS0_": "0x710054b044",
     "_Z12trophy_statsP12TrophyRecord": "0x71002885d4",
-    "_Z13trophy_ratingP11TrophyStatsi": "0x710020639c"
+    "_Z13trophy_ratingP11TrophyStatsi": "0x710020639c",
+    "_Z15construct_dd7bcPvi": "0x71000dd7bc",
+    "_Z15construct_e19c4Pvi": "0x71000e19c4",
+    "got:gGlobal_c21d48": "0x7100c21d48",
+    "_Z15construct_f465cPvi": "0x71000f465c",
+    "_Z15construct_fbd24Pvi": "0x71000fbd24",
+    "_Z15construct_fd8e8Pvi": "0x71000fd8e8",
+    "_Z16construct_11ead8Pvi": "0x710011ead8",
+    "got:gGlobal_c22ac8": "0x7100c22ac8",
+    "_Z16construct_11f34cPvi": "0x710011f34c",
+    "_Z16construct_122bacPvi": "0x7100122bac",
+    "_Z16construct_127ad4Pvi": "0x7100127ad4",
+    "_Z16construct_12cb28Pvi": "0x710012cb28",
+    "_Z16construct_12d5e4Pvi": "0x710012d5e4",
+    "got:gGlobal_c22a68": "0x7100c22a68",
+    "_Z16construct_1301d8Pvi": "0x71001301d8",
+    "_Z16construct_130ce4Pvi": "0x7100130ce4",
+    "_Z14owner_has_statPvi": "0x710000e1f4",
+    "_Z18load_global_2151a0v": "0x71002151a0",
+    "_Z10stat_entryP9StatTablei": "0x7100215354",
+    "_Z10stat_valueP9StatEntryi": "0x7100215150"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -3587,6 +3607,39 @@
         "_Z19best_slot_is_20853cj": "0x710020853c",
         "_Z19best_slot_is_2085bcj": "0x71002085bc",
         "_Z19best_slot_is_20863cj": "0x710020863c"
+      }
+    },
+    "misc/pair_singletons.cpp": {
+      "functions": {
+        "_Z17create_pair_dd420v": "0x71000dd420",
+        "_Z17create_pair_e06dcv": "0x71000e06dc",
+        "_Z17create_pair_f42d8v": "0x71000f42d8",
+        "_Z17create_pair_f8ec8v": "0x71000f8ec8",
+        "_Z17create_pair_fd30cv": "0x71000fd30c",
+        "_Z18create_pair_11b4bcv": "0x710011b4bc",
+        "_Z18create_pair_11f1e0v": "0x710011f1e0",
+        "_Z18create_pair_11ffb4v": "0x710011ffb4",
+        "_Z18create_pair_1231acv": "0x71001231ac",
+        "_Z18create_pair_12c39cv": "0x710012c39c",
+        "_Z18create_pair_12cc90v": "0x710012cc90",
+        "_Z18create_pair_12d68cv": "0x710012d68c",
+        "_Z18create_pair_130adcv": "0x7100130adc"
+      }
+    },
+    "misc/stat_ratios.cpp": {
+      "functions": {
+        "_Z15stat_ratio_1a70Pv": "0x7100001a70",
+        "_Z15stat_ratio_2bf4Pv": "0x7100002bf4",
+        "_Z15stat_ratio_2cd0Pv": "0x7100002cd0",
+        "_Z15stat_ratio_2d40Pv": "0x7100002d40",
+        "_Z15stat_ratio_2db0Pv": "0x7100002db0",
+        "_Z15stat_ratio_2e20Pv": "0x7100002e20",
+        "_Z15stat_ratio_2e90Pv": "0x7100002e90",
+        "_Z15stat_ratio_2f00Pv": "0x7100002f00",
+        "_Z15stat_ratio_2f70Pv": "0x7100002f70"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073bae8"
       }
     }
   }
