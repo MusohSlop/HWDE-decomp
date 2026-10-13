@@ -476,7 +476,21 @@
     "_Z11record_cellPv": "0x710021065c",
     "_Z11record_textPv": "0x7100210634",
     "_ZN12Achievements7refreshEv": "0x71002079d0",
-    "_Z16get_achievementsv": "0x7100207648"
+    "_Z16get_achievementsv": "0x7100207648",
+    "_ZN4Game7profileEi": "0x7100203d00",
+    "_ZN4Game13set_dlc_totalEi": "0x7100202818",
+    "_ZN12ProfileStats5valueEi": "0x710020ba78",
+    "_ZN7Profile5statsEv": "0x710020b970",
+    "_ZN8DlcStore7catalogEv": "0x7100291740",
+    "_ZN8DlcStore5closeEv": "0x710029174c",
+    "_Z13get_dlc_storev": "0x7100291734",
+    "_Z11system_texti": "0x7100217cf4",
+    "kDialogFormat": "0x71007d5f83",
+    "_Z11open_dialogPvPciiiS_i": "0x71003889f8",
+    "_Z11cell_existsi": "0x7100283b54",
+    "_ZN10LevelTable8level_ofEi": "0x71001ff218",
+    "_Z15get_level_tablev": "0x71001ff050",
+    "_Z13database_unitP12UnitDatabasei": "0x710020eeb8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -970,7 +984,10 @@
         "_Z15run_board_eventv": "0x710026ed80",
         "_Z16run_board_battlev": "0x710026ef60",
         "_Z16run_board_resultv": "0x710026f05c",
-        "_Z16run_board_endingv": "0x710026fdf8"
+        "_Z16run_board_endingv": "0x710026fdf8",
+        "_Z14show_dlc_totalv": "0x710027042c",
+        "_Z13adv_mode_idlev": "0x710027052c",
+        "_Z14cell_availableiiihhi": "0x7100271894"
       },
       "map": {
         ".rodata": "0x71007f5718",

@@ -28,9 +28,13 @@ public:
 
 struct Player {
     int id;                   // +0000
-    unsigned char pad4[0x664];
+    int cell_states[0x80];    // +0004
+    unsigned char pad204[0x400];
+    unsigned char usage[0x64]; // +0604: per held kind
     unsigned char no_fort[0x80]; // +0668
-    unsigned char pad6e8[0x23e4];
+    unsigned char pad6e8[0x200];
+    int gate_levels[0x50];    // +08e8
+    unsigned char pada28[0x20a4];
     unsigned char value2acc;  // +2acc
     unsigned char value2acd;  // +2acd
     unsigned char pad2ace[0x16a];
@@ -45,6 +49,8 @@ public:
     void mark_stock(int item, unsigned char on);                            // 0x7100203b88
     unsigned char has_progress(int kind);                                   // 0x7100204174
     unsigned char clear_count();                                            // 0x710020422c
+    class Profile* profile(int slot);                                       // 0x7100203d00
+    void set_dlc_total(int total);                                          // 0x7100202818
 
     unsigned char pad[0x2944];
     Player players[1];        // +2944
@@ -541,9 +547,13 @@ void run_board_result() {
 }
 
 struct BoardRow {
-    unsigned char pad[0x12];
+    short value0;             // +00
+    short value2;             // +02
+    unsigned char pad4[0xe];
     unsigned char kind;       // +12
-    unsigned char pad13[0x1cd];
+    unsigned char pad13[0xb];
+    short value1e;            // +1e
+    unsigned char pad20[0x1c0];
 };
 unsigned char dlc_unit_unlocked(BoardRow* unit);                            // 0x710026a7e0
 
@@ -734,4 +744,108 @@ void run_board_ending() {
             query->state = 2;
         }
     }
+}
+
+class ProfileStats {
+public:
+    int value(int id);                                                      // 0x710020ba78
+};
+class Profile {
+public:
+    ProfileStats* stats();                                                  // 0x710020b970
+};
+
+struct DlcCatalog {
+    unsigned char pad[0x480];
+    unsigned long count;      // +480
+};
+class DlcStore {
+public:
+    DlcCatalog* catalog();                                                  // 0x7100291740
+    void close();                                                           // 0x710029174c
+};
+DlcStore* get_dlc_store();                                                  // 0x7100291734
+const char* system_text(int id);                                            // 0x7100217cf4
+void* shared_state_resources(SharedState* state);                           // 0x71002ad1dc
+void open_dialog(void* resources, char* text, int a, int b, int c, void* target, int d); // 0x71003889f8
+extern const char kDialogFormat[] __attribute__((visibility("hidden")));    // 0x71007d5f83
+
+void show_dlc_total() {
+    DlcCatalog* catalog = get_dlc_store()->catalog();
+    int total = 0;
+    unsigned long count = catalog->count;
+    Game* game = get_game();
+    for (unsigned long i = 0; i < count;) {
+        total += game->profile(1)->stats()->value(0x13b);
+        count = catalog->count;
+        ++i;
+        game = get_game();
+    }
+    game->set_dlc_total(total);
+    char line[0x200];
+    char text[0x200];
+    char number[0x10];
+    format_text(number, kNumberFormat, total);
+    format_text(line, system_text(0x2d), number);
+    format_text(text, kDialogFormat, line, system_text(0x2e));
+    open_dialog(shared_state_resources(get_shared_state()), text, 0, 0, 0, nullptr, 1);
+    get_dlc_store()->close();
+}
+
+void adv_mode_idle() {}
+
+class Unit {
+public:
+    unsigned char has_flag(int flag);                                       // 0x710020d984
+};
+Unit* database_unit(UnitDatabase* database, int id);                        // 0x710020eeb8
+class LevelTable {
+public:
+    int level_of(int item);                                                 // 0x71001ff218
+};
+LevelTable* get_level_table();                                              // 0x71001ff050
+int held_kind(int kind, int player);                                        // 0x7100269de0
+unsigned char cell_exists(int cell);                                        // 0x7100283b54
+
+static inline unsigned char final_usage(Game* game, unsigned int kind) {
+    unsigned int player = *reinterpret_cast<unsigned int*>(reinterpret_cast<unsigned char*>(game) + 0x1e374);
+    return game->players[player].usage[kind];
+}
+
+static inline bool cell_cleared(Player& player, int cell) {
+    BoardRow* row = board_row(cell);
+    if (row->kind >= 0x17 && row->kind <= 0x1a && !dlc_unit_unlocked(row))
+        return false;
+    return player.cell_states[static_cast<unsigned int>(cell)] == 3;
+}
+
+unsigned char cell_available(int cell, int a, int b, unsigned char any, unsigned char fresh, int slot) {
+    if (!cell_exists(cell))
+        return 0;
+    UnitDatabase* database = get_unit_database();
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    BoardRow* row = &reinterpret_cast<BoardRow*>(database->rows)[cell];
+    int unit = row->value0;
+    int wanted = row->value1e;
+    unsigned int pair = row->value2;
+    UnitDatabase* units = get_unit_database();
+    unsigned int kind = held_kind(
+        get_level_table()->level_of(reinterpret_cast<short*>(reinterpret_cast<unsigned char*>(units) + 0xebd7c)[pair * 4]),
+        cell);
+    if (kind == 0x13)
+        return 0;
+    if (final_usage(get_game(), kind) + 1 > 5)
+        return 0;
+    if (fresh && final_usage(get_game(), kind))
+        return 0;
+    if (static_cast<unsigned int>(slot) <= 7 && wanted != slot)
+        return 0;
+    if (!any) {
+        if (game->players[mode].gate_levels[cell] == 3)
+            return 0;
+        if (database_unit(get_unit_database(), unit)->has_flag(0xd) && cell_cleared(game->players[mode], cell))
+            return 0;
+    }
+    return 1;
 }
