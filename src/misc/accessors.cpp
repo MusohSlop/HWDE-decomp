@@ -63,6 +63,7 @@ void DlcStore::close() {
 extern "C" void* memset(void* dest, int value, unsigned long size);
 struct Worker;
 void initialize_worker(Worker* worker);                                     // 0x710045de40
+unsigned char poll_worker_state(Worker* worker);                           // 0x710045e0d8
 
 // Unlock tables, reached through the GOT slots at 0x7100c234b0-0x7100c234c0.
 extern int gUnlockCount;
@@ -79,6 +80,7 @@ public:
     }
     ~Unlocks();
     unsigned char has(int content);                                         // 0x7100224990
+    bool busy();                                                            // 0x7100224948
 
     alignas(8) unsigned char worker[0x20];
 };
@@ -87,6 +89,11 @@ public:
 Unlocks* get_unlocks() {
     static Unlocks sUnlocks;
     return &sUnlocks;
+}
+
+// 0x7100224948; original file: unlocks, 0x71002248a0-0x7100224990
+bool Unlocks::busy() {
+    return poll_worker_state(reinterpret_cast<Worker*>(worker));
 }
 
 // 0x7100224990; original file: unlocks, 0x71002248a0-0x7100224990

@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-361 of 445 attempted functions match: 351 inventory functions (53,808 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-four are near misses, all `m`.
+436 of 521 attempted functions match: 426 inventory functions (57,948 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-five are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -288,6 +288,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `29b5a4`, `2a7354` | `destroy_adv_board`, `destroy_board_popups` (`event/adv_tasks.cpp`) | match |
 | `2a6e88` | `BoardPopups::finalize` (`event/board_popups.cpp`) | match |
 | `2aadac` | `BoardPopups::reset` | near miss |
+| `224948` | `Unlocks::busy` (`misc/accessors.cpp`) | match |
+| 46 in `misc/singleton_teardown.cpp` | singleton teardowns (`d8730`-`460e90`): free a heap singleton held in a global and clear the pointer | match |
+| 28 in `misc/helpers.cpp` | battle-setup flag wrappers, fixed-size clears, `ItemStatRef`/`WeaponStatRef::stat_value`, `TickTimer::start`, `TaskClock::elapsed`, `destroy_option_source`, `create_system_mutex`, `PopupAnimView::finished`, `StatusPanel::reset`, `UnitRecord::assign`, `StreamBuffer::open`, `load_stage_layout`, `text_language_changed`, `abort_pending_lights`, `advance_frame_counter` | match |
+| `287be4` | `flush_track_renderer` | near miss |
 | `45c1dc`, `45c96c`, `45ca24` | `get_heap_registry`, `get_default_heap` (function-local statics), `SystemHeap::initialize` | match |
 | `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
 | `280200` | `BoardLayerView::draw` | near miss |
@@ -465,6 +469,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `SystemHeap::initialize` (`45ca24`) builds the first free block, then initializes the two frame heaps with buffers from the registry; the second under a spin lock (`+170`: spin limit, sleep in ms, state) acquired and released with strong compare-exchanges. The registry buffer is read into a local before each `initialize` call (otherwise `&front` is computed before the inlined guard), and the two sleep durations are separate calls rather than a select.
 - **Effect manager, popups and teardown.** `TitleBanner` (GOT `c22a00`) is the effect manager: the same slot as `gEffectManager`. `set_layer` picks the layer's frame-heap size with a switch that includes `case -1` (the original's lookup table starts at layer -1), allocates from the default heap's front frame heap through a pointer accessor (with the member object itself, Clang devirtualizes the call), and passes the allocation parameters as a constructed temporary, which gives the original's field stores after the callee load. `1e2218`, which `adv_effects.cpp` and the panel units call as `EffectManager::unregister(registry, id)` and whose result they ignore, returns whether an id belongs to the registry's kind (eight cases, a jump table at `7e9388`); `event/title_effects.cpp` keeps it apart so that table has its own `.rodata` anchor.
   - `BoardPopups::finalize` matches with the manager read before the first node check (the `release_node` shape of `adv_effects.cpp`): the GOT address is then loaded once in the entry block. Its popup layout (`PopupTargets`, 0x2940 bytes at `+20`) has the same shape as the panel system's targets: a node, an animation, a `LightResource`, fifteen {object, `LayoutHandle`} items and three 24-target arrays, with an out-of-line destructor (`2a6fd0`). `destroy_adv_board` and `destroy_board_popups` follow `destroy_board_cursor`. `get_unlocks` is a function-local static whose constructor starts a worker and clears three unlock globals.
+- **Wider ranking (`misc/helpers.cpp`, `misc/singleton_teardown.cpp`).** With the size limit raised to 600 bytes and functions far from existing units allowed when all their callees are named, the list turns up many small self-contained functions. `misc/helpers.cpp` groups them with origin comments. 46 functions are the same 64-byte teardown with only the global changed (found by a byte-pattern scan); `misc/singleton_teardown.cpp` defines them through one inline helper and names unknown globals after their GOT slot.
+  - Fixed-size clears that the original calls `memset` for without a tail call come from loops: the loop idiom pass creates the `memset` after tail calls have been marked, so it is not a tail call, while an explicit `memset` is. `LightRecordSet::clear` needs its records 8-byte aligned (`unsigned long`), or the count store merges into the `memset`.
+  - `StatusPanel::reset` takes the member's address before the `memset`. `gTextDatabase` is an object reached through its GOT slot, not a pointer.
+  - A pass over the near misses for the packed-struct global-merge problem found no other case: no unit defines a packed internal global, and the offset-only differences left in the diffs are jump-table placement and field scheduling.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
@@ -523,6 +531,8 @@ Large functions deferred under the rule "over about 1,000 bytes and calling many
 `45c458`: `DefaultHeap::allocate`, 10 words. The flag-bit select at the end is scheduled before the alignment `csel` in the original and after it in ours, and one address add moves; three orderings of the size computation tried.
 
 `2aadac`: `BoardPopups::reset`, the null-check pattern below (the check before the unconditional `set_frame` call).
+
+`287be4`: `flush_track_renderer`, two calls through the same global. The original rematerializes the GOT load and the -1 argument for the second call; ours keeps both in callee-saved registers (register allocation).
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 
