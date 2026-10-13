@@ -1207,3 +1207,112 @@ unsigned int EntryCopy::copy_to(void* out) {
     memcpy(out, entries, static_cast<unsigned long>(count) * 8);
     return count;
 }
+void* load_global_44bc20();                                                 // 0x710044bc20
+void global_call_44c360(void* global, void* value);                         // 0x710044c360
+
+// 0x71004543dc; original file: global queries, 0x71004543dc
+void guarded_forward_44c360(void* value) {
+    if (load_global_44bc20())
+        global_call_44c360(load_global_44bc20(), value);
+}
+
+struct UnitInfoRecord {
+    unsigned char pad[0x1eb];
+    signed char level;        // +1eb
+};
+struct UnitEntry {
+    unsigned char pad[0x110];
+    UnitInfoRecord* info;     // +110
+};
+UnitEntry* find_unit_446054(Global4449ec* global, int id);                  // 0x7100446054
+
+// 0x7100452a24; original file: global queries, 0x7100452a24
+bool unit_has_level(int id) {
+    return find_unit_446054(load_global_4449ec(), id)->info->level > 0;
+}
+
+// 0x7100434384; original file: tables, 0x7100434364-0x7100434384
+struct OwnedTable {
+    void init(void* owner);
+
+    void* owner;              // +00
+    unsigned char bytes[0x88]; // +08
+    unsigned char pad90[8];
+    int count;                // +98
+};
+
+void OwnedTable::init(void* owner) {
+    count = 0;
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+    this->owner = owner;
+}
+
+// 0x71003e7114; original file: record copies, 0x71003e7114
+struct LargeRecord {
+    void copy_to(LargeRecord* out);
+
+    unsigned char pad[0x10];
+    unsigned char data[0x150]; // +10
+    int value160;             // +160
+};
+
+void LargeRecord::copy_to(LargeRecord* out) {
+    memcpy(out->data, data, sizeof(data));
+    out->value160 = value160;
+}
+
+// 0x71003dd0e4; original file: tables, 0x71003dd0e4
+struct SplitTable {
+    void clear();
+
+    unsigned char head[0x110]; // +000
+    unsigned char pad110[0x70];
+    unsigned char tail[0x300]; // +180
+};
+
+void SplitTable::clear() {
+    unsigned char* rest = tail;
+    for (unsigned int i = 0; i < sizeof(head); ++i)
+        head[i] = 0;
+    for (unsigned int i = 0; i < sizeof(tail); ++i)
+        rest[i] = 0;
+}
+
+struct SubRelease {
+    void release();                                                         // 0x71003af6ec
+};
+
+// 0x71003aa540; original file: scene objects, 0x71003aa540
+struct LightOwner {
+    void release();
+
+    unsigned char pad[0x298];
+    void* light;              // +298
+    SubRelease sub;           // +2a0
+};
+
+void LightOwner::release() {
+    if (light) {
+        release_light(&light);
+        light = nullptr;
+    }
+    sub.release();
+}
+
+// 0x71003a4754; original file: panel drawing, 0x71003a4754
+struct WidePanel {
+    void draw();
+
+    unsigned char pad[0x2320];
+    LightEffectNode* node;    // +2320
+    unsigned char pad2328[0x38];
+    PanelPane* pane;          // +2360
+    unsigned char pad2368[0x18];
+    unsigned char lines[1];   // +2380
+};
+
+void WidePanel::draw() {
+    set_pane_lines(pane, reinterpret_cast<TrackLightTarget*>(lines), 0x20);
+    node->draw(0);
+}

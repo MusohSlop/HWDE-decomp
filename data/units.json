@@ -1469,7 +1469,14 @@
     "got:_ZTV7AdePair": "0x7100c226d8",
     "got:_ZTV9AdeSingle": "0x7100c224d8",
     "got:_ZTV12RenderTriple": "0x7100c2d1f8",
-    "_ZN7SubInit4initEv": "0x7100031378"
+    "_ZN7SubInit4initEv": "0x7100031378",
+    "_Z18load_global_44bc20v": "0x710044bc20",
+    "_Z18global_call_44c360PvS_": "0x710044c360",
+    "_Z16find_unit_446054P12Global4449eci": "0x7100446054",
+    "_ZN10SubRelease7releaseEv": "0x71003af6ec",
+    "got:_ZTV10HeapClient": "0x7100c2bbc0",
+    "got:_ZTV8QuadSlot": "0x7100c2b868",
+    "_ZN12TrophyWidget4showEPv": "0x71002f8218"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2280,7 +2287,14 @@
         "_ZN9LightPair7releaseEv": "0x71001eb3e4",
         "_ZN10BigCleared5resetEv": "0x71000d0930",
         "_Z20battle_timer_secondsv": "0x710006fdb8",
-        "_ZN9EntryCopy7copy_toEPv": "0x71005340ec"
+        "_ZN9EntryCopy7copy_toEPv": "0x71005340ec",
+        "_Z22guarded_forward_44c360Pv": "0x71004543dc",
+        "_Z14unit_has_leveli": "0x7100452a24",
+        "_ZN10OwnedTable4initEPv": "0x7100434384",
+        "_ZN11LargeRecord7copy_toEPS_": "0x71003e7114",
+        "_ZN10SplitTable5clearEv": "0x71003dd0e4",
+        "_ZN10LightOwner7releaseEv": "0x71003aa540",
+        "_ZN9WidePanel4drawEv": "0x71003a4754"
       },
       "map": {
         ".rodata.cst4": "0x710073c188"
@@ -3232,7 +3246,10 @@
         "_ZN11LockedQueue7pendingEv": "0x710053b490",
         "_ZN7AdePairC2Ev": "0x71000b59e0",
         "_ZN9AdeSingleC2Ev": "0x71000ae67c",
-        "_ZN12RenderTripleC2Ev": "0x7100527a94"
+        "_ZN12RenderTripleC2Ev": "0x7100527a94",
+        "_ZN10HeapClientC2EPv": "0x710045d938",
+        "_ZN8QuadSlotC2Ev": "0x710042092c",
+        "_ZN12TrophyWidget6selectEi": "0x71002f81e0"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",

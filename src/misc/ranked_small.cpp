@@ -485,3 +485,51 @@ public:
 };
 
 RenderTriple::RenderTriple() : a(0), b(0), c(0) {}
+// 0x710045d938; original file: heap objects, 0x710045d938
+// Vtable through the GOT slot at 0x7100c2bbc0.
+class HeapClient : public Plain_5c2c78 {
+public:
+    explicit HeapClient(void* owner);
+    ~HeapClient() override;
+
+    void* owner;              // +08
+    void* value10;            // +10
+};
+
+HeapClient::HeapClient(void* owner) : owner(owner), value10(nullptr) {}
+
+// 0x710042092c; original file: game objects, 0x710041be40-0x7100424a58
+// Vtable through the GOT slot at 0x7100c2b868.
+class QuadSlot : public Base_41be40 {
+public:
+    QuadSlot();
+    ~QuadSlot() override;
+
+    unsigned char pad4c[4];
+    void* a;                  // +50
+    void* b;                  // +58
+    void* c;                  // +60
+    void* d;                  // +68
+};
+
+QuadSlot::QuadSlot() : a(nullptr), b(nullptr), c(nullptr), d(nullptr) {}
+
+class Game {
+public:
+    void* trophy(unsigned int id);                                          // 0x71002042bc
+};
+Game* get_game();                                                           // 0x7100204728
+
+// 0x71002f81e0; original file: trophy widgets, 0x71002f81e0-0x71002f8218
+struct TrophyWidget {
+    void select(int id);
+    void show(void* trophy);                                                // 0x71002f8218
+
+    unsigned char pad[8];
+    unsigned char selected;   // +08
+};
+
+void TrophyWidget::select(int id) {
+    selected = id;
+    show(get_game()->trophy(id));
+}
