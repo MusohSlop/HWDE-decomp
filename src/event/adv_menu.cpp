@@ -139,28 +139,38 @@ void MenuScene::draw() {
 
 class DemoPanelSystem {
 public:
+    void draw();                                                            // 0x7100266740
     void initialize();                                                      // 0x7100263d58
     void finalize();                                                        // 0x71002637fc
     void update();                                                          // 0x71002648dc
 };
 class DemoEffectPool {
 public:
+    void draw();                                                            // 0x710026302c
     void initialize();                                                      // 0x7100260c0c
+    unsigned char restart();                                                // 0x7100262e78
     void finalize();                                                        // 0x7100260a48
     void update();                                                          // 0x7100260fe8
 };
 class AdvCaption {
 public:
     void initialize();                                                      // 0x7100266cd8
+    void draw();                                                            // 0x7100266f58
     void finalize();                                                        // 0x7100266a20
     void set_value0c(int value);                                            // 0x7100266ec0
     void update();                                                          // 0x7100266f04
 };
 class AdvEffects {
 public:
+    void draw_start();                                                      // 0x7100268f10
+    void draw_screens();                                                    // 0x7100268fc8
     void initialize();                                                      // 0x71002676ec
+    void play_exit(unsigned char forward);                                  // 0x7100269440
     void finalize();                                                        // 0x710026731c
     void update();                                                          // 0x7100267c44
+
+    unsigned char pad[0x494];
+    int value494;             // +494
 };
 class AdvBoard {
 public:
@@ -172,6 +182,7 @@ public:
 class BoardCursor {
 public:
     void initialize();                                                      // 0x7100288ef4
+    void draw();                                                            // 0x710028a150
     void finalize();                                                        // 0x7100288be0
     void update();                                                          // 0x7100289714
 
@@ -181,12 +192,14 @@ public:
 class BoardUnits {
 public:
     void initialize();                                                      // 0x7100291e14
+    void draw();                                                            // 0x7100298670
     void finalize();                                                        // 0x710029194c
     void update();                                                          // 0x7100292694
 };
 class BoardPopups {
 public:
     void initialize();                                                      // 0x71002a73d4
+    void draw();                                                            // 0x71002aa188
     void finalize();                                                        // 0x71002a6e88
     void reset();                                                           // 0x71002aadac
     void update();                                                          // 0x71002a7a80
@@ -194,6 +207,8 @@ public:
 class BoardCamera {
 public:
     void initialize();                                                      // 0x7100288a10
+    unsigned char pressed(int button);                                      // 0x7100288a38
+    void release(int button);                                               // 0x7100288a24
     void finalize();                                                        // 0x7100288a14
     void update();                                                          // 0x7100288a18
     void set_mode(int a, int b);                                            // 0x7100288a20
@@ -438,7 +453,11 @@ struct LayoutBox {
 };
 struct LayoutSprite {
     LayoutSprite();                                                         // 0x71001ef52c
-    unsigned char pad0[8];
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+    virtual void draw(void* target, Fader* fader); // +18
+
     int flags;                // +08: bit 7 dirty
     unsigned char padc[0x3c];
 };
@@ -616,6 +635,9 @@ struct BoardOverlayBase {
 class BoardOverlay : public BoardOverlayBase {
 public:
     BoardOverlay(int value, void* owner);                                   // 0x7100280f6c
+    void draw();                                                            // 0x710028228c
+    void update();                                                          // 0x7100282484
+    unsigned char confirm_ready();                                          // 0x71002826b0
     virtual ~BoardOverlay();
 
     LayoutSprite lower[9][0xb0]; // +00030
@@ -629,5 +651,146 @@ BoardOverlay::BoardOverlay(int value, void* owner) : BoardOverlayBase(value, own
             lower[set][i].flags |= 0x80;
             upper[set][i].flags |= 0x80;
         }
+    }
+}
+
+class CellRecord {
+public:
+    unsigned char cleared();                                                // 0x7100202164
+
+    int unit;                 // +00
+    unsigned char pad4[0x38];
+};
+
+struct MarkedPlayer {
+    int id;                   // +0000
+    unsigned char pad4[0x200];
+    int marks[0x80][2];       // +0204
+    unsigned char pad604[0x564];
+    CellRecord records[0x80]; // +0b68
+    unsigned char pad2968[0x2d0];
+};
+static_assert(sizeof(MarkedPlayer) == 0x2c38, "marked player size");
+
+unsigned char begin_sprite_batch();                                         // 0x71001e4500
+void end_sprite_batch();                                                    // 0x71001e4560
+
+// Board layer view: two 9x176 sprite layers after a 0xe8-byte header.
+class BoardLayerView {
+public:
+    void draw();                                                            // 0x7100280200
+
+    unsigned char pad[0xe8];
+    LayoutSprite lower[9][0xb0]; // +000e8
+    LayoutSprite upper[9][0xb0]; // +1be68
+};
+
+void BoardLayerView::draw() {
+    void* target = gRenderTarget;
+    unsigned int mode = menu_mode();
+    GameBoard* game = game_board();
+    bool front = false;
+    if (mode == 4) {
+        MarkedPlayer* players = reinterpret_cast<MarkedPlayer*>(game->players);
+        MarkedPlayer& player = players[menu_mode()];
+        front = (player.marks[player.id][0] & 0x18) != 0;
+    } else if (reinterpret_cast<Game*>(game)->state()->mode == 5 || menu_mode() == 6 || menu_mode() == 8) {
+        front = gAdvEffects->value494 == 9;
+    }
+    if (begin_sprite_batch()) {
+        for (int set = 0; set < 9; ++set) {
+            for (int i = 0; i < 0xb0; ++i) {
+                lower[set][i].draw(target, gFader);
+                upper[set][i].draw(target, gFader);
+            }
+        }
+        end_sprite_batch();
+    }
+    if (front) {
+        gBoardUnits->draw();
+        gAdvEffects->draw_screens();
+    } else {
+        gAdvEffects->draw_screens();
+        gBoardUnits->draw();
+    }
+    gBoardCursor->draw();
+    gAdvCaption->draw();
+    gAdvEffects->draw_start();
+}
+
+void BoardOverlay::draw() {
+    void* target = gRenderTarget;
+    bool front = false;
+    if (menu_mode() == 5 || menu_mode() == 6 || menu_mode() == 8)
+        front = gAdvEffects->value494 == 9;
+    if (begin_sprite_batch()) {
+        for (int set = 0; set < 9; ++set) {
+            for (int i = 0; i < 0xb0; ++i) {
+                lower[set][i].draw(target, gFader);
+                upper[set][i].draw(target, gFader);
+            }
+        }
+        end_sprite_batch();
+    }
+    if (front) {
+        gDemoEffectPool->draw();
+        gAdvEffects->draw_screens();
+    } else {
+        gAdvEffects->draw_screens();
+        gDemoEffectPool->draw();
+    }
+    gDemoPanelSystem->draw();
+    gBoardPopups->draw();
+    gBoardCursor->draw();
+    gAdvCaption->draw();
+    gAdvEffects->draw_start();
+}
+
+class Pad {
+public:
+    unsigned int buttons(int port);                                         // 0x710045d620
+};
+Pad* get_pad();                                                             // 0x710045ceb4
+void play_se(int id, int a, void* target, int volume, float scale, float x, float y); // 0x71003fbe44
+unsigned char resource_queue_active();                                      // 0x71002589b4
+
+struct OverlayOwner {
+    unsigned char pad[0x18];
+    int unit;                 // +18
+};
+
+static inline short board_unit(void* database, int cell) {
+    return *reinterpret_cast<short*>(static_cast<unsigned char*>(database) + 0xdb608 + cell * 0x1e0);
+}
+
+void BoardOverlay::update() {
+    GameBoard* game = game_board();
+    unsigned int mode = menu_mode();
+    void* database = get_unit_database();
+    if (value28 != 5)
+        return;
+    MarkedPlayer& player = reinterpret_cast<MarkedPlayer*>(game->players)[mode];
+    long cell = player.id;
+    int sealed = menu_mode() == 7 ? (player.marks[cell][0] >> 13) & 1 : 0;
+    if ((get_pad()->buttons(0) & 0x2000) || gBoardCamera->pressed(0)) {
+        gBoardCamera->release(0);
+        if (!confirm_ready())
+            return;
+        if (static_cast<unsigned char>(resource_queue_active() | sealed))
+            return;
+        if (!gDemoEffectPool->restart())
+            return;
+        play_se(0x2f, 0, nullptr, 0x3c, 1.0f, 0.0f, 0.0f);
+        value28 = 7;
+        CellRecord record = player.records[cell];
+        OverlayOwner* target = static_cast<OverlayOwner*>(owner);
+        target->unit = record.cleared() ? record.unit : board_unit(database, player.id);
+        return;
+    }
+    if ((get_pad()->buttons(0) & 0x4000) || gBoardCamera->pressed(1)) {
+        play_se(5, 0, nullptr, 0x3c, 1.0f, 0.0f, 0.0f);
+        gBoardCamera->release(1);
+        gAdvEffects->play_exit(0);
+        value28 = 2;
     }
 }

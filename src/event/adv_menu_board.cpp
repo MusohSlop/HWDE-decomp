@@ -35,6 +35,7 @@ public:
     void* trophy(unsigned int index);                                       // 0x71002042bc
     unsigned char has_item(int item);                                       // 0x7100203fac
     unsigned char unlocked(int id);                                         // 0x7100204518
+    unsigned char class_unlocked(int slot);                                 // 0x7100202e74
 
     unsigned char pad[0x2944];
     Player players[1];        // +2944
@@ -326,4 +327,60 @@ void prepare_menu_board(int mode, unsigned char flag) {
             return;
     }
     current->loaded = 1;
+}
+
+struct UnitSlot {
+    int unit;
+    int slot;
+};
+// Unit kind to unlock slot for modes 6-9 (0x71007f68b4).
+static const UnitSlot kUnitSlots[19] __attribute__((used, section(".rodata.unit_slots"))) = {
+    {0x72, 0}, {0x73, 0}, {0x74, 0}, {0x75, 0}, {0x80, 0}, {0x81, 0}, {0x7e, 1},
+    {0x7f, 1}, {0x77, 2}, {0x78, 2}, {0xa9, 2}, {0xaa, 2}, {0x79, 3}, {0x7a, 3},
+    {0x7d, 3}, {0xa8, 3}, {0x7b, 4}, {0x7c, 4}, {0x76, 6},
+};
+
+static inline unsigned int board_mode() {
+    return get_game()->state()->mode;
+}
+
+bool unit_class_unlocked(int unit) {
+    int slot;
+    if (board_mode() == 3 || board_mode() == 4) {
+        slot = 0;
+        switch (unit) {
+        case 0x79:
+        case 0x7a:
+        case 0x7d:
+        case 0xa8:
+            slot = 3;
+            break;
+        case 0x77:
+        case 0x78:
+            slot = 2;
+            break;
+        case 0x7b:
+        case 0x7c:
+            slot = 4;
+            break;
+        case 0x74:
+        case 0x7e:
+            slot = 1;
+            break;
+        case 0x76:
+            slot = 6;
+            break;
+        }
+    } else if (board_mode() == 6 || board_mode() == 7 || board_mode() == 8 || board_mode() == 9) {
+        slot = 0;
+        for (int i = 0; i < 19; ++i) {
+            if (kUnitSlots[i].unit == unit) {
+                slot = kUnitSlots[i].slot;
+                break;
+            }
+        }
+    } else {
+        slot = 5;
+    }
+    return get_game()->class_unlocked(slot) != 0;
 }

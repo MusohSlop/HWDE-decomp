@@ -576,7 +576,26 @@
     "_Z18prepare_menu_boardji": "0x7100283e88",
     "_ZN10DataStream4readEPh": "0x71001fbc54",
     "_ZN10DataStream5writeEh": "0x71001fbdd8",
-    "got:_ZTV12BoardOverlay": "0x7100c2a7f8"
+    "got:_ZTV12BoardOverlay": "0x7100c2a7f8",
+    "_ZN4Game14class_unlockedEi": "0x7100202e74",
+    "_ZN10AdvEffects10draw_startEv": "0x7100268f10",
+    "_ZN10AdvEffects12draw_screensEv": "0x7100268fc8",
+    "_ZN10AdvCaption4drawEv": "0x7100266f58",
+    "_ZN11BoardCursor4drawEv": "0x710028a150",
+    "_ZN10BoardUnits4drawEv": "0x7100298670",
+    "_Z18begin_sprite_batchv": "0x71001e4500",
+    "_Z16end_sprite_batchv": "0x71001e4560",
+    "_ZN15DemoPanelSystem4drawEv": "0x7100266740",
+    "_ZN14DemoEffectPool4drawEv": "0x710026302c",
+    "_ZN11BoardPopups4drawEv": "0x71002aa188",
+    "_ZN11BoardCamera7pressedEi": "0x7100288a38",
+    "_ZN11BoardCamera7releaseEi": "0x7100288a24",
+    "_ZN10AdvEffects9play_exitEh": "0x7100269440",
+    "_ZN14DemoEffectPool7restartEv": "0x7100262e78",
+    "_ZN3Pad7buttonsEi": "0x710045d620",
+    "_Z7get_padv": "0x710045ceb4",
+    "_Z7play_seiiPviifff": "0x71003fbe44",
+    "_ZN12BoardOverlay13confirm_readyEv": "0x71002826b0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -1100,7 +1119,10 @@
         "_ZN9BoardViewC2EiPv": "0x7100274530",
         "_ZN9BoardView4initEiPv": "0x7100274624",
         "_ZN9MenuScene8shutdownEv": "0x71002731e4",
-        "_ZN12BoardOverlayC2EiPv": "0x7100280f6c"
+        "_ZN12BoardOverlayC2EiPv": "0x7100280f6c",
+        "_ZN14BoardLayerView4drawEv": "0x7100280200",
+        "_ZN12BoardOverlay4drawEv": "0x710028228c",
+        "_ZN12BoardOverlay6updateEv": "0x7100282484"
       },
       "map": {
         ".rodata": "0x71007f58e4",
@@ -1122,7 +1144,12 @@
         "_Z16cell_short_routei": "0x71002830f8",
         "_Z18cell_reward_lockedi": "0x71002831a4",
         "_Z14note_cell_itemi": "0x7100283234",
-        "_Z18prepare_menu_boardih": "0x7100283e88"
+        "_Z18prepare_menu_boardih": "0x7100283e88",
+        "_Z19unit_class_unlockedi": "0x7100282df8"
+      },
+      "map": {
+        ".rodata": "0x71007f6644",
+        ".rodata.unit_slots": "0x71007f68b4"
       }
     },
     "event/adv_records.cpp": {
