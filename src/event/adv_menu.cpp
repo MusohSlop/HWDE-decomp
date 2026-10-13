@@ -1,4 +1,5 @@
-// Matching candidates for the Adventure Mode menu scene 0x71002734bc-0x71002748d4.
+// Matching candidates for the Adventure Mode menu scene 0x71002734bc-0x71002748d4, plus
+// BoardOverlay (0x7100280f6c).
 // Names are descriptive placeholders. Status: matching/README.md.
 
 #include "resource/resource_frame.h"
@@ -595,4 +596,38 @@ void MenuScene::shutdown() {
     gFader->release(fade2d480, nullptr);
     release_shared(object2d470);
     release_shared(object2d478);
+}
+
+// Header of the board overlay (fields +08 to +2c), initialised before the vtable pointer.
+struct BoardOverlayBase {
+    BoardOverlayBase(int value, void* owner)
+        : value8(value), valuec(value), owner(owner), value18(0), value20(0), value28(0) {}
+
+    int value8;               // +08
+    int valuec;               // +0c
+    void* owner;              // +10
+    long value18;             // +18
+    long value20;             // +20
+    int value28;              // +28
+    unsigned char pad2c[4];
+};
+
+// Board overlay (0x37b30 bytes): two 9x176 sprite layers.
+class BoardOverlay : public BoardOverlayBase {
+public:
+    BoardOverlay(int value, void* owner);                                   // 0x7100280f6c
+    virtual ~BoardOverlay();
+
+    LayoutSprite lower[9][0xb0]; // +00030
+    LayoutSprite upper[9][0xb0]; // +1bdb0
+};
+static_assert(sizeof(BoardOverlay) == 0x37b30, "board overlay size");
+
+BoardOverlay::BoardOverlay(int value, void* owner) : BoardOverlayBase(value, owner) {
+    for (int set = 0; set < 9; ++set) {
+        for (int i = 0; i < 0xb0; ++i) {
+            lower[set][i].flags |= 0x80;
+            upper[set][i].flags |= 0x80;
+        }
+    }
 }

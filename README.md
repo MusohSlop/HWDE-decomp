@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-276 of 351 attempted functions match: 266 inventory functions (46,176 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other seventy-five are near misses, all `m`.
+279 of 356 attempted functions match: 269 inventory functions (47,760 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other seventy-seven are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -270,6 +270,9 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `283d74`–`283db0` | `MenuIcons::icon`, `draw`, `draw_entry` | match |
 | `283dc4`, `283e10`, `283f78` | `create_menu_board`, `release_menu_units`, `release_menu_board` | match |
 | `283fd0` | `EventTask::EventTask` | match |
+| `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
+| `28342c`, `283964`, `283aa4` | `BoardRow_serialize`, `UnitInfo_serialize`, `RewardPair_serialize` | match |
+| `28386c` | `BoardRow_serialize_extra` | near miss |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -426,6 +429,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Board view (`274530`, `274624`).** A 0x1a8068-byte object: a header, layout members, a 128x176 sprite grid at `+1d0` and 9x176 more sprites at `+18c1d0`, each 0x48-byte sprite with a flags word at `+8` that `init` marks dirty (bit 7). The header fields are stored before the vtable pointer in the constructor; that matches with them in a non-virtual base class (`BoardViewBase`), whose constructor runs first. The constructor's call to `init` stays a virtual call, as in the original.
 - **Menu scene shutdown (`2731e4`).** Deletes the eight view slots, finalizes and destroys each board subsystem, and drops two reference-counted objects; the release matches with the object held in a local rather than re-read through the field.
 - **Menu board helpers (`event/adv_menu_board.cpp`, `282d74`–`28404c`).** The menu icon table (16-byte entries at `7f69bc`), the menu board's two layout handles (create, clear, destroy), `EventTask`'s constructor and several per-cell predicates. `cell_exists` takes a third argument, an optional counter it increments for visited cells. The predicates that fall back to the final player's cell when given -1 match once that cell is read before the test (a select, not a branch). The byte that `note_cell_item` sets at `BoardQuery+ba04` is exposed through an anonymous union, so `reset` keeps clearing that word with one 64-bit store.
+- **Record serializers (`event/adv_records.cpp`, `28342c`-`283aa4`).** Each field goes through the stream's read-or-write transfer (16-bit: `1fbc84`/`1fbe00`, 8-bit: `1fbc54`/`1fbdd8`). `BoardRow_serialize` transfers the row header, gates, flags and stats, clears the cell list and position table with `memset`, then stores the row index as its owner.
+- **All relocations checked.** `TrackResources::load_one` (`25cf50`) had its `MemoryStream::open` call masked: the units table still named the old `unsigned int` signature after the size argument became 64-bit. With the name corrected it is still a match, and no unit has a masked relocation left.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
@@ -473,7 +478,9 @@ Large functions deferred under the rule "over about 1,000 bytes and calling many
 
 `26c154`: `load_board` reads the board rows, cells, unit records, reward pairs and two short lists from two resource frames through a read/write stream. The logic matches; the resource id is a `csel` in ours and a branch in the original, and `ResourceFrame::is_open` is tested as a byte. `26c924`: `unit_has_override` (three jump tables, `is_fort_kind` inlined again); the logic matches, register use differs. Both capped at two attempts.
 
-`26e824`: nine words, three byte stores scheduled earlier. `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
+`26e824`: nine words, three byte stores scheduled earlier. `28386c`: the code matches; the original shares one pair of byte temporaries between the two loops (frame 0x30) and passes an undefined value for the first on writes. Locals scoped inside each loop get separate slots in 3.9.1 (it emits no lifetime markers for small locals), so the frame and register use differ. `280f6c`: `BoardOverlay`'s constructor (two 9x176 sprite layers marked dirty in one interleaved loop); 8 words, the header stores pair as `value18`/`value20` in ours and `owner`/`value18` in the original.
+
+`283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 
 `279080`: `plain_cells_cleared` inlines `is_plain_cell`; only the accepted switch-lowering pattern differs (bitmap lookup in ours, bit test in the original).
 
