@@ -310,6 +310,7 @@ namespace nn {
 namespace os {
 struct MutexType;
 struct EventType;
+void SignalEvent(EventType* event);
 void LockMutex(MutexType* mutex);
 void UnlockMutex(MutexType* mutex);
 void WaitEvent(EventType* event);
@@ -785,7 +786,8 @@ public:
     virtual ~FlaggedModelCore();
     unsigned char pad[0x1290];
     unsigned short flags;     // +1298
-    unsigned char pad129a[6];
+    unsigned char value129a;  // +129a
+    unsigned char pad129b[5];
 };
 
 // 0x7100591690; vtable through the GOT slot at 0x7100c2d758.
@@ -1204,6 +1206,129 @@ struct SlotBuffer {
 void SlotBuffer::release() {
     if (buffer) {
         get_default_heap_slots()->slot.get()->free(buffer);
+        buffer = nullptr;
+    }
+}
+// 0x71000c4778; original file: battle objects, 0x71000c4778
+// Vtable through the GOT slot at 0x7100c22838 (shared with the class at 0x71000c47bc).
+class ClearedRecord {
+public:
+    ClearedRecord();
+    virtual ~ClearedRecord();
+
+    long value8;              // +08
+    long value10;             // +10
+    int value18;              // +18
+    unsigned char pad1c[4];
+    unsigned char bytes[0x50]; // +20
+};
+
+ClearedRecord::ClearedRecord() {
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+    value18 = 0;
+    value8 = 0;
+    value10 = 0;
+}
+
+// 0x71005f7c98; original file: worker events, 0x71005f7c98
+struct EventPair {
+    void wake();
+
+    unsigned char pad[0x300];
+    unsigned char ready_event[0x28]; // +300
+    unsigned char done_event[0x38];  // +328
+    unsigned char enabled;    // +360
+    unsigned char waiting;    // +361
+};
+
+void EventPair::wake() {
+    if (enabled && waiting) {
+        waiting = 0;
+        nn::os::ClearEvent(reinterpret_cast<nn::os::EventType*>(done_event));
+        nn::os::SignalEvent(reinterpret_cast<nn::os::EventType*>(ready_event));
+    }
+}
+
+// An intermediate base whose inline constructor sets the flags; its own vtable store is
+// overwritten by the derived one and disappears.
+class MarkedModelBase : public FlaggedModelCore {
+public:
+    MarkedModelBase() {
+        value129a = 1;
+        flags |= 2;
+    }
+    ~MarkedModelBase() override;
+};
+
+// 0x7100591e18; vtable through the GOT slot at 0x7100c2d760.
+class MarkedModel : public MarkedModelBase {
+public:
+    MarkedModel();
+    ~MarkedModel() override;
+};
+
+MarkedModel::MarkedModel() {}
+
+// 0x710053c29c; original file: file system objects, 0x710053c29c
+struct LockedStateReset {
+    int reset();
+
+    unsigned char pad[0x14];
+    int state;                // +14
+    unsigned char pad18[0xa0];
+    unsigned char mutex[0x20]; // +b8
+};
+
+int LockedStateReset::reset() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    if (state == 8)
+        state = 1;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    return 0;
+}
+
+template <unsigned long N> struct ByteBlock {
+    unsigned char bytes[N];
+};
+
+// 0x710053b56c; original file: file system objects, 0x710053b490-0x710053b56c
+struct LockedPool {
+    void release();
+
+    unsigned char mutex[0x20]; // +000
+    int value20;              // +020
+    unsigned char pad24[4];
+    ByteBlock<0x3a0> entries; // +028
+    int refs;                 // +3c8
+};
+
+void LockedPool::release() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    if (--refs <= 0) {
+        value20 = 0;
+        entries = {};
+    }
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+}
+
+// 0x710045cc58; original file: default heap, 0x710045c1dc-0x710045cc58 (release is called, not
+// inlined, so it is not in system/default_heap.cpp)
+struct HeapShutdown {
+    void finalize();
+
+    void* locker;             // +00
+    void* buffer;             // +08
+    unsigned char pad10[0xa0];
+    FrameHeapBase front;      // +b0
+    FrameHeapBase back;       // +110
+};
+
+void HeapShutdown::finalize() {
+    back.finalize();
+    front.finalize();
+    if (void* data = buffer) {
+        reinterpret_cast<DefaultHeap*>(this)->release(data, 1, 0);
         buffer = nullptr;
     }
 }

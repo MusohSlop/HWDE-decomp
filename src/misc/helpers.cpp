@@ -1833,3 +1833,24 @@ Plain8* shared_plain8() {
     static Plain8 instance;
     return &instance;
 }
+class DefaultHeapAlloc {
+public:
+    void* allocate(unsigned long alignment, unsigned long size, unsigned char lock,
+                   unsigned char keep);                                     // 0x710045c458
+};
+DefaultHeapAlloc* get_default_heap_alloc();                                 // 0x710045c96c
+// Reached through the GOT slots at 0x7100c22cd8 and 0x7100c22cb8.
+extern void* gSingleton_c22cd8;
+extern void* gSingleton_c22cb8;
+
+// 0x7100164a0c; original file: battle objects, 0x7100164a0c
+void create_singleton_c22cd8() {
+    if (!gSingleton_c22cd8)
+        gSingleton_c22cd8 = get_default_heap_alloc()->allocate(0x10, 0x18c, 1, 0);
+}
+
+// 0x71001469b8; original file: battle objects, 0x71001469b8
+void create_singleton_c22cb8() {
+    if (!gSingleton_c22cb8)
+        gSingleton_c22cb8 = get_default_heap_alloc()->allocate(0x10, 0x30, 1, 0);
+}

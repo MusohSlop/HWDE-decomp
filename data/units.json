@@ -1527,7 +1527,11 @@
     "got:_ZTV16TwoResourcePanel": "0x7100c2abb0",
     "_Z22get_default_heap_slotsv": "0x710045c96c",
     "_ZN17HeapAllocatorSlot3getEv": "0x710045c2ec",
-    "_Z13profile_statsv": "0x710020b970"
+    "_Z13profile_statsv": "0x710020b970",
+    "_ZN16DefaultHeapAlloc8allocateEmmhh": "0x710045c458",
+    "_Z22get_default_heap_allocv": "0x710045c96c",
+    "got:_ZTV13ClearedRecord": "0x7100c22838",
+    "got:_ZTV11MarkedModel": "0x7100c2d760"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2383,7 +2387,9 @@
         "_ZN7Profile10item_valueEj": "0x710020b1cc",
         "_ZN14UnitLevelEntry5levelEv": "0x7100210dd0",
         "_ZN14OptionalBuffer7releaseEv": "0x71001cc94c",
-        "_Z13shared_plain8v": "0x71001c8690"
+        "_Z13shared_plain8v": "0x71001c8690",
+        "_Z23create_singleton_c22cd8v": "0x7100164a0c",
+        "_Z23create_singleton_c22cb8v": "0x71001469b8"
       },
       "map": {
         ".rodata.cst4": "0x710073c188",
@@ -3379,7 +3385,13 @@
         "_ZN15LockedFrameHeap5clearEv": "0x71005c4c24",
         "_ZN16TwoResourcePanelD0Ev": "0x71002fb578",
         "_ZN11ChunkHolder7releaseEh": "0x7100218c68",
-        "_ZN10SlotBuffer7releaseEv": "0x71001a77b0"
+        "_ZN10SlotBuffer7releaseEv": "0x71001a77b0",
+        "_ZN13ClearedRecordC2Ev": "0x71000c4778",
+        "_ZN9EventPair4wakeEv": "0x71005f7c98",
+        "_ZN11MarkedModelC2Ev": "0x7100591e18",
+        "_ZN16LockedStateReset5resetEv": "0x710053c29c",
+        "_ZN10LockedPool7releaseEv": "0x710053b56c",
+        "_ZN12HeapShutdown8finalizeEv": "0x710045cc58"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",
