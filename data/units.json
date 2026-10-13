@@ -1378,7 +1378,29 @@
     "got:_ZTV20ChannelUser50_526a34": "0x7100c2d130",
     "got:gGlobal_c21690_deep": "0x7100c21690",
     "_ZN17Channel190_5f97484stopEP14ChannelContext": "0x71005f9968",
-    "_ZN17Channel190_5f9748D1Ev": "0x71005f9748"
+    "_ZN17Channel190_5f9748D1Ev": "0x71005f9748",
+    "_Z21resources_call_389218P15SharedResources": "0x7100389218",
+    "_Z21resources_call_387fd8P15SharedResources": "0x7100387fd8",
+    "_Z21resources_call_388eccP15SharedResources": "0x7100388ecc",
+    "_Z21resources_call_388fccP15SharedResources": "0x7100388fcc",
+    "_Z21resources_call_389138P15SharedResources": "0x7100389138",
+    "_Z21resources_call_388028P15SharedResourcesi": "0x7100388028",
+    "_Z21resources_call_388eecP15SharedResourcesi": "0x7100388eec",
+    "_Z21resources_call_389128P15SharedResourcesi": "0x7100389128",
+    "_Z21resources_call_3891d0P15SharedResourcesi": "0x71003891d0",
+    "got:gGlobal_c2b810": "0x7100c2b810",
+    "_ZN16ClearBase_41be40C2Ev": "0x710041be40",
+    "got:_ZTV14Cleared_41a4d8": "0x7100c2b810",
+    "got:gGlobal_c2b880": "0x7100c2b880",
+    "got:_ZTV14Cleared_421768": "0x7100c2b880",
+    "got:gGlobal_c2b8b8": "0x7100c2b8b8",
+    "got:_ZTV14Cleared_4251c8": "0x7100c2b8b8",
+    "got:gGlobal_c2ba18": "0x7100c2ba18",
+    "got:_ZTV14Cleared_43706c": "0x7100c2ba18",
+    "_Z11visit_18f8cPv": "0x7100018f8c",
+    "_Z11visit_190b8Pv": "0x71000190b8",
+    "_Z11visit_1928cPv": "0x710001928c",
+    "_Z11visit_192e0Pv": "0x71000192e0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2982,6 +3004,47 @@
         "_ZN20ChannelUser50_5266f8D2Ev": "0x71005266f8",
         "_ZN20ChannelUser50_5269dcD2Ev": "0x71005269dc",
         "_ZN20ChannelUser50_526a34D2Ev": "0x7100526a34"
+      }
+    },
+    "misc/small_families7.cpp": {
+      "functions": {
+        "_Z27destroy_frame_holder_2473d4v": "0x71002473d4",
+        "_Z27destroy_frame_holder_24870cv": "0x710024870c",
+        "_Z27destroy_frame_holder_24c89cv": "0x710024c89c",
+        "_Z19with_resources_e6b0v": "0x710000e6b0",
+        "_Z21with_resources_3c72b0v": "0x71003c72b0",
+        "_Z21with_resources_3c7388v": "0x71003c7388",
+        "_Z21with_resources_3c73e4v": "0x71003c73e4",
+        "_Z21with_resources_3c74e8v": "0x71003c74e8",
+        "_Z21with_resources_455a18v": "0x7100455a18",
+        "_Z21with_resources_3c72d4Pvi": "0x71003c72d4",
+        "_Z21with_resources_3c73acPvi": "0x71003c73ac",
+        "_Z21with_resources_3c74b0Pvi": "0x71003c74b0",
+        "_Z21with_resources_3c7588Pvi": "0x71003c7588",
+        "_ZN14Cleared_41a4d8C2Ev": "0x710041a4d8",
+        "_ZN14Cleared_421768C2Ev": "0x7100421768",
+        "_ZN14Cleared_4251c8C2Ev": "0x71004251c8",
+        "_ZN14Cleared_43706cC2Ev": "0x710043706c",
+        "_ZN13BigList_1fa809visit_allEv": "0x710001fa80",
+        "_ZN13BigList_1fb309visit_allEv": "0x710001fb30",
+        "_ZN13BigList_1fbe09visit_allEv": "0x710001fbe0",
+        "_ZN13BigList_1fc189visit_allEv": "0x710001fc18"
+      }
+    },
+    "misc/small_families8.cpp": {
+      "functions": {
+        "_ZN17ByteStream_1fbcdc5read4EPh": "0x71001fbcdc",
+        "_ZN17ByteStream_1fbd305read4EPh": "0x71001fbd30",
+        "_ZN17ByteStream_1fbd845read4EPh": "0x71001fbd84",
+        "_Z27destroy_light_holder_379a00v": "0x7100379a00",
+        "_Z27destroy_light_holder_37abdcv": "0x710037abdc",
+        "_Z27destroy_light_holder_37ad18v": "0x710037ad18",
+        "_ZN14RefSlot_43b3005resetEv": "0x710043b300",
+        "_ZN14RefSlot_43b34c5resetEv": "0x710043b34c",
+        "_ZN14RefSlot_43b3985resetEv": "0x710043b398",
+        "_ZN17CountedRef_40d6385resetEv": "0x710040d638",
+        "_ZN17CountedRef_40d6805resetEv": "0x710040d680",
+        "_ZN17CountedRef_40d6c85resetEv": "0x710040d6c8"
       }
     }
   }

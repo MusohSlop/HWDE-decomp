@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,052 of 1,140 attempted functions match: 1,042 inventory functions (93,752 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-eight are near misses, all `m`.
+1,085 of 1,173 attempted functions match: 1,075 inventory functions (95,788 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-eight are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -313,6 +313,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 20 in `misc/skinned_overrides.cpp` | skinned-model overrides (base version, then the skin set's) | match |
 | 14 in `misc/small_families4.cpp`, 16 in `misc/small_families5.cpp` | nine-sprite constructors, swapped-argument solves, pool disposals, singleton deletes and creations, command checks, calls under the object manager's lock | match |
 | `3cca08`-`3ccc34` | `malloc`, `operator new` (plain and `nothrow`), `operator new[]` (`misc/heap_operators.cpp`) | match |
+| 21 in `misc/small_families7.cpp`, 12 in `misc/small_families8.cpp` | frame-heap holder teardowns, shared-state resource calls, field-clearing constructors, list walks, four-byte stream reads, light-holder teardowns, reference resets | match |
 | 55 in `misc/small_families6.cpp` | constant-table lookups, command results passed on, base-calling destructors, two-argument global and deep-member forwarders, channel destructors with the flag at `+50`/`+190` | match |
 | `45c1dc`, `45c96c`, `45ca24` | `get_heap_registry`, `get_default_heap` (function-local statics), `SystemHeap::initialize` | match |
 | `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
