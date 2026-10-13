@@ -407,7 +407,40 @@
     "_Z18BoardRow_serializeP8BoardRowP10DataStreami": "0x710028342c",
     "_Z24BoardRow_serialize_extraP8BoardRowP10DataStream": "0x710028386c",
     "_Z18UnitInfo_serializeP8UnitInfoP10DataStream": "0x7100283964",
-    "_Z20RewardPair_serializePvP10DataStream": "0x7100283aa4"
+    "_Z20RewardPair_serializePvP10DataStream": "0x7100283aa4",
+    "_ZN9GameState10base_levelEi": "0x7100203550",
+    "_ZN4TaskC2Ev": "0x710039cc78",
+    "_ZN9SceneTaskC2Ev": "0x7100387524",
+    "_ZN11SharedState8run_taskEP9SceneTask": "0x71002ad584",
+    "_ZN8SaveTaskC1Ev": "0x71002877f4",
+    "_ZN12OptionSource7pendingEv": "0x710020c1fc",
+    "_Z17get_option_sourcev": "0x710020bd74",
+    "got:gOptionState": "0x7100c2a728",
+    "got:gMenuQuery": "0x7100c2a740",
+    "_Z14set_menu_layeri": "0x71003fa4c8",
+    "_Z15set_menu_cursori": "0x71003fa724",
+    "got:_ZTV11AdvModeTask": "0x7100c2a700",
+    "got:_ZTV10OptionTask": "0x7100c2a730",
+    "got:_ZTV13BoardMenuTask": "0x7100c2a738",
+    "_ZN12OptionSource6lockedEv": "0x710020c204",
+    "_Z15set_fade_framesi": "0x71003f9fac",
+    "_Z19show_system_messageiiiii": "0x71003c9668",
+    "_Z14close_overlaysiii": "0x71003ade70",
+    "_Z15run_board_eventv": "0x710026ed80",
+    "_Z16run_board_battlev": "0x710026ef60",
+    "_Z16run_board_resultv": "0x710026f05c",
+    "_Z14run_board_shopv": "0x710026f214",
+    "_Z16run_board_endingv": "0x710026fdf8",
+    "_ZN9SaveSlots6selectEv": "0x7100217508",
+    "_Z15get_save_headerv": "0x7100217518",
+    "_ZN11StageLights5resetEii": "0x71001fb808",
+    "got:gTitleLock": "0x7100c2a708",
+    "got:gTitleCursor": "0x7100c2a710",
+    "got:gEndingSeen": "0x7100c2a720",
+    "got:_ZTV9TitleTask": "0x7100c2a718",
+    "_Z12player_setupPvS_i": "0x710026a98c",
+    "_Z13game_has_flagP4Gamei": "0x71002026fc",
+    "_Z13game_set_flagP4Gameih": "0x7100202730"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -888,6 +921,20 @@
       },
       "map": {
         ".rodata": "0x71007f51a4"
+      }
+    },
+    "event/adv_mode.cpp": {
+      "functions": {
+        "_ZN10BoardQuery5resetEv": "0x710026e824",
+        "_ZN11AdvModeTaskC2Ev": "0x710026e434",
+        "_Z11run_optionsv": "0x710026e9f4",
+        "_Z8run_savev": "0x710026ea94",
+        "_Z14run_board_menuv": "0x710026eb54",
+        "_ZN11AdvModeTask3runEv": "0x710026e4a8"
+      },
+      "map": {
+        ".rodata": "0x71007f5718",
+        ".rodata.cst4": "0x710073c188"
       }
     }
   }

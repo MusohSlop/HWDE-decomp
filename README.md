@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-248 of 307 attempted functions match: 238 inventory functions (40,440 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other fifty-nine are near misses, all `m`.
+251 of 313 attempted functions match: 241 inventory functions (40,840 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other sixty-two are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -247,6 +247,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `26d620` | `tick_side_quest` | match |
 | `26d978`, `26da1c`, `26dd70` | `tick_timer`, `seal_random_keep`, `advance_nightmare` | near miss |
 | `26db3c`, `26dbb4`, `26dc74`, `26e278` | `nightmare_stage`, `reset_nightmare`, `nightmare_reached`, `check_nightmare_clear` | match |
+| `26e434`, `26e9f4`, `26ea94` | `AdvModeTask::AdvModeTask`, `run_options`, `run_save` | match |
+| `26e4a8`, `26e824`, `26eb54` | `AdvModeTask::run`, `BoardQuery::reset`, `run_board_menu` | near miss |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -394,6 +396,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `check_nightmare_clear` matches with its two found flags as `unsigned char` (tested with `and #0xff`) declared second-first, which gives the original register order. `nightmare_reached` needs the open test as one condition rather than `continue`s.
   - `ward_slot` (`26cc30`) is the helper `unit_has_override` inlines twice; using it there brought that function from 119 to 106 differing words.
   - `dlc_unit_unlocked` returns `unsigned char`: its callers test `and #0xff`, which a `bool` result does not produce. `unit_alive` matches with the team and defeated tests in one `||`.
+- **Adventure Mode state machine (`event/adv_mode.cpp`, `26e434`–`26ed7c`).** `AdvModeTask` (vtable through GOT `c2a700`) loads all ten boards, sets up each player, then loops: a title task, the options task, and a dispatch on `BoardQuery::step` to the save, board menu, event, battle, result, shop and ending tasks. Each sub-task is a `SceneTask` allocated on the default heap and run through `SharedState::run_task` (`2ad584`), then deleted through its virtual destructor. The global `BoardQuery` (`c23250`) holds the state (`+4`), step (`+8`) and previous step (`+c`); its full 0xba08-byte layout, read from `BoardQuery::reset`, is now in `include/event/board_query.h` and shared with `adv_board.cpp`.
+  - `run_save` matches with the failure branch written `step = 12; state = 2;`: in the other order the two `step` stores are sunk into one, while the original keeps `state`/`step` as one 64-bit store.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
@@ -424,6 +428,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 `26c654`, `26c730`, `26c884`: the original reads `override` and `value6` with `and #0xffff0000; asr #16` (a redundant mask) and a load narrowed to `+4`; no bitfield layout tried reproduces that, so it may be another compiler difference. `26c610` is the switch-lowering case again.
 
 `26c154`: `load_board` reads the board rows, cells, unit records, reward pairs and two short lists from two resource frames through a read/write stream. The logic matches; the resource id is a `csel` in ours and a branch in the original, and `ResourceFrame::is_open` is tested as a byte. `26c924`: `unit_has_override` (three jump tables, `is_fort_kind` inlined again); the logic matches, register use differs. Both capped at two attempts.
+
+`26e824`: nine words, three byte stores scheduled earlier. `26eb54`: the case-3 constant is hoisted into the dispatch block in ours (block layout only). `26e4a8`: the logic matches; the step dispatch range checks and loop layout differ (108 of 213 words after two attempts).
 
 `26d978`, `26da1c`: three and four words of scheduling (a store before or after the byte test, the order of two zeroing moves). `26dd70`: `advance_nightmare` (1,288 bytes, the mode-8 turn update with two 4-bit timers at `Player+2ad3`); the logic matches, one attempt.
 

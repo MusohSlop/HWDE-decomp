@@ -3,6 +3,7 @@
 // (0x710026b798) are at the end.
 // Names are descriptive placeholders. Status: matching/README.md.
 
+#include "event/board_query.h"
 #include "resource/resource_frame.h"
 
 extern "C" void* memset(void* dest, int value, unsigned long size);
@@ -290,37 +291,7 @@ bool board_intro_pending() {
     return game_mode() == 0;
 }
 
-class BoardQuery {
-public:
-    int active_count(int slot);                                             // 0x7100269bb8
-    int total_count(int slot);                                              // 0x7100269bfc
-    bool unit_alive(int player, int slot, int team);                        // 0x7100269c40
-    int cell_level(unsigned int cell);                                      // 0x710026b234
-    void find_entry(unsigned int cell, unsigned int slot, int kind, int* level, int* position,
-                    int* state);                                            // 0x710026b3cc
 
-    unsigned char pad[0xd1];
-    unsigned char timer_done; // +0d1
-    unsigned char seal_done;  // +0d2
-    unsigned char padd3[0x205];
-    unsigned char groups[0x100]; // +02d8
-    int levels[0x80][0x1c];   // +03d8
-    int kinds[0x80][0x1c];    // +3bd8
-    unsigned char flags[0x80][0x1c]; // +73d8
-    unsigned int items[0x80][0x1c]; // +81d8
-    unsigned char padb9d8[0xc];
-    int access;               // +b9e4
-    unsigned char turn_alert; // +b9e8
-    unsigned char padb9e9[3];
-    int reset_pending;        // +b9ec
-    unsigned char padb9f0;
-    unsigned char quest_short; // +b9f1
-    unsigned char quest_long; // +b9f2
-    unsigned char sealed_high; // +b9f3
-    unsigned char sealed_low; // +b9f4
-};
-// Reached through the GOT slot at 0x7100c23250.
-extern BoardQuery gBoardQuery;
 
 int BoardQuery::active_count(int slot) {
     Game* game = get_game();
