@@ -1673,7 +1673,23 @@
     "_ZN12RandomSource4rollEv": "0x71003336c4",
     "_Z24handle_entry_part_20ca64P15EntryPart20dd84jPv": "0x710020ca64",
     "_Z24handle_entry_part_20cb40P15EntryPart20de00jPv": "0x710020cb40",
-    "_Z24handle_entry_part_20cff8P15EntryPart20de7cjPv": "0x710020cff8"
+    "_Z24handle_entry_part_20cff8P15EntryPart20de7cjPv": "0x710020cff8",
+    "_Z18post_command_d0178Pvii": "0x71000d0178",
+    "_Z18post_command_d0474Pvii": "0x71000d0474",
+    "got:gSingleton115460": "0x7100c22a70",
+    "_ZN15Singleton115460C1Ev": "0x7100118e44",
+    "_ZN15Singleton115460C2Ev": "0x7100118e44",
+    "got:gSingleton1893f8": "0x7100c216e8",
+    "_ZN15Singleton1893f8C1Ev": "0x7100187d78",
+    "_ZN15Singleton1893f8C2Ev": "0x7100187d78",
+    "got:gSingleton29b554": "0x7100c2a6c0",
+    "_ZN15Singleton29b554C1Ev": "0x7100299570",
+    "_ZN15Singleton29b554C2Ev": "0x7100299570",
+    "_Z13part_call_f08Pvi": "0x7100000f08",
+    "_Z15part_call_381e4Pvi": "0x71000381e4",
+    "_Z15part_call_39f88Pvi": "0x7100039f88",
+    "_Z15part_call_37fb4Pvi": "0x7100037fb4",
+    "_Z15part_call_48ff4Pvi": "0x7100048ff4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2932,7 +2948,9 @@
       "functions": {
         "_ZN19AnimationSet_2896144stopEv": "0x7100289614",
         "_ZN19AnimationSet_2923c84stopEv": "0x71002923c8",
-        "_ZN19AnimationSet_3b58a84stopEv": "0x71003b58a8"
+        "_ZN19AnimationSet_3b58a84stopEv": "0x71003b58a8",
+        "_ZN19AnimationSet_1243804stopEv": "0x7100124380",
+        "_ZN19AnimationSet_29da004stopEv": "0x710029da00"
       }
     },
     "misc/command_handlers.cpp": {
@@ -4136,6 +4154,98 @@
         "_Z19release_node_1f21f8P15NodeOwner1f21f8": "0x71001f21f8",
         "_Z19release_node_336da8P15NodeOwner336da8": "0x7100336da8",
         "_Z19release_node_35ca18P15NodeOwner35ca18": "0x710035ca18"
+      }
+    },
+    "misc/command_posts.cpp": {
+      "functions": {
+        "_Z18command_post_23cc4P13CommandSource": "0x7100023cc4",
+        "_Z18command_post_23de4P13CommandSource": "0x7100023de4",
+        "_Z18command_post_26facP13CommandSource": "0x7100026fac",
+        "_Z18command_post_28cd4P13CommandSource": "0x7100028cd4",
+        "_Z18command_post_ccdb0P13CommandSource": "0x71000ccdb0"
+      }
+    },
+    "misc/singleton_creates2.cpp": {
+      "functions": {
+        "_Z23create_singleton_115460v": "0x7100115460",
+        "_Z23create_singleton_1893f8v": "0x71001893f8",
+        "_Z23create_singleton_29b554v": "0x710029b554"
+      }
+    },
+    "misc/item_states.cpp": {
+      "functions": {
+        "_Z20item_in_state_1ff25cP10ItemStatesi": "0x71001ff25c",
+        "_Z20item_in_state_1ff280P10ItemStatesi": "0x71001ff280",
+        "_Z20item_in_state_1ff2ecP10ItemStatesi": "0x71001ff2ec",
+        "_Z20item_in_state_1ff310P10ItemStatesi": "0x71001ff310",
+        "_Z20item_in_state_1ff334P10ItemStatesi": "0x71001ff334"
+      }
+    },
+    "misc/ref_releases.cpp": {
+      "functions": {
+        "_ZN15RefSlots_5cdc285resetEv": "0x71005cdc28"
+      }
+    },
+    "misc/table_reads.cpp": {
+      "functions": {
+        "_Z13byte_at_6ad7cP14ByteTable6ad7ci": "0x710006ad7c",
+        "_Z14byte_at_205510P15ByteTable205510i": "0x7100205510",
+        "_Z14byte_at_20552cP15ByteTable20552ci": "0x710020552c",
+        "_Z14byte_at_205568P15ByteTable205568i": "0x7100205568",
+        "_Z14byte_at_205584P15ByteTable205584i": "0x7100205584",
+        "_Z14byte_at_2055a0P15ByteTable2055a0i": "0x71002055a0",
+        "_Z14byte_at_2055bcP15ByteTable2055bci": "0x71002055bc",
+        "_Z14byte_at_20a0f8P15ByteTable20a0f8i": "0x710020a0f8",
+        "_Z14byte_at_210488P15ByteTable210488i": "0x7100210488",
+        "_Z14byte_at_3eda44P15ByteTable3eda44i": "0x71003eda44",
+        "_Z14short_at_d8908P15ShortTabled8908i": "0x71000d8908",
+        "_Z14short_at_d8924P15ShortTabled8924i": "0x71000d8924",
+        "_Z14short_at_d8940P15ShortTabled8940i": "0x71000d8940",
+        "_Z14short_at_d895cP15ShortTabled895ci": "0x71000d895c",
+        "_Z14short_at_d8978P15ShortTabled8978i": "0x71000d8978",
+        "_Z14short_at_d8994P15ShortTabled8994i": "0x71000d8994",
+        "_Z15short_at_20b56cP16ShortTable20b56ci": "0x710020b56c",
+        "_Z15short_at_20b588P16ShortTable20b588i": "0x710020b588",
+        "_Z15short_at_20b948P16ShortTable20b948i": "0x710020b948",
+        "_Z14byte_id_1fe640P12ByteId1fe640": "0x71001fe640",
+        "_Z14byte_id_1fe654P12ByteId1fe654": "0x71001fe654",
+        "_Z14byte_id_2034bcP12ByteId2034bc": "0x71002034bc",
+        "_Z14byte_id_203618P12ByteId203618": "0x7100203618",
+        "_Z14byte_id_20d8f4P12ByteId20d8f4": "0x710020d8f4",
+        "_Z14byte_id_20d908P12ByteId20d908": "0x710020d908",
+        "_Z14byte_id_213f00P12ByteId213f00": "0x7100213f00",
+        "_Z14byte_id_213f8cP12ByteId213f8c": "0x7100213f8c",
+        "_Z14byte_id_213fa0P12ByteId213fa0": "0x7100213fa0",
+        "_Z14byte_id_214550P12ByteId214550": "0x7100214550",
+        "_Z14byte_id_214564P12ByteId214564": "0x7100214564",
+        "_Z13row_id_201e20P11IdRow201e20i": "0x7100201e20",
+        "_Z13row_id_201e5cP11IdRow201e5ci": "0x7100201e5c",
+        "_Z13row_id_201e88P11IdRow201e88i": "0x7100201e88",
+        "_Z13row_id_201eb4P11IdRow201eb4i": "0x7100201eb4",
+        "_Z18handle_byte_206648P12RecordHandle": "0x7100206648",
+        "_Z18handle_byte_20666cP12RecordHandle": "0x710020666c",
+        "_Z18handle_byte_206690P12RecordHandle": "0x7100206690",
+        "_Z18handle_byte_2066b4P12RecordHandle": "0x71002066b4",
+        "_Z18handle_byte_2066d8P12RecordHandle": "0x71002066d8"
+      }
+    },
+    "misc/global_parts.cpp": {
+      "functions": {
+        "_Z16global_part_1088i": "0x7100001088",
+        "_Z17global_part_3d888i": "0x710003d888",
+        "_Z17global_part_3d8aci": "0x710003d8ac",
+        "_Z17global_part_3d8d0i": "0x710003d8d0",
+        "_Z17global_part_40cd0i": "0x7100040cd0"
+      }
+    },
+    "misc/seven_bytes.cpp": {
+      "functions": {
+        "_Z17seven_byte_205670P16SevenBytes205670i": "0x7100205670",
+        "_Z17seven_byte_205694P16SevenBytes205694i": "0x7100205694",
+        "_Z17seven_byte_2056b8P16SevenBytes2056b8i": "0x71002056b8",
+        "_Z17seven_byte_2056dcP16SevenBytes2056dci": "0x71002056dc",
+        "_Z17seven_byte_205734P16SevenBytes205734i": "0x7100205734",
+        "_Z17seven_byte_20578cP16SevenBytes20578ci": "0x710020578c"
       }
     }
   }

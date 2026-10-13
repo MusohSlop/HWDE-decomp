@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,696 of 1,813 attempted functions match: 1,686 inventory functions (142,468 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 117 are near misses, all `m`.
+1,756 of 1,879 attempted functions match: 1,746 inventory functions (145,152 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 123 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -326,6 +326,9 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 6 in `misc/owned_buffers.cpp`, 5 in `misc/slot_passes.cpp`, 5 in `misc/phased_cells.cpp` | owned-buffer releases through the slot allocator; per-slot table passes; frame-phase forwards to a grid cell's virtual | match |
 | 6 in `misc/stat_fractions.cpp`, 4 in `misc/grade_ids.cpp`, 5 in `misc/side_choices.cpp`, 3 in `misc/entry_passes.cpp` | stat percentages; grade-table ids (early-return form keeps the loads in each branch); side choices with random rolls; per-entry passes over a virtual list | match |
 | 3 in `misc/worker_barriers.cpp`, 3 in `misc/mirror_flags.cpp`, 3 in `misc/keyed_values.cpp`, 4 in `misc/node_releases.cpp` | worker barriers (volatile arrival count); flags mirrored into the live game object; values by lazy id; effect-node releases | match |
+| 5 in `misc/command_posts.cpp`, 3 in `misc/singleton_creates2.cpp`, 5 in `misc/item_states.cpp`, 1 in `misc/ref_releases.cpp`, 2 more in `misc/animation_stops.cpp` | seed-family members: command posts to other queues, large singletons, item state tests, a reference-slot reset (last slot first), animation-set stops | match |
+| 39 in `misc/table_reads.cpp`, 5 in `misc/global_parts.cpp` | range-checked byte and 16-bit reads, signed id fields with limits, row ids, handle-record bytes (table pointer read before the index); calls on parts of a large global | match |
+| 6 in `misc/seven_bytes.cpp` | seven-entry byte settings with a fallback to the last entry | near miss |
 | 48 in `misc/skinned_overrides.cpp` | skinned-model overrides (base version, then the skin set's), 28 of them at other skin-set offsets | match |
 | 14 in `misc/small_families4.cpp`, 16 in `misc/small_families5.cpp` | nine-sprite constructors, swapped-argument solves, pool disposals, singleton deletes and creations, command checks, calls under the object manager's lock | match |
 | `3cca08`-`3cccb8` | `malloc`, `operator new` (plain and `nothrow`), `operator new[]`, `operator delete`, `operator delete[]` (`misc/heap_operators.cpp`) | match |
@@ -600,6 +603,7 @@ Near-miss families, ranked by members × the fraction of words that match (one f
 | --- | --- | --- | --- |
 | `misc/packed_fetch.cpp` (`5968d0`-`596d6c`) | 6 | 2 of 58 | 5.8 |
 | `misc/tree_walks.cpp` (`4ea47c`-`4ee9d4`) | 6 | 7 of 75 | 5.4 |
+| `misc/seven_bytes.cpp` (`205670` and five more) | 6 | 6 of 9 | 2.0 |
 | `misc/part_binders.cpp` (`59c560`-`59ca10`) | 6 | 27 of 60 | 3.3 |
 
 All other near misses are single functions. The focused passes so far: `model_updates` was fixed (all 22 now match, see the lesson on reference clamps). `packed_fetch` got four more probe variants (field order, byte pointer, struct copy, reading at each use) and none changed the pairing.
@@ -607,6 +611,8 @@ All other near misses are single functions. The focused passes so far: `model_up
 `5968d0`-`596d6c` (`misc/packed_fetch.cpp`): two words. The original loads an entry's offset with a pre-indexed `ldr` and its size from the updated base, so the two loads never pair. Ours folds both addresses and pairs them into one `ldp`. Reading the size through a field pointer made no difference.
 
 `4ea47c`-`4ee9d4` (`misc/tree_walks.cpp`): seven words, all scheduling in the leaf test. The original stores the visitor into its stack slot before it loads the context's set and mode, and it sets the hit flag before materializing the result. Passing the visitor as a `const&` made it worse.
+
+`205670` and five more (`misc/seven_bytes.cpp`): the original tests `index < 7` unsigned first and then `index > -1` (`ccmp`, `csel gt`) before it selects between the entry and the last one. Ten variants made no difference: both tests in either order, pointer and reference selects, a -1 sentinel, nested ifs and resetting the index.
 
 `59c560`-`59ca10` (`misc/part_binders.cpp`): the structure matches. The original hoists the item table's base (`part + 0x70`) into a register and lets `part` die. Ours indexes from `part` itself and keeps it live, which shifts every register and moves the `return false` block after the epilogue. Hoisting the base into a local and indexing through an accessor made no difference.
 

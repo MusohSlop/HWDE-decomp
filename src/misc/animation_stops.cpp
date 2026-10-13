@@ -53,3 +53,31 @@ void AnimationSet_3b58a8::stop() {
     for (int i = 0; i < 5; ++i)
         stop_animation(anims[i]);
 }
+
+
+// 0x7100124380
+struct AnimationSet_124380 {
+    void stop();
+
+    unsigned char pad[0x138];
+    LayoutAnimation* anims[5]; // +138
+};
+
+void AnimationSet_124380::stop() {
+    for (int i = 0; i < 5; ++i)
+        stop_animation(anims[i]);
+}
+
+
+// 0x710029da00 (four animations, the shape of EffectClock::stop)
+struct AnimationSet_29da00 {
+    void stop();
+
+    void* owner;              // +00
+    LayoutAnimation* anims[4]; // +08
+};
+
+void AnimationSet_29da00::stop() {
+    for (int i = 0; i < 4; ++i)
+        stop_animation(anims[i]);
+}
