@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-280 of 360 attempted functions match: 270 inventory functions (48,260 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty are near misses, all `m`.
+319 of 399 attempted functions match: 309 inventory functions (49,608 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -270,6 +270,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `283d74`–`283db0` | `MenuIcons::icon`, `draw`, `draw_entry` | match |
 | `283dc4`, `283e10`, `283f78` | `create_menu_board`, `release_menu_units`, `release_menu_board` | match |
 | `283fd0` | `EventTask::EventTask` | match |
+| 35 functions in `misc/accessors.cpp` | global getters (`get_game`, `get_unit_database`, `get_item_table`, ...), `Game::state`, `ItemTable` queries, `DataStream` byte/halfword read and write, text lookups, bitset tests, board positions | match |
+| `2877f4`, `2906dc`, `290778`, `288e7c` | `SaveTask::SaveTask`, `ResultTask::ResultTask`, `ResultTask::prepare`, `destroy_board_cursor` | match |
 | `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
 | `280200` | `BoardLayerView::draw` | near miss |
 | `28228c` | `BoardOverlay::draw` | match |
@@ -435,6 +437,9 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Record serializers (`event/adv_records.cpp`, `28342c`-`283aa4`).** Each field goes through the stream's read-or-write transfer (16-bit: `1fbc84`/`1fbe00`, 8-bit: `1fbc54`/`1fbdd8`). `BoardRow_serialize` transfers the row header, gates, flags and stats, clears the cell list and position table with `memset`, then stores the row index as its owner.
 - **All relocations checked.** `TrackResources::load_one` (`25cf50`) had its `MemoryStream::open` call masked: the units table still named the old `unsigned int` signature after the size argument became 64-bit. With the name corrected it is still a match, and no unit has a masked relocation left.
 - **Sprites are polymorphic.** `LayoutSprite` has a vtable; both overlay draws call each sprite's `draw(target, fader)` (slot `+18`) for two 9x176 layers in one interleaved loop.
+- **Target ranking (`tools/rank_targets.py`).** Ranks the `U` functions up to a size limit by size, the share of their direct callees already named in `units.json`, whether a matched function calls them, and distance to existing unit code. Working from the top of its list, this round matched 39 functions: mostly global getters and small accessors that earlier units already called by name, now in `misc/accessors.cpp` (grouped for convenience; they come from several game source files) and `event/adv_tasks.cpp`.
+  - Several earlier placeholder signatures were wrong in ways that did not matter to their callers: `0x203d00` is a byte setter (`Game::set_dlc_seen`), not `Game::profile`; the item and weapon queries take signed `int` indices; `bgm_length` reads a member. The units define the corrected names and keep the old names as aliases in the symbol table.
+  - Small bounds-checked lookups match with the in-range path written first. Bitset tests shift a 64-bit one and truncate the mask to 32 bits (`bits & static_cast<unsigned int>(1ul << (n % 32))`). `destroy_board_cursor`'s three layout groups are an array, like `destroy_adv_caption`'s resources.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
