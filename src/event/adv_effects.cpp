@@ -62,6 +62,8 @@ struct EffectClock {
     void* value8;             // +08
     LayoutAnimation* anims[4]; // +10: song of time in, out, re-in, re-out
     unsigned char pad30[0x20];
+
+    void stop();                                                            // 0x7100269720
 };
 static_assert(sizeof(EffectClock) == 0x50, "clock size");
 
@@ -104,6 +106,10 @@ public:
     void play_enter(unsigned char forward, int state);                               // 0x7100269238
     void play_exit(unsigned char forward);                                           // 0x7100269440
     void stop_banner();                                                     // 0x7100269544
+    void play_clock(unsigned int index);                                    // 0x71002696a8
+    float clock_frame(unsigned int index);                                  // 0x71002697f4
+    bool clock_done(unsigned int index);                                    // 0x7100269804
+    unsigned char clock_active(unsigned int index);                         // 0x710026983c
     void fade_nightmare();
     void reset_screens();
 
@@ -909,4 +915,33 @@ unsigned char AdvEffects::end_screens() {
     second->offset38 = z1;
     second->flags58 |= 0x10;
     return 1;
+}
+
+void AdvEffects::play_clock(unsigned int index) {
+    if (!flagc)
+        return;
+    clock.stop();
+    if (clock.anims[index])
+        clock.anims[index]->set_active(true);
+    clock.anims[index]->set_rate(step);
+}
+
+void EffectClock::stop() {
+    for (int i = 0; i < 4; ++i)
+        stop_animation(anims[i]);
+}
+
+float AdvEffects::clock_frame(unsigned int index) {
+    return clock.anims[index]->frame;
+}
+
+bool AdvEffects::clock_done(unsigned int index) {
+    return animation_done(clock.anims[index]);
+}
+
+unsigned char AdvEffects::clock_active(unsigned int index) {
+    LayoutAnimation* animation = clock.anims[index];
+    if (!animation)
+        return 0;
+    return animation->active24;
 }

@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-213 of 248 attempted functions match: 203 inventory functions (34,624 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other thirty-five are near misses, all `m`.
+231 of 273 attempted functions match: 221 inventory functions (37,424 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other forty-two are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -224,6 +224,14 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `269188` | `AdvEffects::play_banner` | near miss |
 | `269238`, `269440` | `AdvEffects::play_enter`, `play_exit` | near miss |
 | `269544`, `2695a8` | `AdvEffects::stop_banner`, `EffectRecord::stop` | match |
+| `2696a8` | `AdvEffects::play_clock` | near miss |
+| `269720`–`26983c` | `EffectClock::stop`, `AdvEffects::clock_frame`, `clock_done`, `clock_active` | match |
+| `269858`–`269c40` | `item_weapon_value`, `item_rank`, `item_is_kind`, `board_intro_pending`, `BoardQuery::active_count`, `total_count`, `unit_alive` | match |
+| `269cfc`, `269dd0`, `269ea8` | `unit_kind`, `board_value`, `neighbor_cell` | match |
+| `269de0`, `269fa0`, `269fd8`, `26a080` | `held_kind`, `is_officer_kind`, `is_keep_kind`, `is_gate_kind` | near miss |
+| `26a014`, `26a100` | `is_fort_kind`, `open_gate` | match |
+| `26a220`, `26a454` | `BoardRow::gate_state`, `update_dlc_gates` | near miss |
+| `26a7e0`, `26a90c` | `dlc_unit_unlocked`, `Player::cell_open` | match |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -360,6 +368,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `LayoutAnimation::frame` is `volatile`: the original reloads it for every test (`update_records`, `update_exit`), which a plain `float` does not reproduce.
   - `draw_screens` and `draw_screens_alternate` are byte-identical bodies (the nightmare pane fade, alpha byte at `EffectGroup+59`); both come from one inline. The flags of `play_enter`/`play_exit` are `unsigned char` (tested with `tst #0xff`).
   - `update_screens` tests kind 5 before kind 8, uses an `int` index (the original compares it in 32 bits and indexes `anims[i]` dynamically) and an unsigned loop test.
+- **Adventure board queries (`event/adv_board.cpp`, `269858`–`26a90c`).** Item and weapon lookups, the per-player unit table (`UnitDatabase+db608`: one 0x1e0-byte `BoardRow` per cell, with gate states at `+8`, owner `+c`, kind `+12`, level `+13`; unit records of 12 bytes at `+ea608`), the per-player cell states (`Player+4`), the 16-wide neighbour step, and the DLC unlock checks.
+  - `UnitInfo::kind` is an `int :16` bitfield. As a `short`, InstCombine narrows `kind == 0xd2` to a 16-bit compare (`and #0xffff`); the bitfield keeps the original's 32-bit compare.
+  - The diagonal neighbours are written as the full diagonal first (`cell - 17`/`cell - 16`) with the row edge fixed afterwards; chaining the two single steps gives a different select.
+  - `dlc_unit_unlocked` returns `unsigned char`: its callers test `and #0xff`, which a `bool` result does not produce. `unit_alive` matches with the team and defeated tests in one `||`.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
 
@@ -378,6 +390,14 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 `268340`, `269188`, `269238`, `269440`: the null-check pattern below (`play_screen` also schedules its pane loop differently).
 
 `268a80`: the structure matches (kind masks `0x5e0`/`0x216`, the 176-cell board scan, the grid tables). The range tests come out in a different order and the early `return 0` is duplicated; the orderings tried so far made no difference.
+
+`2696a8`: the null-check pattern below.
+
+`269de0`, `269fa0`, `269fd8`, `26a080`: switch lowering. The original keeps small case sets as a `1 << x & mask` test that branches to `return 1`/`return 0` (and splits `held_kind` into three clusters); ours turns them into a bitmap lookup (`lsr mask, x; and #1`) or one cluster. `switch`, `||` chains, a loop over a table and an explicit mask all gave the same result, so this may be another compiler difference.
+
+`26a220`: only block placement differs. The original falls through to the `raw` return; ours branches to it.
+
+`26a454`: the structure matches (DLC cells are closed or opened, then the gates shared with each neighbour are set to 3 or 4). Our build strength-reduces the cell pointer and keeps different values on the stack.
 
 **Null checks before virtual calls.** In `play_enter` the original drops the null check where the next use of the animation is a plain field store (`frame`), but keeps it wherever the next use is a virtual call. Our build drops both. One explanation that fits: the original compiler's SimplifyCFG check for "null makes this path undefined" does not look through the bitcast clang emits for the vtable load, while 3.9.1 does. This is a hypothesis; no source shape tried so far keeps the check.
 

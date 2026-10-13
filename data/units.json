@@ -229,7 +229,6 @@
     "_ZN9IconTable3getEi": "0x7100283d74",
     "_ZN9IconTable5applyEP11LightSourceP8IconRectP9TrackVec2": "0x7100283db0",
     "got:gIconTable": "0x7100c2a650",
-    "_Z9unit_kindii": "0x7100269cfc",
     "_Z10unit_frameii": "0x710026c730",
     "_Z13display_widthv": "0x71003cc930",
     "_Z14display_heightv": "0x71003cc94c",
@@ -340,7 +339,26 @@
     "got:gScreenCellSize": "0x7100c2a6d0",
     "got:gScreenCellOrigin": "0x7100c2a6d8",
     "got:gScreenCellSize2": "0x7100c2a6e0",
-    "got:gScreenCellOrigin2": "0x7100c2a6e8"
+    "got:gScreenCellOrigin2": "0x7100c2a6e8",
+    "_ZN9ItemTable8containsEj": "0x71001ff2c8",
+    "_ZN9ItemTable9weapon_ofEj": "0x71001ff1c4",
+    "_ZN9ItemTable10is_specialEj": "0x71001ff2a4",
+    "_Z14get_item_tablev": "0x71001ff050",
+    "_ZN11WeaponTable4findEj": "0x7100215d34",
+    "_Z16get_weapon_tablev": "0x7100215b84",
+    "_ZN4Game10unit_countEjih": "0x7100203970",
+    "_ZN13BoardOverride10stage_kindEi": "0x7100290fb0",
+    "_ZN13BoardOverride10remap_kindEiPv": "0x7100290fd4",
+    "got:gBoardOverride": "0x7100c2a6f0",
+    "got:gBoardRemapTable": "0x7100c23250",
+    "kBoardValues": "0x71007f6718",
+    "_ZN9ItemTable8level_ofEi": "0x71001ff218",
+    "got:gGateLevels": "0x7100c2a6f8",
+    "_ZN8Progress3hasEi": "0x7100203180",
+    "_ZN7Unlocks3hasEi": "0x7100224990",
+    "_Z11get_unlocksv": "0x71002248a0",
+    "kNeighborOffsets": "0x71007e1ff0",
+    "kGatePairs": "0x71007e3c08"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -750,11 +768,43 @@
         "_ZN10AdvEffects10play_enterEhi": "0x7100269238",
         "_ZN10AdvEffects9play_exitEh": "0x7100269440",
         "_ZN12EffectRecord4stopEv": "0x71002695a8",
-        "_ZN10AdvEffects11end_screensEv": "0x7100268a80"
+        "_ZN10AdvEffects11end_screensEv": "0x7100268a80",
+        "_ZN10AdvEffects10play_clockEj": "0x71002696a8",
+        "_ZN11EffectClock4stopEv": "0x7100269720",
+        "_ZN10AdvEffects11clock_frameEj": "0x71002697f4",
+        "_ZN10AdvEffects10clock_doneEj": "0x7100269804",
+        "_ZN10AdvEffects12clock_activeEj": "0x710026983c"
       },
       "map": {
         ".rodata": "0x71007f517c",
         ".rodata.cst4": "0x710073bae8"
+      }
+    },
+    "event/adv_board.cpp": {
+      "functions": {
+        "_Z17item_weapon_valuej": "0x7100269858",
+        "_Z9item_rankj": "0x71002698c4",
+        "_Z12item_is_kindji": "0x7100269a88",
+        "_Z19board_intro_pendingv": "0x7100269b04",
+        "_ZN10BoardQuery12active_countEi": "0x7100269bb8",
+        "_ZN10BoardQuery11total_countEi": "0x7100269bfc",
+        "_ZN10BoardQuery10unit_aliveEiii": "0x7100269c40",
+        "_Z9unit_kindii": "0x7100269cfc",
+        "_Z11board_valuei": "0x7100269dd0",
+        "_Z9held_kindii": "0x7100269de0",
+        "_Z13neighbor_cellij": "0x7100269ea8",
+        "_Z15is_officer_kindi": "0x7100269fa0",
+        "_Z12is_keep_kindi": "0x7100269fd8",
+        "_Z12is_fort_kindi": "0x710026a014",
+        "_Z12is_gate_kindi": "0x710026a080",
+        "_Z9open_gatei": "0x710026a100",
+        "_ZN8BoardRow10gate_stateEih": "0x710026a220",
+        "_Z17dlc_unit_unlockedP8BoardRow": "0x710026a7e0",
+        "_ZN6Player9cell_openEi": "0x710026a90c",
+        "_Z16update_dlc_gatesv": "0x710026a454"
+      },
+      "map": {
+        ".rodata": "0x71007f51a4"
       }
     }
   }

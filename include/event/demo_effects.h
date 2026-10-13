@@ -57,7 +57,8 @@ public:
     ListLink link;            // +08: binding ring of the owning node
     unsigned char pad18[8];
     volatile float frame;     // +20: volatile, so each check reloads it as in the original
-    unsigned char pad24[0x18];
+    unsigned char active24;   // +24
+    unsigned char pad25[0x17];
     float speed;              // +3c
     unsigned char pad40[4];
     unsigned char state44;    // +44: bit 1 finished
