@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-3,134 of 3,259 attempted functions match: 3,124 inventory functions (178,172 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 125 are near misses, all `m`.
+3,827 of 3,952 attempted functions match: 3,817 inventory functions (180,944 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 125 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -332,6 +332,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 14 in `misc/plain_families.cpp` | identical-code families: state steps on the owner itself, refresh-then-apply virtual pairs, lookups filling one of two outputs | match |
 | 8 in `misc/sequence_slots.cpp`, 9 in `misc/state_steps.cpp` | sequenced slot plays (identical code, one callee each); state-machine steps through a handler table (function plus doubled this-adjustment; a real member-function pointer adds the virtual-bit test the original lacks) | match |
 | 164 in `misc/auto_tiny2.cpp` | more instruction-shape functions (flag sets and clears, wide clears, far reads and member addresses, equality and range tests, child forwards with a constant, chained reads, entry finds, bit fields, constant and masked stores, indexed reads and writes, global addresses and values) | match |
+| 693 in `misc/auto_minimal.cpp` | four-byte functions: empty bodies (`ret`) and plain forwards (one tail branch, arguments passed through) | match |
 | 645 in `misc/auto_tiny.cpp` | 8- to 16-byte functions written from their instructions, one shape each: field getters and setters, clears, constant returns, member addresses, part and child forwards, virtual forwards, fixed-size clears with `memset` (the scans skipped them: `family_scan.py` starts at 16 bytes by default) | match |
 | 27 in `misc/object_helpers3.cpp` | command completions (directly and through a secondary base), event signals and waits, unconditional and started singletons, triple-buffered row values, list visits, paired optional calls, value searches (an `int` loop index keeps the -1 phi) | match |
 | 27 in `misc/object_helpers2.cpp` | dispose-and-free (seed `dispose_40001c`), resolved item calls, byte-set bit updates, grid cells with a default (a reference select keeps one load), offset tables filled from a hook, special-item checks, ring-buffer pops | match |
