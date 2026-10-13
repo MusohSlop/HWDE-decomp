@@ -603,8 +603,8 @@ Near-miss families, ranked by members × the fraction of words that match (one f
 | --- | --- | --- | --- |
 | `misc/packed_fetch.cpp` (`5968d0`-`596d6c`) | 6 | 2 of 58 | 5.8 |
 | `misc/tree_walks.cpp` (`4ea47c`-`4ee9d4`) | 6 | 7 of 75 | 5.4 |
-| `misc/seven_bytes.cpp` (`205670` and five more) | 6 | 6 of 9 | 2.0 |
 | `misc/part_binders.cpp` (`59c560`-`59ca10`) | 6 | 27 of 60 | 3.3 |
+| `misc/seven_bytes.cpp` (`205670` and five more) | 6 | 6 of 9 | 2.0 |
 
 All other near misses are single functions. The focused passes so far: `model_updates` was fixed (all 22 now match, see the lesson on reference clamps). `packed_fetch` got four more probe variants (field order, byte pointer, struct copy, reading at each use) and none changed the pairing.
 
