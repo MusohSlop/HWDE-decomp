@@ -1479,7 +1479,16 @@
     "_ZN12TrophyWidget4showEPv": "0x71002f8218",
     "got:gStageLayout2": "0x7100c23180",
     "_ZN12DataChunkSet3setEPKv": "0x7100218c34",
-    "got:_ZTV14Base7a0c8Child": "0x7100c22488"
+    "got:_ZTV14Base7a0c8Child": "0x7100c22488",
+    "_Z18global_call_456e40PvS_": "0x7100456e40",
+    "got:_ZTV8RingNode": "0x7100c2dcf0",
+    "got:_ZTV7SixSlot": "0x7100c2b888",
+    "got:_ZTV8FiveSlot": "0x7100c2b820",
+    "kDefaults48": "0x710080c220",
+    "_Z21resources_call_3882e8P15SharedResourcesfi": "0x71003882e8",
+    "_ZN8DrawNode4drawEi": "0x71001e34a0",
+    "_ZN17EffectManagerView6attachEP14EffectResourcePv": "0x71001e26dc",
+    "_ZN8SceneSub6createEi": "0x7100386e64"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2304,7 +2313,14 @@
         "_Z18load_stage_layout2v": "0x71001f31e4",
         "_ZN11ChunkPairAt6assignEPKvS1_": "0x71001a5e18",
         "_ZN14MirroredTables4saveEv": "0x7100193bec",
-        "_ZN10EntryArray5clearEv": "0x710006cce4"
+        "_ZN10EntryArray5clearEv": "0x710006cce4",
+        "_Z18load_stage_layout3v": "0x71001f31ac",
+        "_Z18load_stage_layout4v": "0x71001f3174",
+        "_Z20guarded_query_456e40Pv": "0x7100452af8",
+        "_ZN11DefaultPair5resetEv": "0x71003dcae8",
+        "_Z19resources_set_valuef": "0x71003c7200",
+        "_Z25release_held_light_c2ada0v": "0x710037adb8",
+        "_Z25release_held_light_c2af58v": "0x7100379ab4"
       },
       "map": {
         ".rodata.cst4": "0x710073c188"
@@ -3260,7 +3276,16 @@
         "_ZN10HeapClientC2EPv": "0x710045d938",
         "_ZN8QuadSlotC2Ev": "0x710042092c",
         "_ZN12TrophyWidget6selectEi": "0x71002f81e0",
-        "_ZN14Base7a0c8ChildC2Ev": "0x71000aa5ec"
+        "_ZN14Base7a0c8ChildC2Ev": "0x71000aa5ec",
+        "_ZN8RingNodeC2Ev": "0x71005db058",
+        "_ZN12LockedHolder9has_valueEv": "0x71005cddf0",
+        "_ZN11LockedCount4bumpEv": "0x7100556280",
+        "_ZN7SixSlotC2Ev": "0x7100422418",
+        "_ZN8FiveSlotC2Ev": "0x710041b020",
+        "_ZN15LockedTaskState5stateEv": "0x71003cc2d4",
+        "_ZN15LockedTaskState4doneEv": "0x71003cc224",
+        "_ZN10NodeWidget6redrawEPv": "0x710038ca78",
+        "_ZN13ResourceScene6attachEv": "0x710033340c"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",

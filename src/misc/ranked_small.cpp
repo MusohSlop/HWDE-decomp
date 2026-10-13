@@ -551,3 +551,171 @@ public:
 };
 
 Base7a0c8Child::Base7a0c8Child() : value58(nullptr), value60(0) {}
+class Base_5d9e04 {
+public:
+    Base_5d9e04();                                                          // 0x71005d9e04
+    virtual ~Base_5d9e04();
+    unsigned char pad[0xd8];
+};
+
+struct RingLink {
+    RingLink() : prev(this), next(this) {}
+
+    RingLink* prev;
+    RingLink* next;
+};
+
+// 0x71005db058; original file: layout nodes, 0x71005db058
+// Vtable through the GOT slot at 0x7100c2dcf0.
+class RingNode : public Base_5d9e04 {
+public:
+    RingNode();
+    ~RingNode() override;
+
+    RingLink ring;            // +e0
+    void* valuef0;            // +f0
+};
+
+RingNode::RingNode() : valuef0(nullptr) {}
+
+// 0x71005cddf0; original file: layout objects, 0x71005cddf0
+struct LockedHolder {
+    bool has_value();
+
+    unsigned char pad[0x30];
+    void* value;              // +30
+    unsigned char pad38[0x10];
+    unsigned char mutex[0x20]; // +48
+};
+
+bool LockedHolder::has_value() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    void* current = value;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    return current != nullptr;
+}
+
+// 0x7100556280; original file: render queues, 0x7100556280
+struct LockedCount {
+    void bump();
+
+    unsigned char pad[0x180];
+    MutexOwner* owner;        // +180
+    unsigned char pad188[0xc];
+    int count;                // +194
+};
+
+void LockedCount::bump() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    ++count;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+}
+
+// 0x7100422418; vtable through the GOT slot at 0x7100c2b888.
+class SixSlot : public Base_41be40 {
+public:
+    SixSlot();
+    ~SixSlot() override;
+
+    unsigned char pad4c[4];
+    void* slots[6];           // +50
+};
+
+SixSlot::SixSlot() : slots() {}
+
+// 0x710041b020; vtable through the GOT slot at 0x7100c2b820.
+class FiveSlot : public Base_41be40 {
+public:
+    FiveSlot();
+    ~FiveSlot() override;
+
+    unsigned char pad4c[4];
+    void* slots[5];           // +50
+};
+
+FiveSlot::FiveSlot() : slots() {}
+struct LockOwner {
+    unsigned char pad[0x10];
+    unsigned char mutex[0x20]; // +10
+};
+
+// 0x71003cc2d4, 0x71003cc224; original file: shared tasks, 0x71003cc224-0x71003cc2d4
+struct LockedTaskState {
+    int state();
+    unsigned char done();
+
+    LockOwner* owner;         // +00
+    unsigned char pad8[0x54];
+    int value5c;              // +5c
+    unsigned char value60;    // +60
+};
+
+int LockedTaskState::state() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    int result = value5c;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    return result;
+}
+
+unsigned char LockedTaskState::done() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    unsigned char result = value60;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    return result;
+}
+
+class DrawNode {
+public:
+    void draw(int layer);                                                   // 0x71001e34a0
+};
+
+// 0x710038ca78; original file: scene widgets, 0x710038ca78
+class NodeWidget {
+public:
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+    virtual void v18();
+    virtual void v20();
+    virtual void v28();
+    virtual void v30();
+    virtual void v38();
+    virtual void v40();
+    virtual void v48();
+    virtual void apply(void* value);  // +50
+
+    void redraw(void* value);
+
+    DrawNode* node;           // +08
+};
+
+void NodeWidget::redraw(void* value) {
+    node->draw(0);
+    apply(value);
+}
+
+struct EffectResource;
+class EffectManagerView {
+public:
+    void attach(EffectResource* resource, void* owner);                    // 0x71001e26dc
+};
+// Reached through the GOT slot at 0x7100c22a00.
+extern EffectManagerView* gEffectManager;
+
+struct SceneSub {
+    void create(int id);                                                    // 0x7100386e64
+};
+
+// 0x710033340c; original file: scene panels, 0x710033340c
+struct ResourceScene {
+    void attach();
+
+    unsigned char pad[0x40];
+    unsigned char resource[0x110]; // +40
+    SceneSub sub;             // +150
+};
+
+void ResourceScene::attach() {
+    gEffectManager->attach(reinterpret_cast<EffectResource*>(resource), nullptr);
+    sub.create(0x41eb);
+}

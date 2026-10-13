@@ -1425,3 +1425,75 @@ void EntryArray::clear() {
         memset(entries, 0, static_cast<unsigned long>(count) * 8);
     count = 0;
 }
+// 0x71001f31ac, 0x71001f3174; original file: stage layout, 0x71001f3174-0x71001f31e4
+void load_stage_layout3() {
+    int stage = get_shared_state()->stage;
+    gStageLayout2 = load_layout(stage == 6 ? 0x39 : stage + 0x38);
+}
+
+void load_stage_layout4() {
+    int stage = get_shared_state()->stage;
+    gStageLayout2 = load_layout(stage == 6 ? 0x2d : stage + 0x2c);
+}
+
+unsigned char global_call_456e40(void* global, void* value);                // 0x7100456e40
+
+// 0x7100452af8; original file: global queries, 0x7100452af8
+unsigned char guarded_query_456e40(void* value) {
+    if (load_global_455ebc())
+        return global_call_456e40(load_global_455ebc(), value);
+    return 1;
+}
+struct Defaults48 {
+    unsigned char bytes[0x30];
+};
+// Default values (0x710080c220), addressed directly.
+extern const Defaults48 kDefaults48 __attribute__((visibility("hidden")));
+
+// 0x71003dcae8; original file: tables, 0x71003dcae8
+struct DefaultPair {
+    void reset();
+
+    Defaults48 first;         // +00
+    Defaults48 second;        // +30
+};
+
+void DefaultPair::reset() {
+    memcpy(&first, &kDefaults48, sizeof(Defaults48));
+    memcpy(&second, &kDefaults48, sizeof(Defaults48));
+}
+
+void resources_call_3882e8(SharedResources* resources, float value, int flag); // 0x71003882e8
+
+// 0x71003c7200; original file: shared-state resource queries, 0x71003c7200
+void resources_set_value(float value) {
+    if (SharedResources* resources = shared_state_resources(get_shared_state()))
+        resources_call_3882e8(resources, value, 1);
+}
+
+struct HeldLight {
+    void* light;              // +00
+};
+// Reached through the GOT slots at 0x7100c2ada0 and 0x7100c2af58.
+extern HeldLight* gGlobal_c2ada0;
+extern HeldLight* gGlobal_c2af58;
+
+// 0x710037adb8; original file: held lights, 0x710037adb8
+void release_held_light_c2ada0() {
+    if (HeldLight* held = gGlobal_c2ada0) {
+        if (held->light) {
+            release_light(&held->light);
+            held->light = nullptr;
+        }
+    }
+}
+
+// 0x7100379ab4; original file: held lights, 0x7100379ab4
+void release_held_light_c2af58() {
+    if (HeldLight* held = gGlobal_c2af58) {
+        if (held->light) {
+            release_light(&held->light);
+            held->light = nullptr;
+        }
+    }
+}
