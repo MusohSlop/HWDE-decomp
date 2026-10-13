@@ -156,3 +156,51 @@ void destroy_board_units() {
         gBoardUnits = nullptr;
     }
 }
+
+class AdvBoard {
+public:
+    ~AdvBoard();                                                            // 0x7100299de0
+    void finalize();                                                        // 0x710029a20c
+
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
+};
+// Reached through the GOT slot at 0x7100c2a6c0.
+extern AdvBoard* gAdvBoard;
+
+void destroy_adv_board() {
+    if (gAdvBoard) {
+        gAdvBoard->finalize();
+        delete gAdvBoard;
+        gAdvBoard = nullptr;
+    }
+}
+
+// The popup layout (event/board_popups.cpp).
+class PopupTargets {
+public:
+    ~PopupTargets();                                                        // 0x71002a6fd0
+    unsigned char pad[0x2940];
+};
+
+class BoardPopups {
+public:
+    ~BoardPopups() { finalize(); }
+    void finalize();                                                        // 0x71002a6e88
+
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
+
+    unsigned char pad[0x20];
+    PopupTargets targets;         // +20
+    unsigned char pad2960[0x19d0];
+    LightResource resources[2];   // +4330
+};
+// Reached through the GOT slot at 0x7100c2a788.
+extern BoardPopups* gBoardPopups;
+
+void destroy_board_popups() {
+    if (gBoardPopups) {
+        gBoardPopups->finalize();
+        delete gBoardPopups;
+        gBoardPopups = nullptr;
+    }
+}

@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-352 of 435 attempted functions match: 342 inventory functions (52,572 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-three are near misses, all `m`.
+361 of 445 attempted functions match: 351 inventory functions (53,808 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-four are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -281,6 +281,13 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `290e90`-`2910b0` (8) | `BoardOverride::reset`, `resource`, `frames`, `frame`, `stage_kind`, `remap_kind`, `has_secondary`, `has_primary` (`event/board_override.cpp`) | match |
 | `45c2f4` | `DefaultHeap::release` (`system/default_heap.cpp`) | match |
 | `45c458` | `DefaultHeap::allocate` | near miss |
+| `2248a0`, `218ad0` | `get_unlocks` (function-local static), `ChunkHolder::clear` (`misc/accessors.cpp`) | match |
+| `1e1c9c`, `1e1e2c` | `TitleBanner::hide`, `TitleBanner::set_layer` (`event/title_banner.cpp`) | match |
+| `1e2218` | `EffectManager::owns` (`event/title_effects.cpp`) | match |
+| `1f58e4` | `LightScene::unload` (`misc/layout_elements.cpp`) | match |
+| `29b5a4`, `2a7354` | `destroy_adv_board`, `destroy_board_popups` (`event/adv_tasks.cpp`) | match |
+| `2a6e88` | `BoardPopups::finalize` (`event/board_popups.cpp`) | match |
+| `2aadac` | `BoardPopups::reset` | near miss |
 | `45c1dc`, `45c96c`, `45ca24` | `get_heap_registry`, `get_default_heap` (function-local statics), `SystemHeap::initialize` | match |
 | `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
 | `280200` | `BoardLayerView::draw` | near miss |
@@ -456,6 +463,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Board override and default heap (`event/board_override.cpp`, `system/default_heap.cpp`).** `BoardOverride` (`290e90`-`2910b0`) holds five reference-counted objects, a frame header and ten frame entries; `remap_kind` replaces the eight DLC kinds 0x93-0x9a from a table in `.rodata.cst32` (`73df70`) once all four routes of the current slot are cleared. `reset` releases the objects through a helper that takes the slot's address and keeps the object in a local; with a reference parameter the object is re-read after the count store. `frame` takes a 32-bit index (`uxtw`, no 16-bit mask), so the unit names it `frame(unsigned int)` and keeps the old `unsigned short` name as an alias. The default heap is a doubly linked block list with a 32-byte header per block (bit 63 of the size keeps a block on release); `release` matches once both size sums put the surviving block first, and `allocate`'s search is a `do`/`while` from the cursor (the original never tests the cursor for null). `destroy_board_units` matches with the two `LightResource` members as an array.
   - **Global merging.** LLVM's global merge pass puts the heap getters' function-local statics and their guards into one block (both guards, then the 0x38-byte registry, then the 0x180-byte heap at `+0x48`), and each getter addresses its guard and object from one base. It skips any global whose IR type is a packed struct (ABI alignment 1, below the preferred 8). `SystemHeap` ended in a 12-byte spin lock, so Clang padded it with a packed `<{ ..., [4 x i8] }>` type and the heap stayed out of the block. An explicit `int` after the lock gives a plain struct type; the heap then merges and both getters and `SystemHeap::initialize` match. Worth checking for any near miss that addresses a global at an unexpected offset.
   - `SystemHeap::initialize` (`45ca24`) builds the first free block, then initializes the two frame heaps with buffers from the registry; the second under a spin lock (`+170`: spin limit, sleep in ms, state) acquired and released with strong compare-exchanges. The registry buffer is read into a local before each `initialize` call (otherwise `&front` is computed before the inlined guard), and the two sleep durations are separate calls rather than a select.
+- **Effect manager, popups and teardown.** `TitleBanner` (GOT `c22a00`) is the effect manager: the same slot as `gEffectManager`. `set_layer` picks the layer's frame-heap size with a switch that includes `case -1` (the original's lookup table starts at layer -1), allocates from the default heap's front frame heap through a pointer accessor (with the member object itself, Clang devirtualizes the call), and passes the allocation parameters as a constructed temporary, which gives the original's field stores after the callee load. `1e2218`, which `adv_effects.cpp` and the panel units call as `EffectManager::unregister(registry, id)` and whose result they ignore, returns whether an id belongs to the registry's kind (eight cases, a jump table at `7e9388`); `event/title_effects.cpp` keeps it apart so that table has its own `.rodata` anchor.
+  - `BoardPopups::finalize` matches with the manager read before the first node check (the `release_node` shape of `adv_effects.cpp`): the GOT address is then loaded once in the entry block. Its popup layout (`PopupTargets`, 0x2940 bytes at `+20`) has the same shape as the panel system's targets: a node, an animation, a `LightResource`, fifteen {object, `LayoutHandle`} items and three 24-target arrays, with an out-of-line destructor (`2a6fd0`). `destroy_adv_board` and `destroy_board_popups` follow `destroy_board_cursor`. `get_unlocks` is a function-local static whose constructor starts a worker and clears three unlock globals.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
@@ -512,6 +521,8 @@ Large functions deferred under the rule "over about 1,000 bytes and calling many
 `1ef52c`, `1f1e0c`: the layout element constructors. The original stores adjacent constant fields with separate 32-bit registers (`stp w, w`), ours merges them into 64-bit constants across field boundaries; field types and order made no difference, so this is likely a store-merging difference in the compiler.
 
 `45c458`: `DefaultHeap::allocate`, 10 words. The flag-bit select at the end is scheduled before the alignment `csel` in the original and after it in ours, and one address add moves; three orderings of the size computation tried.
+
+`2aadac`: `BoardPopups::reset`, the null-check pattern below (the check before the unconditional `set_frame` call).
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 

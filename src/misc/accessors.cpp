@@ -60,14 +60,49 @@ void DlcStore::close() {
     session = nullptr;
 }
 
+extern "C" void* memset(void* dest, int value, unsigned long size);
+struct Worker;
+void initialize_worker(Worker* worker);                                     // 0x710045de40
+
+// Unlock tables, reached through the GOT slots at 0x7100c234b0-0x7100c234c0.
+extern int gUnlockCount;
+extern unsigned char gUnlockBits[0x50];
+extern unsigned char gUnlockDirty;
+
 class Unlocks {
 public:
+    Unlocks() {
+        initialize_worker(reinterpret_cast<Worker*>(worker));
+        gUnlockCount = 0;
+        memset(gUnlockBits, 0, sizeof(gUnlockBits));
+        gUnlockDirty = 0;
+    }
+    ~Unlocks();
     unsigned char has(int content);                                         // 0x7100224990
+
+    alignas(8) unsigned char worker[0x20];
 };
+
+// 0x71002248a0; original file: unlocks, 0x71002248a0-0x7100224990
+Unlocks* get_unlocks() {
+    static Unlocks sUnlocks;
+    return &sUnlocks;
+}
 
 // 0x7100224990; original file: unlocks, 0x71002248a0-0x7100224990
 unsigned char Unlocks::has(int) {
     return 1;
+}
+
+class ChunkHolder {
+public:
+    void clear();                                                           // 0x7100218ad0
+    void release(int keep);                                                 // 0x7100218c68
+};
+
+// 0x7100218ad0; original file: chunk holder, 0x7100218ac0-0x7100218c68
+void ChunkHolder::clear() {
+    release(0);
 }
 
 class BgmTrack {

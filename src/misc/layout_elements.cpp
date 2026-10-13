@@ -69,6 +69,7 @@ int make_light_list(unsigned int count) {
 class ChunkHolder {
 public:
     ~ChunkHolder();                                                         // 0x7100218ac0
+    void clear();                                                           // 0x7100218ad0
     unsigned char pad[0x10];
 };
 
@@ -118,11 +119,27 @@ public:
 DefaultHeap* get_default_heap();                                            // 0x710045c96c
 
 // 0x71001f56fc; original file: light lists, 0x71001f4e70-0x71001f5670
-class LightAllocator;
+class LightAllocator {
+public:
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+    virtual void v18();
+    virtual void v20();
+    virtual void v28();
+    virtual void v30();
+    virtual void v38();
+    virtual void v40();
+    virtual void v48();
+    virtual void v50();
+    virtual void v58();
+    virtual void free(void* ptr);                                           // +60
+};
 class LightScene : public LightSceneBase {
 public:
     void finalize();
     void init(LightAllocator* allocator);
+    void unload();
 
     unsigned char pad28[0x58c0];
     long value58e8;           // +58e8
@@ -200,6 +217,18 @@ void LightScene::init(LightAllocator* allocator) {
     value5bb8 = 32.0f;
     if (allocator)
         value5bbc = 0;
+}
+
+// 0x71001f58e4; original file: light lists, 0x71001f4e70-0x71001f5948
+void LightScene::unload() {
+    chunk.clear();
+    if (void* buffer = *reinterpret_cast<void**>(pad8 + 8)) {
+        if (value5bbc)
+            get_default_heap()->release(buffer, 1, 0);
+        else
+            (*reinterpret_cast<LightAllocator**>(pad8))->free(buffer);
+        *reinterpret_cast<void**>(pad8 + 8) = nullptr;
+    }
 }
 
 // 0x71001f4ee0; original file: light lists, 0x71001f4e70-0x71001f5670

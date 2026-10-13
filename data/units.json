@@ -579,7 +579,15 @@
     "got:_ZTV14FrontFrameHeap": "0x7100c2bba0",
     "got:_ZTV13BackFrameHeap": "0x7100c2bba8",
     "got:_ZN10SystemHeapD1Ev": "0x7100c2bbb0",
-    "got:_ZN12HeapRegistryD1Ev": "0x7100c2bb98"
+    "got:_ZN12HeapRegistryD1Ev": "0x7100c2bb98",
+    "got:gUnlockCount": "0x7100c234b0",
+    "got:gUnlockBits": "0x7100c234b8",
+    "got:gUnlockDirty": "0x7100c234c0",
+    "got:_ZN7UnlocksD1Ev": "0x7100c234c8",
+    "_ZN11TitleBanner13release_layerEv": "0x71001e1ec4",
+    "_ZN8AdvBoardD1Ev": "0x7100299de0",
+    "_ZN12PopupTargetsD1Ev": "0x71002a6fd0",
+    "_ZN11ChunkHolder7releaseEi": "0x7100218c68"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -1184,10 +1192,14 @@
         "_Z20shared_state_exitingP11SharedState": "0x71002ac7f0",
         "_Z21shared_state_stoppingP11SharedState": "0x71002aca94",
         "_Z22shared_state_resourcesP11SharedState": "0x71002ad1dc",
-        "_ZN12OptionSource6lockedEv": "0x710020c204"
+        "_ZN12OptionSource6lockedEv": "0x710020c204",
+        "_Z11get_unlocksv": "0x71002248a0",
+        "_ZN11ChunkHolder5clearEv": "0x7100218ad0"
       },
       "map": {
-        ".rodata.cst4": "0x710073bc58"
+        ".rodata.cst4": "0x710073bc58",
+        "_ZGVZ11get_unlocksvE8sUnlocks": "0x7100c79e58",
+        "_ZZ11get_unlocksvE8sUnlocks": "0x7100c79e38"
       }
     },
     "event/adv_tasks.cpp": {
@@ -1196,7 +1208,9 @@
         "_ZN10ResultTaskC2Ev": "0x71002906dc",
         "_ZN10ResultTask7prepareEv": "0x7100290778",
         "_Z20destroy_board_cursorv": "0x7100288e7c",
-        "_Z19destroy_board_unitsv": "0x7100291d64"
+        "_Z19destroy_board_unitsv": "0x7100291d64",
+        "_Z17destroy_adv_boardv": "0x710029b5a4",
+        "_Z20destroy_board_popupsv": "0x71002a7354"
       }
     },
     "misc/layout_elements.cpp": {
@@ -1217,7 +1231,8 @@
         "_ZN13EffectManager7currentEv": "0x71001e26ec",
         "_Z12screen_faderv": "0x71001e50b0",
         "_ZN5Fader4fadeEfib": "0x71001e526c",
-        "_Z16end_sprite_batchv": "0x71001e4560"
+        "_Z16end_sprite_batchv": "0x71001e4560",
+        "_ZN10LightScene6unloadEv": "0x71001f58e4"
       },
       "map": {
         ".rodata": "0x71007f2100",
@@ -1257,6 +1272,29 @@
       },
       "map": {
         ".rodata.cst32": "0x710073df70"
+      }
+    },
+    "event/title_banner.cpp": {
+      "functions": {
+        "_ZN11TitleBanner4hideEv": "0x71001e1c9c",
+        "_ZN11TitleBanner9set_layerEi": "0x71001e1e2c"
+      },
+      "map": {
+        ".rodata": "0x71007e93c0"
+      }
+    },
+    "event/board_popups.cpp": {
+      "functions": {
+        "_ZN11BoardPopups5resetEv": "0x71002aadac",
+        "_ZN11BoardPopups8finalizeEv": "0x71002a6e88"
+      }
+    },
+    "event/title_effects.cpp": {
+      "functions": {
+        "_ZN13EffectManager4ownsEP9EffectKeyi": "0x71001e2218"
+      },
+      "map": {
+        ".rodata": "0x71007e9388"
       }
     }
   }
