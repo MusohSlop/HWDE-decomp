@@ -123,7 +123,6 @@
     "_ZN10EffectBasenwEm": "0x71005d4380",
     "_ZN10EffectList6removeEP15LightEffectNode": "0x71005c3774",
     "_ZN10LightScene11environmentEv": "0x71001f6820",
-    "_ZN10LightScene4initEP14LightAllocator": "0x71001f5670",
     "_ZN10LightScene4loadEii": "0x71001f5738",
     "_ZN10LightScene6unloadEv": "0x71001f58e4",
     "_ZN11EffectGroup3addEP10EffectBase": "0x71005da17c",
@@ -153,7 +152,6 @@
     "_Z10bgm_lengthv": "0x710020d954",
     "_Z10game_flagsv": "0x710016ef34",
     "_Z12input_devicev": "0x710045ceb4",
-    "_Z12screen_faderv": "0x71001e50b0",
     "_Z13demo_skippingv": "0x71003cbe20",
     "_Z14play_demo_fadeiiiPvf": "0x71003f9b34",
     "_Z16finish_demo_fadei": "0x71003fa088",
@@ -166,7 +164,6 @@
     "_ZN11LightPreset4modeEv": "0x71001a8d1c",
     "_ZN11LightPreset5trackEv": "0x71001a8d9c",
     "_ZN12CaptionLayer4showEii": "0x71001de2ec",
-    "_ZN13EffectManager7currentEv": "0x71001e26ec",
     "_ZN15SharedResources15release_captionEi": "0x71003891d0",
     "_ZN15SharedResources4busyEv": "0x710038863c",
     "_ZN15SharedResources7requestEiii": "0x7100389178",
@@ -387,7 +384,6 @@
     "got:_ZTV11AdvModeTask": "0x7100c2a700",
     "got:_ZTV10OptionTask": "0x7100c2a730",
     "got:_ZTV13BoardMenuTask": "0x7100c2a738",
-    "_ZN12OptionSource6lockedEv": "0x710020c204",
     "_Z15set_fade_framesi": "0x71003f9fac",
     "_Z19show_system_messageiiiii": "0x71003c9668",
     "_Z14close_overlaysiii": "0x71003ade70",
@@ -537,7 +533,6 @@
     "_ZN11BoardCursor4drawEv": "0x710028a150",
     "_ZN10BoardUnits4drawEv": "0x7100298670",
     "_Z18begin_sprite_batchv": "0x71001e4500",
-    "_Z16end_sprite_batchv": "0x71001e4560",
     "_ZN15DemoPanelSystem4drawEv": "0x7100266740",
     "_ZN14DemoEffectPool4drawEv": "0x710026302c",
     "_ZN11BoardPopups4drawEv": "0x71002aa188",
@@ -576,7 +571,9 @@
     "got:_ZTV10LayoutRect": "0x7100c23158",
     "got:_ZTV9LayoutBox": "0x7100c23160",
     "got:_ZTV14LightSceneBase": "0x7100c231d0",
-    "_Z12show_sourcesP11LightSourcei": "0x71001f73e4"
+    "_Z12show_sourcesP11LightSourcei": "0x71001f73e4",
+    "got:gScreenFader": "0x7100c23018",
+    "_ZN12RenderTarget9end_batchEv": "0x710052ed78"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -1180,7 +1177,8 @@
         "_ZN8AdvBoard20environment_positionEj": "0x710029fd90",
         "_Z20shared_state_exitingP11SharedState": "0x71002ac7f0",
         "_Z21shared_state_stoppingP11SharedState": "0x71002aca94",
-        "_Z22shared_state_resourcesP11SharedState": "0x71002ad1dc"
+        "_Z22shared_state_resourcesP11SharedState": "0x71002ad1dc",
+        "_ZN12OptionSource6lockedEv": "0x710020c204"
       },
       "map": {
         ".rodata.cst4": "0x710073bc58"
@@ -1206,7 +1204,17 @@
         "_ZN11StageLights6lookupEi": "0x71001fb23c",
         "_ZN10LightScene8finalizeEv": "0x71001f56fc",
         "_Z13release_lightPPv": "0x71001f7960",
-        "_Z12show_sourcesP12LayoutSpritej": "0x71001f73e4"
+        "_Z12show_sourcesP12LayoutSpritej": "0x71001f73e4",
+        "_ZN10LightScene4initEP14LightAllocator": "0x71001f5670",
+        "_Z17make_light_objecti": "0x71001f4ee0",
+        "_ZN13EffectManager7currentEv": "0x71001e26ec",
+        "_Z12screen_faderv": "0x71001e50b0",
+        "_ZN5Fader4fadeEfib": "0x71001e526c",
+        "_Z16end_sprite_batchv": "0x71001e4560"
+      },
+      "map": {
+        ".rodata": "0x71007f2100",
+        ".rodata.cst4": "0x710073baf0"
       }
     },
     "misc/cell_record.cpp": {

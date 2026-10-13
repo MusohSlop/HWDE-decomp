@@ -86,7 +86,8 @@ unsigned short BgmTrack::length() {
 struct RegionSettings {
     unsigned char pad[0x27b];
     signed char pending;      // +27b
-    unsigned char pad27c[4];
+    signed char locked;       // +27c
+    unsigned char pad27d[3];
     signed char kind;         // +280
 };
 
@@ -104,6 +105,11 @@ public:
 // 0x710020c1fc; original file: region/option settings, 0x710020bd74-0x710020c22c
 int OptionSource::pending() {
     return reinterpret_cast<RegionSettings*>(this)->pending;
+}
+
+// 0x710020c204; original file: region/option settings, 0x710020bd74-0x710020c22c
+int OptionSource::locked() {
+    return reinterpret_cast<RegionSettings*>(this)->locked;
 }
 
 class WeaponTable;

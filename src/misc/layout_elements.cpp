@@ -118,9 +118,33 @@ public:
 DefaultHeap* get_default_heap();                                            // 0x710045c96c
 
 // 0x71001f56fc; original file: light lists, 0x71001f4e70-0x71001f5670
+class LightAllocator;
 class LightScene : public LightSceneBase {
 public:
     void finalize();
+    void init(LightAllocator* allocator);
+
+    unsigned char pad28[0x58c0];
+    long value58e8;           // +58e8
+    long value58f0;           // +58f0
+    long value58f8;           // +58f8
+    int value5900;            // +5900
+    int value5904;            // +5904
+    int value5908;            // +5908
+    int value590c;            // +590c
+    int value5910;            // +5910
+    unsigned char value5914;  // +5914
+    unsigned char pad5915[3];
+    int value5918;            // +5918
+    unsigned char value591c;  // +591c
+    unsigned char pad591d[0x28b];
+    unsigned char value5ba8;  // +5ba8
+    unsigned char pad5ba9[3];
+    int value5bac;            // +5bac
+    float value5bb0;          // +5bb0
+    float value5bb4;          // +5bb4
+    float value5bb8;          // +5bb8
+    unsigned char value5bbc;  // +5bbc
 };
 
 void LightScene::finalize() {
@@ -152,4 +176,133 @@ void release_light(void** slot) {
 void show_sources(LayoutSprite* sources, unsigned int count) {
     for (; count; --count, ++sources)
         sources->flags &= ~0x80;
+}
+
+// 0x71001f5670; original file: light lists, 0x71001f4e70-0x71001f5670
+void LightScene::init(LightAllocator* allocator) {
+    *reinterpret_cast<LightAllocator**>(pad8) = allocator;
+    *reinterpret_cast<void**>(pad8 + 8) = nullptr;
+    value5900 = 0;
+    value58f8 = 0;
+    value58f0 = 0;
+    value58e8 = 0;
+    value5904 = -1;
+    value5908 = -1;
+    value590c = 0;
+    value5910 = 0;
+    value5914 = 1;
+    value5918 = 0;
+    value591c = 1;
+    value5ba8 = 1;
+    value5bac = 0;
+    value5bb0 = 0.0f;
+    value5bb4 = 32.0f;
+    value5bb8 = 32.0f;
+    if (allocator)
+        value5bbc = 0;
+}
+
+// 0x71001f4ee0; original file: light lists, 0x71001f4e70-0x71001f5670
+int make_light_object(int id) {
+    if (static_cast<unsigned int>(id) <= 999) {
+        if (id <= 0x10)
+            return id + 0x2f30;
+        switch (id) {
+        case 0x14e:
+            return 0x2f41;
+        case 0x153:
+            return 0x2f42;
+        case 0x154:
+            return 0x2f43;
+        }
+        if (static_cast<unsigned int>(id - 0x165) <= 4)
+            return id + 0x2ddf;
+        switch (id) {
+        case 0x197:
+            return 0x4651;
+        case 0x198:
+            return 0x4655;
+        case 0x199:
+            return 0x4653;
+        case 0x19a:
+            return 0x4652;
+        case 0x19b:
+            return 0x4654;
+        }
+        return 0x2f30;
+    }
+    return -1;
+}
+class LayoutRoot;
+// 0x71001e26ec; original file: effect manager, 0x71001e22e4-0x71001e26ec
+class EffectManager {
+public:
+    void* current();
+
+    unsigned char pad[0x1290];
+    unsigned char* layout;    // +1290
+};
+
+void* EffectManager::current() {
+    return layout + 0x680;
+}
+
+class Fader;
+// Reached through the GOT slot at 0x7100c23018.
+extern Fader* gScreenFader;
+
+// 0x71001e50b0; original file: screen fader, 0x71001e50b0-0x71001e526c
+Fader* screen_fader() {
+    return gScreenFader;
+}
+
+// 0x71001e526c; original file: screen fader, 0x71001e50b0-0x71001e526c
+class Fader {
+public:
+    void fade(float seconds, int color, bool out);
+
+    unsigned char pad[0x28];
+    int mask28;               // +028
+    unsigned char pad2c[0x8c];
+    int maskb8;               // +0b8
+    unsigned char padbc[0x13c];
+    int color;                // +1f8
+    unsigned int frames;      // +1fc
+    unsigned int remaining;   // +200
+    unsigned char active;     // +204
+    unsigned char pad205[5];
+    unsigned char fading_in;  // +20a
+    unsigned char pad20b;
+    int value20c;             // +20c
+};
+
+void Fader::fade(float seconds, int color, bool out) {
+    int mask = out ? 0 : -1;
+    fading_in = !out;
+    unsigned int count = seconds * 60.0f;
+    mask28 = mask;
+    maskb8 = mask;
+    value20c = 0;
+    this->color = color;
+    active = 1;
+    frames = count;
+    remaining = count;
+    if (!count) {
+        frames = 0;
+        remaining = 1;
+        if (!color)
+            active = 0;
+    }
+}
+
+class RenderTarget {
+public:
+    void end_batch();                                                       // 0x710052ed78
+};
+// Reached through the GOT slot at 0x7100c21db0.
+extern RenderTarget* gRenderTarget;
+
+// 0x71001e4560; original file: sprite batch, 0x71001e4500-0x71001e4560
+void end_sprite_batch() {
+    gRenderTarget->end_batch();
 }

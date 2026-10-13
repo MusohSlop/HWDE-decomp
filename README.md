@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-332 of 414 attempted functions match: 322 inventory functions (50,156 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-two are near misses, all `m`.
+339 of 421 attempted functions match: 329 inventory functions (50,756 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-two are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -274,6 +274,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 3 more in `misc/accessors.cpp` | `shared_state_exiting`, `shared_state_stopping`, `shared_state_resources` | match |
 | 8 in `misc/layout_elements.cpp` | `LayoutRect` constructor, `make_light_list`, `LightSceneBase` destructor, `LightScene::finalize`, `lerp_float`, `lerp_int`, `StageLights::lookup`, `release_light`, `show_sources` | match |
 | `1ef52c`, `1f1e0c` | `LayoutSprite`, `LayoutBox` constructors | near miss |
+| 7 more | `OptionSource::locked`, `LightScene::init`, `make_light_object`, `EffectManager::current`, `screen_fader`, `Fader::fade`, `end_sprite_batch` | match |
 | `202164` | `CellRecord::cleared` (`misc/cell_record.cpp`) | match |
 | `2877f4`, `2906dc`, `290778`, `288e7c` | `SaveTask::SaveTask`, `ResultTask::ResultTask`, `ResultTask::prepare`, `destroy_board_cursor` | match |
 | `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
@@ -444,6 +445,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Target ranking (`tools/rank_targets.py`).** Ranks the `U` functions up to a size limit by size, the share of their direct callees already named in `units.json`, whether a matched function calls them, and distance to existing unit code. Working from the top of its list, this round matched 39 functions: mostly global getters and small accessors that earlier units already called by name, now in `misc/accessors.cpp` (grouped for convenience; they come from several game source files) and `event/adv_tasks.cpp`.
   - Several earlier placeholder signatures were wrong in ways that did not matter to their callers: `0x203d00` is a byte setter (`Game::set_dlc_seen`), not `Game::profile`; the item and weapon queries take signed `int` indices; `bgm_length` reads a member. The units define the corrected names and keep the old names as aliases in the symbol table.
   - `misc/accessors.cpp` and `misc/layout_elements.cpp` group functions from several original files; each definition carries a comment with its address and the address range of the original file it likely belongs to, so they can be split once whole files are linked.
+  - `make_light_object`'s last switch becomes a five-entry lookup table, as in the original. `misc/layout_elements.cpp` anchors `.rodata` at `7f2100` so that table lands at the original `7f2120`; the 32 bytes before it in our object are constants of the near-miss sprite constructor, which no matched function references.
   - Unit placement matters for inlining: `CellRecord::cleared` calls the option-source accessors, which the original does not inline, so it cannot share a unit with them (`misc/cell_record.cpp`).
   - Small bounds-checked lookups match with the in-range path written first. Bitset tests shift a 64-bit one and truncate the mask to 32 bits (`bits & static_cast<unsigned int>(1ul << (n % 32))`). `destroy_board_cursor`'s three layout groups are an array, like `destroy_adv_caption`'s resources.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.
