@@ -17,13 +17,20 @@ void play_demo_fade(int kind, int a, int b, void* target, float time);      // 0
 class GameState {
 public:
     int base_level(int kind);                                               // 0x7100203550
+    unsigned char cleared(int player);                                      // 0x7100203278
+    void set_cleared(int player, unsigned char on);                         // 0x71002032ac
+    unsigned char record_shown(int record);                                 // 0x71002032f4
+    void set_record_shown(int record, unsigned char on);                    // 0x7100203330
 
     unsigned char pad[0x1bb7c];
     unsigned int mode;        // +1bb7c
 };
 
 struct Player {
-    unsigned char pad[0x2acc];
+    int id;                   // +0000
+    unsigned char pad4[0x664];
+    unsigned char no_fort[0x80]; // +0668
+    unsigned char pad6e8[0x23e4];
     unsigned char value2acc;  // +2acc
     unsigned char value2acd;  // +2acd
     unsigned char pad2ace[0x16a];
@@ -33,6 +40,11 @@ static_assert(sizeof(Player) == 0x2c38, "player size");
 class Game {
 public:
     GameState* state();                                                     // 0x7100204c10
+    unsigned short stock(int item);                                         // 0x7100203b10
+    void add_stock(int item, int count);                                    // 0x7100203b2c
+    void mark_stock(int item, unsigned char on);                            // 0x7100203b88
+    unsigned char has_progress(int kind);                                   // 0x7100204174
+    unsigned char clear_count();                                            // 0x710020422c
 
     unsigned char pad[0x2944];
     Player players[1];        // +2944
@@ -60,6 +72,11 @@ public:
 class SharedState {
 public:
     int run_task(SceneTask* task);                                          // 0x71002ad584
+
+    unsigned char pad0[4];
+    int language;             // +004
+    unsigned char pad8[0x208];
+    int screen;               // +210
 };
 SharedState* get_shared_state();                                            // 0x71002aae3c
 unsigned char shared_state_exiting(SharedState* state);                     // 0x71002ac7f0
@@ -520,5 +537,201 @@ void run_board_result() {
         query.step = 2;
     } else {
         query.state = 2;
+    }
+}
+
+struct BoardRow {
+    unsigned char pad[0x12];
+    unsigned char kind;       // +12
+    unsigned char pad13[0x1cd];
+};
+unsigned char dlc_unit_unlocked(BoardRow* unit);                            // 0x710026a7e0
+
+static inline BoardRow* board_row(int cell) {
+    return &reinterpret_cast<BoardRow*>(get_unit_database()->rows)[cell];
+}
+
+static inline int final_player() {
+    return *reinterpret_cast<int*>(reinterpret_cast<unsigned char*>(get_game()) + 0x1e374);
+}
+
+static inline bool on_final_cell() {
+    if (get_shared_state()->screen != 4)
+        return false;
+    int player = final_player();
+    if (player == 1)
+        return false;
+    int cell = get_game()->players[player].id;
+    unsigned char kind = board_row(cell)->kind;
+    return kind == 0x10 || kind == 2;
+}
+
+class BattleParams {
+public:
+    unsigned char pad[0x6c];
+    int result;               // +6c
+    unsigned char pad70[0x28];
+    int reward;               // +98
+    int bonus;                // +9c
+};
+BattleParams* get_battle_params();                                          // 0x71001a8c38
+
+class ItemTable {
+public:
+    unsigned char is_special(unsigned int item);                            // 0x71001ff2a4
+    int material_of(int item);                                              // 0x71001ff1a8
+};
+ItemTable* get_item_table();                                                // 0x71001ff050
+
+class MaterialBook {
+public:
+    void* entry(int material);                                              // 0x71002015a8
+};
+MaterialBook* get_material_book();                                          // 0x7100200fc0
+unsigned char material_known(void* flags);                                  // 0x71001ff9e8
+
+class Inventory {
+public:
+    int slot(int material, int a);                                          // 0x71001fe724
+    int count(int material, int a);                                         // 0x71001fe75c
+};
+class InventorySet {
+public:
+    Inventory* get(int kind);                                               // 0x71001feadc
+};
+InventorySet* get_inventories();                                            // 0x71001fe7c8
+
+class EndingTask : public SceneTask {
+public:
+    EndingTask(int mode);                                                   // 0x71002cb32c
+    void prepare();                                                         // 0x71002cb48c
+    void finish();                                                          // 0x71002cb490
+
+    unsigned char pad8[0x2d428];
+};
+static_assert(sizeof(EndingTask) == 0x2d430, "ending task size");
+void task_release(SceneTask* task, int flags, int a);                       // 0x7100387784
+
+void board_finish_turn(BoardQuery* query);                                  // 0x7100271aac
+const char* message_text(int id);                                           // 0x7100217d64
+void format_text(char* dest, const char* format, ...);                      // 0x710045a77c
+void show_notice(char* text);                                               // 0x71003afd3c
+void set_notice_mode(int mode, int a);                                      // 0x710039ccd4
+extern "C" char* strcat(char* dest, const char* src);
+extern const char kNumberFormat[] __attribute__((visibility("hidden")));    // 0x7100740bae
+
+class RecordBook {
+public:
+    void* record(int index);                                                // 0x7100210870
+};
+RecordBook* get_record_book();                                              // 0x710021069c
+int record_mode(void* record);                                              // 0x7100210654
+int record_cell(void* record);                                              // 0x710021065c
+int record_text(void* record);                                              // 0x7100210634
+
+class Achievements {
+public:
+    void refresh();                                                         // 0x71002079d0
+};
+Achievements* get_achievements();                                           // 0x7100207648
+
+void run_board_ending() {
+    get_unit_database();
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    Player* player = &game->players[mode];
+    bool final = false;
+    if (on_final_cell()) {
+        show_system_message(0x31, 1, 0, 1, 0);
+        final = true;
+    }
+    int reward = -1;
+    if (get_battle_params()->result == 3 && player->no_fort[player->id])
+        reward = get_battle_params()->reward;
+    if (get_battle_params()->bonus >= 0 && get_battle_params()->bonus <= 0x2e3 && player->no_fort[player->id])
+        reward = get_battle_params()->bonus;
+    if (get_item_table()->is_special(reward)) {
+        unsigned int material = get_item_table()->material_of(reward);
+        if (material <= 0x63 &&
+            !material_known(static_cast<unsigned char*>(get_material_book()->entry(material)) + 0x28)) {
+            int slot = get_inventories()->get(0x21)->slot(material, 0);
+            int count = get_inventories()->get(0x21)->count(material, 0);
+            if (count > get_game()->stock(slot)) {
+                Game* current = get_game();
+                current->add_stock(slot, count - get_game()->stock(slot));
+                get_game()->mark_stock(slot, 1);
+            }
+        }
+    }
+    void* storage = get_default_heap()->allocate(0x10, sizeof(EndingTask), 1, 0);
+    EndingTask* task = new (storage) EndingTask(0);
+    task->prepare();
+    int result = get_shared_state()->run_task(task);
+    task->finish();
+    task_release(task, 0x80, 0);
+    delete task;
+    int cell = player->id;
+    BoardRow* row = board_row(cell);
+    if (row->kind >= 0x17 && row->kind <= 0x1a)
+        dlc_unit_unlocked(row);
+    BoardQuery* query = &gBoardQuery;
+    board_finish_turn(query);
+    char text[0x200];
+    char number[0x40];
+    if (on_final_cell()) {
+        int winner = final_player();
+        if (!get_game()->state()->cleared(winner) && get_game()->has_progress(1)) {
+            if (get_shared_state()->language) {
+                format_text(number, kNumberFormat, get_game()->clear_count());
+            } else {
+                unsigned char clears = get_game()->clear_count();
+                if (clears >= 10) {
+                    int ones = clears % 10 + 0xab;
+                    format_text(number, message_text(clears / 10 + 0xab));
+                    strcat(number, message_text(ones));
+                } else {
+                    format_text(number, message_text(clears + 0xab));
+                }
+            }
+            format_text(text, message_text(0x255), number);
+            show_notice(text);
+        }
+    }
+    set_notice_mode(1, 0);
+    for (int i = 0; i < 0x100; ++i) {
+        if (!get_record_book()->record(i))
+            continue;
+        if (get_game()->state()->record_shown(i))
+            continue;
+        if (game_mode() != record_mode(get_record_book()->record(i)))
+            continue;
+        if (player->id != record_cell(get_record_book()->record(i)))
+            continue;
+        int id = record_text(get_record_book()->record(i)) + 0x2c6;
+        const char* format = message_text(0x1e1);
+        format_text(text, format, message_text(id));
+        show_notice(text);
+        get_game()->state()->set_record_shown(i, 1);
+    }
+    if (on_final_cell()) {
+        int winner = final_player();
+        if (!get_game()->state()->cleared(winner)) {
+            get_game()->state()->set_cleared(winner, 1);
+            get_achievements()->refresh();
+        }
+    }
+    close_overlays(3, 0, 0);
+    if (final) {
+        query->previous_step = query->step;
+        query->step = 12;
+        query->state = 1;
+    } else {
+        query->previous_step = query->step;
+        if (result == 1) {
+            query->step = 2;
+        } else {
+            query->step = 12;
+            query->state = 2;
+        }
     }
 }
