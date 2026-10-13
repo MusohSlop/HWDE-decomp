@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-436 of 521 attempted functions match: 426 inventory functions (57,948 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-five are near misses, all `m`.
+545 of 630 attempted functions match: 535 inventory functions (71,360 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-five are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -292,6 +292,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 46 in `misc/singleton_teardown.cpp` | singleton teardowns (`d8730`-`460e90`): free a heap singleton held in a global and clear the pointer | match |
 | 28 in `misc/helpers.cpp` | battle-setup flag wrappers, fixed-size clears, `ItemStatRef`/`WeaponStatRef::stat_value`, `TickTimer::start`, `TaskClock::elapsed`, `destroy_option_source`, `create_system_mutex`, `PopupAnimView::finished`, `StatusPanel::reset`, `UnitRecord::assign`, `StreamBuffer::open`, `load_stage_layout`, `text_language_changed`, `abort_pending_lights`, `advance_frame_counter` | match |
 | `287be4` | `flush_track_renderer` | near miss |
+| 31 in `misc/derived_ctors.cpp` | derived-class constructors (base constructor, then the vtable store) | match |
+| 25 in `misc/channel_dtors.cpp` | destructors that stop and destroy a channel member, then run the base destructor | match |
+| 34 in `misc/contact_queries.cpp` | shape-pair contact queries (two variants) | match |
+| 19 in `misc/object_loaders.cpp` | object loaders: memory stream, resource parse, type check, build | match |
 | `45c1dc`, `45c96c`, `45ca24` | `get_heap_registry`, `get_default_heap` (function-local statics), `SystemHeap::initialize` | match |
 | `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
 | `280200` | `BoardLayerView::draw` | near miss |
@@ -473,6 +477,12 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - Fixed-size clears that the original calls `memset` for without a tail call come from loops: the loop idiom pass creates the `memset` after tail calls have been marked, so it is not a tail call, while an explicit `memset` is. `LightRecordSet::clear` needs its records 8-byte aligned (`unsigned long`), or the count store merges into the `memset`.
   - `StatusPanel::reset` takes the member's address before the `memset`. `gTextDatabase` is an object reached through its GOT slot, not a pointer.
   - A pass over the near misses for the packed-struct global-merge problem found no other case: no unit defines a packed internal global, and the offset-only differences left in the diffs are jump-table placement and field scheduling.
+- **Code families (`tools/family_scan.py`).** The tool groups unattempted functions whose words are identical once relocated fields are masked: call and tail-call targets outside the function, `adrp` pages, and the 12-bit offsets of `add`/`ldr`/`str` based on an `adrp` register. Branches inside the function are kept. It lists families by open bytes and marks those with an already matched member ("seed"). One source shape then covers every member; a small generator script reads each member's references (callees, GOT slots) from the image and writes one definition per member. Four families this round, 109 functions:
+  - `misc/derived_ctors.cpp` (31, 48 bytes): the `AdvModeTask` constructor's shape (the seed), a polymorphic base with an out-of-line constructor.
+  - `misc/channel_dtors.cpp` (25, 88 bytes): `if (member.active) member.stop(gChannelContext);` in the destructor body, then the member's and the base's destructors. Some members are byte-identical copies sharing one vtable.
+  - `misc/contact_queries.cpp` (34, 128 and 132 bytes): the pair test takes the contact set as its first argument, the reset flag is `unsigned char`, and the reset loop's guard compares the count as an `int` while the found flag tests all 64 bits. The two variants differ in the swapped flag and the order of the count and found stores.
+  - `misc/object_loaders.cpp` (19, 280 bytes): a `MemoryStream` on the stack, the resource loader read before the heap lookup, and an inline reference drop when the type does not match.
+  - Placeholder names: classes and functions are named after their address, callees after theirs; the names carry no meaning beyond the shape.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
