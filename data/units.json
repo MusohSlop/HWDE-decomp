@@ -522,7 +522,49 @@
     "got:gBoardPopups": "0x7100c2a788",
     "got:gBoardCamera": "0x7100c2a790",
     "_ZN13BoardOverride6framesEv": "0x7100290f94",
-    "_ZN13BoardOverride5frameEt": "0x7100290f9c"
+    "_ZN13BoardOverride5frameEt": "0x7100290f9c",
+    "_ZN11BoardCursor10initializeEv": "0x7100288ef4",
+    "_ZN8AdvBoard10initializeEv": "0x710029b5f8",
+    "_ZN8AdvBoard10reset_viewEv": "0x71002a64fc",
+    "_ZN10BoardUnits10initializeEv": "0x7100291e14",
+    "_ZN11BoardPopups10initializeEv": "0x71002a73d4",
+    "_ZN11BoardPopups5resetEv": "0x71002aadac",
+    "_ZN11BoardCamera10initializeEv": "0x7100288a10",
+    "_ZN11BoardCamera8set_modeEii": "0x7100288a20",
+    "_ZN10TextCursor5resetEiif": "0x71001e526c",
+    "_Z15get_text_cursorv": "0x71001e50b0",
+    "got:gBoardRequest": "0x7100c2a7a8",
+    "_ZN15DemoPanelSystem10initializeEv": "0x7100263d58",
+    "_ZN14DemoEffectPool10initializeEv": "0x7100260c0c",
+    "_ZN10AdvCaption10initializeEv": "0x7100266cd8",
+    "_ZN10AdvCaption11set_value0cEi": "0x7100266ec0",
+    "_ZN10AdvEffects10initializeEv": "0x71002676ec",
+    "_ZN10LayoutRectC1Ev": "0x71001f1cd8",
+    "_ZN9LayoutBoxC1Ev": "0x71001f1e0c",
+    "_ZN12LayoutSpriteC1Ev": "0x71001ef52c",
+    "_ZN11LayoutFrameC1Ev": "0x71001f0140",
+    "got:_ZTV9BoardView": "0x7100c2a7b0",
+    "_ZN15DemoPanelSystem8finalizeEv": "0x71002637fc",
+    "_ZN14DemoEffectPool8finalizeEv": "0x7100260a48",
+    "_ZN10AdvCaption8finalizeEv": "0x7100266a20",
+    "_ZN10AdvEffects8finalizeEv": "0x710026731c",
+    "_ZN8AdvBoard8finalizeEv": "0x710029a20c",
+    "_ZN11BoardCursor8finalizeEv": "0x7100288be0",
+    "_ZN10BoardUnits8finalizeEv": "0x710029194c",
+    "_ZN11BoardPopups8finalizeEv": "0x71002a6e88",
+    "_ZN11BoardCamera8finalizeEv": "0x7100288a14",
+    "_ZN13BoardOverride5resetEv": "0x7100290e90",
+    "_ZN11TitleBanner4hideEv": "0x71001e1c9c",
+    "_Z16stop_menu_soundsv": "0x71003feea4",
+    "_Z20destroy_board_popupsv": "0x71002a7354",
+    "_Z19destroy_board_unitsv": "0x7100291d64",
+    "_Z17destroy_adv_boardv": "0x710029b5a4",
+    "_Z20destroy_board_cursorv": "0x7100288e7c",
+    "_Z20destroy_board_camerav": "0x7100288a0c",
+    "_Z18release_menu_boardv": "0x7100283f78",
+    "_Z18release_menu_unitsv": "0x7100283e10",
+    "_ZN5Fader7releaseEPvS0_": "0x71001dfb5c",
+    "_Z12task_releasePvii": "0x7100387784"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -999,7 +1041,8 @@
         "_Z15reset_nightmarev": "0x710026dbb4",
         "_Z17nightmare_reachedv": "0x710026dc74",
         "_Z21check_nightmare_clearv": "0x710026e278",
-        "_Z17advance_nightmareh": "0x710026dd70"
+        "_Z17advance_nightmareh": "0x710026dd70",
+        "_Z14can_enter_celliP6PlayerP8BoardRow": "0x71002736e0"
       },
       "map": {
         ".rodata": "0x71007f51a4"
@@ -1038,7 +1081,15 @@
         "_ZN9MenuScene7refreshEv": "0x7100273ccc",
         "_ZN9MenuScene4drawEv": "0x7100273e1c",
         "_ZN10BoardScene6updateEv": "0x7100273efc",
-        "_ZN10BoardScene8frame_ofEi": "0x7100274080"
+        "_ZN10BoardScene8frame_ofEi": "0x7100274080",
+        "_ZN10BoardScene5startEv": "0x7100274238",
+        "_ZN9BoardViewC2EiPv": "0x7100274530",
+        "_ZN9BoardView4initEiPv": "0x7100274624",
+        "_ZN9MenuScene8shutdownEv": "0x71002731e4"
+      },
+      "map": {
+        ".rodata": "0x71007f58e4",
+        ".rodata.cst4": "0x710073c188"
       }
     }
   }

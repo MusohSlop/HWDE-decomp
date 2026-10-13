@@ -1771,3 +1771,32 @@ void advance_nightmare(unsigned char resume) {
     }
     quest = 0xff;
 }
+
+static inline bool in_band(int value, int low, int high) {
+    return low <= value && value <= high;
+}
+
+static inline unsigned char gate_toward(Player* player, BoardRow* rows, int target) {
+    int cell = player->id;
+    return rows[cell].gate_state(neighbor_direction(cell, target), 0);
+}
+
+bool can_enter_cell(int target, Player* player, BoardRow* rows) {
+    if (!player->cell_open(target))
+        return false;
+    int cell = player->id;
+    int column = cell % 16;
+    if (!in_band(target, column != 0 ? cell - 17 : cell - 16, column != 15 ? cell - 15 : cell - 16) &&
+        !in_band(target, column != 0 ? cell - 1 : cell, column != 15 ? cell + 1 : cell) &&
+        !in_band(target, column != 0 ? cell + 15 : cell + 16, column != 15 ? cell + 17 : cell + 16))
+        return false;
+    if (gate_toward(player, rows, target) == 4)
+        return false;
+    if (gate_toward(player, rows, target) == 6)
+        return false;
+    if (gate_toward(player, rows, target) == 7)
+        return false;
+    if (gate_toward(player, rows, target) == 8)
+        return false;
+    return true;
+}

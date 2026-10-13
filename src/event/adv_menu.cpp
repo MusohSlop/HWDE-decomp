@@ -1,4 +1,4 @@
-// Matching candidates for the Adventure Mode menu scene 0x71002734bc-0x7100274234.
+// Matching candidates for the Adventure Mode menu scene 0x71002734bc-0x71002748d4.
 // Names are descriptive placeholders. Status: matching/README.md.
 
 #include "resource/resource_frame.h"
@@ -31,6 +31,7 @@ public:
     void set_layer(int layer);                                              // 0x71001e1e2c
     void show_default();                                                    // 0x71001e1fd8
     void show_text(int id);                                                 // 0x71001e216c
+    void hide();                                                            // 0x71001e1c9c
 };
 // Reached through the GOT slot at 0x7100c22a00.
 extern TitleBanner* gTitleBanner;
@@ -51,8 +52,7 @@ void load_menu_scene() {
 
 class MenuView {
 public:
-    virtual void v00();
-    virtual void v08();
+    virtual ~MenuView();
     virtual void v10();
     virtual void v18();
     virtual void open();      // +20
@@ -69,6 +69,7 @@ class Fader {
 public:
     void begin(int layer);                                                  // 0x71001df744
     void end();                                                             // 0x71001df838
+    void release(void* fade, void* target);                                 // 0x71001dfb5c
 };
 // Reached through the GOT slot at 0x7100c22a40.
 extern Fader* gFader;
@@ -92,14 +93,17 @@ extern void* gRenderTarget;
 
 class MenuScene {
 public:
+    void shutdown();                                                        // 0x71002731e4
     void refresh();                                                         // 0x7100273ccc
     void draw();                                                            // 0x7100273e1c
 
     unsigned char pad[0x2d424];
     unsigned int page;        // +2d424
     unsigned char pad2d428[8];
-    MenuView* pages[1];       // +2d430
-    MenuView* overlay;        // +2d438
+    MenuView* views[8];       // +2d430: [1] is the overlay
+    struct SharedObject* object2d470; // +2d470
+    struct SharedObject* object2d478; // +2d478
+    unsigned char fade2d480[8]; // +2d480
 };
 
 void MenuScene::refresh() {
@@ -107,9 +111,9 @@ void MenuScene::refresh() {
     get_game();
     get_game()->state();
     get_unit_database();
-    if (overlay)
-        overlay->refresh();
-    if (MenuView* view = pages[page])
+    if (views[1])
+        views[1]->refresh();
+    if (MenuView* view = views[page])
         view->open();
     gFader->end();
     gFader->begin(10);
@@ -125,48 +129,73 @@ void MenuScene::draw() {
     params.valuec = 2;
     params.value10 = 0;
     renderer->begin(target, &params);
-    if (overlay)
-        overlay->render();
-    if (MenuView* view = pages[page])
+    if (views[1])
+        views[1]->render();
+    if (MenuView* view = views[page])
         view->draw();
     renderer->end(target);
 }
 
 class DemoPanelSystem {
 public:
+    void initialize();                                                      // 0x7100263d58
+    void finalize();                                                        // 0x71002637fc
     void update();                                                          // 0x71002648dc
 };
 class DemoEffectPool {
 public:
+    void initialize();                                                      // 0x7100260c0c
+    void finalize();                                                        // 0x7100260a48
     void update();                                                          // 0x7100260fe8
 };
 class AdvCaption {
 public:
+    void initialize();                                                      // 0x7100266cd8
+    void finalize();                                                        // 0x7100266a20
+    void set_value0c(int value);                                            // 0x7100266ec0
     void update();                                                          // 0x7100266f04
 };
 class AdvEffects {
 public:
+    void initialize();                                                      // 0x71002676ec
+    void finalize();                                                        // 0x710026731c
     void update();                                                          // 0x7100267c44
 };
 class AdvBoard {
 public:
+    void initialize();                                                      // 0x710029b5f8
+    void finalize();                                                        // 0x710029a20c
+    void reset_view();                                                      // 0x71002a64fc
     void update();                                                          // 0x71002a016c
 };
 class BoardCursor {
 public:
+    void initialize();                                                      // 0x7100288ef4
+    void finalize();                                                        // 0x7100288be0
     void update();                                                          // 0x7100289714
+
+    unsigned char pad[0x10];
+    int value10;              // +10
 };
 class BoardUnits {
 public:
+    void initialize();                                                      // 0x7100291e14
+    void finalize();                                                        // 0x710029194c
     void update();                                                          // 0x7100292694
 };
 class BoardPopups {
 public:
+    void initialize();                                                      // 0x71002a73d4
+    void finalize();                                                        // 0x71002a6e88
+    void reset();                                                           // 0x71002aadac
     void update();                                                          // 0x71002a7a80
 };
 class BoardCamera {
 public:
+    void initialize();                                                      // 0x7100288a10
+    void finalize();                                                        // 0x7100288a14
     void update();                                                          // 0x7100288a18
+    void set_mode(int a, int b);                                            // 0x7100288a20
 };
 // Reached through GOT slots in 0x7100c2a648-0x7100c2a790.
 extern DemoPanelSystem* gDemoPanelSystem;
@@ -198,6 +227,12 @@ class BoardOverride {
 public:
     FrameHeader* frames();                                                  // 0x7100290f94
     FrameEntry* frame(unsigned short index);                                // 0x7100290f9c
+    void reset();                                                           // 0x7100290e90
+
+    unsigned char pad[0x30];
+    unsigned char active;     // +30
+    unsigned char pad31[3];
+    int phase;                // +34
 };
 // Reached through the GOT slot at 0x7100c2a6f0.
 extern BoardOverride gBoardOverride;
@@ -206,11 +241,12 @@ class BoardScene {
 public:
     int update();                                                           // 0x7100273efc
     int frame_of(int kind);                                                 // 0x7100274080
+    unsigned char start();                                                  // 0x7100274238
 
     unsigned char pad0[8];
     int state;                // +08
     int previous;             // +0c
-    unsigned char pad10[8];
+    struct BoardStateView* query; // +10
     int tick;                 // +18
     unsigned int clock;       // +1c
     int slow_tick;            // +20
@@ -258,4 +294,305 @@ int BoardScene::frame_of(int kind) {
                  (header->width * (phase - 1) + entry->start) / header->width;
     }
     return result;
+}
+
+struct BoardStateView {
+    unsigned char pad[0xd4];
+    int valued4;              // +d4
+};
+
+struct Player {
+    unsigned char pad[0x2acc];
+    unsigned char value2acc;  // +2acc
+    unsigned char value2acd;  // +2acd
+    unsigned char pad2ace[0x16a];
+};
+
+class GameBoard {
+public:
+    unsigned char pad[0x2944];
+    Player players[1];        // +2944
+};
+
+static inline unsigned int menu_mode() {
+    return get_game()->state()->mode;
+}
+
+static inline GameBoard* game_board() {
+    return reinterpret_cast<GameBoard*>(get_game());
+}
+
+static inline int stage_fade_message() {
+    int message = 1;
+    switch (menu_mode()) {
+    case 3:
+        message = 0x31;
+        break;
+    case 4: {
+        GameBoard* game = game_board();
+        unsigned char counter = game->players[menu_mode()].value2acc;
+        game = game_board();
+        if (game->players[menu_mode()].value2acd == 1)
+            message = 0x32;
+        else if (counter < 0x19)
+            message = 0x34;
+        else
+            message = counter < 0x31 ? 0x33 : 0x32;
+        break;
+    }
+    case 5:
+        message = 0x5c;
+        break;
+    case 6:
+        message = 0x3a;
+        break;
+    case 7:
+        message = 0x3b;
+        break;
+    case 8:
+        message = 0x61;
+        break;
+    case 9:
+        message = 0x62;
+        break;
+    }
+    return message;
+}
+
+void register_resource_callback(void* callback, void (*completion)(int, unsigned int),
+                                unsigned int flags);                        // 0x7100258b0c
+void remove_resource_callback(void* callback);                              // 0x710025917c
+unsigned char resource_queue_has_callback(void* callback);                  // 0x7100259680
+unsigned char resource_queue_callback_in_state(void* callback, unsigned int state); // 0x71002597a8
+struct SharedState;
+SharedState* get_shared_state();                                            // 0x71002aae3c
+void* shared_state_resources(SharedState* state);                           // 0x71002ad1dc
+void dialog_open(void* resources, int a, int b);                            // 0x710038861c
+void dialog_close(void* resources, int a);                                  // 0x710038862c
+void play_demo_fade(int kind, int a, int b, void* target, float time);      // 0x71003f9b34
+
+class TextCursor {
+public:
+    void reset(int a, int b, float time);                                   // 0x71001e526c
+};
+TextCursor* get_text_cursor();                                              // 0x71001e50b0
+// Board resource request, reached through the GOT slot at 0x7100c2a7a8.
+extern unsigned char gBoardRequest[];
+
+unsigned char BoardScene::start() {
+    if (!resource_queue_has_callback(gBoardRequest)) {
+        register_resource_callback(gBoardRequest, nullptr, 0x20);
+        if (void* resources = shared_state_resources(get_shared_state()))
+            dialog_open(resources, 1, 1);
+        return 0;
+    }
+    if (!resource_queue_callback_in_state(gBoardRequest, 3))
+        return 0;
+    remove_resource_callback(gBoardRequest);
+    gBoardCursor->initialize();
+    gDemoPanelSystem->initialize();
+    gDemoEffectPool->initialize();
+    gAdvBoard->initialize();
+    gBoardUnits->initialize();
+    gBoardPopups->initialize();
+    gAdvCaption->initialize();
+    gAdvEffects->initialize();
+    gBoardCamera->initialize();
+    switch (query->valued4) {
+    case 0:
+        gBoardCamera->set_mode(3, 6);
+        break;
+    case 1:
+        gBoardCamera->set_mode(3, 1);
+        break;
+    case 2:
+        gBoardCamera->set_mode(3, 2);
+        break;
+    case 3:
+        gBoardCamera->set_mode(3, 0);
+        break;
+    }
+    if (void* resources = shared_state_resources(get_shared_state()))
+        dialog_close(resources, 1);
+    if (get_text_cursor() && get_text_cursor())
+        get_text_cursor()->reset(0, 1, 0.0f);
+    gAdvCaption->set_value0c(0x2a);
+    gBoardOverride.active = 1;
+    gBoardOverride.phase = 1;
+    gBoardCursor->value10 = 0;
+    gBoardPopups->reset();
+    gAdvBoard->reset_view();
+    play_demo_fade(stage_fade_message(), 1, 0, nullptr, 0.668f);
+    return 1;
+}
+
+// Layout element classes (constructors in the layout library).
+struct LayoutRect {
+    LayoutRect();                                                           // 0x71001f1cd8
+    unsigned char pad[0x28];
+};
+struct LayoutBox {
+    LayoutBox();                                                            // 0x71001f1e0c
+    unsigned char pad[0x10];
+};
+struct LayoutSprite {
+    LayoutSprite();                                                         // 0x71001ef52c
+    unsigned char pad0[8];
+    int flags;                // +08: bit 7 dirty
+    unsigned char padc[0x3c];
+};
+static_assert(sizeof(LayoutSprite) == 0x48, "layout sprite size");
+struct LayoutFrame {
+    LayoutFrame();                                                          // 0x71001f0140
+    unsigned char pad0[8];
+    int flags;                // +08: bit 7 dirty
+    unsigned char padc[0x7c];
+};
+static_assert(sizeof(LayoutFrame) == 0x88, "layout frame size");
+
+// Header of the board view (fields +08 to +28), initialised before the vtable pointer.
+struct BoardViewBase {
+    BoardViewBase(int value, void* owner)
+        : value8(value), valuec(value), owner(owner), value18(0), value20(0) {}
+
+    int value8;               // +000008
+    int valuec;               // +00000c
+    void* owner;              // +000010
+    long value18;             // +000018
+    long value20;             // +000020
+};
+
+// Board view (0x1a8068 bytes): one sprite per board unit slot.
+class BoardView : public BoardViewBase {
+public:
+    BoardView(int value, void* owner);                                      // 0x7100274530
+    virtual ~BoardView();
+    virtual void init(int value, void* owner);                              // 0x7100274624
+
+    LayoutRect rect;          // +000028
+    LayoutBox box;            // +000050
+    int value60;              // +000060
+    int value64;              // +000064
+    int value68;              // +000068
+    unsigned char value6c;    // +00006c
+    unsigned char pad6d[3];
+    int value70;              // +000070
+    unsigned short value74;   // +000074
+    unsigned char pad76[2];
+    LayoutSprite cursor;      // +000078
+    LayoutFrame frame_c0;     // +0000c0
+    LayoutFrame frame_148;    // +000148
+    LayoutSprite grid[0x80][0xb0]; // +0001d0
+    LayoutSprite extra[9][0xb0];   // +18c1d0
+    LayoutFrame frame_1a7f50; // +1a7f50
+    LayoutFrame frame_1a7fd8; // +1a7fd8
+    int value1a8060;          // +1a8060
+    unsigned char value1a8064; // +1a8064
+    unsigned char pad1a8065[3];
+};
+static_assert(sizeof(BoardView) == 0x1a8068, "board view size");
+
+BoardView::BoardView(int value, void* owner) : BoardViewBase(value, owner) {
+    init(value, owner);
+}
+
+void BoardView::init(int value, void* owner) {
+    value8 = value;
+    valuec = value;
+    value18 = 0;
+    value20 = 0;
+    cursor.flags |= 0x80;
+    this->owner = owner;
+    frame_c0.flags |= 0x80;
+    frame_148.flags |= 0x80;
+    for (int row = 0; row < 0x80; ++row) {
+        for (int i = 0; i < 0xb0; ++i)
+            grid[row][i].flags |= 0x80;
+    }
+    for (int set = 0; set < 9; ++set) {
+        for (int i = 0; i < 0xb0; ++i)
+            extra[set][i].flags |= 0x80;
+    }
+    value60 = 1;
+    if (menu_mode() == 1)
+        value60 = 0;
+    value70 = -1;
+    value64 = 1;
+    value68 = 0;
+    value6c = 0;
+    value74 = 0;
+    value1a8060 = 0;
+    value1a8064 = 0;
+}
+
+struct SharedObject {
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+    virtual void destroy();   // +18
+
+    int refs;                 // +08
+};
+
+static inline void release_shared(SharedObject*& slot) {
+    if (SharedObject* object = slot) {
+        if (!--object->refs)
+            object->destroy();
+        slot = nullptr;
+    }
+}
+
+unsigned char resource_queue_active();                                      // 0x71002589b4
+bool finish_resource_queue(unsigned char wait, unsigned char unused, unsigned char skip_exit_check); // 0x7100258a68
+void stop_menu_sounds();                                                    // 0x71003feea4
+void destroy_adv_effects();                                                 // 0x710026767c
+void destroy_adv_caption();                                                 // 0x7100266b98
+void destroy_board_popups();                                                // 0x71002a7354
+void destroy_board_units();                                                 // 0x7100291d64
+void destroy_adv_board();                                                   // 0x710029b5a4
+void destroy_demo_panel_system();                                           // 0x7100263cfc
+void destroy_demo_effect_pool();                                            // 0x7100260bac
+void destroy_board_cursor();                                                // 0x7100288e7c
+void destroy_board_camera();                                                // 0x7100288a0c
+void release_menu_board();                                                  // 0x7100283f78
+void release_menu_units();                                                  // 0x7100283e10
+void task_release(void* task, int flags, int a);                            // 0x7100387784
+
+void MenuScene::shutdown() {
+    if (resource_queue_active())
+        finish_resource_queue(1, 0, 1);
+    stop_menu_sounds();
+    for (int i = 0; i < 8; ++i) {
+        if (views[i]) {
+            delete views[i];
+            views[i] = nullptr;
+        }
+    }
+    gAdvEffects->finalize();
+    destroy_adv_effects();
+    gAdvCaption->finalize();
+    destroy_adv_caption();
+    gBoardPopups->finalize();
+    destroy_board_popups();
+    gBoardUnits->finalize();
+    destroy_board_units();
+    gAdvBoard->finalize();
+    destroy_adv_board();
+    gDemoPanelSystem->finalize();
+    destroy_demo_panel_system();
+    gDemoEffectPool->finalize();
+    destroy_demo_effect_pool();
+    gBoardCursor->finalize();
+    destroy_board_cursor();
+    gBoardCamera->finalize();
+    destroy_board_camera();
+    gBoardOverride.reset();
+    gTitleBanner->hide();
+    release_menu_board();
+    release_menu_units();
+    gMenuFrame.close();
+    task_release(this, 0x40, 0);
+    gFader->release(fade2d480, nullptr);
+    release_shared(object2d470);
+    release_shared(object2d478);
 }
