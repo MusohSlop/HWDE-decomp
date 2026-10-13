@@ -877,7 +877,14 @@
         "_Z14board_overflowv": "0x710026ce4c",
         "_Z15tick_side_questv": "0x710026d620",
         "_Z10tick_sealsv": "0x710026d6dc",
-        "_Z16reset_side_boardv": "0x710026d124"
+        "_Z16reset_side_boardv": "0x710026d124",
+        "_Z10tick_timerv": "0x710026d978",
+        "_Z16seal_random_keepv": "0x710026da1c",
+        "_Z15nightmare_stagev": "0x710026db3c",
+        "_Z15reset_nightmarev": "0x710026dbb4",
+        "_Z17nightmare_reachedv": "0x710026dc74",
+        "_Z21check_nightmare_clearv": "0x710026e278",
+        "_Z17advance_nightmareh": "0x710026dd70"
       },
       "map": {
         ".rodata": "0x71007f51a4"

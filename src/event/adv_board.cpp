@@ -83,9 +83,12 @@ struct Player {
     unsigned char value2acd;  // +2acd
     unsigned char value2ace;  // +2ace
     unsigned char value2acf;  // +2acf
-    unsigned char pad2ad0[2];
+    unsigned char value2ad0;  // +2ad0
+    unsigned char value2ad1;  // +2ad1
     unsigned char value2ad2;  // +2ad2
-    unsigned char pad2ad3[0x65];
+    unsigned char timer_low : 4;  // +2ad3
+    unsigned char timer_high : 4;
+    unsigned char pad2ad4[0x64];
     unsigned char history[0x100]; // +2b38
 };
 static_assert(sizeof(Player) == 0x2c38, "player size");
@@ -296,7 +299,10 @@ public:
     void find_entry(unsigned int cell, unsigned int slot, int kind, int* level, int* position,
                     int* state);                                            // 0x710026b3cc
 
-    unsigned char pad[0x2d8];
+    unsigned char pad[0xd1];
+    unsigned char timer_done; // +0d1
+    unsigned char seal_done;  // +0d2
+    unsigned char padd3[0x205];
     unsigned char groups[0x100]; // +02d8
     int levels[0x80][0x1c];   // +03d8
     int kinds[0x80][0x1c];    // +3bd8
@@ -304,6 +310,14 @@ public:
     unsigned int items[0x80][0x1c]; // +81d8
     unsigned char padb9d8[0xc];
     int access;               // +b9e4
+    unsigned char turn_alert; // +b9e8
+    unsigned char padb9e9[3];
+    int reset_pending;        // +b9ec
+    unsigned char padb9f0;
+    unsigned char quest_short; // +b9f1
+    unsigned char quest_long; // +b9f2
+    unsigned char sealed_high; // +b9f3
+    unsigned char sealed_low; // +b9f4
 };
 // Reached through the GOT slot at 0x7100c23250.
 extern BoardQuery gBoardQuery;
@@ -1577,4 +1591,212 @@ void reset_side_board() {
         player.value2acd = 0;
     player.value2acc = 0x48;
     player.value2acf = 0;
+}
+
+void tick_timer() {
+    get_unit_database();
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    if (game_mode() == 7) {
+        unsigned char& timer = game->players[mode].value2acc;
+        if (timer) {
+            timer += 0xff;
+            if (!timer)
+                gBoardQuery.timer_done = 1;
+        } else {
+            game->players[mode].value2acd = 0xff;
+        }
+    }
+}
+
+void seal_random_keep() {
+    UnitDatabase* database = get_unit_database();
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    if (game_mode() == 7 && game->players[mode].value2ace != 0xff) {
+        unsigned int cells[0x20];
+        long i = 0;
+        unsigned int count = 0;
+        for (; i < 0x80; ++i) {
+            if (database->rows[i].kind == 0x1b && !(game->players[mode].marks[i].flags & 0x2000))
+                cells[count++] = i;
+        }
+        if (count > 8) {
+            unsigned int cell = cells[random_below(count)];
+            game->players[mode].marks[static_cast<int>(cell)].flags |= 0x2000;
+            game->players[mode].unguarded[cell] = 0;
+            gBoardQuery.seal_done = 1;
+        }
+    }
+}
+
+int nightmare_stage() {
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    if (game_mode() == 8)
+        return game->players[mode].value2ad2 / 3;
+    return 0;
+}
+
+void reset_nightmare() {
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    UnitDatabase* database = get_unit_database();
+    int cell = game->players[mode].id;
+    if (game_mode() == 8 && !(game->players[mode].value2ad0 & 2) && database->rows[cell].level >= 1) {
+        game->players[mode].value2ad2 = 0;
+        gBoardQuery.reset_pending = 1;
+    }
+}
+
+bool nightmare_reached() {
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    UnitDatabase* database = get_unit_database();
+    if (game_mode() != 8)
+        return false;
+    unsigned char& reached = game->players[mode].value2ad1;
+    if (reached)
+        return true;
+    for (long i = 0; i < 0x80; ++i) {
+        if (database->rows[i].kind == 0x1d) {
+            BoardRow* row = &get_unit_database()->rows[i];
+            if ((!is_dlc_kind(row) || dlc_unit_unlocked(row)) && game->players[mode].cell_states[i] >= 2) {
+                reached = 1;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void check_nightmare_clear() {
+    UnitDatabase* database = get_unit_database();
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    Player& player = game->players[mode];
+    unsigned char& flags = player.value2ad0;
+    if ((flags & 2) && player.cell_open(0x39))
+        return;
+    unsigned char second = 0;
+    unsigned char first = 0;
+    for (long i = 0; i < 0x80; ++i) {
+        if (database->rows[i].kind == 0x1e) {
+            if (!player.cell_cleared(i))
+                break;
+            first = 1;
+        }
+        if (database->rows[i].kind == 0x1f) {
+            if (!player.cell_cleared(i))
+                break;
+            second = 1;
+        }
+    }
+    if (second && first) {
+        game->players[mode].value2ad2 = 0;
+        flags |= 2;
+        gBoardQuery.reset_pending = 3;
+    }
+}
+
+void advance_nightmare(unsigned char resume) {
+    UnitDatabase* database = get_unit_database();
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    if (game_mode() != 8)
+        return;
+    Player& player = game->players[mode];
+    if (resume) {
+        unsigned char& flags = player.value2ad0;
+        if (!(flags & 1))
+            return;
+        flags &= ~1;
+    } else {
+        if (nightmare_reached()) {
+            unsigned char& turn = player.value2ad1;
+            if (turn == 0xff) {
+                turn = 1;
+            } else if (turn == 10) {
+                gBoardQuery.turn_alert = 1;
+                turn = turn + 1;
+            } else {
+                unsigned char old = turn;
+                turn = old + 1;
+                if (old >= 0xe)
+                    turn = 1;
+            }
+            Game* current = get_game();
+            unsigned int current_mode = game_mode();
+            if (game_mode() == 8 && current->players[current_mode].value2ad1 == 0xe)
+                gBoardQuery.turn_alert = 1;
+        }
+        unsigned char& flags = player.value2ad0;
+        if (!(flags & 2)) {
+            unsigned char& stage = player.value2ad2;
+            if (stage <= 8) {
+                ++stage;
+                Game* current = get_game();
+                unsigned int current_mode = game_mode();
+                if (game_mode() == 8 && current->players[current_mode].value2ad2 == 9)
+                    gBoardQuery.reset_pending = 2;
+                else if (stage % 3 == 0)
+                    gBoardQuery.reset_pending = 0;
+            }
+        }
+        for (int pass = 0; pass < 2; ++pass) {
+            unsigned char timer = pass == 0 ? player.timer_high : player.timer_low;
+            if (!timer)
+                continue;
+            timer = timer - 1;
+            if (pass)
+                player.timer_low = timer;
+            else
+                player.timer_high = timer;
+            if (timer)
+                continue;
+            int mask = pass == 0 ? 0x8000 : 0x4000;
+            int cells[0x20];
+            unsigned int count = 0;
+            for (long i = 0; i < 0x80; ++i) {
+                if (database->rows[i].kind == (pass ? 0x1c : 0x1d) && !(player.marks[i].flags & mask))
+                    cells[count++] = i;
+            }
+            if (count) {
+                int cell = cells[random_below(count)];
+                if (pass) {
+                    player.marks[cell].flags |= 0x4000;
+                    gBoardQuery.sealed_low = 1;
+                } else {
+                    player.marks[cell].flags |= 0x8000;
+                    gBoardQuery.sealed_high = 1;
+                }
+            }
+            if (pass)
+                player.timer_low = 8;
+            else
+                player.timer_high = 8;
+        }
+        if (player.value2acd == 3) {
+            flags |= 1;
+            return;
+        }
+    }
+    unsigned char& timer = player.value2acc;
+    if (!timer) {
+        player.value2acd = 0xff;
+        return;
+    }
+    timer += 0xff;
+    if (timer)
+        return;
+    unsigned char& quest = player.value2acd;
+    if (quest <= 2)
+        gBoardQuery.quest_short = 1;
+    else if (quest <= 5)
+        gBoardQuery.quest_long = 1;
+    if (quest == 4) {
+        player.value2ace = 0xff;
+        player.value2acf = 0xff;
+    }
+    quest = 0xff;
 }

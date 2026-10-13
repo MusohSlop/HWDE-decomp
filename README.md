@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-244 of 300 attempted functions match: 234 inventory functions (39,432 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other fifty-six are near misses, all `m`.
+248 of 307 attempted functions match: 238 inventory functions (40,312 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other fifty-nine are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -245,6 +245,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `26d02c`, `26d09c` | `board_side_quest`, `board_side_quest_open` | match |
 | `26d124`, `26d6dc` | `reset_side_board`, `tick_seals` | near miss |
 | `26d620` | `tick_side_quest` | match |
+| `26d978`, `26da1c`, `26dd70` | `tick_timer`, `seal_random_keep`, `advance_nightmare` | near miss |
+| `26db3c`, `26dbb4`, `26dc74`, `26e278` | `nightmare_stage`, `reset_nightmare`, `nightmare_reached`, `check_nightmare_clear` | match |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -389,6 +391,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - The GOT slot `c23250` holds the global `BoardQuery` (`gBoardQuery`), which `unit_kind` passes to the remap call. `fill_cell_entries` fills a cell's 28 entries from the shop catalog (`gShop`, lists 2-0x75, three entries each) and the item table (`gItemDefs`, 0x50-byte records). `start_board_battle` sets up the battle parameters and runs four fills.
   - `board_overflow` counts the board columns and rows that fall outside the display. The row offset is written as a subtraction (`origin.y - y * 44`): `x - 0.0f` folds away for the first row, `x + 0.0f` does not. The column loop tests `!= 0x400`.
   - `tick_side_quest` decrements a byte counter to zero with the subtraction done in 32 bits (`sub #1` then a byte compare); an 8-bit subtraction gives `add #0xff`.
+  - `check_nightmare_clear` matches with its two found flags as `unsigned char` (tested with `and #0xff`) declared second-first, which gives the original register order. `nightmare_reached` needs the open test as one condition rather than `continue`s.
   - `ward_slot` (`26cc30`) is the helper `unit_has_override` inlines twice; using it there brought that function from 119 to 106 differing words.
   - `dlc_unit_unlocked` returns `unsigned char`: its callers test `and #0xff`, which a `bool` result does not produce. `unit_alive` matches with the team and defeated tests in one `||`.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
@@ -421,6 +424,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 `26c654`, `26c730`, `26c884`: the original reads `override` and `value6` with `and #0xffff0000; asr #16` (a redundant mask) and a load narrowed to `+4`; no bitfield layout tried reproduces that, so it may be another compiler difference. `26c610` is the switch-lowering case again.
 
 `26c154`: `load_board` reads the board rows, cells, unit records, reward pairs and two short lists from two resource frames through a read/write stream. The logic matches; the resource id is a `csel` in ours and a branch in the original, and `ResourceFrame::is_open` is tested as a byte. `26c924`: `unit_has_override` (three jump tables, `is_fort_kind` inlined again); the logic matches, register use differs. Both capped at two attempts.
+
+`26d978`, `26da1c`: three and four words of scheduling (a store before or after the byte test, the order of two zeroing moves). `26dd70`: `advance_nightmare` (1,288 bytes, the mode-8 turn update with two 4-bit timers at `Player+2ad3`); the logic matches, one attempt.
 
 `26cc30`, `26d124`, `26d6dc`: the logic matches; register use and scheduling differ (capped at two attempts). `26d124` inlines `neighbor_cell` both for the four neighbours and for a reverse direction search. `26cdec` is the accepted switch-lowering pattern.
 
