@@ -44,6 +44,8 @@ def masked_words(data, start, size):
         elif (w & 0x7F800000) == 0x11000000 and ((w >> 5) & 0x1F) in adrp_regs:  # add imm
             w &= 0xFFC003FF
         elif (w & 0x3B000000) == 0x39000000 and ((w >> 5) & 0x1F) in adrp_regs:  # ldr/str imm12
+            if w & 0x00400000:  # a load replaces the register's page address
+                adrp_regs.discard(w & 0x1F)
             w &= 0xFFC003FF
         else:
             # Any other write to a tracked register ends its adrp association.

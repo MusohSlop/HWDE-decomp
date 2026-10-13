@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-545 of 630 attempted functions match: 535 inventory functions (71,360 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-five are near misses, all `m`.
+709 of 795 attempted functions match: 699 inventory functions (75,716 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-six are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -296,6 +296,13 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 25 in `misc/channel_dtors.cpp` | destructors that stop and destroy a channel member, then run the base destructor | match |
 | 34 in `misc/contact_queries.cpp` | shape-pair contact queries (two variants) | match |
 | 19 in `misc/object_loaders.cpp` | object loaders: memory stream, resource parse, type check, build | match |
+| 60 in `misc/global_getters.cpp` | getters returning a global (two return its second word) | match |
+| 48 in `misc/global_forwarders.cpp`, 34 in `misc/global_forwarders_arg.cpp` | calls of one function on the object held in a global, without and with an `int` argument | match |
+| 9 in `misc/getter_queries.cpp` | getter-then-call queries | match |
+| 6 in `misc/deleting_dtors.cpp` | deleting destructors (base destructor, then the null-testing heap `operator delete`) | match |
+| 4 in `misc/owner_teardown.cpp` | singleton teardowns with a finalizer and an out-of-line destructor | match |
+| 3 in `misc/animation_stops.cpp` | five-animation stops | match |
+| `72768` | `create_model_72768` (`misc/model_builders.cpp`) | near miss |
 | `45c1dc`, `45c96c`, `45ca24` | `get_heap_registry`, `get_default_heap` (function-local statics), `SystemHeap::initialize` | match |
 | `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
 | `280200` | `BoardLayerView::draw` | near miss |
@@ -483,6 +490,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `misc/contact_queries.cpp` (34, 128 and 132 bytes): the pair test takes the contact set as its first argument, the reset flag is `unsigned char`, and the reset loop's guard compares the count as an `int` while the found flag tests all 64 bits. The two variants differ in the swapped flag and the order of the count and found stores.
   - `misc/object_loaders.cpp` (19, 280 bytes): a `MemoryStream` on the stack, the resource loader read before the heap lookup, and an inline reference drop when the type does not match.
   - Placeholder names: classes and functions are named after their address, callees after theirs; the names carry no meaning beyond the shape.
+  - Seven seed families next (164 functions): each takes the shape of an already matched function (`screen_fader`, `end_sprite_batch`, `query_game_state`, `game_query`, the scene tasks' deleting destructor, `destroy_adv_board`, `EffectRecord::stop`). Generated definitions are ordinary source, one per function, and go through the same compile-and-check path as hand-written ones; the full check shows no masked relocations.
+  - The scan masked the offset of a load whose base register had been loaded from a GOT slot (a field of the global rather than the pointer); it now stops tracking a register once a load replaces its page address. Two getters that read the second word of their global were found that way.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
@@ -543,6 +552,8 @@ Large functions deferred under the rule "over about 1,000 bytes and calling many
 `2aadac`: `BoardPopups::reset`, the null-check pattern below (the check before the unconditional `set_frame` call).
 
 `287be4`: `flush_track_renderer`, two calls through the same global. The original rematerializes the GOT load and the -1 argument for the second call; ours keeps both in callee-saved registers (register allocation).
+
+`72768`: `create_model_72768`, a 948-byte model builder (sizes the model from its resource's tables, allocates it, constructs the skinned or plain variant, lays out the tables). The code matches in structure; the original's frame is 0x10 bytes smaller because the allocation parameters and the four-entry object array share one stack slot, which shifts most stack offsets. Its family siblings (`450710`, and the 948/964-byte families around the object loaders) are left until that is solved.
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 
