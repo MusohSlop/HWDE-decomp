@@ -1429,7 +1429,20 @@
     "_Z12screen_faderv": "0x71001e50b0",
     "_Z18load_global_200fc0v": "0x7100200fc0",
     "_Z18load_global_187590v": "0x7100187590",
-    "_Z22shared_state_resourcesP11SharedState": "0x71002ad1dc"
+    "_Z22shared_state_resourcesP11SharedState": "0x71002ad1dc",
+    "_Z18global_call_416abcP12Global4140a4Pvi": "0x7100416abc",
+    "_Z18load_global_458634v": "0x7100458634",
+    "_Z18global_call_45938cPvff": "0x710045938c",
+    "_Z18load_global_3d2fd4v": "0x71003d2fd4",
+    "_Z18global_call_3d68a8Pvii": "0x71003d68a8",
+    "got:_ZTV10FileReader": "0x7100c2d300",
+    "_Z18global_call_427444P12Global425dd0PvS1_": "0x7100427444",
+    "_Z17part_call2_41fda8Pvii": "0x710041fda8",
+    "_ZN18LayoutSpriteObjectC1Ev": "0x71001ef52c",
+    "_Z11call_1d738cPvii": "0x71001d738c",
+    "got:gGlobal_c22ca8": "0x7100c22ca8",
+    "_Z11call_1d2ae8iii": "0x71001d2ae8",
+    "_Z12index_3d6fd0Pv": "0x71003d6fd0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2205,7 +2218,24 @@
         "_Z18screen_fader_whitev": "0x71003885d4",
         "_ZN15PresetMaterials5applyEi": "0x71001a8d54",
         "_Z18global_187590_flagPvj": "0x71000d8180",
-        "_Z16battle_mode_bitsv": "0x710000eb14"
+        "_Z16battle_mode_bitsv": "0x710000eb14",
+        "_ZN11ScaledTable5resetEv": "0x71005eb5e8",
+        "_Z18global_pair_427444PvS_": "0x71004544c4",
+        "_Z18global_pair_416abcPvi": "0x71004535ac",
+        "_Z20global_floats_45938cff": "0x710040e2a4",
+        "_ZN9SlotTable5resetEv": "0x7100252074",
+        "_ZN9VastTable5clearEv": "0x7100048918",
+        "_ZN11HeaderTable5resetEv": "0x71005fad40",
+        "_Z21global_flagged_3d68a8ih": "0x710045595c",
+        "_Z20global_part20_41fda8ii": "0x7100453da0",
+        "_Z20global_4140a4_recordi": "0x7100453608",
+        "_Z23render_lights_and_flushv": "0x71003b0188",
+        "_ZN12SpriteWidgetC2Ev": "0x71002cdb5c",
+        "_Z22disable_battle_flag_20v": "0x7100256698",
+        "_Z20start_default_effectv": "0x71001d2e60",
+        "_ZN9ChunkPairC2Ev": "0x71001af410",
+        "_ZN12CountedBlock5resetEv": "0x710004c054",
+        "_ZN10CountTable13clear_currentEv": "0x710003a020"
       },
       "map": {
         ".rodata.cst4": "0x710073c188"
@@ -3136,7 +3166,9 @@
         "_Z28request_sound_unless_exitingi": "0x71003f9fac",
         "_Z16get_battle_setupv": "0x710016ef34",
         "_ZN10FileHandle4openEPKciiPv": "0x710053e488",
-        "_ZN14LargeSceneTaskC2Ev": "0x71002d8e2c"
+        "_ZN14LargeSceneTaskC2Ev": "0x71002d8e2c",
+        "_ZN10FileReaderC2Ev": "0x710053e1b0",
+        "_Z19global_4140a4_checkv": "0x7100453638"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",

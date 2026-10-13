@@ -759,3 +759,225 @@ unsigned char global_187590_flag(void* owner, unsigned int index) {
 bool battle_mode_bits() {
     return *reinterpret_cast<unsigned long*>(get_battle_setup()) & 0x100900000UL;
 }
+// 0x71005eb5e8; original file: tables, 0x71005eb5e8
+struct ScaledTable {
+    void reset();
+
+    unsigned char active;     // +00
+    unsigned char pad1[3];
+    float scale;              // +04
+    unsigned char bytes[0x70]; // +08
+};
+
+void ScaledTable::reset() {
+    active = 0;
+    scale = 1.0f;
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
+
+void global_call_427444(Global425dd0* global, void* a, void* b);            // 0x7100427444
+
+// 0x71004544c4; original file: global queries, 0x71004540b4-0x7100453d48
+void global_pair_427444(void* a, void* b) {
+    global_call_427444(load_global_425dd0(), a, b);
+}
+
+
+void global_call_416abc(Global4140a4* global, void* a, int b);              // 0x7100416abc
+
+// 0x71004535ac; original file: global queries, 0x7100453590-0x7100453638
+void global_pair_416abc(void* a, int b) {
+    global_call_416abc(load_global_4140a4(), a, b);
+}
+
+void* load_global_458634();                                                 // 0x7100458634
+void global_call_45938c(void* global, float a, float b);                    // 0x710045938c
+
+// 0x710040e2a4; original file: global queries, 0x710040e2a4
+void global_floats_45938c(float a, float b) {
+    global_call_45938c(load_global_458634(), a, b);
+}
+
+// 0x7100252074; original file: tables, 0x7100252074
+struct SlotTable {
+    void reset();
+
+    long value0;              // +00
+    long value8;              // +08
+    long value10;             // +10
+    unsigned char slots[0xc9c]; // +18
+};
+
+void SlotTable::reset() {
+    value0 = 0;
+    value8 = 0;
+    value10 = 0;
+    for (unsigned int i = 0; i < sizeof(slots); ++i)
+        slots[i] = 0xff;
+}
+
+// 0x7100048918; original file: tables, 0x7100048918
+struct VastTable {
+    void clear();
+
+    unsigned char pad[0x10940];
+    unsigned char bytes[0x57808]; // +10940
+};
+
+void VastTable::clear() {
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
+
+// 0x71005fad40; original file: tables, 0x71005fad40
+struct HeaderTable {
+    void reset();
+
+    long value0;              // +00
+    int value8;               // +08
+    unsigned char padc[4];
+    unsigned char bytes[0xab]; // +10
+    unsigned char padbb;
+    int valuebc;              // +bc
+};
+
+void HeaderTable::reset() {
+    value0 = 0;
+    value8 = 0;
+    valuebc = 0;
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
+
+void* load_global_3d2fd4();                                                 // 0x71003d2fd4
+void global_call_3d68a8(void* global, int id, int flags);                   // 0x71003d68a8
+
+// 0x710045595c; original file: global queries, 0x710045595c
+void global_flagged_3d68a8(int id, unsigned char flag) {
+    bool set = flag != 0;
+    global_call_3d68a8(load_global_3d2fd4(), id, set << 1);
+}
+void part_call2_41fda8(void* part, int a, int b);                            // 0x710041fda8
+
+// 0x7100453da0; original file: global queries, 0x71004540b4-0x7100453d48 (nearby)
+void global_part20_41fda8(int a, int b) {
+    part_call2_41fda8(load_global_425dd0()->part20, a, b);
+}
+
+struct Global4140a4Records {
+    unsigned char pad[0x4a30];
+    unsigned char records[1][0x7d0]; // +4a30
+};
+
+// 0x7100453608; original file: global queries, 0x7100453590-0x7100453638
+void* global_4140a4_record(int index) {
+    return reinterpret_cast<Global4140a4Records*>(load_global_4140a4())->records[index];
+}
+
+class DemoLightSystem {
+public:
+    void render();                                                          // 0x710025f944
+};
+// Reached through the GOT slot at 0x7100c22d98.
+extern DemoLightSystem* gDemoLightSystem;
+
+// 0x71003b0188; original file: scene drawing, 0x71003b0188
+void render_lights_and_flush() {
+    gDemoLightSystem->render();
+    gTrackRenderer->flush(-1);
+}
+
+class LayoutSpriteObject {
+public:
+    LayoutSpriteObject();                                                   // 0x71001ef52c
+    virtual void v00();
+    unsigned char pad[0x40];
+};
+
+// 0x71002cdb5c; original file: layout widgets, 0x71002cdb5c
+struct SpriteWidget {
+    SpriteWidget();
+
+    int value0;               // +00
+    LayoutSpriteObject sprite; // +08
+    int value50;              // +50
+    long value58;             // +58
+    long value60;             // +60
+};
+
+SpriteWidget::SpriteWidget() : value0(0), value50(0), value58(0), value60(0) {}
+
+void call_1d738c(void* object, int a, int b);                               // 0x71001d738c
+// Reached through the GOT slot at 0x7100c22ca8.
+extern void* gGlobal_c22ca8;
+
+// 0x7100256698; original file: battle setup wrappers, 0x7100255f54-0x7100256698
+void disable_battle_flag_20() {
+    get_battle_setup()->clear_flags(0x100000);
+    call_1d738c(gGlobal_c22ca8, 9, 0);
+}
+
+void call_1d2ae8(int a, int b, int c);                                      // 0x71001d2ae8
+
+// 0x71001d2e60; original file: frame counter, 0x71001d2e60-0x71001d3244
+void start_default_effect() {
+    if (!(get_battle_setup()->flags & 0x4000))
+        call_1d2ae8(0x79, 0xbb8, 0x258);
+}
+
+class DataChunk {
+public:
+    DataChunk();                                                            // 0x7100218c18
+    unsigned char pad[0x10];
+};
+
+// 0x71001af410; original file: data chunks, 0x71001af410
+struct ChunkPair {
+    ChunkPair();
+
+    DataChunk first;          // +00
+    long value10;             // +10
+    DataChunk second;         // +18
+    long value28;             // +28
+};
+
+ChunkPair::ChunkPair() {
+    value10 = 0;
+    value28 = 0;
+}
+
+// 0x710004c054; original file: tables, 0x710004c054
+struct CountedBlock {
+    void reset();
+
+    long value0;              // +00
+    long value8;              // +08
+    long value10;             // +10
+    int value18;              // +18
+    unsigned char pad1c[4];
+    unsigned char bytes[0x1f4]; // +20
+};
+
+void CountedBlock::reset() {
+    value18 = 0;
+    value0 = 0;
+    value8 = 0;
+    value10 = 0;
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
+
+unsigned int index_3d6fd0(void* global);                                    // 0x71003d6fd0
+
+// 0x710003a020; original file: global queries, 0x710003a020
+struct CountTable {
+    void clear_current();
+
+    unsigned char pad[0x84c0];
+    int counts[1];            // +84c0
+};
+
+void CountTable::clear_current() {
+    counts[index_3d6fd0(load_global_3d2fd4())] = 0;
+}

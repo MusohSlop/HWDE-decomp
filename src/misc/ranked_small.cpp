@@ -175,3 +175,24 @@ LargeSceneTask::LargeSceneTask() {
     value2d438 = 0;
     value2d430 = 0;
 }
+// 0x710053e1b0; original file: file system objects, 0x710053d304-0x710053e718
+// Vtable through the GOT slot at 0x7100c2d300.
+class FileReader : public Plain_53e630 {
+public:
+    FileReader();
+    ~FileReader() override;
+
+    void* handle;             // +08
+};
+
+FileReader::FileReader() : handle(nullptr) {}
+unsigned char battle_flag_0();                                              // 0x7100455858
+void* load_global_4140a4();                                                 // 0x71004140a4
+
+// 0x7100453638; original file: global queries, 0x7100453590-0x7100453638 (battle_flag_0 is
+// called, not inlined, so it is not in misc/helpers.cpp)
+unsigned char global_4140a4_check() {
+    if (!battle_flag_0() && load_global_4140a4())
+        load_global_4140a4();
+    return 0;
+}
