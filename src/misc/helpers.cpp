@@ -2060,3 +2060,29 @@ void create_singleton_c22e10() {
         gSingleton_c22e10 = record;
     }
 }
+// 0x7100257924, 0x71002578dc; original file: global queries, 0x71002578dc-0x710025796c
+void guarded_float_248ca0_c(float value) {
+    if (load_global_248b6c() && load_global_248b6c())
+        global_call_248ca0(load_global_248b6c(), value, 1, 0);
+}
+
+void guarded_float_248ca0_d(float value) {
+    if (load_global_248b6c() && load_global_248b6c())
+        global_call_248ca0(load_global_248b6c(), value, 0, 0);
+}
+
+struct Worker;
+void wait_worker_ready(Worker* worker);                                     // 0x710045e094
+
+// 0x71001860d4; original file: battle objects, 0x71001860d4
+struct BattleLoader {
+    void wait();
+
+    unsigned char pad[0x7900];
+    unsigned char worker[0x20]; // +7900
+};
+
+void BattleLoader::wait() {
+    if (!(*reinterpret_cast<unsigned long*>(get_battle_setup()) & 0x10000300000UL))
+        wait_worker_ready(reinterpret_cast<Worker*>(worker));
+}

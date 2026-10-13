@@ -1547,7 +1547,10 @@
     "_ZN16LockedMatrixView3getEv": "0x710044c5fc",
     "_Z21material_entry_2015a8P12MaterialBooki": "0x71002015a8",
     "_Z12apply_1fc7e8Pvi": "0x71001fc7e8",
-    "_Z11call_1985f4i": "0x71001985f4"
+    "_Z11call_1985f4i": "0x71001985f4",
+    "got:_ZTV13IndexedChildB": "0x7100c227b8",
+    "got:_ZTV8AdeFlags": "0x7100c224c8",
+    "_Z17wait_worker_readyP6Worker": "0x710045e094"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2426,7 +2429,10 @@
         "_Z14material_applyii": "0x71001fcce8",
         "_ZN16StageLayoutState5resetEv": "0x71001f321c",
         "_Z23forward_unless_stoppingi": "0x71001a983c",
-        "_Z23create_singleton_c22e10v": "0x71001875a0"
+        "_Z23create_singleton_c22e10v": "0x71001875a0",
+        "_Z22guarded_float_248ca0_cf": "0x7100257924",
+        "_Z22guarded_float_248ca0_df": "0x71002578dc",
+        "_ZN12BattleLoader4waitEv": "0x71001860d4"
       },
       "map": {
         ".rodata.cst4": "0x710073c188",
@@ -3433,7 +3439,11 @@
         "_ZN16TempResourceDraw4drawEv": "0x7100337a2c",
         "_ZN13CounterClientC2Ev": "0x7100241484",
         "_ZN17BufferedFrameHeap8shutdownEv": "0x7100223788",
-        "_ZN18SharedResourceView5valueEv": "0x7100389218"
+        "_ZN18SharedResourceView5valueEv": "0x7100389218",
+        "_ZN13IndexedChildBC2Ev": "0x71000bd614",
+        "_ZN8AdeFlagsC2Ev": "0x71000ad7b0",
+        "_ZN19BufferedHeapRelease7releaseEv": "0x7100045b04",
+        "_ZN10LockedTake4takeEv": "0x710053d92c"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",
@@ -3477,6 +3487,20 @@
       },
       "functions": {
         "_Z14shared_plain16v": "0x710020c72c"
+      }
+    },
+    "misc/static_objects/shared_plain16b.cpp": {
+      "functions": {
+        "_Z15shared_plain16bv": "0x710019d1a4"
+      },
+      "map": {
+        "_ZGVZ15shared_plain16bvE8instance": "0x7100c34d80",
+        "_ZZ15shared_plain16bvE8instance": "0x7100c34d88"
+      }
+    },
+    "misc/ranked_small2.cpp": {
+      "functions": {
+        "_Z16battle_unit_flagi": "0x710014935c"
       }
     }
   }

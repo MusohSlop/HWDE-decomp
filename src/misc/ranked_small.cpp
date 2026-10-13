@@ -1425,3 +1425,79 @@ void* SharedResourceView::value() {
     nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
     return result;
 }
+class Base_b8a6c {
+public:
+    Base_b8a6c();                                                           // 0x71000b8a6c
+    virtual ~Base_b8a6c();
+    unsigned char pad[0x258];
+};
+
+// 0x71000bd614; vtable through the GOT slot at 0x7100c227b8.
+class IndexedChildB : public Base_b8a6c {
+public:
+    IndexedChildB();
+    ~IndexedChildB() override;
+
+    int index;                // +260
+    unsigned char pad264[4];
+    void* value268;           // +268
+    int value270;             // +270
+};
+
+IndexedChildB::IndexedChildB() : index(-1), value268(nullptr), value270(0) {}
+
+
+// 0x71000ad7b0; vtable through the GOT slot at 0x7100c224c8.
+class AdeFlags : public Base_ade30 {
+public:
+    AdeFlags();
+    ~AdeFlags() override;
+
+    void* value18;            // +18
+    int value20;              // +20
+    short value24;            // +24
+    unsigned char value26;    // +26
+};
+
+AdeFlags::AdeFlags() : value18(nullptr), value20(0x100), value24(0x100), value26(1) {}
+
+// 0x7100045b04; original file: frame heaps, 0x7100045b04
+struct BufferedHeapRelease {
+    void release();
+
+    void* buffer;             // +00
+    FrameHeapBase heap;       // +08
+};
+
+void BufferedHeapRelease::release() {
+    if (buffer) {
+        heap.finalize();
+        void* data = buffer;
+        get_default_heap()->release(data, 1, 0);
+        buffer = nullptr;
+    }
+}
+
+// 0x710053d92c; original file: file system objects, 0x710053d92c
+struct LockedTake {
+    void* take();
+
+    void* handle;             // +00
+    void* value8;             // +08
+    void* value10;            // +10
+    void* value18;            // +18
+    void* value20;            // +20
+    unsigned char mutex[0x20]; // +28
+};
+
+void* LockedTake::take() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    void* result = handle;
+    handle = nullptr;
+    value18 = nullptr;
+    value20 = nullptr;
+    value8 = nullptr;
+    value10 = nullptr;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    return result;
+}

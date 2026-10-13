@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,325 of 1,422 attempted functions match: 1,315 inventory functions (108,364 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-seven are near misses, all `m`.
+1,332 of 1,431 attempted functions match: 1,322 inventory functions (108,864 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-nine are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -330,7 +330,9 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | locked record reads, indexed and eight-slot constructors, a two-resource scene attach, a held-light release, a flag-table reset | match |
 | `3de474` | `TimedTable::reset` | near miss |
 | 6 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | a locked shared-resource read, a global matrix copy, a material apply, a stage-layout state reset, a guarded forwarder, a singleton record creation | match |
-| `25796c` | `guarded_float_248ca0_b` (two argument moves in the other order) | near miss |
+| `25796c`, `2578dc` | `guarded_float_248ca0_b`, `_d` (two argument moves in the other order) | near miss |
+| 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`, `misc/static_objects/shared_plain16b.cpp`) | a seed-family guarded static, a guarded forwarder, a battle loader wait, two constructors, a buffered heap release, a locked take | match |
+| `14935c` | `battle_unit_flag` (`misc/ranked_small2.cpp`) | near miss |
 | 20 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`, `misc/static_objects/shared_plain16.cpp`) | ten seed-family members (signed stream reads and writes, a layout load, two table lookups, two pointer tests, a bool wrapper), a frame-array destructor, a counter-client constructor, a temporary-resource draw, a buffered frame-heap shutdown, a light-scene phase update, a unit matrix copy, global forwarders, a guarded static | match |
 | 8 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | two singleton buffer creations, a cleared-record and a marked-model constructor, an event-pair wake, a locked state reset, a locked pool release, the default heap's shutdown | match |
 | 11 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | three seed-family members (pending-light restart, two locked frame-heap calls), profile skill and item values, a unit level, an optional-buffer and a slot-buffer release, `ChunkHolder::release`, a two-resource panel's deleting destructor, a guarded static | match |
@@ -621,6 +623,8 @@ Counts re-measured after the family rounds (distinct direct callees not yet name
 `20ac40`: `current_unit_table`, the select between the two tables comes out with the opposite condition (`csel ..., ne` instead of `eq`) and the two address adds in the other order, whichever way the condition is written.
 
 `3de474`: `TimedTable::reset` clears the whole 0xc0-byte object and then stores four fields, one of them zero. With a loop or an explicit `memset` ours shrinks the clear to 0xbc bytes and drops the zero store. Clearing it as a value-initialized `ByteBlock` (overlaid on the fields with a union) keeps all the stores and brings it to one word: depending on the store order, either the clear is shortened to 0xbc or the stores come out in another order; four orders tried.
+
+`14935c`: `battle_unit_flag` tests bit 13 of the battle setup's flag word with a full 64-bit load and `tbz #13`; ours narrows the load to the byte (`ldrb`, `tbnz #5`), with a mask and with a bitfield, and lays out the early returns differently.
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 
