@@ -573,7 +573,13 @@
     "got:_ZTV14LightSceneBase": "0x7100c231d0",
     "_Z12show_sourcesP11LightSourcei": "0x71001f73e4",
     "got:gScreenFader": "0x7100c23018",
-    "_ZN12RenderTarget9end_batchEv": "0x710052ed78"
+    "_ZN12RenderTarget9end_batchEv": "0x710052ed78",
+    "_ZN9HeapMutexC1Ev": "0x71005c42b8",
+    "_ZN13FrameHeapImplC2Ev": "0x71005c2d24",
+    "got:_ZTV14FrontFrameHeap": "0x7100c2bba0",
+    "got:_ZTV13BackFrameHeap": "0x7100c2bba8",
+    "got:_ZN10SystemHeapD1Ev": "0x7100c2bbb0",
+    "got:_ZN12HeapRegistryD1Ev": "0x7100c2bb98"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -1189,7 +1195,8 @@
         "_ZN8SaveTaskC2Ev": "0x71002877f4",
         "_ZN10ResultTaskC2Ev": "0x71002906dc",
         "_ZN10ResultTask7prepareEv": "0x7100290778",
-        "_Z20destroy_board_cursorv": "0x7100288e7c"
+        "_Z20destroy_board_cursorv": "0x7100288e7c",
+        "_Z19destroy_board_unitsv": "0x7100291d64"
       }
     },
     "misc/layout_elements.cpp": {
@@ -1220,6 +1227,35 @@
     "misc/cell_record.cpp": {
       "functions": {
         "_ZN10CellRecord7clearedEv": "0x7100202164"
+      }
+    },
+    "system/default_heap.cpp": {
+      "functions": {
+        "_ZN11DefaultHeap8allocateEmmhh": "0x710045c458",
+        "_ZN11DefaultHeap7releaseEPvhh": "0x710045c2f4",
+        "_Z17get_heap_registryv": "0x710045c1dc",
+        "_Z16get_default_heapv": "0x710045c96c"
+      },
+      "map": {
+        "_ZGVZ17get_heap_registryvE9sRegistry": "0x7100cf0410",
+        "_ZZ17get_heap_registryvE9sRegistry": "0x7100cf0420",
+        "_ZGVZ16get_default_heapvE5sHeap": "0x7100cf0418",
+        "_ZZ16get_default_heapvE5sHeap": "0x7100cf0458"
+      }
+    },
+    "event/board_override.cpp": {
+      "functions": {
+        "_ZN13BoardOverride5resetEv": "0x7100290e90",
+        "_ZN13BoardOverride8resourceEv": "0x7100290f74",
+        "_ZN13BoardOverride6framesEv": "0x7100290f94",
+        "_ZN13BoardOverride5frameEj": "0x7100290f9c",
+        "_ZN13BoardOverride10stage_kindEi": "0x7100290fb0",
+        "_ZN13BoardOverride10remap_kindEiPv": "0x7100290fd4",
+        "_ZN13BoardOverride13has_secondaryEii": "0x7100291058",
+        "_ZN13BoardOverride11has_primaryEii": "0x71002910b0"
+      },
+      "map": {
+        ".rodata.cst32": "0x710073df70"
       }
     }
   }

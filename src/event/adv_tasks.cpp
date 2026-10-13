@@ -100,3 +100,59 @@ void destroy_board_cursor() {
         gBoardCursor = nullptr;
     }
 }
+
+class LightResource {
+public:
+    ~LightResource();                                                       // 0x71005d27b4
+    unsigned char pad[0x110];
+};
+
+struct LayoutRoot {
+    unsigned char pad[0x10];
+    unsigned char root[1];    // +10
+};
+struct ResourceLoaderView {
+    unsigned char pad[0x2af8];
+    LayoutRoot* layout;       // +2af8
+};
+// Reached through the GOT slot at 0x7100c21db0.
+extern ResourceLoaderView* gResourceLoader;
+
+static inline void* layout_root() {
+    return gResourceLoader ? gResourceLoader->layout->root : nullptr;
+}
+
+// Layout handle; its vtable lives in the effect manager unit (GOT 0x7100c22f00).
+class LayoutHandle {
+public:
+    virtual ~LayoutHandle() { release(layout_root()); }
+    virtual void v10();
+    virtual void release(void* root); // +18
+
+    long id;                  // +08
+    short a;                  // +10
+    short b;                  // +12
+};
+
+class BoardUnits {
+public:
+    ~BoardUnits() { finalize(); }
+    void finalize();                                                        // 0x710029194c
+
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
+
+    unsigned char pad[0x150];
+    LightResource resources[2];   // +150
+    unsigned char pad370[0x1198];
+    LayoutHandle handle;          // +1508
+};
+// Reached through the GOT slot at 0x7100c2a780.
+extern BoardUnits* gBoardUnits;
+
+void destroy_board_units() {
+    if (gBoardUnits) {
+        gBoardUnits->finalize();
+        delete gBoardUnits;
+        gBoardUnits = nullptr;
+    }
+}

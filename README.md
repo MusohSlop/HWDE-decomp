@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-339 of 421 attempted functions match: 329 inventory functions (50,584 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-two are near misses, all `m`.
+349 of 434 attempted functions match: 339 inventory functions (51,716 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-five are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -277,6 +277,11 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 7 more | `OptionSource::locked`, `LightScene::init`, `make_light_object`, `EffectManager::current`, `screen_fader`, `Fader::fade`, `end_sprite_batch` | match |
 | `202164` | `CellRecord::cleared` (`misc/cell_record.cpp`) | match |
 | `2877f4`, `2906dc`, `290778`, `288e7c` | `SaveTask::SaveTask`, `ResultTask::ResultTask`, `ResultTask::prepare`, `destroy_board_cursor` | match |
+| `291d64` | `destroy_board_units` (`event/adv_tasks.cpp`) | match |
+| `290e90`-`2910b0` (8) | `BoardOverride::reset`, `resource`, `frames`, `frame`, `stage_kind`, `remap_kind`, `has_secondary`, `has_primary` (`event/board_override.cpp`) | match |
+| `45c2f4` | `DefaultHeap::release` (`system/default_heap.cpp`) | match |
+| `45c458` | `DefaultHeap::allocate` | near miss |
+| `45c1dc`, `45c96c` | `get_heap_registry`, `get_default_heap` (function-local statics) | near miss |
 | `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
 | `280200` | `BoardLayerView::draw` | near miss |
 | `28228c` | `BoardOverlay::draw` | match |
@@ -448,6 +453,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `make_light_object`'s last switch becomes a five-entry lookup table, as in the original. `misc/layout_elements.cpp` anchors `.rodata` at `7f2100` so that table lands at the original `7f2120`; the 32 bytes before it in our object are constants of the near-miss sprite constructor, which no matched function references.
   - Unit placement matters for inlining: `CellRecord::cleared` calls the option-source accessors, which the original does not inline, so it cannot share a unit with them (`misc/cell_record.cpp`).
   - Small bounds-checked lookups match with the in-range path written first. Bitset tests shift a 64-bit one and truncate the mask to 32 bits (`bits & static_cast<unsigned int>(1ul << (n % 32))`). `destroy_board_cursor`'s three layout groups are an array, like `destroy_adv_caption`'s resources.
+- **Board override and default heap (`event/board_override.cpp`, `system/default_heap.cpp`).** `BoardOverride` (`290e90`-`2910b0`) holds five reference-counted objects, a frame header and ten frame entries; `remap_kind` replaces the eight DLC kinds 0x93-0x9a from a table in `.rodata.cst32` (`73df70`) once all four routes of the current slot are cleared. `reset` releases the objects through a helper that takes the slot's address and keeps the object in a local; with a reference parameter the object is re-read after the count store. `frame` takes a 32-bit index (`uxtw`, no 16-bit mask), so the unit names it `frame(unsigned int)` and keeps the old `unsigned short` name as an alias. The default heap is a doubly linked block list with a 32-byte header per block (bit 63 of the size keeps a block on release); `release` matches once both size sums put the surviving block first, and `allocate`'s search is a `do`/`while` from the cursor (the original never tests the cursor for null). `destroy_board_units` matches with the two `LightResource` members as an array.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
@@ -502,6 +508,10 @@ Large functions deferred under the rule "over about 1,000 bytes and calling many
 `280200`: `BoardLayerView::draw` (sprite arrays at `+e8`, so a different class from `BoardOverlay`); one word, the draw-order flag is tested with `cbz` in ours and `tbz #0` in the original. `282484`: `BoardOverlay::update` (confirm/cancel input in state 5); scheduling. `282df8`: three words, the order of three case blocks; the 19-entry unit/slot table is defined in the unit (its kinds are folded into the compares) and lives in its own section anchored at `7f68b4`.
 
 `1ef52c`, `1f1e0c`: the layout element constructors. The original stores adjacent constant fields with separate 32-bit registers (`stp w, w`), ours merges them into 64-bit constants across field boundaries; field types and order made no difference, so this is likely a store-merging difference in the compiler.
+
+`45c458`: `DefaultHeap::allocate`, 10 words. The flag-bit select at the end is scheduled before the alignment `csel` in the original and after it in ours, and one address add moves; three orderings of the size computation tried.
+
+`45c1dc`, `45c96c`: the two static getters. LLVM's global merge pass puts a function-local static and its guard into one block, and the getters address both from one base. In the original all four (both guards first, then the 0x38-byte registry, then the heap at `+0x48`) share one block, so the offsets differ from ours, where only the registry and its guard merge (the heap object is not merged). The constructor code also differs slightly (two 32-bit fields at `+174` are one 64-bit store in the original). `45ca24`, the heap's 564-byte initializer, reads the registry too and may be what links the groups; not attempted yet.
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 
