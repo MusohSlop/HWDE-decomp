@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-2,294 of 2,419 attempted functions match: 2,284 inventory functions (167,744 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 125 are near misses, all `m`.
+2,939 of 3,064 attempted functions match: 2,929 inventory functions (173,132 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 125 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -329,6 +329,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 5 in `misc/command_posts.cpp`, 3 in `misc/singleton_creates2.cpp`, 5 in `misc/item_states.cpp`, 1 in `misc/ref_releases.cpp`, 2 more in `misc/animation_stops.cpp` | seed-family members: command posts to other queues, large singletons, item state tests, a reference-slot reset (last slot first), animation-set stops | match |
 | 39 in `misc/table_reads.cpp`, 5 in `misc/global_parts.cpp` | range-checked byte and 16-bit reads, signed id fields with limits, row ids, handle-record bytes (table pointer read before the index); calls on parts of a large global | match |
 | 6 in `misc/seven_bytes.cpp` | seven-entry byte settings with a fallback to the last entry | near miss |
+| 645 in `misc/auto_tiny.cpp` | 8- to 16-byte functions written from their instructions, one shape each: field getters and setters, clears, constant returns, member addresses, part and child forwards, virtual forwards, fixed-size clears with `memset` (the scans skipped them: `family_scan.py` starts at 16 bytes by default) | match |
 | 27 in `misc/object_helpers3.cpp` | command completions (directly and through a secondary base), event signals and waits, unconditional and started singletons, triple-buffered row values, list visits, paired optional calls, value searches (an `int` loop index keeps the -1 phi) | match |
 | 27 in `misc/object_helpers2.cpp` | dispose-and-free (seed `dispose_40001c`), resolved item calls, byte-set bit updates, grid cells with a default (a reference select keeps one load), offset tables filled from a hook, special-item checks, ring-buffer pops | match |
 | 57 in `misc/tiny_accessors4.cpp` | range-checked byte stores (19), row flags, clamped bytes, saturating counters, optional global bytes, node placement, byte-set tests, scaled virtual results, triple-buffered slots | match |
