@@ -1316,3 +1316,111 @@ void WidePanel::draw() {
     set_pane_lines(pane, reinterpret_cast<TrackLightTarget*>(lines), 0x20);
     node->draw(0);
 }
+// 0x7100214c00; original file: weapon table, 0x7100214c00
+struct WeaponSlots {
+    void reset();
+
+    unsigned char head[6];    // +00
+    short slots[5];           // +06
+    unsigned char rest[0x78]; // +10
+};
+
+void WeaponSlots::reset() {
+    unsigned char* bytes = head;
+    for (unsigned int i = 0; i < 0x88; ++i)
+        bytes[i] = 0;
+    slots[4] = -1;
+    slots[0] = -1;
+    slots[1] = -1;
+    slots[2] = -1;
+    slots[3] = -1;
+}
+
+struct Singleton232a8 {
+    unsigned char pad[0x2d0];
+    unsigned char normal[0xf18]; // +2d0
+    unsigned char special[1];    // +11e8
+};
+// Reached through the GOT slot at 0x7100c232a8.
+extern Singleton232a8* gSingleton_c232a8;
+
+// 0x710020ac40; original file: game data tables, 0x710020ac40
+void* current_unit_table() {
+    BattleSetupMode* setup = reinterpret_cast<BattleSetupMode*>(get_battle_setup());
+    Singleton232a8* tables = gSingleton_c232a8;
+    return !(setup->mode4 & 4) ? tables->normal : tables->special;
+}
+
+// 0x7100209d34; original file: game data tables, 0x7100209d34
+struct MixedTable {
+    void reset();
+
+    unsigned char values[0x4fb]; // +000
+    unsigned char pad4fb;
+    unsigned char slots[0x3fc];  // +4fc
+};
+
+void MixedTable::reset() {
+    for (unsigned int i = 0; i < sizeof(values); ++i)
+        values[i] = 0;
+    for (unsigned int i = 0; i < sizeof(slots); ++i)
+        slots[i] = 0xff;
+}
+
+// Reached through the GOT slot at 0x7100c23180.
+extern void* gStageLayout2;
+
+// 0x71001f31e4; original file: stage layout, 0x71001f31e4
+void load_stage_layout2() {
+    int stage = get_shared_state()->stage;
+    gStageLayout2 = load_layout(stage == 6 ? 0x2d : stage + 0x2c);
+}
+
+class DataChunkSet {
+public:
+    void set(const void* data);                                             // 0x7100218c34
+    unsigned char pad[0x10];
+};
+
+// 0x71001a5e18; original file: light presets, 0x71001a5e18
+struct ChunkPairAt {
+    void assign(const void* first, const void* second);
+
+    unsigned char pad[0x19b0];
+    DataChunkSet a;           // +19b0
+    DataChunkSet b;           // +19c0
+};
+
+void ChunkPairAt::assign(const void* first, const void* second) {
+    a.set(first);
+    b.set(second);
+}
+
+// 0x7100193bec; original file: light records, 0x7100193bec
+struct MirroredTables {
+    void save();
+
+    unsigned char pad[0x94];
+    unsigned char current[2][0x100]; // +94
+    unsigned char saved[2][0x100];   // +294
+};
+
+void MirroredTables::save() {
+    memcpy(saved[0], current[0], 0x100);
+    memcpy(saved[1], current[1], 0x100);
+}
+
+// 0x710006cce4; original file: entry lists, 0x710006cce4
+struct EntryArray {
+    void clear();
+
+    int value0;               // +00
+    unsigned int count;       // +04
+    void* entries;            // +08
+};
+
+void EntryArray::clear() {
+    if (count)
+        memset(entries, 0, static_cast<unsigned long>(count) * 8);
+    count = 0;
+}

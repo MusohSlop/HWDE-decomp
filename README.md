@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,214 of 1,310 attempted functions match: 1,204 inventory functions (101,568 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-six are near misses, all `m`.
+1,221 of 1,318 attempted functions match: 1,211 inventory functions (101,960 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-seven are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -325,6 +325,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `d0930`, `6fdb8` | `BigCleared::reset`, `battle_timer_seconds` | near miss |
 | 9 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | heap-client and quad-slot constructors, trophy select, owned-table init, record copy, light release, wide panel draw, a guarded forwarder, a unit level test | match |
 | `3dd0e4` | `SplitTable::clear` | near miss |
+| 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | weapon-slot and mixed-table resets, a stage layout load, a chunk-pair assign, mirrored-table save, entry-array clear, a constructor | match |
+| `20ac40` | `current_unit_table` | near miss |
 | 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | dual-slot, attached-model and panel constructors and destructor, a block copy, a line panel draw, a lazy id | match |
 | 19 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`, `misc/heap_operators.cpp`) | `free`; `HeapMutex` destructor; file-stream, render-object, paired-slot and frame-heap constructors; locked finalize and counter read; caption, fader, layout and lazy-id helpers; global forwarders | match |
 | 6 more in `misc/helpers.cpp` | `battle_flag_0`, `game_flag_17`, two global field reads, a global chain, `ByteTable::clear` | match |
@@ -600,6 +602,8 @@ Counts re-measured after the family rounds (distinct direct callees not yet name
 `4c054`, `5ec504`: `CountedBlock::reset` and `TrailerTable::reset`; the zero header stores (`+0`, `+8`, `+10`, `+18`) come before the clearing `memset` in the original and after it in ours, whichever order the source uses; similar resets with fewer header fields match.
 
 `3dd0e4`: `SplitTable::clear`, the same pattern as `d0930` below (the second region's address kept across the first clear). `d0930`: `BigCleared::reset` keeps `this + 0x30` (the sub-object it initializes after the clear) in a register across the `memset`; ours keeps `this` and adds afterwards, with a local pointer and with a member call. `6fdb8`: `battle_timer_seconds` tests a hidden flag byte against the negated mode bit with `tst w9, w8`; ours folds the two tests into `bic`/`tst #1`, with the flag as `unsigned char` and `&`, and as `bool` and `&&`.
+
+`20ac40`: `current_unit_table`, the select between the two tables comes out with the opposite condition (`csel ..., ne` instead of `eq`) and the two address adds in the other order, whichever way the condition is written.
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 

@@ -533,3 +533,21 @@ void TrophyWidget::select(int id) {
     selected = id;
     show(get_game()->trophy(id));
 }
+class Base_7a0c8 {
+public:
+    Base_7a0c8();                                                           // 0x710007a0c8
+    virtual ~Base_7a0c8();
+    unsigned char pad[0x50];
+};
+
+// 0x71000aa5ec; vtable through the GOT slot at 0x7100c22488.
+class Base7a0c8Child : public Base_7a0c8 {
+public:
+    Base7a0c8Child();
+    ~Base7a0c8Child() override;
+
+    void* value58;            // +58
+    int value60;              // +60
+};
+
+Base7a0c8Child::Base7a0c8Child() : value58(nullptr), value60(0) {}
