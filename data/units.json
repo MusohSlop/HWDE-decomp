@@ -1042,7 +1042,8 @@
         "_Z17nightmare_reachedv": "0x710026dc74",
         "_Z21check_nightmare_clearv": "0x710026e278",
         "_Z17advance_nightmareh": "0x710026dd70",
-        "_Z14can_enter_celliP6PlayerP8BoardRow": "0x71002736e0"
+        "_Z14can_enter_celliP6PlayerP8BoardRow": "0x71002736e0",
+        "_Z19plain_cells_clearedv": "0x7100279080"
       },
       "map": {
         ".rodata": "0x71007f51a4"

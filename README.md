@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-267 of 336 attempted functions match: 257 inventory functions (45,412 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other sixty-nine are near misses, all `m`.
+267 of 337 attempted functions match: 257 inventory functions (45,412 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other seventy are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -263,6 +263,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `273e1c`, `274080` | `MenuScene::draw`, `BoardScene::frame_of` | near miss |
 | `273efc`, `274238` | `BoardScene::update`, `BoardScene::start` | match |
 | `274530`, `274624` | `BoardView::BoardView`, `BoardView::init` | match |
+| `279080` | `plain_cells_cleared` | near miss |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -415,7 +416,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `cell_available` (`271894`) calls `held_kind` instead of inlining it, so it is not in `adv_board.cpp`; it sits with the state machine for now. `show_dlc_total` needed the count loaded before the first `get_game` and reloaded at the end of each pass, and its three text buffers declared largest-offset first.
   - `run_save` matches with the failure branch written `step = 12; state = 2;`: in the other order the two `step` stores are sunk into one, while the original keeps `state`/`step` as one 64-bit store.
 - **Scene tasks and the menu scene (`event/adv_mode.cpp`, `event/adv_menu.cpp`).** `SceneTask` has a class `operator delete` that releases to the default heap with a null check; with a virtual destructor defined in the unit, that reproduces the deleting destructors at `2725bc` and `272890`. `TitleTask::start`/`update` register, poll and remove the title resource request. `MenuScene::refresh` re-reads the `gFader` pointer for each call, as the original does. `adv_menu.cpp` starts at `2734bc`.
-- **Alignment and merged loads.** `BoardScene::update` loads each tick/clock pair at `+18` with one 64-bit load. That only happens once the class is 8-byte aligned: with the field at `+10` declared as padding it stays two 32-bit loads; declared as the pointer it is (`query`), the loads merge and the function matches.
+- **Alignment and merged loads.** `BoardScene::update` loads each tick/clock pair at `+18` with one 64-bit load. That only happens once the class is 8-byte aligned: with the field at `+10` declared as padding it stays two 32-bit loads; declared as the pointer it is (`query`), the loads merge and the function matches. A pass over the other near misses whose diffs involve paired or merged accesses found nothing more: `25c6c0`'s `TrackVector` is already `alignas(16)`, and `alignas(8)` on `273e1c`'s draw parameters changed nothing.
 - **Board view (`274530`, `274624`).** A 0x1a8068-byte object: a header, layout members, a 128x176 sprite grid at `+1d0` and 9x176 more sprites at `+18c1d0`, each 0x48-byte sprite with a flags word at `+8` that `init` marks dirty (bit 7). The header fields are stored before the vtable pointer in the constructor; that matches with them in a non-virtual base class (`BoardViewBase`), whose constructor runs first. The constructor's call to `init` stays a virtual call, as in the original.
 - **Menu scene shutdown (`2731e4`).** Deletes the eight view slots, finalizes and destroys each board subsystem, and drops two reference-counted objects; the release matches with the object held in a local rather than re-read through the field.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
@@ -435,6 +436,8 @@ Large functions deferred under the rule "over about 1,000 bytes and calling many
 | `270530` | 1,200 | 49 calls to 16 functions, 6 unidentified |
 | `271aac` | 2,696 | `board_finish_turn` (end of turn): 162 calls to 27 functions, 11 unidentified |
 | `2728d0` | 2,324 | 78 calls to 33 functions, 14 unidentified |
+| `2748d8` | 18,344 | 853 calls to 85 functions, 35 unidentified |
+| `279ca8` | 872 | `BoardView` geometry: writes the vertex positions, texture pointers and colours of the two trailing layout frames through a stack temporary; needs `LayoutFrame`'s internal layout first |
 
 `2709e0` (3,764 bytes, 57 calls to 12 functions) and `2736e0` (1,516 bytes, 6 calls to 3 functions) call only named functions and are next in line.
 
@@ -462,7 +465,9 @@ Large functions deferred under the rule "over about 1,000 bytes and calling many
 
 `26c154`: `load_board` reads the board rows, cells, unit records, reward pairs and two short lists from two resource frames through a read/write stream. The logic matches; the resource id is a `csel` in ours and a branch in the original, and `ResourceFrame::is_open` is tested as a byte. `26c924`: `unit_has_override` (three jump tables, `is_fort_kind` inlined again); the logic matches, register use differs. Both capped at two attempts.
 
-`26e824`: nine words, three byte stores scheduled earlier. `272534`: two words, the final boolean is `orr` of two `cset`s in ours and a `csel` in the original. `273e1c`: the two `2` stores of the draw parameters are paired into `stp` in ours. `2736e0`: `can_enter_cell` (target open, inside the 3x3 band, gate not 4/6/7/8, with `neighbor_cell` and the reverse direction search inlined four times); the original computes all band bounds up front, ours lazily. `274080`: the logic matches (frame lookup unswitched on `kind == 0xda`), 42 of 110 words.
+`26e824`: nine words, three byte stores scheduled earlier. `279080`: `plain_cells_cleared` inlines `is_plain_cell`; only the accepted switch-lowering pattern differs (bitmap lookup in ours, bit test in the original).
+
+`272534`: two words, the final boolean is `orr` of two `cset`s in ours and a `csel` in the original. `273e1c`: the two `2` stores of the draw parameters are paired into `stp` in ours. `2736e0`: `can_enter_cell` (target open, inside the 3x3 band, gate not 4/6/7/8, with `neighbor_cell` and the reverse direction search inlined four times); the original computes all band bounds up front, ours lazily. `274080`: the logic matches (frame lookup unswitched on `kind == 0xda`), 42 of 110 words.
 
 `271894`: the logic matches; 85 of 134 words after two attempts (register use around the final-player lookups).
 

@@ -1800,3 +1800,15 @@ bool can_enter_cell(int target, Player* player, BoardRow* rows) {
         return false;
     return true;
 }
+
+bool plain_cells_cleared() {
+    Game* game = get_game();
+    Player& player = game->players[game_mode()];
+    for (long i = 0; i < 0x80; ++i) {
+        if (!is_plain_cell(&get_unit_database()->rows[i]))
+            continue;
+        if (!player.cell_cleared(i))
+            return false;
+    }
+    return true;
+}
