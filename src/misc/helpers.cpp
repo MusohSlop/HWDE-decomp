@@ -430,3 +430,104 @@ void ByteTable::clear() {
     for (unsigned int i = 0; i < sizeof(bytes); ++i)
         bytes[i] = 0;
 }
+// 0x710046abc4; original file: record copies, 0x710046abc4
+struct RecordCopy {
+    bool load(const void* source);
+
+    unsigned char pad[0x30];
+    unsigned char data[0x1c0]; // +30
+};
+
+bool RecordCopy::load(const void* source) {
+    memcpy(data, source, sizeof(data));
+    return true;
+}
+
+// 0x7100434364; original file: tables, 0x7100434364
+struct CountedTable {
+    void clear();
+
+    unsigned char bytes[0x90]; // +00
+    unsigned char pad90[8];
+    int count;                // +98
+};
+
+void CountedTable::clear() {
+    count = 0;
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
+
+// 0x710024884c; original file: tables, 0x710024884c
+struct TailTable {
+    void clear();
+
+    unsigned char pad[0x68];
+    unsigned char bytes[0x2018]; // +68
+};
+
+void TailTable::clear() {
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
+
+struct BattleSetupBytes {
+    unsigned char value0[2];
+    unsigned char flags2;     // +02
+};
+struct BattleSetupHalves {
+    unsigned short value0;
+    unsigned short flags2;    // +02
+};
+
+// 0x710000ea88; original file: battle setup wrappers, 0x710000ea88-0x710000eaa8
+bool battle_mode_flags() {
+    return reinterpret_cast<BattleSetupBytes*>(get_battle_setup())->flags2 & 0x30;
+}
+
+// 0x710000eaa8; original file: battle setup wrappers, 0x710000ea88-0x710000eaa8
+unsigned char battle_flag_16() {
+    return reinterpret_cast<BattleSetupHalves*>(get_battle_setup())->flags2 & 1;
+}
+
+struct Global4140a4 {
+    unsigned char pad[0x2194];
+    unsigned int flags;       // +2194
+};
+Global4140a4* load_global_4140a4();                                         // 0x71004140a4
+
+// 0x7100453590; original file: global queries, 0x7100453590
+unsigned char global_4140a4_flag_10() {
+    return load_global_4140a4()->flags >> 10 & 1;
+}
+
+void* load_global_455ebc();                                                 // 0x7100455ebc
+void apply_4573b8(void* object, void* value);                               // 0x71004573b8
+
+// 0x7100452b34; original file: global queries, 0x7100452b34
+void forward_452b34(void* value) {
+    apply_4573b8(load_global_455ebc(), value);
+}
+
+struct StageBgm {
+    unsigned char pad[0xf14];
+    int base_id;              // +f14
+};
+// Reached through the GOT slot at 0x7100c2b710.
+extern StageBgm* gStageBgm;
+void play_bgm(int id, float fade, int a, int b, void* c);                   // 0x71003f9b34
+
+// 0x71003ff164; original file: stage music, 0x71003ff164
+void play_stage_bgm(int muted) {
+    if (!gStageBgm || muted || gStageBgm->base_id == -1)
+        return;
+    int stage = get_shared_state()->stage;
+    int id;
+    if (stage == 0 || get_shared_state()->stage == 9 || get_shared_state()->stage == 11)
+        id = gStageBgm->base_id + 0x190;
+    else if (get_shared_state()->stage == 10)
+        id = gStageBgm->base_id + 0x190;
+    else
+        id = gStageBgm->base_id + 0x1c2;
+    play_bgm(id, 32.0f, 1, 0, nullptr);
+}

@@ -1414,7 +1414,10 @@
     "got:gBattleSetup": "0x7100c22d28",
     "_Z14resolve_20ff60Pv": "0x710020ff60",
     "got:_ZTV14LargeSceneTask": "0x7100c2ab68",
-    "_Z12finish_752d8Pv": "0x71000752d8"
+    "_Z12finish_752d8Pv": "0x71000752d8",
+    "got:gStageBgm": "0x7100c2b710",
+    "_Z8play_bgmifiiPv": "0x71003f9b34",
+    "_Z12apply_4573b8PvS_": "0x71004573b8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2161,7 +2164,18 @@
         "_Z19global_425dd0_valuev": "0x71004544f0",
         "_Z19global_4449ec_valuev": "0x7100453984",
         "_Z18global_chain_3d04cv": "0x710003d04c",
-        "_ZN9ByteTable5clearEv": "0x710058fac4"
+        "_ZN9ByteTable5clearEv": "0x710058fac4",
+        "_ZN10RecordCopy4loadEPKv": "0x710046abc4",
+        "_ZN12CountedTable5clearEv": "0x7100434364",
+        "_ZN9TailTable5clearEv": "0x710024884c",
+        "_Z17battle_mode_flagsv": "0x710000ea88",
+        "_Z14battle_flag_16v": "0x710000eaa8",
+        "_Z21global_4140a4_flag_10v": "0x7100453590",
+        "_Z14forward_452b34Pv": "0x7100452b34",
+        "_Z14play_stage_bgmi": "0x71003ff164"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073c188"
       }
     },
     "misc/singleton_teardown.cpp": {
@@ -3096,6 +3110,34 @@
         "_ZGVZ17shared_zero_shortvE5value": "0x7100cf05e0",
         "_ZZ16get_battle_setupvE5setup": "0x7100c33760",
         "_ZGVZ16get_battle_setupvE5setup": "0x7100c337b0"
+      }
+    },
+    "misc/fixed_clears.cpp": {
+      "functions": {
+        "_ZN16ClearBlock_4631c5clearEv": "0x710004631c",
+        "_ZN16ClearBlock_4633c5clearEv": "0x710004633c",
+        "_ZN17ClearBlock_3ccf505clearEv": "0x71003ccf50",
+        "_ZN17ClearBlock_3debb45clearEv": "0x71003debb4",
+        "_ZN17ClearBlock_4343385clearEv": "0x7100434338",
+        "_ZN17ClearBlock_43484c5clearEv": "0x710043484c",
+        "_ZN17ClearBlock_4348745clearEv": "0x7100434874",
+        "_ZN17ClearBlock_4386cc5clearEv": "0x71004386cc",
+        "_ZN17ClearBlock_4386f45clearEv": "0x71004386f4",
+        "_ZN17ClearBlock_43a94c5clearEv": "0x710043a94c",
+        "_ZN17ClearBlock_443da85clearEv": "0x7100443da8",
+        "_ZN17ClearBlock_4611e85clearEv": "0x71004611e8",
+        "_ZN17ClearBlock_4614205clearEv": "0x7100461420",
+        "_ZN17ClearBlock_4625045clearEv": "0x7100462504",
+        "_ZN17ClearBlock_466ba85clearEv": "0x7100466ba8",
+        "_ZN17ClearBlock_466cb45clearEv": "0x7100466cb4",
+        "_ZN17ClearBlock_466e2c5clearEv": "0x7100466e2c",
+        "_ZN17ClearBlock_466f305clearEv": "0x7100466f30",
+        "_ZN17ClearBlock_5f8fe85clearEv": "0x71005f8fe8",
+        "_ZN17ClearBlock_5f972c5clearEv": "0x71005f972c",
+        "_ZN17ClearBlock_5f9a785clearEv": "0x71005f9a78",
+        "_ZN17ClearBlock_5f9b185clearEv": "0x71005f9b18",
+        "_ZN17ClearBlock_454b305clearEv": "0x7100454b30",
+        "_ZN17ClearBlock_454b805clearEv": "0x7100454b80"
       }
     }
   }

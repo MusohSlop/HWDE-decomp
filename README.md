@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,102 of 1,191 attempted functions match: 1,092 inventory functions (96,812 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-nine are near misses, all `m`.
+1,133 of 1,223 attempted functions match: 1,123 inventory functions (97,712 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -314,6 +314,9 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 14 in `misc/small_families4.cpp`, 16 in `misc/small_families5.cpp` | nine-sprite constructors, swapped-argument solves, pool disposals, singleton deletes and creations, command checks, calls under the object manager's lock | match |
 | `3cca08`-`3cccb8` | `malloc`, `operator new` (plain and `nothrow`), `operator new[]`, `operator delete`, `operator delete[]` (`misc/heap_operators.cpp`) | match |
 | 9 in `misc/ranked_small.cpp` | `FileHandle` constructor, `open`, `close`; `MemoryStream` and `HeapMutex` constructors; `shared_zero_short`; `request_sound_unless_exiting`; `get_battle_setup`; `LargeSceneTask` constructor | match |
+| 24 in `misc/fixed_clears.cpp` | fixed-size clears (one byte value over the whole object, from a loop) | match |
+| 7 more in `misc/helpers.cpp` | a record copy, two table clears, two battle-setup flags, a global flag, a global forwarder | match |
+| `3ff164` | `play_stage_bgm` | near miss |
 | 6 more in `misc/helpers.cpp` | `battle_flag_0`, `game_flag_17`, two global field reads, a global chain, `ByteTable::clear` | match |
 | 21 in `misc/small_families7.cpp`, 12 in `misc/small_families8.cpp` | frame-heap holder teardowns, shared-state resource calls, field-clearing constructors, list walks, four-byte stream reads, light-holder teardowns, reference resets | match |
 | 55 in `misc/small_families6.cpp` | constant-table lookups, command results passed on, base-calling destructors, two-argument global and deep-member forwarders, channel destructors with the flag at `+50`/`+190` | match |
@@ -575,9 +578,11 @@ Counts re-measured after the family rounds (distinct direct callees not yet name
 
 `72768`: `create_model_72768`, a 948-byte model builder (sizes the model from its resource's tables, allocates it, constructs the skinned or plain variant, lays out the tables). The code matches in structure. The original's frame is 0x10 bytes smaller because the allocation parameters and the four-entry object array share one stack slot; declaring the array after the allocation gives both non-overlapping lifetime markers and the frame then matches (stack colouring). What is left is register allocation at entry: the original keeps the loader and user arguments in registers until the first check and spills them afterwards, ours spills them first (an early-return layout made it worse). Its family siblings (`450710`, and the 948/964-byte families around the object loaders) are left until that is solved.
 
-`5aea74`, `5afb1c`: two static objects built on first use whose object sits 16 bytes after its guard (8 in ours). `alignas(16)` on the class stops the guard and object from merging at all, which is worse; the original probably has another 8-byte static in that unit.
+`5aea74`, `5afb1c`: two static objects built on first use whose object sits 16 bytes after its guard (8 in ours). `alignas(16)` on the class, or a packed type (an `int` at the end), stops the guard and object from merging at all, which is worse (separate addressing). In the original they are merged with the object at `+10`, so that unit probably has a third small static sorted between them.
 
 `2709e0`: `choose_board_target` (`event/board_ai.cpp`, 3,764 bytes), the computer player's target choice on the Adventure board. It copies the home cell's row (a 0x18e-byte `memcpy` plus the position table pair by pair, which needs `CellPos`'s copy to load both fields first), scans the 16x8 grid for available cells (gate checks against the home row, Manhattan distance, nearest open and nearest other cell, a full-neighbour test), keeps three direction slots chosen by the slot's pattern (jump table at `7f57b4`), falls back to the nearest open or other cell by a chance table (`.rodata.cst16` at `7e2010`), and may swap the pick for a free neighbour. The calls (57) and both jump tables agree and the first 44 calls come in the original order; the rest differs in register allocation, in LICM hoisting `fabs(dx)` out of the inner loop (the original keeps it inside), and in the block layout of the final neighbour choice. One attempt; left as a near miss.
+
+`3ff164`: `play_stage_bgm`, 14 words. The stage-10 case reaches the shared `base + 0x190` block by a branch in the original; ours turns it into a select (`csel`). A single condition chain and an early return in the other case were tried.
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 
