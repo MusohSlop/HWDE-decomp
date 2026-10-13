@@ -1552,7 +1552,9 @@
     "got:_ZTV8AdeFlags": "0x7100c224c8",
     "_Z17wait_worker_readyP6Worker": "0x710045e094",
     "_ZN15ModelCore2220705applyEiPvS0_": "0x7100222070",
-    "_ZN15ModelCore54b0445applyEiPvS0_": "0x710054b044"
+    "_ZN15ModelCore54b0445applyEiPvS0_": "0x710054b044",
+    "_Z12trophy_statsP12TrophyRecord": "0x71002885d4",
+    "_Z13trophy_ratingP11TrophyStatsi": "0x710020639c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -3531,6 +3533,60 @@
     "misc/ranked_small2.cpp": {
       "functions": {
         "_Z16battle_unit_flagi": "0x710014935c"
+      }
+    },
+    "misc/text_lookups.cpp": {
+      "functions": {
+        "_Z17extra_text_218040i": "0x7100218040",
+        "_Z17extra_text_21807ci": "0x710021807c",
+        "_Z17extra_text_2180b8i": "0x71002180b8",
+        "_Z17extra_text_2180f4i": "0x71002180f4",
+        "_Z17extra_text_2181bci": "0x71002181bc",
+        "_Z17extra_text_218454i": "0x7100218454",
+        "_Z17extra_text_2184d4i": "0x71002184d4",
+        "_Z17extra_text_218510i": "0x7100218510",
+        "_Z17extra_text_21854ci": "0x710021854c",
+        "_Z17extra_text_218588i": "0x7100218588",
+        "_Z17extra_text_2185c4i": "0x71002185c4",
+        "_Z17extra_text_218600i": "0x7100218600",
+        "_Z17extra_text_21863ci": "0x710021863c",
+        "_Z17extra_text_218678i": "0x7100218678",
+        "_Z17extra_text_2186b4i": "0x71002186b4",
+        "_Z17extra_text_218724i": "0x7100218724",
+        "_Z17extra_text_218760i": "0x7100218760",
+        "_Z17extra_text_21879ci": "0x710021879c",
+        "_Z17extra_text_2187d8i": "0x71002187d8",
+        "_Z17extra_text_218850i": "0x7100218850",
+        "_Z17extra_text_21888ci": "0x710021888c",
+        "_Z17extra_text_2188c8i": "0x71002188c8",
+        "_Z17extra_text_218904i": "0x7100218904",
+        "_Z17extra_text_218940i": "0x7100218940",
+        "_Z17extra_text_21897ci": "0x710021897c",
+        "_Z17extra_text_2189b8i": "0x71002189b8",
+        "_Z17extra_text_2189f4i": "0x71002189f4"
+      }
+    },
+    "misc/trophy_best.cpp": {
+      "functions": {
+        "_Z19best_slot_is_207d3cj": "0x7100207d3c",
+        "_Z19best_slot_is_207dbcj": "0x7100207dbc",
+        "_Z19best_slot_is_207e3cj": "0x7100207e3c",
+        "_Z19best_slot_is_207ebcj": "0x7100207ebc",
+        "_Z19best_slot_is_207f3cj": "0x7100207f3c",
+        "_Z19best_slot_is_207fbcj": "0x7100207fbc",
+        "_Z19best_slot_is_20803cj": "0x710020803c",
+        "_Z19best_slot_is_2080bcj": "0x71002080bc",
+        "_Z19best_slot_is_20813cj": "0x710020813c",
+        "_Z19best_slot_is_2081bcj": "0x71002081bc",
+        "_Z19best_slot_is_20823cj": "0x710020823c",
+        "_Z19best_slot_is_2082bcj": "0x71002082bc",
+        "_Z19best_slot_is_20833cj": "0x710020833c",
+        "_Z19best_slot_is_2083bcj": "0x71002083bc",
+        "_Z19best_slot_is_20843cj": "0x710020843c",
+        "_Z19best_slot_is_2084bcj": "0x71002084bc",
+        "_Z19best_slot_is_20853cj": "0x710020853c",
+        "_Z19best_slot_is_2085bcj": "0x71002085bc",
+        "_Z19best_slot_is_20863cj": "0x710020863c"
       }
     }
   }
