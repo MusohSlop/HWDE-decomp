@@ -1747,7 +1747,10 @@
     "got:gHook_c2be10": "0x7100c2be10",
     "kByteQuads_a98234": "0x7100a98234",
     "got:gBufferHolder_c22480": "0x7100c22480",
-    "_Z18bind_handle_256724PvS_": "0x7100256724"
+    "_Z18bind_handle_256724PvS_": "0x7100256724",
+    "got:_ZTV13TeardownGroup": "0x7100c21d60",
+    "_ZN9GroupSlotD1Ev": "0x7100031374",
+    "_ZN9GroupTailD1Ev": "0x710004640c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -4533,6 +4536,44 @@
         "_Z17copy_field_3e9634P12Copier3e9634": "0x71003e9634",
         "_Z17copy_field_3e9644P12Copier3e9644": "0x71003e9644",
         "_Z17copy_field_3e9654P12Copier3e9654": "0x71003e9654"
+      }
+    },
+    "misc/group_teardowns.cpp": {
+      "functions": {
+        "_Z24destroy_with_group_2748cPh": "0x710002748c",
+        "_Z23delete_with_group_27500Ph": "0x7100027500",
+        "_Z24destroy_with_group_27588Ph": "0x7100027588",
+        "_Z23delete_with_group_275fcPh": "0x71000275fc",
+        "_Z24destroy_with_group_276fcPh": "0x71000276fc",
+        "_Z23delete_with_group_27770Ph": "0x7100027770",
+        "_Z24destroy_with_group_278c0Ph": "0x71000278c0",
+        "_Z23delete_with_group_27934Ph": "0x7100027934",
+        "_Z24destroy_with_group_27c90Ph": "0x7100027c90",
+        "_Z23delete_with_group_27d04Ph": "0x7100027d04",
+        "_Z24destroy_with_group_27df0Ph": "0x7100027df0",
+        "_Z23delete_with_group_27e64Ph": "0x7100027e64",
+        "_Z24destroy_with_group_27fa4Ph": "0x7100027fa4",
+        "_Z23delete_with_group_28018Ph": "0x7100028018",
+        "_Z24destroy_with_group_280c8Ph": "0x71000280c8",
+        "_Z23delete_with_group_2813cPh": "0x710002813c",
+        "_Z24destroy_with_group_cbb48Ph": "0x71000cbb48",
+        "_Z24destroy_with_group_cbbbcPh": "0x71000cbbbc",
+        "_Z24destroy_with_group_cbc30Ph": "0x71000cbc30",
+        "_Z24destroy_with_group_cbca4Ph": "0x71000cbca4",
+        "_Z24destroy_with_group_cbd98Ph": "0x71000cbd98",
+        "_Z24destroy_with_group_cbe0cPh": "0x71000cbe0c",
+        "_Z24destroy_with_group_cbe80Ph": "0x71000cbe80",
+        "_Z24destroy_with_group_cbef4Ph": "0x71000cbef4",
+        "_Z24destroy_with_group_cbf68Ph": "0x71000cbf68",
+        "_Z23delete_with_group_cc05cPh": "0x71000cc05c",
+        "_Z23delete_with_group_cc0e4Ph": "0x71000cc0e4",
+        "_Z23delete_with_group_cc16cPh": "0x71000cc16c",
+        "_Z23delete_with_group_cc1f4Ph": "0x71000cc1f4",
+        "_Z23delete_with_group_cc310Ph": "0x71000cc310",
+        "_Z23delete_with_group_cc398Ph": "0x71000cc398",
+        "_Z23delete_with_group_cc420Ph": "0x71000cc420",
+        "_Z23delete_with_group_cc4a8Ph": "0x71000cc4a8",
+        "_Z23delete_with_group_cc530Ph": "0x71000cc530"
       }
     }
   }
