@@ -1624,22 +1624,26 @@ void release_held_light_c2a9c8() {
 struct TimedTable {
     void reset();
 
-    unsigned char bytes[0xa8]; // +00 (the clear covers the whole 0xc0 bytes)
-    int valuea8;              // +a8
-    unsigned char padac[8];
-    int id;                   // +b4
-    float duration;           // +b8
-    int valuebc;              // +bc
+    union {
+        ByteBlock<0xc0> all;  // the whole object, cleared first
+        struct {
+            unsigned char bytes[0xa8]; // +00
+            int valuea8;              // +a8
+            unsigned char padac[8];
+            int id;                   // +b4
+            float duration;           // +b8
+            int valuebc;              // +bc
+        };
+    };
 };
 
 void TimedTable::reset() {
-    memset(this, 0, sizeof(*this));
-    valuea8 = 0;
+    all = {};
     id = -1;
     duration = 5000.0f;
+    valuea8 = 0;
     valuebc = 0;
 }
-
 // 0x71002015c4; original file: game data tables, 0x71002015c4
 struct FlagTable {
     void reset();

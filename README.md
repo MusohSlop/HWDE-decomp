@@ -612,7 +612,7 @@ Counts re-measured after the family rounds (distinct direct callees not yet name
 
 `20ac40`: `current_unit_table`, the select between the two tables comes out with the opposite condition (`csel ..., ne` instead of `eq`) and the two address adds in the other order, whichever way the condition is written.
 
-`3de474`: `TimedTable::reset` clears the whole 0xc0-byte object and then stores four fields, one of them zero. Ours shrinks the clear to 0xbc bytes and drops the zero store (both are redundant after the clear), with a loop and with an explicit `memset`; the original keeps both.
+`3de474`: `TimedTable::reset` clears the whole 0xc0-byte object and then stores four fields, one of them zero. With a loop or an explicit `memset` ours shrinks the clear to 0xbc bytes and drops the zero store. Clearing it as a value-initialized `ByteBlock` (overlaid on the fields with a union) keeps all the stores and brings it to one word: depending on the store order, either the clear is shortened to 0xbc or the stores come out in another order; four orders tried.
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 
