@@ -1462,7 +1462,14 @@
     "_ZN9ModelCoreC2Ev": "0x71005928c0",
     "got:_ZTV13AttachedModel": "0x7100c2d390",
     "_ZN16PanelBase_316aa4D2Ev": "0x7100316aa4",
-    "got:_ZTV13ResourcePanel": "0x7100c2ac88"
+    "got:_ZTV13ResourcePanel": "0x7100c2ac88",
+    "_Z21reset_light_pair_basePv": "0x71001e5518",
+    "_Z14init_sub_31378Pv": "0x7100031378",
+    "gBattleTimerFlag": "0x7100c2ee14",
+    "got:_ZTV7AdePair": "0x7100c226d8",
+    "got:_ZTV9AdeSingle": "0x7100c224d8",
+    "got:_ZTV12RenderTriple": "0x7100c2d1f8",
+    "_ZN7SubInit4initEv": "0x7100031378"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2268,7 +2275,12 @@
         "_ZN12TrailerTable5resetEv": "0x71005ec504",
         "_Z12copy_block40PvP7Block40PKS0_": "0x71003dfb34",
         "_ZN9LinePanel4drawEv": "0x71003a5144",
-        "_ZN7LazyId87resolveEv": "0x71002471a8"
+        "_ZN7LazyId87resolveEv": "0x71002471a8",
+        "_ZN10RandomRows4pickEi": "0x710020ca04",
+        "_ZN9LightPair7releaseEv": "0x71001eb3e4",
+        "_ZN10BigCleared5resetEv": "0x71000d0930",
+        "_Z20battle_timer_secondsv": "0x710006fdb8",
+        "_ZN9EntryCopy7copy_toEPv": "0x71005340ec"
       },
       "map": {
         ".rodata.cst4": "0x710073c188"
@@ -3215,7 +3227,12 @@
         "_ZN9DualSlotAC2Ev": "0x7100424a58",
         "_ZN9DualSlotBC2Ev": "0x710041fe54",
         "_ZN13AttachedModelC2Ev": "0x7100553c8c",
-        "_ZN13ResourcePanelD2Ev": "0x71003000c4"
+        "_ZN13ResourcePanelD2Ev": "0x71003000c4",
+        "_ZN13LockedPointer5valueEv": "0x710053c4d0",
+        "_ZN11LockedQueue7pendingEv": "0x710053b490",
+        "_ZN7AdePairC2Ev": "0x71000b59e0",
+        "_ZN9AdeSingleC2Ev": "0x71000ae67c",
+        "_ZN12RenderTripleC2Ev": "0x7100527a94"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",

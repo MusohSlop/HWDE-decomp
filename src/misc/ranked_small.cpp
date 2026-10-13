@@ -410,3 +410,78 @@ public:
 };
 
 ResourcePanel::~ResourcePanel() {}
+// 0x710053c4d0; original file: file system objects, 0x710053c4d0-0x710053c508
+struct LockedPointer {
+    void* value();
+
+    void* owner;              // +00
+    void* pointer;            // +08
+    unsigned char pad10[0xa8];
+    unsigned char mutex[0x20]; // +b8
+};
+
+void* LockedPointer::value() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    void* result = pointer;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    return result;
+}
+
+// 0x710053b490; original file: file system objects, 0x710053b490
+struct LockedQueue {
+    bool pending();
+
+    unsigned char mutex[0x3c8]; // +000: the mutex starts the object
+    int count;                // +3c8
+};
+
+bool LockedQueue::pending() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    bool result = count > 0;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    return result;
+}
+
+// Base of two small classes; its constructor (0x71000ade30) is out of line.
+class Base_ade30 {
+public:
+    Base_ade30();
+    virtual ~Base_ade30();
+    unsigned char pad[0x10];
+};
+
+// 0x71000b59e0; vtable through the GOT slot at 0x7100c226d8.
+class AdePair : public Base_ade30 {
+public:
+    AdePair();
+    ~AdePair() override;
+
+    void* first;              // +18
+    void* second;             // +20
+};
+
+AdePair::AdePair() : first(nullptr), second(nullptr) {}
+
+// 0x71000ae67c; vtable through the GOT slot at 0x7100c224d8.
+class AdeSingle : public Base_ade30 {
+public:
+    AdeSingle();
+    ~AdeSingle() override;
+
+    void* value;              // +18
+};
+
+AdeSingle::AdeSingle() : value(nullptr) {}
+
+// 0x7100527a94; vtable through the GOT slot at 0x7100c2d1f8.
+class RenderTriple : public Base_5325e4 {
+public:
+    RenderTriple();
+    ~RenderTriple() override;
+
+    int a;                    // +34
+    int b;                    // +38
+    int c;                    // +3c
+};
+
+RenderTriple::RenderTriple() : a(0), b(0), c(0) {}

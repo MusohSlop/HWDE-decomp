@@ -1126,3 +1126,84 @@ int LazyId8::resolve() {
         id = forward_value_3f378();
     return id;
 }
+int random_below(int limit);                                                // 0x7100459bd8
+
+// 0x710020ca04; original file: random tables, 0x710020ca04
+struct RandomRows {
+    int pick(int row);
+
+    int rows[1][5];
+};
+
+int RandomRows::pick(int row) {
+    return rows[row][random_below(5)];
+}
+
+void reset_light_pair_base(void* pair);                                     // 0x71001e5518
+
+// 0x71001eb3e4; original file: light pairs, 0x71001eb3e4
+struct LightPair {
+    void release();
+
+    void* first;              // +00
+    void* second;             // +08
+    void* value10;            // +10
+};
+
+void LightPair::release() {
+    release_light(&first);
+    release_light(&second);
+    second = nullptr;
+    value10 = nullptr;
+    first = nullptr;
+    reset_light_pair_base(this);
+}
+
+// 0x71000d0930; original file: tables, 0x71000d0930
+struct SubInit {
+    void init();                                                            // 0x7100031378
+    unsigned char pad[0x10];
+};
+
+struct BigCleared {
+    void reset();
+
+    unsigned char pad[0x30];
+    SubInit sub;              // +30
+    unsigned char bytes[0xecb0]; // +40
+};
+
+void BigCleared::reset() {
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+    sub.init();
+}
+
+// A hidden flag byte (0x7100c2ee14), read directly.
+extern bool gBattleTimerFlag __attribute__((visibility("hidden")));
+
+struct BattleSetupMode {
+    unsigned char value0[4];
+    unsigned char mode4;      // +04
+};
+
+// 0x710006fdb8; original file: battle timers, 0x710006fdb8
+int battle_timer_seconds() {
+    unsigned char mode = reinterpret_cast<BattleSetupMode*>(get_battle_setup())->mode4;
+    bool open = !(mode & 4);
+    return gBattleTimerFlag && open ? 0x14 : 0;
+}
+
+// 0x71005340ec; original file: entry lists, 0x71005340ec
+struct EntryCopy {
+    unsigned int copy_to(void* out);
+
+    unsigned char pad[0x30];
+    unsigned int count;       // +30
+    unsigned char entries[1]; // +34
+};
+
+unsigned int EntryCopy::copy_to(void* out) {
+    memcpy(out, entries, static_cast<unsigned long>(count) * 8);
+    return count;
+}
