@@ -1892,7 +1892,26 @@
     "gValue_bd3b38": "0x7100bd3b38",
     "gValue_ca31b8": "0x7100ca31b8",
     "gValue_bdbfc8": "0x7100bdbfc8",
-    "gValue_cf03f8": "0x7100cf03f8"
+    "gValue_cf03f8": "0x7100cf03f8",
+    "_Z20reset_channel_52a87cP12RenderTargeti": "0x710052a87c",
+    "_Z18reset_layer_52a778P12RenderTargetii": "0x710052a778",
+    "_Z19play_sequence_3b64cPvjS_P10PlayParamsi": "0x710003b64c",
+    "_Z20play_sequence_3d7708PvjS_P10PlayParamsi": "0x71003d7708",
+    "_Z20play_sequence_3d7f04PvjS_P10PlayParamsi": "0x71003d7f04",
+    "_Z20play_sequence_3d887cPvjS_P10PlayParamsi": "0x71003d887c",
+    "_Z20play_sequence_3d9078PvjS_P10PlayParamsi": "0x71003d9078",
+    "_Z20play_sequence_3d98f8PvjS_P10PlayParamsi": "0x71003d98f8",
+    "_Z20play_sequence_3da0f4PvjS_P10PlayParamsi": "0x71003da0f4",
+    "_Z20play_sequence_3dab18PvjS_P10PlayParamsi": "0x71003dab18",
+    "got:gStates_4d9714": "0x7100c2cea8",
+    "got:gStates_4d9890": "0x7100c2ceb0",
+    "got:gStates_4d9d0c": "0x7100c2ceb0",
+    "got:gStates_4da240": "0x7100c2cea8",
+    "got:gStates_4da9e0": "0x7100c2cea8",
+    "got:gStates_4dacb0": "0x7100c2cea8",
+    "got:gStates_4dbdc4": "0x7100c2cea8",
+    "got:gStates_4dd61c": "0x7100c2cec8",
+    "got:gStates_4df4d8": "0x7100c2cec0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -5850,6 +5869,31 @@
         "_Z17set_masked_5ce188P12Masked5ce188j": "0x71005ce188",
         "_Z16clear_all_5d21fcP13Cleared5d21fc": "0x71005d21fc",
         "_Z16set_value_5f8cf8P10Flag5f8cf8": "0x71005f8cf8"
+      }
+    },
+    "misc/sequence_slots.cpp": {
+      "functions": {
+        "_Z16play_slot_3d7440P13SequenceSlotsj": "0x71003d7440",
+        "_Z16play_slot_3d760cP13SequenceSlotsj": "0x71003d760c",
+        "_Z16play_slot_3d7c40P13SequenceSlotsj": "0x71003d7c40",
+        "_Z16play_slot_3d7e0cP13SequenceSlotsj": "0x71003d7e0c",
+        "_Z16play_slot_3d8db4P13SequenceSlotsj": "0x71003d8db4",
+        "_Z16play_slot_3d8f80P13SequenceSlotsj": "0x71003d8f80",
+        "_Z16play_slot_3d9e30P13SequenceSlotsj": "0x71003d9e30",
+        "_Z16play_slot_3d9ffcP13SequenceSlotsj": "0x71003d9ffc"
+      }
+    },
+    "misc/state_steps.cpp": {
+      "functions": {
+        "_Z11step_4d9714P16StateOwner4d9714": "0x71004d9714",
+        "_Z11step_4d9890P16StateOwner4d9890": "0x71004d9890",
+        "_Z11step_4d9d0cP16StateOwner4d9d0c": "0x71004d9d0c",
+        "_Z11step_4da240P16StateOwner4da240": "0x71004da240",
+        "_Z11step_4da9e0P16StateOwner4da9e0": "0x71004da9e0",
+        "_Z11step_4dacb0P16StateOwner4dacb0": "0x71004dacb0",
+        "_Z11step_4dbdc4P16StateOwner4dbdc4": "0x71004dbdc4",
+        "_Z11step_4dd61cP16StateOwner4dd61c": "0x71004dd61c",
+        "_Z11step_4df4d8P16StateOwner4df4d8": "0x71004df4d8"
       }
     }
   }
