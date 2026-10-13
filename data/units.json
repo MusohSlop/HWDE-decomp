@@ -1518,7 +1518,16 @@
     "_ZN13FrameHeapBase4lastEv": "0x71005c2fd0",
     "_ZN13FrameHeapBase11count_valueEv": "0x71005c3a14",
     "got:_ZTV8FlagSlot": "0x7100c2b988",
-    "got:_ZTV9CountSlot": "0x7100c2b818"
+    "got:_ZTV9CountSlot": "0x7100c2b818",
+    "_Z22notify_light_restartedi": "0x71003fe230",
+    "_ZN13FrameHeapBase10reset_tailEv": "0x71005c3a1c",
+    "_ZN13FrameHeapBase5clearEv": "0x71005c2e5c",
+    "_Z17unit_level_20b210Pvi": "0x710020b210",
+    "_Z18load_global_20acb0v": "0x710020acb0",
+    "got:_ZTV16TwoResourcePanel": "0x7100c2abb0",
+    "_Z22get_default_heap_slotsv": "0x710045c96c",
+    "_ZN17HeapAllocatorSlot3getEv": "0x710045c2ec",
+    "_Z13profile_statsv": "0x710020b970"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2368,10 +2377,18 @@
         "_ZN11SizedBuffer5resetEv": "0x710003cea8",
         "_Z17global_mode_basicv": "0x710003e22c",
         "_Z19guarded_play_44bf70Pv": "0x7100454398",
-        "_Z24guarded_play_44bf70_copyPv": "0x7100454354"
+        "_Z24guarded_play_44bf70_copyPv": "0x7100454354",
+        "_Z22restart_pending_lightsv": "0x7100251ccc",
+        "_ZN7Profile11skill_valueEi": "0x710020b8b0",
+        "_ZN7Profile10item_valueEj": "0x710020b1cc",
+        "_ZN14UnitLevelEntry5levelEv": "0x7100210dd0",
+        "_ZN14OptionalBuffer7releaseEv": "0x71001cc94c",
+        "_Z13shared_plain8v": "0x71001c8690"
       },
       "map": {
-        ".rodata.cst4": "0x710073c188"
+        ".rodata.cst4": "0x710073c188",
+        "_ZZ13shared_plain8vE8instance": "0x7100c44ce0",
+        "_ZGVZ13shared_plain8vE8instance": "0x7100c44ce8"
       }
     },
     "misc/singleton_teardown.cpp": {
@@ -3357,7 +3374,12 @@
         "_ZN15LockedFrameHeap11count_valueEv": "0x71005c5060",
         "_ZN12LockedMatrix3getEv": "0x710044c5fc",
         "_ZN8FlagSlotC2Ev": "0x7100429d3c",
-        "_ZN9CountSlotC2Ev": "0x710041a7f4"
+        "_ZN9CountSlotC2Ev": "0x710041a7f4",
+        "_ZN16ManagedFrameHeap10reset_tailEv": "0x71005c48f4",
+        "_ZN15LockedFrameHeap5clearEv": "0x71005c4c24",
+        "_ZN16TwoResourcePanelD0Ev": "0x71002fb578",
+        "_ZN11ChunkHolder7releaseEh": "0x7100218c68",
+        "_ZN10SlotBuffer7releaseEv": "0x71001a77b0"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",

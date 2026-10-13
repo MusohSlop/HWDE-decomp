@@ -122,6 +122,8 @@ public:
 class Profile {
 public:
     ProfileStats* stats();                                                  // 0x710020b970
+    int skill_value(int index);
+    int item_value(unsigned int index);
 };
 
 // An item record's statistic; the record starts with its owner's profile.
@@ -1745,4 +1747,89 @@ void guarded_play_44bf70(void* value) {
 void guarded_play_44bf70_copy(void* value) {
     if (load_global_44bc20())
         global_call_44bf70(load_global_44bc20(), value, nullptr, 1, 1.0f);
+}
+void notify_light_restarted(int id);                                        // 0x71003fe230
+
+// 0x7100251ccc; original file: pending lights, 0x7100251c8c-0x7100251ccc
+void restart_pending_lights() {
+    for (int i = 0; i < 20; ++i) {
+        if (gPendingLights[i] != -1)
+            notify_light_restarted(gPendingLights[i]);
+    }
+}
+ProfileStats* profile_stats();                                              // 0x710020b970 (no argument)
+
+struct ProfileShorts {
+    unsigned char pad[0x180];
+    short skills[0x40];       // +180
+    unsigned char pad200[0x3fa];
+    short items[0xff];        // +5fa
+};
+
+// 0x710020b8b0; original file: profile statistics, 0x710020b8b0
+int Profile::skill_value(int index) {
+    if (static_cast<unsigned int>(index) <= 0x3f)
+        return profile_stats()->value(reinterpret_cast<ProfileShorts*>(this)->skills[index]);
+    return -1;
+}
+
+// 0x710020b1cc; original file: profile statistics, 0x710020b1cc
+int Profile::item_value(unsigned int index) {
+    if (index <= 0xfe)
+        return profile_stats()->value(reinterpret_cast<ProfileShorts*>(this)->items[index]);
+    return -1;
+}
+
+int unit_level_20b210(void* table, int kind);                                // 0x710020b210
+void* load_global_20acb0();                                                 // 0x710020acb0
+
+// 0x7100210dd0; original file: unit database tables, 0x7100210dd0
+struct UnitLevelEntry {
+    int level();
+
+    unsigned char pad[0x36];
+    signed char kind;         // +36
+    unsigned char pad37[3];
+    short fixed_level;        // +3a
+    unsigned char pad3c[2];
+    unsigned char flags;      // +3e
+};
+
+int UnitLevelEntry::level() {
+    if (flags & 4)
+        return 0;
+    int value = fixed_level;
+    if (value >= 0)
+        return value;
+    return unit_level_20b210(load_global_20acb0(), kind);
+}
+
+// 0x71001cc94c; original file: buffers, 0x71001cc94c
+struct OptionalBuffer {
+    void release();
+
+    unsigned char pad[0x790];
+    void* buffer;             // +790
+    unsigned char pad798[0xc];
+    unsigned char owned;      // +7a4
+};
+
+void OptionalBuffer::release() {
+    if (owned) {
+        if (void* data = buffer) {
+            get_default_heap_release()->release(data, 1, 0);
+            buffer = nullptr;
+        }
+    }
+}
+
+struct Plain8 {
+    Plain8() {}
+    long value;
+};
+
+// 0x71001c8690; original file: battle objects, 0x71001c8690
+Plain8* shared_plain8() {
+    static Plain8 instance;
+    return &instance;
 }

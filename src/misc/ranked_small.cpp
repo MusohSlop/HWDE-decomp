@@ -288,6 +288,8 @@ public:
     void* first();                                                          // 0x71005c2f5c
     void* last();                                                           // 0x71005c2fd0
     void* count_value();                                                    // 0x71005c3a14
+    void reset_tail();                                                      // 0x71005c3a1c
+    void clear();                                                           // 0x71005c2e5c
     unsigned char pad[0x58];
 };
 
@@ -324,6 +326,7 @@ struct MutexOwner {
 // 0x71005c4bec; original file: heap objects, 0x71005c2c78-0x71005c4bec
 struct LockedFrameHeap {
     void finalize();
+    void clear();
     void* fetch();
     void* first();
     void* last();
@@ -764,6 +767,7 @@ extern ManagerLock* gObjectManagerLock;
 // 0x71005c43dc; original file: heap objects, 0x71005c2c78-0x71005c43dc
 struct ManagedFrameHeap {
     void finalize();
+    void reset_tail();
 
     void* value0;             // +00
     FrameHeapBase heap;       // +08
@@ -1120,4 +1124,86 @@ CountSlot::CountSlot() {
     b = nullptr;
     c = nullptr;
     a = nullptr;
+}
+// 0x71005c48f4; original file: heap objects, 0x71005c2c78-0x71005c48f4
+void ManagedFrameHeap::reset_tail() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(gObjectManagerLock->mutex));
+    heap.reset_tail();
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(gObjectManagerLock->mutex));
+}
+
+// 0x71005c4c24; original file: heap objects, 0x71005c2c78-0x71005c4c24
+void LockedFrameHeap::clear() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    heap.clear();
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+}
+// 0x71002fb578; original file: panels, 0x71002fb578
+// Vtable through the GOT slot at 0x7100c2abb0.
+class TwoResourcePanel {
+public:
+    virtual ~TwoResourcePanel();
+
+    unsigned char pad8[8];
+    LightResource resources[2]; // +10
+};
+
+TwoResourcePanel::~TwoResourcePanel() {}
+
+// 0x7100218c68; original file: chunk holder, 0x7100218ac0-0x7100218c68
+class ChunkHolder {
+public:
+    void release(unsigned char free);
+
+    void* value0;             // +00
+    void* data;               // +08
+};
+
+void ChunkHolder::release(unsigned char free) {
+    if (free) {
+        if (void* buffer = data)
+            get_default_heap()->release(buffer, 1, 0);
+    }
+    data = nullptr;
+}
+
+class SlotAllocator {
+public:
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+    virtual void v18();
+    virtual void v20();
+    virtual void v28();
+    virtual void v30();
+    virtual void v38();
+    virtual void v40();
+    virtual void v48();
+    virtual void v50();
+    virtual void v58();
+    virtual void free(void* ptr);                                           // +60
+};
+class HeapAllocatorSlot {
+public:
+    SlotAllocator* get();                                                   // 0x710045c2ec
+};
+struct HeapWithSlot {
+    unsigned char pad[0x38];
+    HeapAllocatorSlot slot;   // +38
+};
+HeapWithSlot* get_default_heap_slots();                                     // 0x710045c96c
+
+// 0x71001a77b0; original file: light presets, 0x71001a77b0
+struct SlotBuffer {
+    void release();
+
+    unsigned char pad[0x19f0];
+    void* buffer;             // +19f0
+};
+
+void SlotBuffer::release() {
+    if (buffer) {
+        get_default_heap_slots()->slot.get()->free(buffer);
+        buffer = nullptr;
+    }
 }
