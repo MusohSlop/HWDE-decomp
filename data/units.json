@@ -1911,7 +1911,15 @@
     "got:gStates_4dacb0": "0x7100c2cea8",
     "got:gStates_4dbdc4": "0x7100c2cea8",
     "got:gStates_4dd61c": "0x7100c2cec8",
-    "got:gStates_4df4d8": "0x7100c2cec0"
+    "got:gStates_4df4d8": "0x7100c2cec0",
+    "got:gOwnStates_4da0ec": "0x7100c2ceb0",
+    "got:gOwnStates_4da15c": "0x7100c2cea0",
+    "got:gOwnStates_4da1a0": "0x7100c2cea8",
+    "got:gOwnStates_4dea74": "0x7100c2cec8",
+    "got:gLookupService": "0x7100c216f0",
+    "_Z12lookup_6e00cP13LookupServiceiiPiS1_": "0x710006e00c",
+    "_Z12lookup_6e070P13LookupServiceiiPiS1_": "0x710006e070",
+    "_Z12lookup_6e0b0P13LookupServiceiiPiS1_": "0x710006e0b0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -5894,6 +5902,24 @@
         "_Z11step_4dbdc4P16StateOwner4dbdc4": "0x71004dbdc4",
         "_Z11step_4dd61cP16StateOwner4dd61c": "0x71004dd61c",
         "_Z11step_4df4d8P16StateOwner4df4d8": "0x71004df4d8"
+      }
+    },
+    "misc/plain_families.cpp": {
+      "functions": {
+        "_Z16self_step_4da0ecP17SelfMachine4da0ec": "0x71004da0ec",
+        "_Z16self_step_4da15cP17SelfMachine4da15c": "0x71004da15c",
+        "_Z16self_step_4da1a0P17SelfMachine4da1a0": "0x71004da1a0",
+        "_Z16self_step_4dea74P17SelfMachine4dea74": "0x71004dea74",
+        "_Z20refresh_apply_3d769cP12RefreshApplyi": "0x71003d769c",
+        "_Z20refresh_apply_3d7e9cP12RefreshApplyi": "0x71003d7e9c",
+        "_Z20refresh_apply_3d9010P12RefreshApplyi": "0x71003d9010",
+        "_Z20refresh_apply_3da08cP12RefreshApplyi": "0x71003da08c",
+        "_Z18lookup_first_6ec7cii": "0x710006ec7c",
+        "_Z18lookup_first_6ed14ii": "0x710006ed14",
+        "_Z18lookup_first_6edacii": "0x710006edac",
+        "_Z19lookup_second_6ecc8ii": "0x710006ecc8",
+        "_Z19lookup_second_6ed60ii": "0x710006ed60",
+        "_Z19lookup_second_6edf8ii": "0x710006edf8"
       }
     }
   }
