@@ -56,7 +56,7 @@ public:
 
     ListLink link;            // +08: binding ring of the owning node
     unsigned char pad18[8];
-    float frame;              // +20
+    volatile float frame;     // +20: volatile, so each check reloads it as in the original
     unsigned char pad24[0x18];
     float speed;              // +3c
     unsigned char pad40[4];
@@ -116,6 +116,7 @@ public:
     float size50;             // +50
     float size54;             // +54
     unsigned char flags58;    // +58: bit 0 visible, bit 4 moved
+    unsigned char alpha59;    // +59
 };
 
 class LightEffectNode {

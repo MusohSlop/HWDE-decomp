@@ -321,15 +321,26 @@
     "kSongReInAnim": "0x71007d5f22",
     "kSongReOutAnim": "0x71007d5f35",
     "kScreenAnims": "0x7100bd0ea0",
-    "_ZN12EffectRecord4stopEv": "0x71002695a8",
     "got:gAdvBoard": "0x7100c2a6c0",
     "got:kBorderLines": "0x7100c2a6c8",
     "_ZN8AdvBoard14start_positionEi": "0x710029f8ec",
     "_ZN8AdvBoard20environment_positionEi": "0x710029fd90",
-    "_ZN10AdvEffects12update_clockEv": "0x7100268224",
-    "_ZN10AdvEffects11play_screenEiii": "0x7100268340",
-    "_ZN10AdvEffects11show_resultEi": "0x7100268874",
-    "_ZN10AdvEffects11end_screensEv": "0x7100268a80"
+    "kEnvPanes": "0x7100bd0f68",
+    "_Z12random_belowi": "0x7100459bd8",
+    "kAreaShadowLong": "0x71007d5f53",
+    "kAreaShadowShort": "0x71007d5f64",
+    "kSparkLong": "0x71007d5e73",
+    "kSparkShort": "0x71007d5e7e",
+    "kSnowLong": "0x71007d5e8a",
+    "kSnowShort": "0x71007d5e94",
+    "kMajoraPower": "0x71007d5f76",
+    "kWind": "0x71007d5ed2",
+    "kNightmare": "0x71007d5f49",
+    "_Z12random_floatf": "0x7100459c14",
+    "got:gScreenCellSize": "0x7100c2a6d0",
+    "got:gScreenCellOrigin": "0x7100c2a6d8",
+    "got:gScreenCellSize2": "0x7100c2a6e0",
+    "got:gScreenCellOrigin2": "0x7100c2a6e8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -726,7 +737,24 @@
         "_ZN10AdvEffects10initializeEv": "0x71002676ec",
         "_ZN10AdvEffects6updateEv": "0x7100267c44",
         "_ZN10AdvEffects14update_screensEv": "0x7100267d64",
-        "_ZN10AdvEffects14update_recordsEv": "0x7100267f94"
+        "_ZN10AdvEffects14update_recordsEv": "0x7100267f94",
+        "_ZN10AdvEffects11update_exitEv": "0x7100268224",
+        "_ZN10AdvEffects11play_screenEiii": "0x7100268340",
+        "_ZN10AdvEffects11show_resultEi": "0x7100268874",
+        "_ZN10AdvEffects10draw_startEv": "0x7100268f10",
+        "_ZN10AdvEffects16draw_environmentEv": "0x7100268f74",
+        "_ZN10AdvEffects12draw_screensEv": "0x7100268fc8",
+        "_ZN10AdvEffects22draw_screens_alternateEv": "0x71002690a8",
+        "_ZN10AdvEffects11play_bannerEv": "0x7100269188",
+        "_ZN10AdvEffects11stop_bannerEv": "0x7100269544",
+        "_ZN10AdvEffects10play_enterEhi": "0x7100269238",
+        "_ZN10AdvEffects9play_exitEh": "0x7100269440",
+        "_ZN12EffectRecord4stopEv": "0x71002695a8",
+        "_ZN10AdvEffects11end_screensEv": "0x7100268a80"
+      },
+      "map": {
+        ".rodata": "0x71007f517c",
+        ".rodata.cst4": "0x710073bae8"
       }
     }
   }
