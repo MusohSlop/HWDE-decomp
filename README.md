@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,085 of 1,173 attempted functions match: 1,075 inventory functions (95,788 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-eight are near misses, all `m`.
+1,085 of 1,174 attempted functions match: 1,075 inventory functions (95,788 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-nine are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -523,16 +523,16 @@ Large functions deferred under the rule "over about 1,000 bytes and calling many
 
 | Address | Size | Why |
 | --- | --- | --- |
-| `26f214` | 3,044 | `run_board_shop`: 204 calls to 54 functions, 23 of them unidentified |
-| `270530` | 1,200 | 49 calls to 16 functions, 6 unidentified |
-| `271aac` | 2,696 | `board_finish_turn` (end of turn): 162 calls to 27 functions, 11 unidentified |
-| `2728d0` | 2,324 | 78 calls to 33 functions, 14 unidentified |
-| `28124c` | 2,136 | 93 calls to 36 functions, 9 unidentified |
-| `2826b0` | 1,732 | `BoardOverlay::confirm_ready`: 80 calls to 20 functions, 7 unidentified |
-| `2748d8` | 18,344 | 853 calls to 85 functions, 35 unidentified |
+| `26f214` | 3,044 | `run_board_shop`: 54 distinct callees, 23 of them unidentified |
+| `270530` | 1,200 | 16 distinct callees, 5 unidentified |
+| `271aac` | 2,696 | `board_finish_turn` (end of turn): 27 distinct callees, 10 unidentified |
+| `2728d0` | 2,324 | 33 distinct callees, 11 unidentified |
+| `28124c` | 2,136 | 36 distinct callees, 7 unidentified |
+| `2826b0` | 1,732 | `BoardOverlay::confirm_ready`: 20 distinct callees, 6 unidentified |
+| `2748d8` | 18,344 | 85 distinct callees, 31 unidentified |
 | `279ca8` | 872 | `BoardView` geometry: writes the vertex positions, texture pointers and colours of the two trailing layout frames through a stack temporary; needs `LayoutFrame`'s internal layout first |
 
-`2709e0` (3,764 bytes, 57 calls to 12 functions) and `2736e0` (1,516 bytes, 6 calls to 3 functions) call only named functions and are next in line.
+Counts re-measured after the family rounds (distinct direct callees not yet named in `units.json`). `2709e0` is now attempted (near miss, below); `2653dc` is down to three unknown callees (`20d9c8`, `21826c`, `2183c8`) and is next; `45e160` still has six.
 
 `45e160` (1,464 bytes) is a 61-case statistics switch with a jump table at `811194`. It calls at least six game functions whose signatures are unknown (`204728`, `203dfc`, `2028b4`, `200fc0`, `2015a8`, `200294`), so it needs its own effort. The four small virtuals at `45dcd0`–`45dd28` need their class and vtable identified first.
 
@@ -573,6 +573,8 @@ Large functions deferred under the rule "over about 1,000 bytes and calling many
 `72768`: `create_model_72768`, a 948-byte model builder (sizes the model from its resource's tables, allocates it, constructs the skinned or plain variant, lays out the tables). The code matches in structure. The original's frame is 0x10 bytes smaller because the allocation parameters and the four-entry object array share one stack slot; declaring the array after the allocation gives both non-overlapping lifetime markers and the frame then matches (stack colouring). What is left is register allocation at entry: the original keeps the loader and user arguments in registers until the first check and spills them afterwards, ours spills them first (an early-return layout made it worse). Its family siblings (`450710`, and the 948/964-byte families around the object loaders) are left until that is solved.
 
 `5aea74`, `5afb1c`: two static objects built on first use whose object sits 16 bytes after its guard (8 in ours). `alignas(16)` on the class stops the guard and object from merging at all, which is worse; the original probably has another 8-byte static in that unit.
+
+`2709e0`: `choose_board_target` (`event/board_ai.cpp`, 3,764 bytes), the computer player's target choice on the Adventure board. It copies the home cell's row (a 0x18e-byte `memcpy` plus the position table pair by pair, which needs `CellPos`'s copy to load both fields first), scans the 16x8 grid for available cells (gate checks against the home row, Manhattan distance, nearest open and nearest other cell, a full-neighbour test), keeps three direction slots chosen by the slot's pattern (jump table at `7f57b4`), falls back to the nearest open or other cell by a chance table (`.rodata.cst16` at `7e2010`), and may swap the pick for a free neighbour. The calls (57) and both jump tables agree and the first 44 calls come in the original order; the rest differs in register allocation, in LICM hoisting `fabs(dx)` out of the inner loop (the original keeps it inside), and in the block layout of the final neighbour choice. One attempt; left as a near miss.
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 

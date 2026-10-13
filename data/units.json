@@ -1400,7 +1400,9 @@
     "_Z11visit_18f8cPv": "0x7100018f8c",
     "_Z11visit_190b8Pv": "0x71000190b8",
     "_Z11visit_1928cPv": "0x710001928c",
-    "_Z11visit_192e0Pv": "0x71000192e0"
+    "_Z11visit_192e0Pv": "0x71000192e0",
+    "_Z14cell_availableiP6PlayerPihhi": "0x7100271894",
+    "kFarDistances": "0x71007f6740"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -3045,6 +3047,16 @@
         "_ZN17CountedRef_40d6385resetEv": "0x710040d638",
         "_ZN17CountedRef_40d6805resetEv": "0x710040d680",
         "_ZN17CountedRef_40d6c85resetEv": "0x710040d6c8"
+      }
+    },
+    "event/board_ai.cpp": {
+      "functions": {
+        "_Z19choose_board_targetP6Playerhhi": "0x71002709e0"
+      },
+      "map": {
+        ".rodata": "0x71007f57a4",
+        ".rodata.cst4": "0x710073bd20",
+        ".rodata.cst16": "0x71007e2010"
       }
     }
   }

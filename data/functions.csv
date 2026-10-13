@@ -8187,7 +8187,7 @@ Address,Quality,Size,Name
 0x710027042c,O,256,_Z14show_dlc_totalv
 0x710027052c,O,4,_Z13adv_mode_idlev
 0x7100270530,U,1200,FUN_7100270530
-0x71002709e0,U,3764,FUN_71002709e0
+0x71002709e0,U,3764,_Z19choose_board_targetP6Playerhhi
 0x7100271894,m,536,_Z14cell_availableiiihhi
 0x7100271aac,U,2696,FUN_7100271aac
 0x7100272534,m,132,_Z13is_final_cellv
