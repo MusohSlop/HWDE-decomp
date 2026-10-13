@@ -1531,7 +1531,19 @@
     "_ZN16DefaultHeapAlloc8allocateEmmhh": "0x710045c458",
     "_Z22get_default_heap_allocv": "0x710045c96c",
     "got:_ZTV13ClearedRecord": "0x7100c22838",
-    "got:_ZTV11MarkedModel": "0x7100c2d760"
+    "got:_ZTV11MarkedModel": "0x7100c2d760",
+    "got:gLayout_44c5_b": "0x7100c2add0",
+    "kTable_73dcc8": "0x710073dcc8",
+    "kTable_7e3d28": "0x71007e3d28",
+    "_Z12check_5155a4Pv": "0x71005155a4",
+    "_ZN15DemoLightSystem6updateEv": "0x710025e538",
+    "_Z22resources_value_389218P15SharedResources": "0x7100389218",
+    "_Z12apply_389590PvS_i": "0x7100389590",
+    "_Z17part_call4_41d1f8PviiiS_": "0x710041d1f8",
+    "_Z18load_global_248b6cv": "0x7100248b6c",
+    "_Z18global_call_248ca0Pvfii": "0x7100248ca0",
+    "got:_ZTV15FrameArrayOwner": "0x7100c2b740",
+    "got:_ZTV13CounterClient": "0x7100c2a4e8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2389,7 +2401,22 @@
         "_ZN14OptionalBuffer7releaseEv": "0x71001cc94c",
         "_Z13shared_plain8v": "0x71001c8690",
         "_Z23create_singleton_c22cd8v": "0x7100164a0c",
-        "_Z23create_singleton_c22cb8v": "0x71001469b8"
+        "_Z23create_singleton_c22cb8v": "0x71001469b8",
+        "_ZN12SignedStream4readEPa": "0x71001fbc6c",
+        "_ZN12SignedStream4readEPs": "0x71001fbcb0",
+        "_ZN12SignedStream5writeEa": "0x71001fbdec",
+        "_ZN12SignedStream5writeEs": "0x71001fbe28",
+        "_Z18load_layout_44c5_bv": "0x71003191d0",
+        "_Z16table_value_e6dci": "0x710000e6dc",
+        "_Z18table_value_4a93a0i": "0x71004a93a0",
+        "_ZN14PointerHolderA5validEv": "0x71001cc544",
+        "_ZN14PointerHolderB5validEv": "0x71004670cc",
+        "_Z14checked_528710Pv": "0x7100528710",
+        "_Z21apply_resources_valuePv": "0x7100455a3c",
+        "_Z11unit_matrixPvi": "0x7100453bb8",
+        "_Z20global_part10_41d1f8iiiPv": "0x710045293c",
+        "_ZN15LightScenePhase6updateEv": "0x71003b0130",
+        "_Z20guarded_float_248ca0f": "0x71002579b4"
       },
       "map": {
         ".rodata.cst4": "0x710073c188",
@@ -3391,7 +3418,11 @@
         "_ZN11MarkedModelC2Ev": "0x7100591e18",
         "_ZN16LockedStateReset5resetEv": "0x710053c29c",
         "_ZN10LockedPool7releaseEv": "0x710053b56c",
-        "_ZN12HeapShutdown8finalizeEv": "0x710045cc58"
+        "_ZN12HeapShutdown8finalizeEv": "0x710045cc58",
+        "_ZN15FrameArrayOwnerD2Ev": "0x710040a644",
+        "_ZN16TempResourceDraw4drawEv": "0x7100337a2c",
+        "_ZN13CounterClientC2Ev": "0x7100241484",
+        "_ZN17BufferedFrameHeap8shutdownEv": "0x7100223788"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",
@@ -3426,6 +3457,15 @@
         "_ZN17ClearBlock_5f9b185clearEv": "0x71005f9b18",
         "_ZN17ClearBlock_454b305clearEv": "0x7100454b30",
         "_ZN17ClearBlock_454b805clearEv": "0x7100454b80"
+      }
+    },
+    "misc/static_objects/shared_plain16.cpp": {
+      "map": {
+        "_ZGVZ14shared_plain16vE8instance": "0x7100c757b0",
+        "_ZZ14shared_plain16vE8instance": "0x7100c757b8"
+      },
+      "functions": {
+        "_Z14shared_plain16v": "0x710020c72c"
       }
     }
   }

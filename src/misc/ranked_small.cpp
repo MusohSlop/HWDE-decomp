@@ -408,6 +408,7 @@ AttachedModel::AttachedModel() : attachment(nullptr) {}
 
 class LightResource {
 public:
+    LightResource();                                                        // 0x71005d2744
     ~LightResource();                                                       // 0x71005d27b4
     unsigned char pad[0x110];
 };
@@ -1329,6 +1330,83 @@ void HeapShutdown::finalize() {
     front.finalize();
     if (void* data = buffer) {
         reinterpret_cast<DefaultHeap*>(this)->release(data, 1, 0);
+        buffer = nullptr;
+    }
+}
+class ResourceFrame {
+public:
+    ~ResourceFrame();                                                       // 0x710025b3ac
+    unsigned char pad[0x28];
+};
+
+// 0x710040a644; original file: game objects, 0x710040a644
+// Vtable through the GOT slot at 0x7100c2b740.
+class FrameArrayOwner {
+public:
+    virtual ~FrameArrayOwner();
+
+    ResourceFrame frames[0x87]; // +08
+};
+
+FrameArrayOwner::~FrameArrayOwner() {}
+
+// 0x7100337a2c; original file: scene panels, 0x7100337a2c
+struct TempResourceDraw {
+    void draw();
+
+    DrawNode* node;           // +00
+};
+
+void TempResourceDraw::draw() {
+    if (node) {
+        LightResource resource;
+        node->draw(0);
+    }
+}
+
+// 0x7100241484; original file: heap objects, 0x7100241484
+// Vtable through the GOT slot at 0x7100c2a4e8.
+class CounterClient : public Plain_5c2c78 {
+public:
+    CounterClient();
+    ~CounterClient() override;
+
+    void* value8;             // +08
+    void* value10;            // +10
+    int count;                // +18
+    int value1c;              // +1c
+    int value20;              // +20
+    int value24;              // +24
+    int value28;              // +28
+    unsigned char pad2c[4];
+    void* value30;            // +30
+};
+
+CounterClient::CounterClient() {
+    value8 = nullptr;
+    value10 = nullptr;
+    count = 1;
+    value24 = 0;
+    value28 = 0;
+    value30 = nullptr;
+    value1c = 0;
+    value20 = 0;
+}
+
+// 0x7100223788; original file: frame heaps, 0x7100223788
+struct BufferedFrameHeap {
+    void shutdown();
+
+    void* buffer;             // +00
+    FrameHeapBase heap;       // +08
+    void* value68;            // +68
+};
+
+void BufferedFrameHeap::shutdown() {
+    value68 = nullptr;
+    heap.finalize();
+    if (void* data = buffer) {
+        get_default_heap()->release(data, 1, 0);
         buffer = nullptr;
     }
 }

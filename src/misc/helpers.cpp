@@ -891,6 +891,7 @@ void* global_4140a4_record(int index) {
 class DemoLightSystem {
 public:
     void render();                                                          // 0x710025f944
+    void update();                                                          // 0x710025e538
 };
 // Reached through the GOT slot at 0x7100c22d98.
 extern DemoLightSystem* gDemoLightSystem;
@@ -1853,4 +1854,137 @@ void create_singleton_c22cd8() {
 void create_singleton_c22cb8() {
     if (!gSingleton_c22cb8)
         gSingleton_c22cb8 = get_default_heap_alloc()->allocate(0x10, 0x30, 1, 0);
+}
+// 0x71001fbc6c, 0x71001fbcb0, 0x71001fbdec, 0x71001fbe28; original file: data stream,
+// 0x71001fbbb0-0x71001fbe28 (the signed overloads next to the unsigned ones in misc/accessors.cpp)
+struct SignedStream {
+    void read(signed char* value);
+    void read(short* value);
+    void write(signed char value);
+    void write(short value);
+
+    unsigned char pad[0x10];
+    unsigned char* cursor;    // +10
+};
+
+void SignedStream::read(signed char* value) {
+    *value = *cursor++;
+}
+
+void SignedStream::read(short* value) {
+    unsigned char* bytes = reinterpret_cast<unsigned char*>(value);
+    bytes[0] = *cursor++;
+    bytes[1] = *cursor++;
+}
+
+void SignedStream::write(signed char value) {
+    *cursor++ = value;
+}
+
+void SignedStream::write(short value) {
+    *cursor++ = value;
+    *cursor++ = value >> 8;
+}
+
+// Reached through the GOT slot at 0x7100c2add0.
+extern void* gLayout_44c5_b;
+
+// 0x71003191d0; original file: scene layouts, 0x71003191d0
+void load_layout_44c5_b() {
+    gLayout_44c5_b = load_layout(0x44c5);
+}
+
+// Constant tables (0x710073dcc8, 0x71007e3d28), addressed directly.
+extern const int kTable_73dcc8[] __attribute__((visibility("hidden")));
+extern const int kTable_7e3d28[] __attribute__((visibility("hidden")));
+
+// 0x710000e6dc; original file: tables, 0x710000e6dc
+int table_value_e6dc(int index) {
+    return kTable_73dcc8[index];
+}
+
+// 0x71004a93a0; original file: tables, 0x71004a93a0
+int table_value_4a93a0(int index) {
+    return kTable_7e3d28[index];
+}
+
+// 0x71001cc544, 0x71004670cc; original file: small objects, 0x71001cc544-0x71004670cc
+struct PointerHolderA {
+    bool valid();
+    void* pointer;
+};
+
+bool PointerHolderA::valid() {
+    return pointer != nullptr;
+}
+
+struct PointerHolderB {
+    bool valid();
+    void* pointer;
+};
+
+bool PointerHolderB::valid() {
+    return pointer != nullptr;
+}
+
+unsigned char check_5155a4(void* object);                                   // 0x71005155a4
+
+// 0x7100528710; original file: render objects, 0x7100528710
+bool checked_528710(void* object) {
+    return check_5155a4(object);
+}
+void* resources_value_389218(SharedResources* resources);                   // 0x7100389218
+unsigned char apply_389590(void* owner, void* value, int mode);             // 0x7100389590
+
+// 0x7100455a3c; original file: shared-state resource queries, 0x7100455a3c
+unsigned char apply_resources_value(void* owner) {
+    if (SharedResources* resources = shared_state_resources(get_shared_state()))
+        return apply_389590(owner, resources_value_389218(resources), 4);
+    return 1;
+}
+
+struct UnitEntryMatrix {
+    unsigned char pad[0xb0];
+    unsigned char matrix[0x40]; // +b0
+};
+
+// 0x7100453bb8; original file: global queries, 0x7100452a24-0x7100453bb8
+void unit_matrix(void* out, int id) {
+    if (UnitEntry* entry = find_unit_446054(load_global_4449ec(), id))
+        memcpy(out, reinterpret_cast<UnitEntryMatrix*>(entry)->matrix, 0x40);
+}
+
+void part_call4_41d1f8(void* part, int a, int b, int c, void* d);           // 0x710041d1f8
+
+// 0x710045293c; original file: global queries, 0x71004528fc-0x710045293c
+void global_part10_41d1f8(int a, int b, int c, void* d) {
+    part_call4_41d1f8(load_global_425dd0()->part10, a, b, c, d);
+}
+
+struct DemoLightFlags {
+    unsigned char pad[0x199ed];
+    unsigned char finished;   // +199ed
+};
+
+// 0x71003b0130; original file: scene drawing, 0x71003b0130
+struct LightScenePhase {
+    void update();
+
+    unsigned char pad[8];
+    int phase;                // +08
+};
+
+void LightScenePhase::update() {
+    gDemoLightSystem->update();
+    if (reinterpret_cast<DemoLightFlags*>(gDemoLightSystem)->finished)
+        phase = 1;
+}
+
+void* load_global_248b6c();                                                 // 0x7100248b6c
+void global_call_248ca0(void* global, float value, int a, int b);           // 0x7100248ca0
+
+// 0x71002579b4; original file: global queries, 0x71002579b4
+void guarded_float_248ca0(float value) {
+    if (load_global_248b6c() && load_global_248b6c())
+        global_call_248ca0(load_global_248b6c(), value, 1, 1);
 }

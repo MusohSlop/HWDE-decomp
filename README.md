@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,299 of 1,395 attempted functions match: 1,289 inventory functions (106,952 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-six are near misses, all `m`.
+1,319 of 1,415 attempted functions match: 1,309 inventory functions (107,928 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-six are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -329,6 +329,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `20ac40` | `current_unit_table` | near miss |
 | 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | locked record reads, indexed and eight-slot constructors, a two-resource scene attach, a held-light release, a flag-table reset | match |
 | `3de474` | `TimedTable::reset` | near miss |
+| 20 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`, `misc/static_objects/shared_plain16.cpp`) | ten seed-family members (signed stream reads and writes, a layout load, two table lookups, two pointer tests, a bool wrapper), a frame-array destructor, a counter-client constructor, a temporary-resource draw, a buffered frame-heap shutdown, a light-scene phase update, a unit matrix copy, global forwarders, a guarded static | match |
 | 8 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | two singleton buffer creations, a cleared-record and a marked-model constructor, an event-pair wake, a locked state reset, a locked pool release, the default heap's shutdown | match |
 | 11 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | three seed-family members (pending-light restart, two locked frame-heap calls), profile skill and item values, a unit level, an optional-buffer and a slot-buffer release, `ChunkHolder::release`, a two-resource panel's deleting destructor, a guarded static | match |
 | 8 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | three locked frame-heap queries, a locked 64-byte matrix read (returned by value), flag-slot and count-slot constructors, two guarded play calls | match |
