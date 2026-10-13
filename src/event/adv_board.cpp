@@ -144,7 +144,8 @@ struct BoardRow {
     signed char guards;       // +11
     unsigned char kind;       // +12
     signed char level;        // +13
-    unsigned char pad14[2];
+    signed char group;        // +14
+    unsigned char pad15;
     unsigned short value16;   // +16
     unsigned short value18;   // +18
     unsigned short value1a;   // +1a
@@ -295,11 +296,14 @@ public:
     void find_entry(unsigned int cell, unsigned int slot, int kind, int* level, int* position,
                     int* state);                                            // 0x710026b3cc
 
-    unsigned char pad[0x3d8];
+    unsigned char pad[0x2d8];
+    unsigned char groups[0x100]; // +02d8
     int levels[0x80][0x1c];   // +03d8
     int kinds[0x80][0x1c];    // +3bd8
     unsigned char flags[0x80][0x1c]; // +73d8
     unsigned int items[0x80][0x1c]; // +81d8
+    unsigned char padb9d8[0xc];
+    int access;               // +b9e4
 };
 // Reached through the GOT slot at 0x7100c23250.
 extern BoardQuery gBoardQuery;
@@ -343,6 +347,20 @@ int unit_kind(int player, int slot) {
     return kind;
 }
 
+struct TrackVec2 {
+    float x;
+    float y;
+};
+class AdvBoard {
+public:
+    TrackVec2 start_position(int state);                                    // 0x710029f8ec
+};
+// Reached through the GOT slot at 0x7100c2a6c0.
+extern AdvBoard* gAdvBoard;
+unsigned int display_width();                                               // 0x71003cc930
+unsigned int display_height();                                              // 0x71003cc94c
+
+unsigned int random_below(int count);                                       // 0x7100459bd8
 int item_category(unsigned int item);                                       // 0x7100211554
 
 int board_value(int index) {
@@ -1133,24 +1151,51 @@ void start_board_battle() {
     end_board_load();
 }
 
-static inline int ward(int player, int slot, int a, int b, int c, int d) {
+int ward_slot(int player, int slot, unsigned char want, unsigned char exit) {
     Game* game = get_game();
     unsigned int mode = game_mode();
-    int result = -1;
     if (player == 0x49) {
-        int bit = -1;
-        if (slot == a)
-            bit = 0;
-        else if (slot == b)
-            bit = 1;
-        else if (slot == c)
-            bit = 2;
-        else if (slot == d)
-            bit = 3;
-        if (bit != -1 && (game->players[mode].value2ace & (1 << bit)))
-            result = bit;
+        int bit;
+        if (exit) {
+            switch (slot) {
+            case 0x18:
+                bit = 0;
+                break;
+            case 0x45:
+                bit = 1;
+                break;
+            case 0x4b:
+                bit = 2;
+                break;
+            case 0x78:
+                bit = 3;
+                break;
+            default:
+                return -1;
+            }
+        } else {
+            switch (slot) {
+            case 0x38:
+                bit = 0;
+                break;
+            case 0x47:
+                bit = 1;
+                break;
+            case 0x49:
+                bit = 2;
+                break;
+            case 0x58:
+                bit = 3;
+                break;
+            default:
+                return -1;
+            }
+        }
+        if (((game->players[mode].value2ace & (1 << bit)) != 0) != want)
+            return -1;
+        return bit;
     }
-    return result;
+    return -1;
 }
 unsigned char unit_has_override(int player, int slot) {
     Game* game = get_game();
@@ -1191,8 +1236,8 @@ unsigned char unit_has_override(int player, int slot) {
     case 0x3d:
         return game->players[mode].unguarded[player];
     case 0x1c: {
-        int first = ward(player, slot, 0x38, 0x47, 0x49, 0x58);
-        int second = ward(player, slot, 0x18, 0x45, 0x4b, 0x78);
+        int first = ward_slot(player, slot, 1, 0);
+        int second = ward_slot(player, slot, 1, 1);
         return (first & second) != -1;
     }
     case 0x1e:
@@ -1312,4 +1357,224 @@ void load_board(unsigned int stage) {
                 game->players[stage].unguarded[i] = 1;
         }
     }
+}
+
+bool unit_is_leader(int player, int slot) {
+    unsigned int index = get_unit_database()->rows[player].cells[static_cast<unsigned int>(slot)];
+    return unit_infos(get_unit_database())[index].value8 == 1;
+}
+
+unsigned char cell_group_flag(int cell) {
+    signed char group = get_unit_database()->rows[cell].group;
+    if (group == -1)
+        return 0;
+    return gBoardQuery.groups[group / 2];
+}
+
+bool is_shop_kind(int kind) {
+    switch (kind) {
+    case 0:
+    case 18:
+    case 19:
+    case 20:
+    case 21:
+    case 26:
+    case 27:
+    case 29:
+    case 39:
+    case 40:
+    case 41:
+    case 42:
+    case 43:
+    case 44:
+    case 45:
+    case 46:
+    case 50:
+    case 51:
+    case 52:
+    case 53:
+    case 54:
+    case 55:
+        return true;
+    }
+    return gBoardQuery.access == 1 || gBoardQuery.access == 2;
+}
+
+bool board_enabled() {
+    return true;
+}
+
+bool board_side_quest() {
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    if (game_mode() == 4)
+        return game->players[mode].value2acd != 1;
+    return false;
+}
+
+bool board_side_quest_open() {
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    if (game_mode() == 4 && game->players[mode].value2acd != 1)
+        return game->players[mode].value2acc < 7;
+    return false;
+}
+
+TrackVec2 board_overflow() {
+    TrackVec2 origin = gAdvBoard->start_position(0);
+    unsigned int columns = 0;
+    for (unsigned int x = 0; x != 0x400; x += 0x40)
+        columns += origin.x + x + 32.0f < static_cast<float>(-(display_width() / 2));
+    unsigned int rows = 0;
+    for (int y = 0; y < 8; ++y)
+        rows += origin.y - static_cast<float>(y * 44) + -22.0f >
+                static_cast<float>(display_height() / 2 - 0x57);
+    TrackVec2 result;
+    result.x = columns;
+    result.y = rows;
+    return result;
+}
+
+static inline unsigned char count_down(unsigned char value) {
+    unsigned int next = value - 1;
+    return static_cast<unsigned char>(next) > value ? 0 : next;
+}
+
+void tick_side_quest() {
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    if (game_mode() == 4 && game->players[mode].value2acd != 1) {
+        unsigned char& delay = game->players[mode].value2acf;
+        if (delay)
+            delay = count_down(delay);
+        else
+            game->players[mode].value2acc = count_down(game->players[mode].value2acc);
+    }
+}
+
+static inline bool seal_open(Unit* unit, PlayerMark& mark) {
+    if (unit->rank == 5)
+        return !(mark.flags & 0x800);
+    if (unit->rank == 4)
+        return !(mark.flags & 0x400);
+    if (unit->rank == 3)
+        return !(mark.flags & 0x200);
+    return false;
+}
+
+void tick_seals() {
+    UnitDatabase* database = get_unit_database();
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    if (game_mode() != 5)
+        return;
+    unsigned char& timer = game->players[mode].value2acc;
+    if (timer == 0xff) {
+        for (long i = 0; i < 0x80; ++i) {
+            int id = database->rows[i].value0;
+            Unit* unit = get_unit_database()->unit(id);
+            if (seal_open(unit, game->players[mode].marks[i])) {
+                timer = 0;
+                return;
+            }
+        }
+        return;
+    }
+    unsigned int next = timer + 1;
+    if (next >= 13) {
+        timer = 12;
+    } else {
+        timer = next;
+        if (static_cast<unsigned char>(next) < 12)
+            return;
+    }
+    int cells[0x80];
+    unsigned int count = 0;
+    for (int i = 0; i < 0x80; ++i) {
+        int id = database->rows[i].value0;
+        Unit* unit = get_unit_database()->unit(id);
+        if (seal_open(unit, game->players[mode].marks[i]))
+            cells[count++] = i;
+    }
+    if (!count) {
+        timer = 0xff;
+        return;
+    }
+    int cell = cells[random_below(count)];
+    int id = database->rows[cell].value0;
+    Unit* unit = get_unit_database()->unit(id);
+    if (unit->rank == 3)
+        game->players[mode].marks[cell].flags |= 0x200;
+    if (unit->rank == 4)
+        game->players[mode].marks[cell].flags |= 0x400;
+    if (unit->rank == 5)
+        game->players[mode].marks[cell].flags |= 0x800;
+    timer = count <= 1 ? 0xff : 0;
+}
+
+static inline int neighbor_direction(int cell, int neighbor) {
+    for (unsigned int direction = 0; direction < 9; ++direction) {
+        if (neighbor_cell(cell, direction) == neighbor)
+            return direction;
+    }
+    return 9;
+}
+
+void reset_side_board() {
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    if (game_mode() != 4)
+        return;
+    UnitDatabase* database = get_unit_database();
+    Player& player = game->players[mode];
+    for (long i = 0; i < 0x80; ++i) {
+        BoardRow* row = &database->rows[static_cast<int>(i)];
+        bool keep;
+        if (row->kind == 0x16) {
+            keep = player.cell_cleared(i);
+        } else {
+            keep = false;
+            for (int d = 0; d < 4; ++d) {
+                int neighbor = neighbor_cell(i, d);
+                if (neighbor == i)
+                    continue;
+                unsigned char state = row->gate_state(neighbor_direction(i, neighbor), 0);
+                if (database->rows[neighbor].kind != 0x16 || !player.cell_cleared(neighbor))
+                    continue;
+                if (state != 4 && state != 6) {
+                    keep = true;
+                    break;
+                }
+            }
+        }
+        if (!keep)
+            player.cell_states[i] = 0;
+        if (row->kind == 7 || row->kind == 1)
+            player.cell_states[i] = 2;
+        if (static_cast<short>(database->rows[i].value1e) == -1)
+            player.cell_states[i] = 3;
+        PlayerMark& mark = player.marks[i];
+        if (mark.flags & 2) {
+            unsigned int pair = database->rows[i].value2;
+            UnitDatabase* units = get_unit_database();
+            short item = reinterpret_cast<short*>(reinterpret_cast<unsigned char*>(units) + 0xebd7c)[pair * 4];
+            int level = get_item_table()->level_of(item);
+            switch (level) {
+            case 20:
+            case 21:
+            case 26:
+            case 27:
+                mark.flags &= ~2;
+                break;
+            }
+        }
+        if (mark.flags & 0x18)
+            mark.flags &= ~0x18;
+    }
+    if (dlc_board_flag())
+        player.cell_states[0x22] = 2;
+    if (player.value2acd == 1)
+        player.value2acd = 0;
+    player.value2acc = 0x48;
+    player.value2acf = 0;
 }

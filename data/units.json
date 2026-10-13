@@ -866,7 +866,18 @@
         "_Z17fill_cell_entriesjPjiih": "0x710026b798",
         "_Z18start_board_battlev": "0x710026bd64",
         "_Z17unit_has_overrideii": "0x710026c924",
-        "_Z10load_boardj": "0x710026c154"
+        "_Z10load_boardj": "0x710026c154",
+        "_Z9ward_slotiihh": "0x710026cc30",
+        "_Z14unit_is_leaderii": "0x710026cd2c",
+        "_Z15cell_group_flagi": "0x710026cd8c",
+        "_Z12is_shop_kindi": "0x710026cdec",
+        "_Z13board_enabledv": "0x710026ce44",
+        "_Z16board_side_questv": "0x710026d02c",
+        "_Z21board_side_quest_openv": "0x710026d09c",
+        "_Z14board_overflowv": "0x710026ce4c",
+        "_Z15tick_side_questv": "0x710026d620",
+        "_Z10tick_sealsv": "0x710026d6dc",
+        "_Z16reset_side_boardv": "0x710026d124"
       },
       "map": {
         ".rodata": "0x71007f51a4"
