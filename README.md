@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-997 of 1085 attempted functions match: 987 inventory functions (92,032 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-eight are near misses, all `m`.
+1,052 of 1,140 attempted functions match: 1,042 inventory functions (93,752 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other eighty-eight are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -313,6 +313,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 20 in `misc/skinned_overrides.cpp` | skinned-model overrides (base version, then the skin set's) | match |
 | 14 in `misc/small_families4.cpp`, 16 in `misc/small_families5.cpp` | nine-sprite constructors, swapped-argument solves, pool disposals, singleton deletes and creations, command checks, calls under the object manager's lock | match |
 | `3cca08`-`3ccc34` | `malloc`, `operator new` (plain and `nothrow`), `operator new[]` (`misc/heap_operators.cpp`) | match |
+| 55 in `misc/small_families6.cpp` | constant-table lookups, command results passed on, base-calling destructors, two-argument global and deep-member forwarders, channel destructors with the flag at `+50`/`+190` | match |
 | `45c1dc`, `45c96c`, `45ca24` | `get_heap_registry`, `get_default_heap` (function-local statics), `SystemHeap::initialize` | match |
 | `280f6c` | `BoardOverlay::BoardOverlay` | near miss |
 | `280200` | `BoardLayerView::draw` | near miss |
@@ -505,6 +506,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - Further families (117 functions): `misc/small_families2.cpp` and `misc/static_families.cpp`. Statics reached through the GOT are function-local statics of inline (linkonce) helpers; a dynamic initializer that yields null (`null_value()`) gives the guard and the plain zero store. Static objects built on first use each need their own unit, as in the original: in one unit LLVM's global merge pass puts all their guards and objects into one block, which changes every offset. The full check shows no masked relocations.
   - `misc/small_families3.cpp` and `misc/skinned_overrides.cpp` (46 functions). The family scan masks call targets, so a family can mix callees: four of the skinned overrides call a different base (`591150`), which the check caught; they use a second base class.
   - `misc/heap_operators.cpp` holds the global allocation entry points: `malloc` and the `operator new` forms allocate from the default heap's back frame heap (`+110`) with alignment code 0x2e. As with the posting handlers, a member's address has to be taken before an intervening call to get the original's register use (`CheckHost::idle`).
+  - Destructors whose body is empty in the source skip the vtable store in Clang (`CanSkipVTablePointerInitialization`); twelve originals keep it, so their bodies did something that inlined away. An empty inline call (`on_finish`) stands in for it.
   - The scan masked the offset of a load whose base register had been loaded from a GOT slot (a field of the global rather than the pointer); it now stops tracking a register once a load replaces its page address. Two getters that read the second word of their global were found that way.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
