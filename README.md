@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,881 of 2,004 attempted functions match: 1,871 inventory functions (149,932 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 123 are near misses, all `m`.
+1,965 of 2,088 attempted functions match: 1,955 inventory functions (151,596 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 123 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -329,6 +329,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 5 in `misc/command_posts.cpp`, 3 in `misc/singleton_creates2.cpp`, 5 in `misc/item_states.cpp`, 1 in `misc/ref_releases.cpp`, 2 more in `misc/animation_stops.cpp` | seed-family members: command posts to other queues, large singletons, item state tests, a reference-slot reset (last slot first), animation-set stops | match |
 | 39 in `misc/table_reads.cpp`, 5 in `misc/global_parts.cpp` | range-checked byte and 16-bit reads, signed id fields with limits, row ids, handle-record bytes (table pointer read before the index); calls on parts of a large global | match |
 | 6 in `misc/seven_bytes.cpp` | seven-entry byte settings with a fallback to the last entry | near miss |
+| 45 in `misc/tiny_accessors2.cpp`, 39 in `misc/tiny_accessors3.cpp` | more tiny accessors: fallback slots, clamps, offset ids (early returns keep the two -1 selects apart), capped fields, hooked forwards, constructors clearing a base field before the vtable, entry addresses, list appends, byte stores and flags, table bytes, global member calls, float accumulators, flag sets, part forwards, copied child fields | match |
 | 85 in `misc/tiny_accessors.cpp` | tiny accessors in 18 shapes (flag-gated constants, pair copies, chained virtual calls, clamps, bounded reads, forwards, virtual result tests, icon lookups and draws, table entry calls, child fields, offset results, nonzero tests, member addresses) | match |
 | 8 in `misc/base_teardowns3.cpp`, 32 in `misc/object_helpers.cpp` | secondary-base teardowns whose first part is at the base; paired part calls, hook frees (argument read before the hook), locked virtual queries, scaled item fields, entry floats, notify-and-release, relation kinds, paired virtual resets, byte-set bit tests | match |
 | 48 in `misc/skinned_overrides.cpp` | skinned-model overrides (base version, then the skin set's), 28 of them at other skin-set offsets | match |
