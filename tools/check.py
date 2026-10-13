@@ -31,19 +31,48 @@ def address(text):
     return int(text, 16) & 0xFFFFFFFF
 
 
+def unique_pairs(pairs):
+    """object_pairs_hook that rejects a key repeated within one JSON object."""
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            sys.exit(f"units.json: duplicate key {key!r}")
+        result[key] = value
+    return result
+
+
+def collect_externals(manifest):
+    """Names of known addresses; a name may not stand for two addresses."""
+    externals = {}
+    owners = {}
+
+    def add(name, text, owner):
+        value = address(text)
+        if name in externals and externals[name] != value:
+            sys.exit(f"units.json: {name} is {hex(externals[name])} in {owners[name]} "
+                     f"but {hex(value)} in {owner}")
+        externals[name] = value
+        owners[name] = owner
+
+    for name, text in manifest["symbols"].items():
+        add(name, text, "symbols")
+    # Functions of every unit are known addresses for calls between units.
+    for unit, spec in manifest["units"].items():
+        for name, text in spec["functions"].items():
+            add(name, text, unit)
+    return externals
+
+
 def main():
     args = sys.argv[1:]
     update = "--update" in args
     show_diff = "--diff" in args
     selected = [a for a in args if not a.startswith("--")]
 
-    manifest = json.loads(UNITS.read_text(encoding="utf-8-sig"))
+    manifest = json.loads(UNITS.read_text(encoding="utf-8-sig"), object_pairs_hook=unique_pairs)
     compiler = ROOT / manifest["compiler"]
     flags = manifest["flags"]
-    externals = {name: address(a) for name, a in manifest["symbols"].items()}
-    # Functions of every unit are known addresses for calls between units.
-    for spec in manifest["units"].values():
-        externals.update({n: address(a) for n, a in spec["functions"].items()})
+    externals = collect_externals(manifest)
 
     with FUNCTIONS.open(newline="") as f:
         rows = list(csv.DictReader(f))

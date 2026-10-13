@@ -300,7 +300,36 @@
     "got:gAdvCaption": "0x7100c2a6b0",
     "kFontRight": "0x7100740072",
     "kFontLeft": "0x7100740079",
-    "kAdvCaptionLayout": "0x710074000f"
+    "kAdvCaptionLayout": "0x710074000f",
+    "_Z9unit_namei": "0x7100217d2c",
+    "_Z9item_namei": "0x7100217d9c",
+    "_Z14set_pane_linesP9PanelPaneP16TrackLightTargetj": "0x71001e41d8",
+    "got:gAdvEffects": "0x7100c2a6b8",
+    "kBattleStartLayout": "0x71007d5d25",
+    "kChangeTvLayout": "0x71007d5d39",
+    "kChangeDrcLayout": "0x71007d5d4d",
+    "kEnvEffectLayout": "0x71007d5d62",
+    "kClockLayout": "0x71007d5d74",
+    "kBattleStartAnim": "0x71007d5d89",
+    "kIn0Anim": "0x71007d5d93",
+    "kIn1Anim": "0x71007d5d98",
+    "kIn2Anim": "0x71007d5d9d",
+    "kIn3Anim": "0x7100740583",
+    "kOutAnim": "0x710074056c",
+    "kSongInAnim": "0x71007d5f01",
+    "kSongOutAnim": "0x71007d5f11",
+    "kSongReInAnim": "0x71007d5f22",
+    "kSongReOutAnim": "0x71007d5f35",
+    "kScreenAnims": "0x7100bd0ea0",
+    "_ZN12EffectRecord4stopEv": "0x71002695a8",
+    "got:gAdvBoard": "0x7100c2a6c0",
+    "got:kBorderLines": "0x7100c2a6c8",
+    "_ZN8AdvBoard14start_positionEi": "0x710029f8ec",
+    "_ZN8AdvBoard20environment_positionEi": "0x710029fd90",
+    "_ZN10AdvEffects12update_clockEv": "0x7100268224",
+    "_ZN10AdvEffects11play_screenEiii": "0x7100268340",
+    "_ZN10AdvEffects11show_resultEi": "0x7100268874",
+    "_ZN10AdvEffects11end_screensEv": "0x7100268a80"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -680,7 +709,24 @@
         "_ZN10AdvCaption11set_value10Ei": "0x7100266edc",
         "_ZN10AdvCaption11get_value10Ev": "0x7100266ef0",
         "_ZN10AdvCaption13clear_value10Ev": "0x7100266ef8",
-        "_ZN10AdvCaption6updateEv": "0x7100266f04"
+        "_ZN10AdvCaption6updateEv": "0x7100266f04",
+        "_ZN10AdvCaption4drawEv": "0x7100266f58",
+        "_ZN10AdvCaption9draw_textEi": "0x7100266f6c",
+        "_ZN10AdvCaption14draw_alternateEv": "0x7100267308"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073bae8"
+      }
+    },
+    "event/adv_effects.cpp": {
+      "functions": {
+        "_ZN10AdvEffects8finalizeEv": "0x710026731c",
+        "_Z18create_adv_effectsv": "0x710026759c",
+        "_Z19destroy_adv_effectsv": "0x710026767c",
+        "_ZN10AdvEffects10initializeEv": "0x71002676ec",
+        "_ZN10AdvEffects6updateEv": "0x7100267c44",
+        "_ZN10AdvEffects14update_screensEv": "0x7100267d64",
+        "_ZN10AdvEffects14update_recordsEv": "0x7100267f94"
       }
     }
   }

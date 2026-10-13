@@ -30,7 +30,7 @@ public:
     virtual void v10();
     virtual void v18();
     virtual void set_active(bool active); // +20
-    virtual void v28();
+    virtual void reset(); // +28
     virtual void v30();
     virtual void v38();
     virtual void bind(void* root, void* resources, void* block); // +40
@@ -59,7 +59,9 @@ public:
     float frame;              // +20
     unsigned char pad24[0x18];
     float speed;              // +3c
-    unsigned char pad40[8];
+    unsigned char pad40[4];
+    unsigned char state44;    // +44: bit 1 finished
+    unsigned char pad45[3];
 };
 
 class EffectBase {
@@ -111,7 +113,8 @@ public:
     unsigned char pad3c[0xc];
     float scale48;            // +48
     float scale4c;            // +4c
-    unsigned char pad50[8];
+    float size50;             // +50
+    float size54;             // +54
     unsigned char flags58;    // +58: bit 0 visible, bit 4 moved
 };
 

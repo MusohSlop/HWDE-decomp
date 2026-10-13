@@ -14,10 +14,43 @@ public:
 };
 DefaultHeap* get_default_heap();                                            // 0x710045c96c
 
+void hide_targets(TrackLightTarget* targets, unsigned int count);           // 0x71001f7530
 int screen_width();                                                         // 0x71003df258
 int screen_height();                                                        // 0x71003df250
 unsigned int display_width();                                               // 0x71003cc930
 unsigned int display_height();                                              // 0x71003cc94c
+
+class TextRenderer {
+public:
+    void set_area(TrackVec2* pos, TrackVec2* size, int a, int b, int c);    // 0x71001e709c
+    unsigned int draw(void* dest, const char* text, int line, int a, int alpha, float x,
+                      float y);                                             // 0x71001e73c0
+    unsigned int measure(const char* text, TrackVec2* size, TrackVec2* extent, float x,
+                         float width);                                      // 0x71001e5e08
+
+    unsigned char pad[0x20b98];
+    unsigned long align;      // +20b98: horizontal and vertical alignment
+    unsigned char pad20ba0[0x28];
+    unsigned char right_to_left; // +20bc8
+    unsigned char pad20bc9[0x23f];
+    int justify;              // +20e08
+};
+// Reached through the GOT slot at 0x7100c22a30.
+extern TextRenderer* gTextRenderer;
+
+struct SharedState {
+    int value0;
+    int language;             // +04
+};
+SharedState* get_shared_state();                                            // 0x71002aae3c
+
+const char* unit_name(int unit);                                            // 0x7100217d2c
+const char* item_name(int item);                                            // 0x7100217d9c
+void set_pane_lines(PanelPane* pane, TrackLightTarget* lines, unsigned int count); // 0x71001e41d8
+
+struct TrackVec3 {
+    float x, y, z;
+};
 
 // Layout and pane names, merged with other literals by the linker.
 extern const char kAdvCaptionLayout[] __attribute__((visibility("hidden")));   // 0x710074000f
@@ -48,6 +81,9 @@ public:
     int get_value10();                                                      // 0x7100266ef0
     void clear_value10();                                                   // 0x7100266ef8
     void update();                                                          // 0x7100266f04
+    void draw();                                                            // 0x7100266f58
+    void draw_text(int mode);                                               // 0x7100266f6c
+    void draw_alternate();                                                  // 0x7100267308
 
     void* value0;                     // +00
     unsigned char initialized;        // +08
@@ -57,13 +93,13 @@ public:
     unsigned char pad14[4];
     TrackLightTarget lines[128];      // +18
     TrackLightTarget shadows[128];    // +4418
-    unsigned char pad8818[8];
+    unsigned int line_count;          // +8818
+    unsigned int shadow_count;        // +881c
     PanelPane* right;                 // +8820
     PanelPane* left;                  // +8828
     LightEffectNode* node;            // +8830
     unsigned char pad8838[8];
-    LightResource resource;           // +8840
-    LightResource overlay;            // +8950
+    LightResource resources[2];       // +8840: layout, overlay
     union {
         unsigned long screen_size;    // +8a60: cleared as one word
         struct {
@@ -134,12 +170,12 @@ void AdvCaption::initialize() {
         return;
     gEffectManager->create_node(&node, 0x41e5, kAdvCaptionLayout);
     gEffectManager->sync();
-    gEffectManager->attach(&resource, nullptr);
+    gEffectManager->attach(&resources[0], nullptr);
     float width = screen_width();
     float height = screen_height();
     screen_w = width;
     screen_h = height;
-    gEffectManager->attach_resource(&overlay);
+    gEffectManager->attach_resource(&resources[1]);
     float display_x = display_width();
     float display_y = display_height();
     display_w = display_x;
@@ -182,4 +218,82 @@ void AdvCaption::update() {
         void* root = gEffectManager->current();
         target->update(root, 0);
     }
+}
+
+void AdvCaption::draw() {
+    if (initialized)
+        draw_text(0);
+}
+
+void AdvCaption::draw_text(int mode) {
+    if (!node)
+        return;
+    EffectGroup* group = node->group;
+    TrackVec2 scale = *reinterpret_cast<TrackVec2*>(&group->scale48);
+    TrackVec3 position = *reinterpret_cast<TrackVec3*>(&group->offset30);
+    if (mode == 0 || mode == 1) {
+    hide_targets(lines, 0x80);
+    hide_targets(shadows, 0x80);
+    line_count = 0;
+    shadow_count = 0;
+    TextRenderer* renderer = gTextRenderer;
+    int language = get_shared_state()->language;
+    int compact = language == 6 ? 1 : language;
+    TrackVec2 pos;
+    TrackVec2 size;
+    TrackVec2 extent;
+    if (static_cast<unsigned int>(value0c) <= 0xc7) {
+        EffectGroup* font = group->find(kFontRight, 1);
+        float scale_x = group->scale48;
+        float scale_y = group->scale4c;
+        float height = font->size54 * scale_y;
+        float width = font->size50 * scale_x;
+        pos.x = 0.0f;
+        pos.y = 0.0f;
+        size.x = height;
+        size.y = height;
+        if (!compact)
+            pos.y = 7.0f;
+        const char* text = unit_name(value0c);
+        renderer->set_area(&pos, &size, 0x3c, 0x4b, 0);
+        renderer->measure(text, &size, &extent, 0.0f, screen_width());
+        extent.x = width + extent.x;
+        renderer->align = 0x200000002ul;
+        renderer->justify = 2;
+        line_count = renderer->draw(lines, text, 0x80, 1, 0xff, 0.0f, 0.0f);
+        for (int i = 0; static_cast<unsigned int>(i) < line_count; ++i)
+            lines[i].hidden = 0;
+    }
+    if (static_cast<unsigned int>(value10) <= 0x363e) {
+        EffectGroup* font = group->find(kFontLeft, 1);
+        float height = font->size54 * group->scale4c;
+        pos.x = 0.0f;
+        pos.y = 0.0f;
+        size.x = height;
+        size.y = height;
+        if (!compact)
+            pos.y = 7.0f;
+        float x = 1722.0f - extent.x;
+        const char* text = item_name(value10);
+        renderer->set_area(&pos, &size, 0x3c, 0x4b, 0);
+        renderer->align = 2;
+        if (compact)
+            renderer->right_to_left = 1;
+        unsigned int count = renderer->draw(shadows, text, 0x80, 1, 0xff, x, 0.0f);
+        shadow_count = count;
+        for (unsigned long i = 0; i < shadow_count; ++i)
+            shadows[i].hidden = 0;
+    }
+    node->draw(0);
+    set_pane_lines(right, lines, line_count);
+    set_pane_lines(left, shadows, shadow_count);
+    *reinterpret_cast<TrackVec3*>(&group->offset30) = position;
+    *reinterpret_cast<TrackVec2*>(&group->scale48) = scale;
+    group->flags58 |= 0x10;
+    }
+}
+
+void AdvCaption::draw_alternate() {
+    if (initialized)
+        draw_text(1);
 }
