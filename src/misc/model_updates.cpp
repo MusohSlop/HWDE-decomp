@@ -93,6 +93,13 @@ public:
 };
 static_assert(sizeof(UpdatedModel) == 0x12a0, "updated model size");
 
+// The larger of two values by reference, like std::max. Going through references keeps the clamp a
+// 32-bit select that is widened afterwards, as in the original.
+template <typename T>
+static inline const T& larger(const T& a, const T& b) {
+    return a > b ? a : b;
+}
+
 // Shared by every update below (in the original each class has its own copy); always_inline keeps
 // Clang from outlining it once it is used 22 times in this unit.
 static inline __attribute__((always_inline)) void update_pose(UpdatedModel* model) {
@@ -105,7 +112,7 @@ static inline __attribute__((always_inline)) void update_pose(UpdatedModel* mode
                                 model->pose_args[2], model->pose_args[3], model->pose_args[4],
                                 model->pose_args[5], model->pose_args[6]);
         if (model->resource) {
-            int index = model->pose_index > 0 ? model->pose_index : 0;
+            int index = larger(model->pose_index, 0);
             unsigned char* bones = model->resource + model->pose[static_cast<unsigned int>(index)].offset + 0x30;
             if (bones != model->bones) {
                 model->bones = bones;
