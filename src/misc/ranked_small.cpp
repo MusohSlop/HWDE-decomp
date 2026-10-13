@@ -1410,3 +1410,18 @@ void BufferedFrameHeap::shutdown() {
         buffer = nullptr;
     }
 }
+// 0x7100389218; original file: shared state, 0x7100389218
+struct SharedResourceView {
+    void* value();
+
+    unsigned char pad[0x2d410];
+    void* current;            // +2d410
+    LockOwner* owner;         // +2d418
+};
+
+void* SharedResourceView::value() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    void* result = current;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    return result;
+}

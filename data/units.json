@@ -1543,7 +1543,11 @@
     "_Z18load_global_248b6cv": "0x7100248b6c",
     "_Z18global_call_248ca0Pvfii": "0x7100248ca0",
     "got:_ZTV15FrameArrayOwner": "0x7100c2b740",
-    "got:_ZTV13CounterClient": "0x7100c2a4e8"
+    "got:_ZTV13CounterClient": "0x7100c2a4e8",
+    "_ZN16LockedMatrixView3getEv": "0x710044c5fc",
+    "_Z21material_entry_2015a8P12MaterialBooki": "0x71002015a8",
+    "_Z12apply_1fc7e8Pvi": "0x71001fc7e8",
+    "_Z11call_1985f4i": "0x71001985f4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2416,7 +2420,13 @@
         "_Z11unit_matrixPvi": "0x7100453bb8",
         "_Z20global_part10_41d1f8iiiPv": "0x710045293c",
         "_ZN15LightScenePhase6updateEv": "0x71003b0130",
-        "_Z20guarded_float_248ca0f": "0x71002579b4"
+        "_Z20guarded_float_248ca0f": "0x71002579b4",
+        "_Z13global_matrixP12Matrix40Copy": "0x7100454414",
+        "_Z22guarded_float_248ca0_bf": "0x710025796c",
+        "_Z14material_applyii": "0x71001fcce8",
+        "_ZN16StageLayoutState5resetEv": "0x71001f321c",
+        "_Z23forward_unless_stoppingi": "0x71001a983c",
+        "_Z23create_singleton_c22e10v": "0x71001875a0"
       },
       "map": {
         ".rodata.cst4": "0x710073c188",
@@ -3422,7 +3432,8 @@
         "_ZN15FrameArrayOwnerD2Ev": "0x710040a644",
         "_ZN16TempResourceDraw4drawEv": "0x7100337a2c",
         "_ZN13CounterClientC2Ev": "0x7100241484",
-        "_ZN17BufferedFrameHeap8shutdownEv": "0x7100223788"
+        "_ZN17BufferedFrameHeap8shutdownEv": "0x7100223788",
+        "_ZN18SharedResourceView5valueEv": "0x7100389218"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",

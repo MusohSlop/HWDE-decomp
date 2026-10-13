@@ -1988,3 +1988,75 @@ void guarded_float_248ca0(float value) {
     if (load_global_248b6c() && load_global_248b6c())
         global_call_248ca0(load_global_248b6c(), value, 1, 1);
 }
+
+struct Matrix40Copy {
+    unsigned char bytes[0x40];
+};
+
+struct LockedMatrixView {
+    Matrix40Copy get();                                                     // 0x710044c5fc
+};
+
+// 0x7100454414; original file: global queries, 0x7100454414
+void global_matrix(Matrix40Copy* out) {
+    *out = reinterpret_cast<LockedMatrixView*>(load_global_44bc20())->get();
+}
+
+// 0x710025796c; original file: global queries, 0x710025796c-0x71002579b4
+void guarded_float_248ca0_b(float value) {
+    if (load_global_248b6c() && load_global_248b6c())
+        global_call_248ca0(load_global_248b6c(), value, 0, 1);
+}
+
+void* material_entry_2015a8(MaterialBook* book, int id);                    // 0x71002015a8
+int apply_1fc7e8(void* entry, int value);                                   // 0x71001fc7e8
+
+// 0x71001fcce8; original file: materials, 0x71001fcce8
+int material_apply(int id, int value) {
+    if (static_cast<unsigned int>(id) <= 0x27)
+        return apply_1fc7e8(material_entry_2015a8(load_global_200fc0(), id), value);
+    return 0;
+}
+
+// 0x71001f321c; original file: stage layout, 0x71001f31e4-0x71001f321c
+struct StageLayoutState {
+    void reset();
+
+    int state;                // +000
+    unsigned char pad4[0x31c];
+    void* value320;           // +320
+    unsigned char flag328;    // +328
+};
+
+void StageLayoutState::reset() {
+    if (gStageLayout2) {
+        release_light(&gStageLayout2);
+        gStageLayout2 = nullptr;
+    }
+    state = 3;
+    flag328 = 0;
+    value320 = nullptr;
+}
+
+void call_1985f4(int value);                                                // 0x71001985f4
+
+// 0x71001a983c; original file: battle objects, 0x71001a983c
+void forward_unless_stopping(int value) {
+    if (!resource_queue_cancelled() && !shared_state_exiting(get_shared_state()))
+        call_1985f4(value);
+}
+
+struct CountRecord {
+    int count;
+};
+// Reached through the GOT slot at 0x7100c22e10.
+extern CountRecord* gSingleton_c22e10;
+
+// 0x71001875a0; original file: battle objects, 0x71001875a0
+void create_singleton_c22e10() {
+    if (!gSingleton_c22e10) {
+        CountRecord* record = static_cast<CountRecord*>(get_default_heap_alloc()->allocate(0x10, 0xb0, 1, 0));
+        record->count = 0;
+        gSingleton_c22e10 = record;
+    }
+}
