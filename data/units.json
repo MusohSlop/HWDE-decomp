@@ -1602,7 +1602,64 @@
     "_Z19resolve_item_527cbcPvS_": "0x7100527cbc",
     "_Z19resolve_item_527ba4PvS_": "0x7100527ba4",
     "_Z19resolve_item_5326c8PvS_": "0x71005326c8",
-    "_Z19resolve_item_527ad4PvS_": "0x7100527ad4"
+    "_Z19resolve_item_527ad4PvS_": "0x7100527ad4",
+    "_Z10copy_entryPvPKvm": "0x7100517e9c",
+    "_Z21accepts_branch_4e36f0P13Visitor4ea47cP8TreeNode": "0x71004e36f0",
+    "_Z16hits_leaf_4e961cPvPP13Visitor4ea47cP8TreeNodeh": "0x71004e961c",
+    "_Z21accepts_branch_511610P13Visitor4ea6e4P8TreeNode": "0x7100511610",
+    "_Z16hits_leaf_4ea810PvPP13Visitor4ea6e4P8TreeNodeh": "0x71004ea810",
+    "_Z21accepts_branch_50f744P13Visitor4eb798P8TreeNode": "0x710050f744",
+    "_Z16hits_leaf_4eb8c4PvPP13Visitor4eb798P8TreeNodeh": "0x71004eb8c4",
+    "_Z21accepts_branch_50ec98P13Visitor4ec85cP8TreeNode": "0x710050ec98",
+    "_Z16hits_leaf_4ec988PvPP13Visitor4ec85cP8TreeNodeh": "0x71004ec988",
+    "_Z21accepts_branch_513ec8P13Visitor4ed920P8TreeNode": "0x7100513ec8",
+    "_Z16hits_leaf_4eda4cPvPP13Visitor4ed920P8TreeNodeh": "0x71004eda4c",
+    "_Z21accepts_branch_5025b4P13Visitor4ee9d4P8TreeNode": "0x71005025b4",
+    "_Z16hits_leaf_4eeb00PvPP13Visitor4ee9d4P8TreeNodeh": "0x71004eeb00",
+    "_Z16hits_leaf_4e961cPvRKP13Visitor4ea47cP8TreeNodeh": "0x71004e961c",
+    "_Z16hits_leaf_4ea810PvRKP13Visitor4ea6e4P8TreeNodeh": "0x71004ea810",
+    "_Z16hits_leaf_4eb8c4PvRKP13Visitor4eb798P8TreeNodeh": "0x71004eb8c4",
+    "_Z16hits_leaf_4ec988PvRKP13Visitor4ec85cP8TreeNodeh": "0x71004ec988",
+    "_Z16hits_leaf_4eda4cPvRKP13Visitor4ed920P8TreeNodeh": "0x71004eda4c",
+    "_Z16hits_leaf_4eeb00PvRKP13Visitor4ee9d4P8TreeNodeh": "0x71004eeb00",
+    "_Z18destroy_part_d3428Pv": "0x71000d3428",
+    "_Z18destroy_part_d2534Pv": "0x71000d2534",
+    "_Z18destroy_part_cfe84Pv": "0x71000cfe84",
+    "_Z18destroy_part_cf5bcPv": "0x71000cf5bc",
+    "_Z18destroy_part_cdf04Pv": "0x71000cdf04",
+    "_Z18destroy_part_cf58cPv": "0x71000cf58c",
+    "_Z18destroy_part_d3410Pv": "0x71000d3410",
+    "got:gSingletond5698": "0x7100c22a08",
+    "_ZN14Singletond5698C1Ev": "0x71000d51e8",
+    "_ZN14Singletond5698C2Ev": "0x71000d51e8",
+    "got:gSingletondde30": "0x7100c22aa8",
+    "_ZN14Singletondde30C1Ev": "0x71000de068",
+    "_ZN14Singletondde30C2Ev": "0x71000de068",
+    "got:gSingletondf4cc": "0x7100c22ad8",
+    "_ZN14Singletondf4ccC1Ev": "0x71000df644",
+    "_ZN14Singletondf4ccC2Ev": "0x71000df644",
+    "got:gSingleton12c178": "0x7100c22a98",
+    "_ZN15Singleton12c178C1Ev": "0x710012c278",
+    "_ZN15Singleton12c178C2Ev": "0x710012c278",
+    "got:gSingleton288e30": "0x7100c2a778",
+    "_ZN15Singleton288e30C1Ev": "0x7100288a40",
+    "_ZN15Singleton288e30C2Ev": "0x7100288a40",
+    "got:gSingleton291d18": "0x7100c2a780",
+    "_ZN15Singleton291d18C1Ev": "0x7100291760",
+    "_ZN15Singleton291d18C2Ev": "0x7100291760",
+    "got:gSingleton414004": "0x7100c2b7d8",
+    "_ZN15Singleton414004C1Ev": "0x710041368c",
+    "_ZN15Singleton414004C2Ev": "0x710041368c",
+    "got:gSingleton444958": "0x7100c2ba80",
+    "_ZN15Singleton444958C1Ev": "0x7100444528",
+    "_ZN15Singleton444958C2Ev": "0x7100444528",
+    "got:gClearedBlockd86d4": "0x7100c22a50",
+    "got:gClearedBlock1ff060": "0x7100c23228",
+    "got:gClearedBlock204cb8": "0x7100c23260",
+    "got:gClearedBlock209a44": "0x7100c23298",
+    "got:gClearedBlock20acc0": "0x7100c232b0",
+    "got:gClearedBlock20b980": "0x7100c232d0",
+    "got:gClearedBlock214d98": "0x7100c23378"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -3726,6 +3783,128 @@
         "_Z16bind_part_59c830P11BindContextP8BindPartjl": "0x710059c830",
         "_Z16bind_part_59c920P11BindContextP8BindPartjl": "0x710059c920",
         "_Z16bind_part_59ca10P11BindContextP8BindPartjl": "0x710059ca10"
+      }
+    },
+    "misc/packed_fetch.cpp": {
+      "functions": {
+        "_Z18fetch_entry_5968d0P13PackedArchivePvj": "0x71005968d0",
+        "_Z18fetch_entry_5969bcP13PackedArchivePvj": "0x71005969bc",
+        "_Z18fetch_entry_596aa8P13PackedArchivePvj": "0x7100596aa8",
+        "_Z18fetch_entry_596b94P13PackedArchivePvj": "0x7100596b94",
+        "_Z18fetch_entry_596c80P13PackedArchivePvj": "0x7100596c80",
+        "_Z18fetch_entry_596d6cP13PackedArchivePvj": "0x7100596d6c"
+      }
+    },
+    "misc/tree_walks.cpp": {
+      "functions": {
+        "_Z16walk_tree_4ea47cP10TreeWalkerP8TreeNodeP13Visitor4ea47c": "0x71004ea47c",
+        "_Z16walk_tree_4ea6e4P10TreeWalkerP8TreeNodeP13Visitor4ea6e4": "0x71004ea6e4",
+        "_Z16walk_tree_4eb798P10TreeWalkerP8TreeNodeP13Visitor4eb798": "0x71004eb798",
+        "_Z16walk_tree_4ec85cP10TreeWalkerP8TreeNodeP13Visitor4ec85c": "0x71004ec85c",
+        "_Z16walk_tree_4ed920P10TreeWalkerP8TreeNodeP13Visitor4ed920": "0x71004ed920",
+        "_Z16walk_tree_4ee9d4P10TreeWalkerP8TreeNodeP13Visitor4ee9d4": "0x71004ee9d4"
+      }
+    },
+    "misc/bit_tests.cpp": {
+      "functions": {
+        "_Z14has_bit_2029a8P12BitSet2029a8i": "0x71002029a8",
+        "_Z14has_bit_202a24P12BitSet202a24i": "0x7100202a24",
+        "_Z14has_bit_202aa0P12BitSet202aa0i": "0x7100202aa0",
+        "_Z14has_bit_202b1cP12BitSet202b1ci": "0x7100202b1c",
+        "_Z14has_bit_202becP12BitSet202beci": "0x7100202bec",
+        "_Z14has_bit_202c68P12BitSet202c68i": "0x7100202c68",
+        "_Z14has_bit_202cecP12BitSet202ceci": "0x7100202cec",
+        "_Z14has_bit_202d7cP12BitSet202d7ci": "0x7100202d7c",
+        "_Z14has_bit_202df8P12BitSet202df8i": "0x7100202df8",
+        "_Z14has_bit_2031fcP12BitSet2031fci": "0x71002031fc",
+        "_Z14has_bit_203278P12BitSet203278i": "0x7100203278",
+        "_Z14has_bit_20341cP12BitSet20341ci": "0x710020341c",
+        "_Z14has_bit_204444P12BitSet204444i": "0x7100204444"
+      }
+    },
+    "misc/bit_updates.cpp": {
+      "functions": {
+        "_Z14set_bit_202730P14BitField202730ih": "0x7100202730",
+        "_Z14set_bit_2029dcP14BitField2029dcih": "0x71002029dc",
+        "_Z14set_bit_202a58P14BitField202a58ih": "0x7100202a58",
+        "_Z14set_bit_202ad4P14BitField202ad4ih": "0x7100202ad4",
+        "_Z14set_bit_202c20P14BitField202c20ih": "0x7100202c20",
+        "_Z14set_bit_202db0P14BitField202db0ih": "0x7100202db0",
+        "_Z14set_bit_202e2cP14BitField202e2cih": "0x7100202e2c",
+        "_Z14set_bit_2031b4P14BitField2031b4ih": "0x71002031b4",
+        "_Z14set_bit_203230P14BitField203230ih": "0x7100203230",
+        "_Z14set_bit_2032acP14BitField2032acih": "0x71002032ac"
+      }
+    },
+    "misc/entry_queries.cpp": {
+      "functions": {
+        "_Z15has_entry_23e9cP11SourceOwnerILm288EE": "0x7100023e9c",
+        "_Z15has_entry_23f10P11SourceOwnerILm288EE": "0x7100023f10",
+        "_Z15has_entry_23f84P11SourceOwnerILm288EE": "0x7100023f84",
+        "_Z15has_entry_26e10P11SourceOwnerILm272EE": "0x7100026e10",
+        "_Z15has_entry_26e84P11SourceOwnerILm272EE": "0x7100026e84",
+        "_Z15has_entry_26ef8P11SourceOwnerILm272EE": "0x7100026ef8",
+        "_Z15has_entry_28e50P11SourceOwnerILm288EE": "0x7100028e50",
+        "_Z15has_entry_28e8cP11SourceOwnerILm288EE": "0x7100028e8c",
+        "_Z15has_entry_28ec8P11SourceOwnerILm288EE": "0x7100028ec8",
+        "_Z15has_entry_2a790P11SourceOwnerILm272EE": "0x710002a790",
+        "_Z15has_entry_2a7ccP11SourceOwnerILm272EE": "0x710002a7cc",
+        "_Z15has_entry_2a808P11SourceOwnerILm272EE": "0x710002a808",
+        "_Z15has_entry_ca798P11SourceOwnerILm272EE": "0x71000ca798",
+        "_Z15has_entry_ca7d4P11SourceOwnerILm272EE": "0x71000ca7d4",
+        "_Z15has_entry_ca810P11SourceOwnerILm272EE": "0x71000ca810",
+        "_Z15has_entry_ccc14P11SourceOwnerILm272EE": "0x71000ccc14",
+        "_Z15has_entry_ccc88P11SourceOwnerILm272EE": "0x71000ccc88",
+        "_Z15has_entry_cccfcP11SourceOwnerILm272EE": "0x71000cccfc"
+      }
+    },
+    "misc/base_teardowns.cpp": {
+      "functions": {
+        "_Z23destroy_from_base_296d8Ph": "0x71000296d8",
+        "_Z22delete_from_base_2971cPh": "0x710002971c",
+        "_Z23destroy_from_base_2981cPh": "0x710002981c",
+        "_Z22delete_from_base_29860Ph": "0x7100029860",
+        "_Z23destroy_from_base_2990cPh": "0x710002990c",
+        "_Z22delete_from_base_29950Ph": "0x7100029950",
+        "_Z23destroy_from_base_2afe0Ph": "0x710002afe0",
+        "_Z22delete_from_base_2b024Ph": "0x710002b024",
+        "_Z23destroy_from_base_2b120Ph": "0x710002b120",
+        "_Z22delete_from_base_2b164Ph": "0x710002b164",
+        "_Z23destroy_from_base_2b210Ph": "0x710002b210",
+        "_Z22delete_from_base_2b254Ph": "0x710002b254",
+        "_Z23destroy_from_base_c945cPh": "0x71000c945c",
+        "_Z23destroy_from_base_c94a0Ph": "0x71000c94a0",
+        "_Z23destroy_from_base_c94e4Ph": "0x71000c94e4",
+        "_Z22delete_from_base_c97a4Ph": "0x71000c97a4",
+        "_Z22delete_from_base_c97fcPh": "0x71000c97fc",
+        "_Z22delete_from_base_c9854Ph": "0x71000c9854",
+        "_Z23destroy_from_base_c9c4cPh": "0x71000c9c4c",
+        "_Z23destroy_from_base_c9ce0Ph": "0x71000c9ce0",
+        "_Z22delete_from_base_c9facPh": "0x71000c9fac",
+        "_Z22delete_from_base_ca068Ph": "0x71000ca068"
+      }
+    },
+    "misc/singleton_creates.cpp": {
+      "functions": {
+        "_Z22create_singleton_d5698v": "0x71000d5698",
+        "_Z22create_singleton_dde30v": "0x71000dde30",
+        "_Z22create_singleton_df4ccv": "0x71000df4cc",
+        "_Z23create_singleton_12c178v": "0x710012c178",
+        "_Z23create_singleton_288e30v": "0x7100288e30",
+        "_Z23create_singleton_291d18v": "0x7100291d18",
+        "_Z23create_singleton_414004v": "0x7100414004",
+        "_Z23create_singleton_444958v": "0x7100444958"
+      }
+    },
+    "misc/cleared_singletons.cpp": {
+      "functions": {
+        "_Z20create_cleared_d86d4v": "0x71000d86d4",
+        "_Z21create_cleared_1ff060v": "0x71001ff060",
+        "_Z21create_cleared_204cb8v": "0x7100204cb8",
+        "_Z21create_cleared_209a44v": "0x7100209a44",
+        "_Z21create_cleared_20acc0v": "0x710020acc0",
+        "_Z21create_cleared_20b980v": "0x710020b980",
+        "_Z21create_cleared_214d98v": "0x7100214d98"
       }
     }
   }
