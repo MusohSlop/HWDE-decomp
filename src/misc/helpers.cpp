@@ -1059,3 +1059,70 @@ int LazyId::resolve() {
         id = forward_value_3f388();
     return id;
 }
+// 0x71005ec504; original file: tables, 0x71005ec504
+struct TrailerTable {
+    void reset();
+
+    unsigned char bytes[0x300]; // +000
+    long value300;            // +300
+    long value308;            // +308
+    long value310;            // +310
+    long value318;            // +318
+    unsigned char active;     // +320
+};
+
+void TrailerTable::reset() {
+    value300 = 0;
+    active = 1;
+    value318 = 0;
+    value310 = 0;
+    value308 = 0;
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
+
+struct Block40 {
+    unsigned char bytes[0x40];
+};
+
+// 0x71003dfb34; original file: block copies, 0x71003dfb34
+Block40* copy_block40(void* owner, Block40* out, const Block40* in) {
+    memcpy(out, in, sizeof(Block40));
+    return out;
+}
+
+struct PanelPane;
+struct TrackLightTarget;
+void set_pane_lines(PanelPane* pane, TrackLightTarget* targets, unsigned int count); // 0x71001e41d8
+
+// 0x71003a5144; original file: panel drawing, 0x71003a5144
+struct LinePanel {
+    void draw();
+
+    LightEffectNode* node;    // +00
+    unsigned char pad8[0x18];
+    PanelPane* pane;          // +20
+    unsigned char pad28[0x18];
+    unsigned char lines[1];   // +40
+};
+
+void LinePanel::draw() {
+    set_pane_lines(pane, reinterpret_cast<TrackLightTarget*>(lines), 0x20);
+    node->draw(0);
+}
+
+short forward_value_3f378();                                                // 0x710003f378
+
+// 0x71002471a8; original file: lazy ids, 0x71002471a8
+struct LazyId8 {
+    int resolve();
+
+    void* owner;              // +00
+    int id;                   // +08
+};
+
+int LazyId8::resolve() {
+    if (id == -1)
+        id = forward_value_3f378();
+    return id;
+}

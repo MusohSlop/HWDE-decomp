@@ -343,3 +343,70 @@ int LockedCounter::value() {
     nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
     return result;
 }
+// 0x7100424a58, 0x710041fe54; original file: game objects, 0x710041be40-0x7100424a58
+// Vtables through the GOT slots at 0x7100c2b8a0 and 0x7100c2b860.
+class DualSlotA : public Base_41be40 {
+public:
+    DualSlotA();
+    ~DualSlotA() override;
+
+    unsigned char pad4c[4];
+    void* first;              // +50
+    void* second;             // +58
+};
+
+DualSlotA::DualSlotA() : first(nullptr), second(nullptr) {}
+
+class DualSlotB : public Base_41be40 {
+public:
+    DualSlotB();
+    ~DualSlotB() override;
+
+    unsigned char pad4c[4];
+    void* first;              // +50
+    void* second;             // +58
+};
+
+DualSlotB::DualSlotB() : first(nullptr), second(nullptr) {}
+
+// Model base (its constructor is matched elsewhere as 0x71005928c0).
+class ModelCore {
+public:
+    ModelCore();                                                            // 0x71005928c0
+    virtual ~ModelCore();
+    unsigned char pad[0x1298];
+};
+
+// 0x7100553c8c; original file: model classes, 0x7100553c8c
+// Vtable through the GOT slot at 0x7100c2d390.
+class AttachedModel : public ModelCore {
+public:
+    AttachedModel();
+    ~AttachedModel() override;
+
+    void* attachment;         // +12a0
+};
+
+AttachedModel::AttachedModel() : attachment(nullptr) {}
+
+class LightResource {
+public:
+    ~LightResource();                                                       // 0x71005d27b4
+    unsigned char pad[0x110];
+};
+class PanelBase_316aa4 {
+public:
+    virtual ~PanelBase_316aa4();                                            // 0x7100316aa4
+    unsigned char pad[0x38];
+};
+
+// 0x71003000c4; original file: panels, 0x71003000c4
+// Vtable through the GOT slot at 0x7100c2ac88.
+class ResourcePanel : public PanelBase_316aa4 {
+public:
+    ~ResourcePanel() override;
+
+    LightResource resource;   // +40
+};
+
+ResourcePanel::~ResourcePanel() {}
