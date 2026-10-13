@@ -1550,7 +1550,9 @@
     "_Z11call_1985f4i": "0x71001985f4",
     "got:_ZTV13IndexedChildB": "0x7100c227b8",
     "got:_ZTV8AdeFlags": "0x7100c224c8",
-    "_Z17wait_worker_readyP6Worker": "0x710045e094"
+    "_Z17wait_worker_readyP6Worker": "0x710045e094",
+    "_ZN15ModelCore2220705applyEiPvS0_": "0x7100222070",
+    "_ZN15ModelCore54b0445applyEiPvS0_": "0x710054b044"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -3194,7 +3196,35 @@
         "_Z22prepare_skinned_21d6e4P12SkinHost12e0": "0x710021d6e4",
         "_Z22prepare_skinned_21e464P12SkinHost12e0": "0x710021e464",
         "_Z22prepare_skinned_220064P12SkinHost12e0": "0x7100220064",
-        "_Z22prepare_skinned_220724P12SkinHost12e0": "0x7100220724"
+        "_Z22prepare_skinned_220724P12SkinHost12e0": "0x7100220724",
+        "_Z19apply_skinned_73644P12SkinHost12b0iPvS1_": "0x7100073644",
+        "_Z20apply_skinned_21dce8P12SkinHost12f0iPvS1_": "0x710021dce8",
+        "_Z20apply_skinned_21ea88P12SkinHost12b0iPvS1_": "0x710021ea88",
+        "_Z20apply_skinned_21f208P12SkinHost1f20iPvS1_": "0x710021f208",
+        "_Z20apply_skinned_21f8e8P12SkinHost1330iPvS1_": "0x710021f8e8",
+        "_Z20apply_skinned_23f58cP12SkinHost12d0iPvS1_": "0x710023f58c",
+        "_Z20apply_skinned_3e5f08P12SkinHost12b0iPvS1_": "0x71003e5f08",
+        "_Z20apply_skinned_4106b8P12SkinHost1320iPvS1_": "0x71004106b8",
+        "_Z20apply_skinned_410d98P12SkinHost1470iPvS1_": "0x7100410d98",
+        "_Z20apply_skinned_411478P12SkinHost12c0iPvS1_": "0x7100411478",
+        "_Z20apply_skinned_44e038P12SkinHost13d0iPvS1_": "0x710044e038",
+        "_Z20apply_skinned_44ee38P12SkinHost14c0iPvS1_": "0x710044ee38",
+        "_Z20apply_skinned_4505c0P12SkinHost1380iPvS1_": "0x71004505c0",
+        "_Z20apply_skinned_4513a8P12SkinHost1430iPvS1_": "0x71004513a8",
+        "_Z21prepare_skinned_7371cP12PrepHost12b0": "0x710007371c",
+        "_Z22prepare_skinned_21dda4P12PrepHost12f0": "0x710021dda4",
+        "_Z22prepare_skinned_21eb44P12PrepHost12b0": "0x710021eb44",
+        "_Z22prepare_skinned_21f2c4P12PrepHost1f20": "0x710021f2c4",
+        "_Z22prepare_skinned_21f9a4P12PrepHost1330": "0x710021f9a4",
+        "_Z22prepare_skinned_23f648P12PrepHost12d0": "0x710023f648",
+        "_Z22prepare_skinned_3e5fccP12PrepHost12b0": "0x71003e5fcc",
+        "_Z22prepare_skinned_410774P12PrepHost1320": "0x7100410774",
+        "_Z22prepare_skinned_410e54P12PrepHost1470": "0x7100410e54",
+        "_Z22prepare_skinned_411534P12PrepHost12c0": "0x7100411534",
+        "_Z22prepare_skinned_44e108P12PrepHost13d0": "0x710044e108",
+        "_Z22prepare_skinned_44eef4P12PrepHost14c0": "0x710044eef4",
+        "_Z22prepare_skinned_45067cP12PrepHost1380": "0x710045067c",
+        "_Z22prepare_skinned_451464P12PrepHost1430": "0x7100451464"
       }
     },
     "misc/small_families4.cpp": {

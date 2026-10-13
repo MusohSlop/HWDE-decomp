@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,332 of 1,431 attempted functions match: 1,322 inventory functions (108,864 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-nine are near misses, all `m`.
+1,360 of 1,459 attempted functions match: 1,350 inventory functions (111,104 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-nine are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -310,7 +310,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 11 of 13 in `misc/static_objects/` | static objects built on first use, one unit each | match |
 | `5aea74`, `5afb1c` | two of the static objects | near miss |
 | 26 in `misc/small_families3.cpp` | two-argument getter forwarders, paired calls on a global, null-terminated list walks, manager lookups | match |
-| 20 in `misc/skinned_overrides.cpp` | skinned-model overrides (base version, then the skin set's) | match |
+| 48 in `misc/skinned_overrides.cpp` | skinned-model overrides (base version, then the skin set's), 28 of them at other skin-set offsets | match |
 | 14 in `misc/small_families4.cpp`, 16 in `misc/small_families5.cpp` | nine-sprite constructors, swapped-argument solves, pool disposals, singleton deletes and creations, command checks, calls under the object manager's lock | match |
 | `3cca08`-`3cccb8` | `malloc`, `operator new` (plain and `nothrow`), `operator new[]`, `operator delete`, `operator delete[]` (`misc/heap_operators.cpp`) | match |
 | 9 in `misc/ranked_small.cpp` | `FileHandle` constructor, `open`, `close`; `MemoryStream` and `HeapMutex` constructors; `shared_zero_short`; `request_sound_unless_exiting`; `get_battle_setup`; `LargeSceneTask` constructor | match |
@@ -542,6 +542,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - A self-linked ring member matches when the link has its own constructor (`prev(this), next(this)`): set in the owner's body, its stores merge with the next field's.
   - `Profile::stats` (`20b970`) takes no argument: the profile value lookups call it without setting `x0` (it still holds the profile), which only reproduces with a free getter (`profile_stats()`).
   - Constructors whose field stores come before the vtable store, where the fields belong to a polymorphic base, match with an intermediate base whose inline constructor sets them (`MarkedModelBase`): its own vtable store is overwritten and removed.
+  - Shape scans with an immediate left open: the family scan only masks relocated fields, so the skinned-model overrides at other skin-set offsets (`+12b0` to `+1f20`) did not group with the first ones. A scan that compares every word except the offset's `mov` found 14 more apply and 14 more prepare overrides (three apply overrides call other bases: `591150`, `222070`, `54b044`).
   - Derived classes whose first field sits inside the base's size reuse the base's tail padding (allowed for a non-POD base in the Itanium ABI); the bases are declared with a size that leaves those bytes as padding (`Base_5325e4`, `Base_41be40`).
   - `get_battle_setup` builds its setup in a function-local static that the original addresses separately from its guard. The global merge pass keeps it out of the merged block only if its IR type is packed, which an `int` at the end (leaving tail padding) gives; the same packed-type rule as the default heap, used the other way round.
   - The scan masked the offset of a load whose base register had been loaded from a GOT slot (a field of the global rather than the pointer); it now stops tracking a register once a load replaces its page address. Two getters that read the second word of their global were found that way.
