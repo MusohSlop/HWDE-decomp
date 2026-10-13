@@ -1689,7 +1689,22 @@
     "_Z15part_call_381e4Pvi": "0x71000381e4",
     "_Z15part_call_39f88Pvi": "0x7100039f88",
     "_Z15part_call_37fb4Pvi": "0x7100037fb4",
-    "_Z15part_call_48ff4Pvi": "0x7100048ff4"
+    "_Z15part_call_48ff4Pvi": "0x7100048ff4",
+    "_Z13part_op_475d8Pv": "0x71000475d8",
+    "_Z13part_op_3ab40Pv": "0x710003ab40",
+    "_Z13part_op_3b0b0Pv": "0x710003b0b0",
+    "_Z13part_op_475f0Pv": "0x71000475f0",
+    "_Z13part_op_e062cPv": "0x71000e062c",
+    "_Z14part_op_13063cPv": "0x710013063c",
+    "_Z14part_op_1306c8Pv": "0x71001306c8",
+    "_Z13part_op_e0634Pv": "0x71000e0634",
+    "got:gFreeHook_c2bc00": "0x7100c2bc00",
+    "got:gFreeHook_c2bdf8": "0x7100c2bdf8",
+    "got:gFreeHook_c2c2a0": "0x7100c2c2a0",
+    "got:gFreeHook_c2c430": "0x7100c2c430",
+    "got:gFreeHook_c2ca08": "0x7100c2ca08",
+    "got:gItemScale": "0x7100c22918",
+    "gValueEntryCount": "0x7100c337b8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -4246,6 +4261,54 @@
         "_Z17seven_byte_2056dcP16SevenBytes2056dci": "0x71002056dc",
         "_Z17seven_byte_205734P16SevenBytes205734i": "0x7100205734",
         "_Z17seven_byte_20578cP16SevenBytes20578ci": "0x710020578c"
+      }
+    },
+    "misc/base_teardowns3.cpp": {
+      "functions": {
+        "_Z23destroy_from_base_25db0Ph": "0x7100025db0",
+        "_Z22delete_from_base_25de0Ph": "0x7100025de0",
+        "_Z23destroy_from_base_29bd8Ph": "0x7100029bd8",
+        "_Z22delete_from_base_29c18Ph": "0x7100029c18",
+        "_Z23destroy_from_base_2b4dcPh": "0x710002b4dc",
+        "_Z22delete_from_base_2b51cPh": "0x710002b51c",
+        "_Z23destroy_from_base_c95b0Ph": "0x71000c95b0",
+        "_Z22delete_from_base_c995cPh": "0x71000c995c"
+      }
+    },
+    "misc/object_helpers.cpp": {
+      "functions": {
+        "_Z18paired_parts_4699cPh": "0x710004699c",
+        "_Z18paired_parts_469d4Ph": "0x71000469d4",
+        "_Z19paired_parts_103830Ph": "0x7100103830",
+        "_Z19paired_parts_1058d0Ph": "0x71001058d0",
+        "_Z19paired_parts_38797cPh": "0x710038797c",
+        "_Z18free_hooked_4612ecP18HookedBuffer4612ec": "0x71004612ec",
+        "_Z18free_hooked_462600P18HookedBuffer462600": "0x7100462600",
+        "_Z18free_hooked_466c7cP18HookedBuffer466c7c": "0x7100466c7c",
+        "_Z18free_hooked_5f9614P18HookedBuffer5f9614": "0x71005f9614",
+        "_Z18free_hooked_5f9ad8P18HookedBuffer5f9ad8": "0x71005f9ad8",
+        "_Z20guarded_query_2ab140P13GuardedHolder": "0x71002ab140",
+        "_Z20guarded_query_2ab1f4P13GuardedHolder": "0x71002ab1f4",
+        "_Z20guarded_query_2ab9d0P13GuardedHolder": "0x71002ab9d0",
+        "_Z17scaled_item_ceee4P10ItemSource": "0x71000ceee4",
+        "_Z17scaled_item_cef54P10ItemSource": "0x71000cef54",
+        "_Z17scaled_item_cefa4P10ItemSource": "0x71000cefa4",
+        "_Z18entry_value_1704e0j": "0x71001704e0",
+        "_Z18entry_value_1708f0j": "0x71001708f0",
+        "_Z18entry_value_17097cj": "0x710017097c",
+        "_Z21notify_release_4e276cP14Notified4e276c": "0x71004e276c",
+        "_Z21notify_release_56fed8P14Notified56fed8": "0x710056fed8",
+        "_Z21notify_release_570564P14Notified570564": "0x7100570564",
+        "_Z20relation_kind_2dbd78P14RelationSourceh": "0x71002dbd78",
+        "_Z20relation_kind_2dbdc4P14RelationSourceh": "0x71002dbdc4",
+        "_Z20relation_kind_2dbe10P14RelationSourceh": "0x71002dbe10",
+        "_Z17reset_pair_3aa844P15ResetPair3aa844": "0x71003aa844",
+        "_Z17reset_pair_3aa890P15ResetPair3aa890": "0x71003aa890",
+        "_Z17reset_pair_5cc4ccP15ResetPair5cc4cc": "0x71005cc4cc",
+        "_Z15byte_bit_1a7f50P14ByteBits1a7f50j": "0x71001a7f50",
+        "_Z15byte_bit_202778P14ByteBits202778j": "0x7100202778",
+        "_Z15byte_bit_203b50P14ByteBits203b50j": "0x7100203b50",
+        "_Z15byte_bit_203bd8P14ByteBits203bd8j": "0x7100203bd8"
       }
     }
   }
