@@ -1654,3 +1654,79 @@ void FlagTable::reset() {
     for (unsigned int i = 0; i < sizeof(slots); ++i)
         slots[i] = 0xff;
 }
+// 0x71001f33c8; original file: stage layout, 0x71001f33c8
+void reload_stage_light(void** slot) {
+    release_light(slot);
+    int stage = get_shared_state()->stage;
+    *slot = load_layout(stage == 6 ? 0xb : stage + 0xa);
+}
+
+// 0x71001ef284; original file: layout elements, 0x71001ef284
+struct DelayedNode {
+    void show();
+
+    int count;                // +00
+    unsigned char pad4[4];
+    unsigned char shown;      // +08
+    unsigned char enabled;    // +09
+    unsigned char padA[0x116];
+    LightEffectNode* node;    // +120
+};
+
+void DelayedNode::show() {
+    if (count && enabled) {
+        node->draw(0);
+        shown = 1;
+    }
+}
+
+class DefaultHeapRelease {
+public:
+    void release(void* ptr, int a, int b);                                   // 0x710045c2f4
+};
+DefaultHeapRelease* get_default_heap_release();                             // 0x710045c96c
+
+// 0x710006cca4; original file: buffers, 0x710006cca4
+struct OwnedBuffer {
+    void reset();
+
+    void* value0;             // +00
+    void* buffer;             // +08
+};
+
+void OwnedBuffer::reset() {
+    if (void* data = buffer) {
+        get_default_heap_release()->release(data, 1, 0);
+        buffer = nullptr;
+    }
+    value0 = nullptr;
+}
+
+// 0x710003cea8; original file: buffers, 0x710003cea8
+struct SizedBuffer {
+    void reset();
+
+    void* buffer;             // +00
+    long size;                // +08
+    long used;                // +10
+};
+
+void SizedBuffer::reset() {
+    if (void* data = buffer) {
+        get_default_heap_release()->release(data, 1, 0);
+        buffer = nullptr;
+    }
+    size = 0;
+    used = 0;
+}
+
+unsigned char forward_flag_6eb7c();                                         // 0x710006eb7c
+// Reached through the GOT slot at 0x7100c2ec00.
+extern int gGlobalMode_c2ec00;
+
+// 0x710003e22c; original file: global queries, 0x710003e22c
+bool global_mode_basic() {
+    if (forward_flag_6eb7c())
+        return gGlobalMode_c2ec00 == 0 || gGlobalMode_c2ec00 == 1;
+    return false;
+}

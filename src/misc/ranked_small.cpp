@@ -284,6 +284,7 @@ public:
     FrameHeapBase();                                                        // 0x71005c2d24
     virtual ~FrameHeapBase();
     void finalize();                                                        // 0x71005c2e54
+    void* fetch();                                                          // 0x71005c2f18
     unsigned char pad[0x58];
 };
 
@@ -293,6 +294,7 @@ class OwnedFrameHeap : public FrameHeapBase {
 public:
     OwnedFrameHeap();
     ~OwnedFrameHeap() override;
+    void finalize_all();
 
     void* owner;              // +60
 };
@@ -319,6 +321,7 @@ struct MutexOwner {
 // 0x71005c4bec; original file: heap objects, 0x71005c2c78-0x71005c4bec
 struct LockedFrameHeap {
     void finalize();
+    void* fetch();
 
     void* value0;             // +00
     FrameHeapBase heap;       // +08
@@ -958,3 +961,77 @@ void TwoResourceScene::attach() {
     gEffectManager->attach(reinterpret_cast<EffectResource*>(resource10), nullptr);
     gEffectManager->attach_resource(reinterpret_cast<EffectResource*>(resource120));
 }
+class DefaultHeap {
+public:
+    void release(void* ptr, int a, int b);                                   // 0x710045c2f4
+};
+DefaultHeap* get_default_heap();                                            // 0x710045c96c
+
+// 0x7100046550; original file: frame heaps, 0x71000464c8-0x7100046550
+void OwnedFrameHeap::finalize_all() {
+    finalize();
+    if (void* buffer = owner) {
+        get_default_heap()->release(buffer, 1, 0);
+        owner = nullptr;
+    }
+}
+
+// 0x71005c4c5c; original file: heap objects, 0x71005c2c78-0x71005c4c5c
+void* LockedFrameHeap::fetch() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    void* result = heap.fetch();
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    return result;
+}
+
+extern "C" void* memset(void* dest, int value, unsigned long size);
+
+class RawAllocator {
+public:
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+    virtual void v18();
+    virtual void v20();
+    virtual void v28();
+    virtual void v30();
+    virtual void v38();
+    virtual void* allocate(unsigned long size);                             // +40
+};
+
+// 0x71005c2cd8; original file: heap objects, 0x71005c2c78-0x71005c2cd8
+void* allocate_zeroed(RawAllocator* allocator, unsigned long size) {
+    void* memory = allocator->allocate(size);
+    if (memory)
+        memset(memory, 0, size);
+    return memory;
+}
+
+// 0x710053e2b0; original file: file system objects, 0x710053d304-0x710053e718
+void close_reader(FileReader* reader) {
+    if (reader->handle) {
+        gObjectManager->files->close(&reader->handle, 0);
+        reader->handle = nullptr;
+    }
+}
+
+class Base_c3184 {
+public:
+    Base_c3184();                                                           // 0x71000c3184
+    virtual ~Base_c3184();
+    unsigned char pad[0x268];
+};
+
+// 0x71000bda6c; vtable through the GOT slot at 0x7100c227c8.
+class IndexedChild : public Base_c3184 {
+public:
+    IndexedChild();
+    ~IndexedChild() override;
+
+    int index;                // +270
+    unsigned char pad274[4];
+    void* value278;           // +278
+    int value280;             // +280
+};
+
+IndexedChild::IndexedChild() : index(-1), value278(nullptr), value280(0) {}
