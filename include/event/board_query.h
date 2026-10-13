@@ -69,7 +69,14 @@ public:
     unsigned char valueb9f9;  // +b9f9
     unsigned char padb9fa[2];
     int valueb9fc;            // +b9fc
-    long valueba00;           // +ba00
+    union {
+        long valueba00;       // +ba00: cleared as one word
+        struct {
+            int valueba00_low;
+            unsigned char item_found; // +ba04
+            unsigned char padba05[3];
+        };
+    };
 };
 static_assert(sizeof(BoardQuery) == 0xba08, "board query size");
 

@@ -437,7 +437,6 @@
     "_Z12player_setupPvS_i": "0x710026a98c",
     "_Z13game_has_flagP4Gamei": "0x71002026fc",
     "_Z13game_set_flagP4Gameih": "0x7100202730",
-    "_ZN9EventTaskC1Ev": "0x7100283fd0",
     "_ZN10BattleTaskC1Ev": "0x71002d8e2c",
     "_ZN10BattleTask7prepareEv": "0x71002d8eec",
     "_ZN10BattleTask6finishEv": "0x71002d901c",
@@ -497,7 +496,6 @@
     "got:gTitleRequest": "0x7100c2a750",
     "strcat": "0x7100600b40",
     "_ZN12BattleParams5clearEv": "0x71001a8e1c",
-    "_Z18prepare_menu_boardji": "0x7100283e88",
     "_ZN11TitleBanner9set_layerEi": "0x71001e1e2c",
     "_ZN11TitleBanner12show_defaultEv": "0x71001e1fd8",
     "_ZN11TitleBanner9show_textEi": "0x71001e216c",
@@ -561,10 +559,25 @@
     "_Z17destroy_adv_boardv": "0x710029b5a4",
     "_Z20destroy_board_cursorv": "0x7100288e7c",
     "_Z20destroy_board_camerav": "0x7100288a0c",
-    "_Z18release_menu_boardv": "0x7100283f78",
-    "_Z18release_menu_unitsv": "0x7100283e10",
     "_ZN5Fader7releaseEPvS0_": "0x71001dfb5c",
-    "_Z12task_releasePvii": "0x7100387784"
+    "_Z12task_releasePvii": "0x7100387784",
+    "kMenuIcons": "0x71007f69bc",
+    "_Z9draw_iconPvPK9IconEntryS_": "0x71001eff04",
+    "_ZN14ResourceHandle7releaseEv": "0x71001f7960",
+    "got:gMenuBoard": "0x7100c2a650",
+    "_ZN10DialogTaskC2Ev": "0x71003892d8",
+    "got:_ZTV9EventTask": "0x7100c2a830",
+    "_ZN9EventTaskC1Ev": "0x7100283fd0",
+    "_ZN4Game6trophyEj": "0x71002042bc",
+    "_ZN4Game8has_itemEi": "0x7100203fac",
+    "_ZN4Game8unlockedEi": "0x7100204518",
+    "_ZN11StageLights7item_ofEi": "0x71001fb214",
+    "_Z12trophy_readyP12TrophyRecord": "0x7100288990",
+    "_Z13trophy_targetP12TrophyRecord": "0x7100288734",
+    "_Z11target_itemPv": "0x7100206098",
+    "_Z11load_layouti": "0x71001f7868",
+    "kMenuUnitLayouts": "0x71007f7a20",
+    "_Z18prepare_menu_boardji": "0x7100283e88"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -1046,7 +1059,8 @@
         "_Z19plain_cells_clearedv": "0x7100279080"
       },
       "map": {
-        ".rodata": "0x71007f51a4"
+        ".rodata": "0x71007f51a4",
+        ".rodata.cst4": "0x710073bc94"
       }
     },
     "event/adv_mode.cpp": {
@@ -1091,6 +1105,24 @@
       "map": {
         ".rodata": "0x71007f58e4",
         ".rodata.cst4": "0x710073c188"
+      }
+    },
+    "event/adv_menu_board.cpp": {
+      "functions": {
+        "_Z11cell_existsiiPi": "0x7100283b54",
+        "_ZN9MenuIcons4iconEi": "0x7100283d74",
+        "_ZN9MenuIcons4drawEPvi": "0x7100283d8c",
+        "_ZN9MenuIcons10draw_entryEPvPK9IconEntry": "0x7100283db0",
+        "_Z17create_menu_boardv": "0x7100283dc4",
+        "_Z18release_menu_unitsv": "0x7100283e10",
+        "_Z18release_menu_boardv": "0x7100283f78",
+        "_ZN9EventTaskC2Ev": "0x7100283fd0",
+        "_Z14slot_availablej": "0x7100282d74",
+        "_Z16cell_trophy_openi": "0x7100283028",
+        "_Z16cell_short_routei": "0x71002830f8",
+        "_Z18cell_reward_lockedi": "0x71002831a4",
+        "_Z14note_cell_itemi": "0x7100283234",
+        "_Z18prepare_menu_boardih": "0x7100283e88"
       }
     }
   }
