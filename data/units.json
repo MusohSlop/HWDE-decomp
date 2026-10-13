@@ -1234,7 +1234,8 @@
         "_ZN11DefaultHeap8allocateEmmhh": "0x710045c458",
         "_ZN11DefaultHeap7releaseEPvhh": "0x710045c2f4",
         "_Z17get_heap_registryv": "0x710045c1dc",
-        "_Z16get_default_heapv": "0x710045c96c"
+        "_Z16get_default_heapv": "0x710045c96c",
+        "_ZN10SystemHeap10initializeEPvm": "0x710045ca24"
       },
       "map": {
         "_ZGVZ17get_heap_registryvE9sRegistry": "0x7100cf0410",

@@ -9,7 +9,15 @@ struct MutexType {
 void LockMutex(MutexType* mutex);
 void UnlockMutex(MutexType* mutex);
 }  // namespace os
+struct TimeSpan {
+    long nanoseconds;
+};
+namespace os {
+void SleepThread(TimeSpan time);
+}
 }  // namespace nn
+
+extern "C" void* memset(void* dest, int value, unsigned long size);
 
 static const unsigned long kSizeMask = 0x7fffffffffffffffUL;
 static const unsigned long kKeepFlag = 0x8000000000000000UL;
@@ -46,7 +54,8 @@ public:
 
     HeapLock* locker;         // +00
     long value8;              // +08
-    unsigned char pad10[0x10];
+    HeapBlock* head;          // +10
+    int capacity;             // +18
     HeapBlock* cursor;        // +20: first block worth searching
     HeapBlock* tail;          // +28
     unsigned long free_bytes; // +30
@@ -60,6 +69,7 @@ class FrameHeapImpl {
 public:
     FrameHeapImpl();                                                        // 0x71005c2d24
     virtual ~FrameHeapImpl();
+    void initialize(void* buffer, unsigned long size, int a, int b, int alignment); // 0x71005c2d40
     unsigned char pad[0x58];
 };
 
@@ -73,16 +83,60 @@ public:
     ~BackFrameHeap() override;
 };
 
+// Spin lock: retries spin_limit times between sleeps (sleep_ms, or 10 us when zero); a
+// negative limit sleeps 10 us between every retry.
+struct SpinLock {
+    int spin_limit;           // +0
+    unsigned int sleep_ms;    // +4
+    int state;                // +8
+
+    SpinLock() : spin_limit(1000), sleep_ms(0), state(0) {}
+
+    bool try_lock() {
+        int expected = 0;
+        return __atomic_compare_exchange_n(&state, &expected, 1, false, __ATOMIC_SEQ_CST,
+                                           __ATOMIC_SEQ_CST);
+    }
+    void lock() {
+        if (spin_limit < 0) {
+            while (!try_lock()) {
+                nn::TimeSpan wait = {10000};
+                nn::os::SleepThread(wait);
+            }
+        } else {
+            int spins = 0;
+            while (!try_lock()) {
+                if (spins < spin_limit) {
+                    ++spins;
+                } else {
+                    if (sleep_ms) {
+                        nn::TimeSpan wait = {sleep_ms * 1000000L};
+                        nn::os::SleepThread(wait);
+                    } else {
+                        nn::TimeSpan wait = {10000};
+                        nn::os::SleepThread(wait);
+                    }
+                    spins = 0;
+                }
+            }
+        }
+    }
+    void unlock() {
+        int expected = 1;
+        __atomic_compare_exchange_n(&state, &expected, 0, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+    }
+};
+
 class SystemHeap : public DefaultHeap {
 public:
-    SystemHeap() : limit(1000), value174(0), value178(0) {}
+    SystemHeap() {}
     ~SystemHeap();
+    void initialize(void* buffer, unsigned long size);                     // 0x710045ca24
 
     FrontFrameHeap front;     // +b0
     BackFrameHeap back;       // +110
-    int limit;                // +170
-    int value174;             // +174
-    int value178;             // +178
+    SpinLock back_lock;       // +170
+    int value17c;             // +17c
 };
 static_assert(sizeof(SystemHeap) == 0x180, "system heap size");
 
@@ -110,6 +164,27 @@ HeapRegistry* get_heap_registry() {
 DefaultHeap* get_default_heap() {
     static SystemHeap sHeap;
     return &sHeap;
+}
+
+// 0x710045ca24
+void SystemHeap::initialize(void* buffer, unsigned long size) {
+    free_bytes = 0;
+    memset(buffer, 0, size);
+    head = static_cast<HeapBlock*>(buffer);
+    head->prev = nullptr;
+    head->next = nullptr;
+    head->data = nullptr;
+    head->size = (size - sizeof(HeapBlock)) & kSizeMask;
+    capacity = size;
+    cursor = head;
+    tail = head;
+    free_bytes = head->size & kSizeMask;
+    void* front_buffer = get_heap_registry()->value28;
+    front.initialize(front_buffer, 0x10000000, 4, 4, 0x10);
+    void* back_buffer = get_heap_registry()->value30;
+    back_lock.lock();
+    back.initialize(back_buffer, 0x300000, 4, 4, 0x10);
+    back_lock.unlock();
 }
 
 void* DefaultHeap::allocate(unsigned long alignment, unsigned long size, unsigned char lock,
