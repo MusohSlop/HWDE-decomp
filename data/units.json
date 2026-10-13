@@ -1659,7 +1659,15 @@
     "got:gClearedBlock209a44": "0x7100c23298",
     "got:gClearedBlock20acc0": "0x7100c232b0",
     "got:gClearedBlock20b980": "0x7100c232d0",
-    "got:gClearedBlock214d98": "0x7100c23378"
+    "got:gClearedBlock214d98": "0x7100c23378",
+    "_Z18destroy_part_b8ab0Pv": "0x71000b8ab0",
+    "_Z18destroy_part_bf6ccPv": "0x71000bf6cc",
+    "_Z18destroy_part_c0920Pv": "0x71000c0920",
+    "_Z18handle_slot_1fe32cP15TableSlot1fea4ciPv": "0x71001fe32c",
+    "_Z18handle_slot_2066fcP15TableSlot207068iPv": "0x71002066fc",
+    "_Z18handle_slot_213d4cP15TableSlot2141b4iPv": "0x7100213d4c",
+    "_Z18handle_slot_214214P15TableSlot214a5ciPv": "0x7100214214",
+    "_Z18handle_slot_214f78P15TableSlot215308iPv": "0x7100214f78"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -3905,6 +3913,157 @@
         "_Z21create_cleared_20acc0v": "0x710020acc0",
         "_Z21create_cleared_20b980v": "0x710020b980",
         "_Z21create_cleared_214d98v": "0x7100214d98"
+      }
+    },
+    "misc/flag_sets.cpp": {
+      "functions": {
+        "_Z16test_flag_203d0cP11Flags203d0ci": "0x7100203d0c",
+        "_Z16test_flag_203dfcP11Flags203dfci": "0x7100203dfc",
+        "_Z16test_flag_203ed4P11Flags203ed4i": "0x7100203ed4",
+        "_Z16test_flag_203facP11Flags203faci": "0x7100203fac",
+        "_Z16test_flag_204034P11Flags204034i": "0x7100204034",
+        "_Z16test_flag_2040bcP11Flags2040bci": "0x71002040bc",
+        "_Z16test_flag_2045a0P11Flags2045a0i": "0x71002045a0",
+        "_Z16test_flag_204674P11Flags204674i": "0x7100204674",
+        "_Z16test_flag_206368P11Flags206368i": "0x7100206368",
+        "_Z18update_flag_203fe0P11Flags203fe0ih": "0x7100203fe0",
+        "_Z18update_flag_204068P11Flags204068ih": "0x7100204068",
+        "_Z18update_flag_20454cP11Flags20454cih": "0x710020454c",
+        "_Z18update_flag_204620P11Flags204620ih": "0x7100204620",
+        "_Z18update_flag_206314P11Flags206314ih": "0x7100206314"
+      }
+    },
+    "misc/item_fields.cpp": {
+      "functions": {
+        "_Z17item_field_21139ci": "0x710021139c",
+        "_Z17item_field_2113c0i": "0x71002113c0",
+        "_Z17item_field_2113e4i": "0x71002113e4",
+        "_Z17item_field_211408i": "0x7100211408",
+        "_Z17item_field_21142ci": "0x710021142c",
+        "_Z17item_field_211450i": "0x7100211450",
+        "_Z17item_field_211530i": "0x7100211530",
+        "_Z17item_field_21159ci": "0x710021159c",
+        "_Z17item_field_2115c0i": "0x71002115c0",
+        "_Z17item_field_2115e4i": "0x71002115e4",
+        "_Z17item_field_211608i": "0x7100211608",
+        "_Z17item_field_21162ci": "0x710021162c",
+        "_Z17item_field_211650i": "0x7100211650",
+        "_Z17item_field_211674i": "0x7100211674",
+        "_Z17item_field_211698i": "0x7100211698",
+        "_Z17item_field_211474i": "0x7100211474",
+        "_Z17item_field_211498i": "0x7100211498",
+        "_Z17item_field_2114bci": "0x71002114bc",
+        "_Z17item_field_2114e0i": "0x71002114e0",
+        "_Z17item_field_21150ci": "0x710021150c",
+        "_Z17item_field_211554i": "0x7100211554",
+        "_Z17item_field_211578i": "0x7100211578"
+      }
+    },
+    "misc/checked_ids.cpp": {
+      "functions": {
+        "_Z17checked_id_1fe2b4P14IdRecord1fe2b4": "0x71001fe2b4",
+        "_Z17checked_id_1fe2c8P14IdRecord1fe2c8": "0x71001fe2c8",
+        "_Z17checked_id_1fe678P14IdRecord1fe678": "0x71001fe678",
+        "_Z17checked_id_1ff960P14IdRecord1ff960": "0x71001ff960",
+        "_Z17checked_id_2003e8P14IdRecord2003e8": "0x71002003e8",
+        "_Z17checked_id_20175cP14IdRecord20175c": "0x710020175c",
+        "_Z17checked_id_201770P14IdRecord201770": "0x7100201770",
+        "_Z17checked_id_201784P14IdRecord201784": "0x7100201784",
+        "_Z17checked_id_201798P14IdRecord201798": "0x7100201798",
+        "_Z17checked_id_2017acP14IdRecord2017ac": "0x71002017ac",
+        "_Z17checked_id_202114P14IdRecord202114": "0x7100202114",
+        "_Z17checked_id_2034e0P14IdRecord2034e0": "0x71002034e0",
+        "_Z17checked_id_20363cP14IdRecord20363c": "0x710020363c",
+        "_Z17checked_id_209ffcP14IdRecord209ffc": "0x7100209ffc",
+        "_Z17checked_id_20a0b8P14IdRecord20a0b8": "0x710020a0b8",
+        "_Z17checked_id_20a0dcP14IdRecord20a0dc": "0x710020a0dc",
+        "_Z17checked_id_20a134P14IdRecord20a134": "0x710020a134",
+        "_Z17checked_id_20eed8P14IdRecord20eed8": "0x710020eed8",
+        "_Z17checked_id_20eeecP14IdRecord20eeec": "0x710020eeec"
+      }
+    },
+    "misc/base_teardowns2.cpp": {
+      "functions": {
+        "_Z23destroy_from_base_25ba8Ph": "0x7100025ba8",
+        "_Z22delete_from_base_25bdcPh": "0x7100025bdc",
+        "_Z23destroy_from_base_25c58Ph": "0x7100025c58",
+        "_Z22delete_from_base_25c8cPh": "0x7100025c8c",
+        "_Z23destroy_from_base_25cfcPh": "0x7100025cfc",
+        "_Z22delete_from_base_25d30Ph": "0x7100025d30",
+        "_Z23destroy_from_base_29404Ph": "0x7100029404",
+        "_Z22delete_from_base_29448Ph": "0x7100029448",
+        "_Z23destroy_from_base_29510Ph": "0x7100029510",
+        "_Z22delete_from_base_29554Ph": "0x7100029554",
+        "_Z23destroy_from_base_29614Ph": "0x7100029614",
+        "_Z22delete_from_base_29658Ph": "0x7100029658",
+        "_Z23destroy_from_base_29a2cPh": "0x7100029a2c",
+        "_Z22delete_from_base_29a70Ph": "0x7100029a70",
+        "_Z23destroy_from_base_29ae8Ph": "0x7100029ae8",
+        "_Z22delete_from_base_29b2cPh": "0x7100029b2c",
+        "_Z23destroy_from_base_2ac84Ph": "0x710002ac84",
+        "_Z22delete_from_base_2acc8Ph": "0x710002acc8",
+        "_Z23destroy_from_base_2ad20Ph": "0x710002ad20",
+        "_Z22delete_from_base_2ad64Ph": "0x710002ad64",
+        "_Z23destroy_from_base_2ae24Ph": "0x710002ae24",
+        "_Z22delete_from_base_2ae68Ph": "0x710002ae68",
+        "_Z23destroy_from_base_2af1cPh": "0x710002af1c",
+        "_Z22delete_from_base_2af60Ph": "0x710002af60",
+        "_Z23destroy_from_base_2b330Ph": "0x710002b330",
+        "_Z22delete_from_base_2b374Ph": "0x710002b374",
+        "_Z23destroy_from_base_2b3ecPh": "0x710002b3ec",
+        "_Z22delete_from_base_2b430Ph": "0x710002b430",
+        "_Z23destroy_from_base_c934cPh": "0x71000c934c",
+        "_Z23destroy_from_base_c9390Ph": "0x71000c9390",
+        "_Z23destroy_from_base_c93d4Ph": "0x71000c93d4",
+        "_Z23destroy_from_base_c9418Ph": "0x71000c9418",
+        "_Z23destroy_from_base_c9528Ph": "0x71000c9528",
+        "_Z23destroy_from_base_c956cPh": "0x71000c956c",
+        "_Z22delete_from_base_c9644Ph": "0x71000c9644",
+        "_Z22delete_from_base_c969cPh": "0x71000c969c",
+        "_Z22delete_from_base_c96f4Ph": "0x71000c96f4",
+        "_Z22delete_from_base_c974cPh": "0x71000c974c",
+        "_Z22delete_from_base_c98acPh": "0x71000c98ac",
+        "_Z22delete_from_base_c9904Ph": "0x71000c9904",
+        "_Z23destroy_from_base_c9b3cPh": "0x71000c9b3c",
+        "_Z23destroy_from_base_c9b80Ph": "0x71000c9b80",
+        "_Z23destroy_from_base_c9bc4Ph": "0x71000c9bc4",
+        "_Z23destroy_from_base_c9c08Ph": "0x71000c9c08",
+        "_Z23destroy_from_base_c9d24Ph": "0x71000c9d24",
+        "_Z23destroy_from_base_c9d68Ph": "0x71000c9d68",
+        "_Z22delete_from_base_c9e4cPh": "0x71000c9e4c",
+        "_Z22delete_from_base_c9ea4Ph": "0x71000c9ea4",
+        "_Z22delete_from_base_c9efcPh": "0x71000c9efc",
+        "_Z22delete_from_base_c9f54Ph": "0x71000c9f54",
+        "_Z22delete_from_base_ca0c0Ph": "0x71000ca0c0",
+        "_Z22delete_from_base_ca118Ph": "0x71000ca118"
+      }
+    },
+    "misc/owned_buffers.cpp": {
+      "functions": {
+        "_Z21release_buffer_132b10P17OwnedBuffer132b10": "0x7100132b10",
+        "_Z21release_buffer_13eaacP17OwnedBuffer13eaac": "0x710013eaac",
+        "_Z21release_buffer_193754P17OwnedBuffer193754": "0x7100193754",
+        "_Z21release_buffer_1940acP17OwnedBuffer1940ac": "0x71001940ac",
+        "_Z21release_buffer_19682cP17OwnedBuffer19682c": "0x710019682c",
+        "_Z21release_buffer_19d9dcP17OwnedBuffer19d9dc": "0x710019d9dc"
+      }
+    },
+    "misc/slot_passes.cpp": {
+      "functions": {
+        "_Z20for_each_slot_1fea4cP15TableSlot1fea4cPv": "0x71001fea4c",
+        "_Z20for_each_slot_207068P15TableSlot207068Pv": "0x7100207068",
+        "_Z20for_each_slot_2141b4P15TableSlot2141b4Pv": "0x71002141b4",
+        "_Z20for_each_slot_214a5cP15TableSlot214a5cPv": "0x7100214a5c",
+        "_Z20for_each_slot_215308P15TableSlot215308Pv": "0x7100215308"
+      }
+    },
+    "misc/phased_cells.cpp": {
+      "functions": {
+        "_Z23apply_cell_phase_3d65a4P10PhasedGridii": "0x71003d65a4",
+        "_Z23apply_cell_phase_3d65f0P10PhasedGridii": "0x71003d65f0",
+        "_Z23apply_cell_phase_3d663cP10PhasedGridii": "0x71003d663c",
+        "_Z23apply_cell_phase_3d6688P10PhasedGridii": "0x71003d6688",
+        "_Z23apply_cell_phase_3d6818P10PhasedGridii": "0x71003d6818"
       }
     }
   }

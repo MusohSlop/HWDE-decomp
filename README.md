@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,520 of 1,659 attempted functions match: 1,510 inventory functions (126,064 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 139 are near misses, all `m`.
+1,643 of 1,782 attempted functions match: 1,633 inventory functions (133,300 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 139 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -319,6 +319,11 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 22 in `misc/base_teardowns.cpp` | destructor bodies reached through a secondary base (four member parts, then the primary base; 11 also release to the default heap) | match |
 | 8 in `misc/singleton_creates.cpp`, 7 in `misc/cleared_singletons.cpp` | singletons built on the default heap on first use (constructed, or cleared with `memset`) | match |
 | 6 in `misc/packed_fetch.cpp`, 6 in `misc/tree_walks.cpp` | packed-archive entry fetches; scene-tree walks with per-visitor tests | near miss (2 and 7 words) |
+| 14 in `misc/flag_sets.cpp` | unchecked bit-set tests and updates on the game object (the shape of `Game::unlocked`) | match |
+| 22 in `misc/item_fields.cpp` | item-definition fields through the table's `find` (16-bit, 32-bit and byte fields) | match |
+| 19 in `misc/checked_ids.cpp` | 16-bit id fields with a table-end check (`-1` past the end) | match |
+| 52 in `misc/base_teardowns2.cpp` | more destructor bodies reached through a secondary base (pattern scan) | match |
+| 6 in `misc/owned_buffers.cpp`, 5 in `misc/slot_passes.cpp`, 5 in `misc/phased_cells.cpp` | owned-buffer releases through the slot allocator; per-slot table passes; frame-phase forwards to a grid cell's virtual | match |
 | 48 in `misc/skinned_overrides.cpp` | skinned-model overrides (base version, then the skin set's), 28 of them at other skin-set offsets | match |
 | 14 in `misc/small_families4.cpp`, 16 in `misc/small_families5.cpp` | nine-sprite constructors, swapped-argument solves, pool disposals, singleton deletes and creations, command checks, calls under the object manager's lock | match |
 | `3cca08`-`3cccb8` | `malloc`, `operator new` (plain and `nothrow`), `operator new[]`, `operator delete`, `operator delete[]` (`misc/heap_operators.cpp`) | match |
@@ -378,6 +383,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ### Source-shape lessons
 
+- **Null-select lookups.** A bounded lookup that is dereferenced directly (`csel x8, x8, xzr, lo`, then a load) keeps its select only when the lookup is a method on the table that returns `&defs[item]` (`misc/item_fields.cpp`). In an inline helper that reads the global inside the ternary, Clang emits a branch, and SimplifyCFG deletes the null path as undefined.
 - **Translation units and globals.**
   - `DemoSequenceItem` (`2173c4`, `2174d0`) is a separate unit after the sequence unit. If it is in the same file, `release` gets inlined into `clear`.
   - The queue registry (`c8af40`), the worker controls (`c8aef8`) and the high-worker enable byte (`c8af38`) are external hidden globals. As file-static globals in one unit, LLVM's GlobalMerge combines them and addresses one relative to another.
@@ -584,6 +590,17 @@ Counts re-measured after the family rounds (distinct direct callees not yet name
 `45e160` (1,464 bytes) is a 61-case statistics switch with a jump table at `811194`. It calls at least six game functions whose signatures are unknown (`204728`, `203dfc`, `2028b4`, `200fc0`, `2015a8`, `200294`), so it needs its own effort. The four small virtuals at `45dcd0`–`45dd28` need their class and vtable identified first.
 
 ### Near misses
+
+Near-miss families, ranked by members × the fraction of words that match (one fix converts every member):
+
+| Family | Members | Words off | Score |
+| --- | --- | --- | --- |
+| `misc/model_updates.cpp` (`72c08` and others) | 22 | 2 of 65 | 21.3 |
+| `misc/packed_fetch.cpp` (`5968d0`-`596d6c`) | 6 | 2 of 58 | 5.8 |
+| `misc/tree_walks.cpp` (`4ea47c`-`4ee9d4`) | 6 | 7 of 75 | 5.4 |
+| `misc/part_binders.cpp` (`59c560`-`59ca10`) | 6 | 27 of 60 | 3.3 |
+
+All other near misses are single functions.
 
 `5968d0`-`596d6c` (`misc/packed_fetch.cpp`): two words. The original loads an entry's offset with a pre-indexed `ldr` and its size from the updated base, so the two loads never pair. Ours folds both addresses and pairs them into one `ldp`. Reading the size through a field pointer made no difference.
 
