@@ -1488,7 +1488,22 @@
     "_Z21resources_call_3882e8P15SharedResourcesfi": "0x71003882e8",
     "_ZN8DrawNode4drawEi": "0x71001e34a0",
     "_ZN17EffectManagerView6attachEP14EffectResourcePv": "0x71001e26dc",
-    "_ZN8SceneSub6createEi": "0x7100386e64"
+    "_ZN8SceneSub6createEi": "0x7100386e64",
+    "kTypeRequests": "0x7100bd3668",
+    "_ZN14EffectNodeList6removeEPv": "0x71005c3774",
+    "got:gObjectManagerLock": "0x7100c21de8",
+    "_ZN16FlaggedModelCoreC2Ev": "0x71005928c0",
+    "got:_ZTV12FlaggedModel": "0x7100c2d758",
+    "got:_ZTV12TrackedModel": "0x7100c2d750",
+    "_Z27resource_queue_has_callbackPv": "0x7100259680",
+    "_Z18load_global_40d628v": "0x710040d628",
+    "_Z18global_call_40d754PvS_i": "0x710040d754",
+    "_Z17part_call3_4348a4PviS_S_": "0x71004348a4",
+    "_Z17part_call3_41fdd8PvS_S_i": "0x710041fdd8",
+    "_Z17part_call3_41d100Pviii": "0x710041d100",
+    "got:_ZTV12RecordObject": "0x7100c2b760",
+    "_ZN2nn2os10ClearEventEPNS0_9EventTypeE": "0x7100600c00",
+    "_ZN2nn2os11YieldThreadEv": "0x7100600b20"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2320,7 +2335,15 @@
         "_ZN11DefaultPair5resetEv": "0x71003dcae8",
         "_Z19resources_set_valuef": "0x71003c7200",
         "_Z25release_held_light_c2ada0v": "0x710037adb8",
-        "_Z25release_held_light_c2af58v": "0x7100379ab4"
+        "_Z25release_held_light_c2af58v": "0x7100379ab4",
+        "_ZN14PendingRequest21clear_unless_stoppingEv": "0x7100300140",
+        "_ZN13RequestWaiter5readyEv": "0x71002d8d98",
+        "_ZN10TimerStart5startEi": "0x710011f1a4",
+        "_ZN11MixedRecord5resetEv": "0x710004a660",
+        "_Z22guarded_forward_40d754Pvi": "0x7100454314",
+        "_Z20global_part28_4348a4iPvS_": "0x7100454028",
+        "_Z20global_part20_41fdd8PvS_i": "0x7100453d08",
+        "_Z20global_part10_41d100iii": "0x71004528fc"
       },
       "map": {
         ".rodata.cst4": "0x710073c188"
@@ -3285,7 +3308,15 @@
         "_ZN15LockedTaskState5stateEv": "0x71003cc2d4",
         "_ZN15LockedTaskState4doneEv": "0x71003cc224",
         "_ZN10NodeWidget6redrawEPv": "0x710038ca78",
-        "_ZN13ResourceScene6attachEv": "0x710033340c"
+        "_ZN13ResourceScene6attachEv": "0x710033340c",
+        "_ZN14LockedNodeList6removeEPv": "0x71005c4fdc",
+        "_ZN16ManagedFrameHeap8finalizeEv": "0x71005c43dc",
+        "_ZN12FlaggedModelC2Ev": "0x7100591690",
+        "_ZN12TrackedModelC2Ev": "0x710058fe30",
+        "_ZN12RecordObjectC2ERK9Record150": "0x710057cdc0",
+        "_ZN12LockedHandle7is_openEv": "0x710053d978",
+        "_ZN11EventWaiter4waitEv": "0x710053c1e4",
+        "_ZN9WorkQueue9wait_idleEv": "0x71004d1920"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",

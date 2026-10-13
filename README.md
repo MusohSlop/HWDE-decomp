@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,239 of 1,334 attempted functions match: 1,229 inventory functions (103,012 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-five are near misses, all `m`.
+1,255 of 1,350 attempted functions match: 1,245 inventory functions (104,020 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-five are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -327,6 +327,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `3dd0e4` | `SplitTable::clear` | near miss |
 | 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | weapon-slot and mixed-table resets, a stage layout load, a chunk-pair assign, mirrored-table save, entry-array clear, a constructor | match |
 | `20ac40` | `current_unit_table` | near miss |
+| 16 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | record-object and model constructors, locked list removal, frame-heap finalize, handle and event waits, a work-queue spin, a pending-request clear, a request readiness test, a timer start, a mixed-record reset, global forwarders | match |
 | 16 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | ring-node and five/six-slot constructors, locked reads and counter bump, two stage-layout loads, default-pair reset, held-light releases, node widget redraw, resource scene attach, resource and guarded queries | match |
 | 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | dual-slot, attached-model and panel constructors and destructor, a block copy, a line panel draw, a lazy id | match |
 | 19 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`, `misc/heap_operators.cpp`) | `free`; `HeapMutex` destructor; file-stream, render-object, paired-slot and frame-heap constructors; locked finalize and counter read; caption, fader, layout and lazy-id helpers; global forwarders | match |

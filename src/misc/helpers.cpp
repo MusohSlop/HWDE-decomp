@@ -397,7 +397,9 @@ unsigned char game_flag_17() {
 }
 
 struct Global425dd0 {
-    unsigned char pad[0x20];
+    unsigned char pad[0x10];
+    void* part10;             // +10
+    unsigned char pad18[8];
     void* part20;             // +20
     void* part28;             // +28
     unsigned char pad30[0x2aa4];
@@ -1496,4 +1498,112 @@ void release_held_light_c2af58() {
             held->light = nullptr;
         }
     }
+}
+unsigned char resource_queue_cancelled();                                   // 0x71002589c0
+unsigned char shared_state_exiting(SharedState* state);                     // 0x71002ac7f0
+
+// 0x7100300140; original file: scene tasks, 0x7100300140
+struct PendingRequest {
+    void clear_unless_stopping();
+
+    void* owner;              // +00
+    void* request;            // +08
+};
+
+void PendingRequest::clear_unless_stopping() {
+    if (!resource_queue_cancelled() && !shared_state_exiting(get_shared_state()))
+        request = nullptr;
+}
+
+unsigned char resource_queue_has_callback(void* request);                   // 0x7100259680
+// Resource requests by type (0x7100bd3668), addressed directly.
+extern void* const kTypeRequests[] __attribute__((visibility("hidden")));
+
+// 0x71002d8d98; original file: scene tasks, 0x71002d8d98
+struct RequestWaiter {
+    bool ready();
+
+    unsigned char type;       // +000
+    unsigned char pad[0x1c1];
+    unsigned char busy;       // +1c2
+};
+
+bool RequestWaiter::ready() {
+    if (busy)
+        return false;
+    return !resource_queue_has_callback(kTypeRequests[type]);
+}
+
+// 0x710011f1a4; original file: battle timers, 0x710011f1a4
+struct TimerStart {
+    void start(int value);
+
+    unsigned char pad[0x48];
+    unsigned char active;     // +48
+    unsigned char pad49[3];
+    int seconds;              // +4c
+    int value;                // +50
+};
+
+void TimerStart::start(int value) {
+    if (!(get_battle_setup()->flags & 2)) {
+        active = 1;
+        seconds = 0x10;
+        this->value = value;
+    }
+}
+
+// 0x710004a660; original file: tables, 0x710004a660
+struct MixedRecord {
+    void reset();
+
+    unsigned char head[0x2c]; // +00 (cleared with the first 0x41 bytes)
+    int limit;                // +2c
+    unsigned char pad30[0x18];
+    long value48;             // +48
+    long value50;             // +50
+    long value58;             // +58
+    long value60;             // +60
+    long value68;             // +68
+    long value70;             // +70
+};
+
+void MixedRecord::reset() {
+    unsigned char* bytes = head;
+    for (unsigned int i = 0; i < 0x41; ++i)
+        bytes[i] = 0;
+    value68 = 0;
+    value70 = 0;
+    value58 = 0;
+    value60 = 0;
+    limit = 0x28;
+    value48 = 0;
+    value50 = 0;
+}
+void* load_global_40d628();                                                 // 0x710040d628
+void global_call_40d754(void* global, void* a, int b);                      // 0x710040d754
+
+// 0x7100454314; original file: global queries, 0x7100454314
+void guarded_forward_40d754(void* a, int b) {
+    if (load_global_40d628())
+        global_call_40d754(load_global_40d628(), a, b);
+}
+
+void part_call3_4348a4(void* part, int a, void* b, void* c);                // 0x71004348a4
+void part_call3_41fdd8(void* part, void* a, void* b, int c);                // 0x710041fdd8
+void part_call3_41d100(void* part, int a, int b, int c);                    // 0x710041d100
+
+// 0x7100454028; original file: global queries, 0x71004540b4-0x7100453d48 (nearby)
+void global_part28_4348a4(int a, void* b, void* c) {
+    part_call3_4348a4(load_global_425dd0()->part28, a, b, c);
+}
+
+// 0x7100453d08
+void global_part20_41fdd8(void* a, void* b, int c) {
+    part_call3_41fdd8(load_global_425dd0()->part20, a, b, c);
+}
+
+// 0x71004528fc
+void global_part10_41d100(int a, int b, int c) {
+    part_call3_41d100(load_global_425dd0()->part10, a, b, c);
 }

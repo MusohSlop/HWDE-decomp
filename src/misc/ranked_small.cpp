@@ -302,8 +302,12 @@ OwnedFrameHeap::OwnedFrameHeap() : owner(nullptr) {}
 namespace nn {
 namespace os {
 struct MutexType;
+struct EventType;
 void LockMutex(MutexType* mutex);
 void UnlockMutex(MutexType* mutex);
+void WaitEvent(EventType* event);
+void ClearEvent(EventType* event);
+void YieldThread();
 }  // namespace os
 }  // namespace nn
 
@@ -718,4 +722,161 @@ struct ResourceScene {
 void ResourceScene::attach() {
     gEffectManager->attach(reinterpret_cast<EffectResource*>(resource), nullptr);
     sub.create(0x41eb);
+}
+class EffectNodeList {
+public:
+    void remove(void* node);                                                // 0x71005c3774
+    unsigned char pad[0x60];
+};
+
+// 0x71005c4fdc; original file: heap objects, 0x71005c2c78-0x71005c4fdc
+struct LockedNodeList {
+    void remove(void* node);
+
+    void* value0;             // +00
+    EffectNodeList list;      // +08
+    MutexOwner* owner;        // +68
+};
+
+void LockedNodeList::remove(void* node) {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    list.remove(node);
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+}
+
+struct ManagerLock {
+    unsigned char pad[0xa0];
+    unsigned char mutex[0x20]; // +a0
+};
+// Reached through the GOT slot at 0x7100c21de8.
+extern ManagerLock* gObjectManagerLock;
+
+// 0x71005c43dc; original file: heap objects, 0x71005c2c78-0x71005c43dc
+struct ManagedFrameHeap {
+    void finalize();
+
+    void* value0;             // +00
+    FrameHeapBase heap;       // +08
+};
+
+void ManagedFrameHeap::finalize() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(gObjectManagerLock->mutex));
+    heap.finalize();
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(gObjectManagerLock->mutex));
+}
+
+class FlaggedModelCore {
+public:
+    FlaggedModelCore();                                                     // 0x71005928c0
+    virtual ~FlaggedModelCore();
+    unsigned char pad[0x1290];
+    unsigned short flags;     // +1298
+    unsigned char pad129a[6];
+};
+
+// 0x7100591690; vtable through the GOT slot at 0x7100c2d758.
+class FlaggedModel : public FlaggedModelCore {
+public:
+    FlaggedModel();
+    ~FlaggedModel() override;
+
+    void* value12a0;          // +12a0
+};
+
+FlaggedModel::FlaggedModel() : value12a0(nullptr) {
+    flags |= 2;
+}
+
+// 0x710058fe30; vtable through the GOT slot at 0x7100c2d750.
+class TrackedModel : public FlaggedModelCore {
+public:
+    TrackedModel();
+    ~TrackedModel() override;
+
+    unsigned char pad12a0[0x18];
+    void* value12b8;          // +12b8
+    void* value12c0;          // +12c0
+    void* value12c8;          // +12c8
+    int value12d0;            // +12d0
+};
+
+TrackedModel::TrackedModel() : value12b8(nullptr), value12c0(nullptr), value12c8(nullptr), value12d0(0) {}
+struct Record150 {
+    unsigned char bytes[0x150];
+};
+
+// 0x710057cdc0; original file: records, 0x710057cdc0
+// Vtable through the GOT slot at 0x7100c2b760.
+// The record sits in a non-virtual base, so it is copied before the vtable pointer is stored.
+struct RecordBase {
+    explicit RecordBase(const Record150& record) : record(record) {}
+
+    unsigned char pad[8];     // +08
+    Record150 record;         // +10
+};
+
+class RecordObject : public RecordBase {
+public:
+    explicit RecordObject(const Record150& record);
+    virtual ~RecordObject();
+
+    unsigned char valid;      // +160
+    unsigned char dirty;      // +161
+};
+
+RecordObject::RecordObject(const Record150& record) : RecordBase(record), valid(1), dirty(1) {}
+
+// 0x710053d978; original file: file system objects, 0x710053d978
+struct LockedHandle {
+    bool is_open();
+
+    void* handle;             // +00
+    unsigned char pad8[0x20];
+    unsigned char mutex[0x20]; // +28
+};
+
+bool LockedHandle::is_open() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    bool result = handle != nullptr;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    return result;
+}
+
+// 0x710053c1e4; original file: file system objects, 0x710053c1e4
+struct EventWaiter {
+    void wait();
+
+    unsigned char pad[0xf8];
+    unsigned char event[0x28]; // +f8
+    unsigned char manual;     // +120
+};
+
+void EventWaiter::wait() {
+    nn::os::WaitEvent(reinterpret_cast<nn::os::EventType*>(event));
+    if (!manual)
+        nn::os::ClearEvent(reinterpret_cast<nn::os::EventType*>(event));
+}
+
+struct WorkSlot {
+    unsigned char pad[0x18];
+    volatile int state;       // +18
+    unsigned char pad1c[0x284];
+};
+static_assert(sizeof(WorkSlot) == 0x2a0, "work slot size");
+
+// 0x71004d1920; original file: work queues, 0x71004d1920
+struct WorkQueue {
+    void wait_idle();
+
+    unsigned char pad[0x44];
+    unsigned int current;     // +44
+    unsigned char pad48[8];
+    WorkSlot* slots;          // +50
+};
+
+void WorkQueue::wait_idle() {
+    WorkSlot* base = slots;
+    WorkSlot* slot = &base[current];
+    while (slot->state == 1)
+        nn::os::YieldThread();
 }
