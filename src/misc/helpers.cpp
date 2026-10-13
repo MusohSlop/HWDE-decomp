@@ -390,7 +390,10 @@ unsigned char game_flag_17() {
 }
 
 struct Global425dd0 {
-    unsigned char pad[0x2ad4];
+    unsigned char pad[0x20];
+    void* part20;             // +20
+    void* part28;             // +28
+    unsigned char pad30[0x2aa4];
     int value2ad4;            // +2ad4
 };
 Global425dd0* load_global_425dd0();                                         // 0x7100425dd0
@@ -530,4 +533,229 @@ void play_stage_bgm(int muted) {
     else
         id = gStageBgm->base_id + 0x1c2;
     play_bgm(id, 32.0f, 1, 0, nullptr);
+}
+// 0x710040bbb8; original file: tables, 0x710040bbb8
+struct HugeTable {
+    void clear();
+
+    unsigned char pad[0x30000];
+    unsigned char bytes[0x20004]; // +30000
+};
+
+void HugeTable::clear() {
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
+
+// 0x71001cba88; original file: tables, 0x71001cba88
+struct InnerTable {
+    void clear();
+
+    unsigned char pad[0x2198];
+    unsigned char bytes[0xc8]; // +2198
+};
+
+void InnerTable::clear() {
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
+
+// 0x71001a844c, 0x71001a8474; original file: light presets, 0x71001a844c-0x71001a8d3c
+struct PresetTable {
+    void reset();
+
+    int count;                // +00
+    int selected;             // +04
+    unsigned char bytes[0x400]; // +08
+};
+
+void PresetTable::reset() {
+    count = 0;
+    selected = -1;
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
+
+struct PresetTableCopy {
+    void reset();
+
+    int count;                // +00
+    int selected;             // +04
+    unsigned char bytes[0x400]; // +08
+};
+
+void PresetTableCopy::reset() {
+    count = 0;
+    selected = -1;
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
+
+class LightPreset {
+public:
+    int value(int index);                                                   // 0x71001a8d3c
+};
+LightPreset* current_light_preset();                                        // 0x71001a8c38
+
+// 0x71003336d4; original file: light preset queries, 0x71003336d4
+int preset_value(void* owner, int index) {
+    return current_light_preset()->value(index);
+}
+
+void* load_layout(int id);                                                  // 0x71001f7868
+// Reached through the GOT slots at 0x7100c2abf0 and 0x7100c2ab50.
+extern void* gLayout_44c5;
+extern void* gLayout_4691;
+
+// 0x71002ede70; original file: scene layouts, 0x71002ede70
+void load_layout_44c5() {
+    gLayout_44c5 = load_layout(0x44c5);
+}
+
+// 0x71002d7190; original file: scene layouts, 0x71002d7190
+void load_layout_4691() {
+    gLayout_4691 = load_layout(0x4691);
+}
+
+void apply_457960(void* object, int value);                                 // 0x7100457960
+
+// 0x7100135cc4; original file: global queries, 0x7100135cc4
+struct SignedByteHolder {
+    void forward();
+
+    unsigned char pad[0x10c];
+    signed char value;        // +10c
+};
+
+void SignedByteHolder::forward() {
+    int v = value;
+    apply_457960(load_global_455ebc(), v);
+}
+// 0x71005f8c80, 0x71005f766c; original file: record copies, 0x71005f766c-0x71005f8c80
+struct RecordAt48 {
+    bool copy_to(void* out);
+
+    unsigned char pad[0x48];
+    unsigned char data[0x80]; // +48
+};
+
+bool RecordAt48::copy_to(void* out) {
+    memcpy(out, data, sizeof(data));
+    return true;
+}
+
+struct RecordAt20 {
+    bool copy_to(void* out);
+
+    unsigned char pad[0x20];
+    unsigned char data[0x80]; // +20
+};
+
+bool RecordAt20::copy_to(void* out) {
+    memcpy(out, data, sizeof(data));
+    return true;
+}
+
+void part_call_434a24(void* part, int value);                               // 0x7100434a24
+void part_call_41fe04(void* part, int value);                               // 0x710041fe04
+void part_call_41fe38(void* part, int value);                               // 0x710041fe38
+void part_call_41fe1c(void* part, int value);                               // 0x710041fe1c
+
+// 0x71004540b4; original file: global queries, 0x71004540b4-0x7100453d48
+void global_part28_434a24(int value) {
+    part_call_434a24(load_global_425dd0()->part28, value);
+}
+
+// 0x7100453d48
+void global_part20_41fe04(int value) {
+    part_call_41fe04(load_global_425dd0()->part20, value);
+}
+
+// 0x7100453ce0
+void global_part20_41fe38(int value) {
+    part_call_41fe38(load_global_425dd0()->part20, value);
+}
+
+// 0x7100453cb8
+void global_part20_41fe1c(int value) {
+    part_call_41fe1c(load_global_425dd0()->part20, value);
+}
+
+struct Global455ebc {
+    unsigned char pad[0x76];
+    unsigned short value76;   // +76
+};
+
+// 0x7100452ad0; original file: global queries, 0x7100452ad0
+bool global_455ebc_active() {
+    return load_global_455ebc() &&
+           reinterpret_cast<Global455ebc*>(load_global_455ebc())->value76 != 0;
+}
+
+struct SharedResources;
+SharedResources* shared_state_resources(SharedState* state);                // 0x71002ad1dc
+int resources_value_389164(SharedResources* resources);                     // 0x7100389164
+
+// 0x71003c750c; original file: shared-state resource queries, 0x71003c72b0-0x71003c750c
+int resources_value() {
+    if (SharedResources* resources = shared_state_resources(get_shared_state()))
+        return resources_value_389164(resources);
+    return -1;
+}
+
+class LightEffectNode {
+public:
+    void draw(int layer);                                                   // 0x71001e34a0
+};
+
+// 0x71003b5ac8; original file: scene drawing, 0x71003b5ac8
+void draw_node_and_flush(LightEffectNode* node) {
+    node->draw(0);
+    gTrackRenderer->flush(-1);
+}
+
+struct ScreenFaderView {
+    unsigned char pad[0x1f8];
+    int color;                // +1f8
+};
+ScreenFaderView* screen_fader();                                            // 0x71001e50b0
+
+// 0x71003885d4; original file: scene fades, 0x71003885d4
+bool screen_fader_white() {
+    return screen_fader() && screen_fader()->color == 1;
+}
+
+class MaterialBook {
+public:
+    void entry(int id);                                                     // 0x71002015a8
+};
+MaterialBook* load_global_200fc0();                                         // 0x7100200fc0
+
+// 0x71001a8d54; original file: light presets, 0x71001a844c-0x71001a8d3c (after it)
+struct PresetMaterials {
+    void apply(int index);
+
+    unsigned char pad[0x14];
+    int materials[1];         // +14
+};
+
+void PresetMaterials::apply(int index) {
+    int id = materials[index];
+    load_global_200fc0()->entry(id);
+}
+
+struct Global187590 {
+    unsigned char pad[0xa4];
+    unsigned char flags[1];   // +a4
+};
+Global187590* load_global_187590();                                         // 0x7100187590
+
+// 0x71000d8180; original file: global queries, 0x71000d8180
+unsigned char global_187590_flag(void* owner, unsigned int index) {
+    return load_global_187590()->flags[index];
+}
+
+// 0x710000eb14; original file: battle setup wrappers, 0x710000ea88-0x710000eb14
+bool battle_mode_bits() {
+    return *reinterpret_cast<unsigned long*>(get_battle_setup()) & 0x100900000UL;
 }

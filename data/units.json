@@ -1417,7 +1417,19 @@
     "_Z12finish_752d8Pv": "0x71000752d8",
     "got:gStageBgm": "0x7100c2b710",
     "_Z8play_bgmifiiPv": "0x71003f9b34",
-    "_Z12apply_4573b8PvS_": "0x71004573b8"
+    "_Z12apply_4573b8PvS_": "0x71004573b8",
+    "got:gLayout_44c5": "0x7100c2abf0",
+    "got:gLayout_4691": "0x7100c2ab50",
+    "_Z12apply_457960Pvi": "0x7100457960",
+    "_Z16part_call_434a24Pvi": "0x7100434a24",
+    "_Z16part_call_41fe04Pvi": "0x710041fe04",
+    "_Z16part_call_41fe38Pvi": "0x710041fe38",
+    "_Z16part_call_41fe1cPvi": "0x710041fe1c",
+    "_Z22resources_value_389164P15SharedResources": "0x7100389164",
+    "_Z12screen_faderv": "0x71001e50b0",
+    "_Z18load_global_200fc0v": "0x7100200fc0",
+    "_Z18load_global_187590v": "0x7100187590",
+    "_Z22shared_state_resourcesP11SharedState": "0x71002ad1dc"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2172,7 +2184,28 @@
         "_Z14battle_flag_16v": "0x710000eaa8",
         "_Z21global_4140a4_flag_10v": "0x7100453590",
         "_Z14forward_452b34Pv": "0x7100452b34",
-        "_Z14play_stage_bgmi": "0x71003ff164"
+        "_Z14play_stage_bgmi": "0x71003ff164",
+        "_ZN9HugeTable5clearEv": "0x710040bbb8",
+        "_ZN10InnerTable5clearEv": "0x71001cba88",
+        "_ZN11PresetTable5resetEv": "0x71001a844c",
+        "_ZN15PresetTableCopy5resetEv": "0x71001a8474",
+        "_Z12preset_valuePvi": "0x71003336d4",
+        "_Z16load_layout_44c5v": "0x71002ede70",
+        "_Z16load_layout_4691v": "0x71002d7190",
+        "_ZN16SignedByteHolder7forwardEv": "0x7100135cc4",
+        "_ZN10RecordAt487copy_toEPv": "0x71005f8c80",
+        "_ZN10RecordAt207copy_toEPv": "0x71005f766c",
+        "_Z20global_part28_434a24i": "0x71004540b4",
+        "_Z20global_part20_41fe04i": "0x7100453d48",
+        "_Z20global_part20_41fe38i": "0x7100453ce0",
+        "_Z20global_part20_41fe1ci": "0x7100453cb8",
+        "_Z20global_455ebc_activev": "0x7100452ad0",
+        "_Z15resources_valuev": "0x71003c750c",
+        "_Z19draw_node_and_flushP15LightEffectNode": "0x71003b5ac8",
+        "_Z18screen_fader_whitev": "0x71003885d4",
+        "_ZN15PresetMaterials5applyEi": "0x71001a8d54",
+        "_Z18global_187590_flagPvj": "0x71000d8180",
+        "_Z16battle_mode_bitsv": "0x710000eb14"
       },
       "map": {
         ".rodata.cst4": "0x710073c188"
