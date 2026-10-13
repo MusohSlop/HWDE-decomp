@@ -1402,7 +1402,19 @@
     "_Z11visit_1928cPv": "0x710001928c",
     "_Z11visit_192e0Pv": "0x71000192e0",
     "_Z14cell_availableiP6PlayerPihhi": "0x7100271894",
-    "kFarDistances": "0x71007f6740"
+    "kFarDistances": "0x71007f6740",
+    "got:_ZTV10FileHandle": "0x7100c2d308",
+    "got:_ZTV12MemoryStream": "0x7100c2d2f0",
+    "got:_ZTV9HeapMutex": "0x7100c2dba0",
+    "_ZN12Plain_53e718C2Ev": "0x710053e718",
+    "_ZN12Plain_53e630C2Ev": "0x710053e630",
+    "_ZN12Plain_5c2c78C2Ev": "0x71005c2c78",
+    "_Z20shared_state_exitingP11SharedState": "0x71002ac7f0",
+    "_Z13request_soundPviii": "0x71003f7c94",
+    "got:gBattleSetup": "0x7100c22d28",
+    "_Z14resolve_20ff60Pv": "0x710020ff60",
+    "got:_ZTV14LargeSceneTask": "0x7100c2ab68",
+    "_Z12finish_752d8Pv": "0x71000752d8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2143,7 +2155,13 @@
         "_Z17load_stage_layoutv": "0x71001dd920",
         "_Z21text_language_changedv": "0x7100217c7c",
         "_Z20abort_pending_lightsv": "0x7100251c8c",
-        "_Z21advance_frame_counterv": "0x71001d3244"
+        "_Z21advance_frame_counterv": "0x71001d3244",
+        "_Z13battle_flag_0v": "0x7100455858",
+        "_Z12game_flag_17v": "0x710000dbd4",
+        "_Z19global_425dd0_valuev": "0x71004544f0",
+        "_Z19global_4449ec_valuev": "0x7100453984",
+        "_Z18global_chain_3d04cv": "0x710003d04c",
+        "_ZN9ByteTable5clearEv": "0x710058fac4"
       }
     },
     "misc/singleton_teardown.cpp": {
@@ -2926,7 +2944,9 @@
         "malloc": "0x71003cca08",
         "_Znwm": "0x71003ccb94",
         "_ZnwmRKSt9nothrow_t": "0x71003ccbe4",
-        "_Znam": "0x71003ccc34"
+        "_Znam": "0x71003ccc34",
+        "_ZdlPv": "0x71003ccc84",
+        "_ZdaPv": "0x71003cccb8"
       }
     },
     "misc/small_families5.cpp": {
@@ -3057,6 +3077,25 @@
         ".rodata": "0x71007f57a4",
         ".rodata.cst4": "0x710073bd20",
         ".rodata.cst16": "0x71007e2010"
+      }
+    },
+    "misc/ranked_small.cpp": {
+      "functions": {
+        "_ZN10FileHandleC2Ev": "0x710053e410",
+        "_ZN10FileHandle5closeEv": "0x710053e510",
+        "_ZN12MemoryStreamC2Ev": "0x710053d304",
+        "_ZN9HeapMutexC2Ev": "0x71005c42b8",
+        "_Z17shared_zero_shortv": "0x710045ce00",
+        "_Z28request_sound_unless_exitingi": "0x71003f9fac",
+        "_Z16get_battle_setupv": "0x710016ef34",
+        "_ZN10FileHandle4openEPKciiPv": "0x710053e488",
+        "_ZN14LargeSceneTaskC2Ev": "0x71002d8e2c"
+      },
+      "map": {
+        "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",
+        "_ZGVZ17shared_zero_shortvE5value": "0x7100cf05e0",
+        "_ZZ16get_battle_setupvE5setup": "0x7100c33760",
+        "_ZGVZ16get_battle_setupvE5setup": "0x7100c337b0"
       }
     }
   }

@@ -1,4 +1,4 @@
-// The global allocation entry points (0x71003cca08-0x71003ccc34), found by tools/family_scan.py:
+// The global allocation entry points (0x71003cca08-0x71003cccb8), found by tools/family_scan.py:
 // malloc and the operator new forms all allocate from the default heap's back frame heap (+110)
 // with 0x2e as the alignment code. Status: matching/README.md.
 
@@ -23,6 +23,12 @@ public:
     virtual void v20();
     virtual void v28();
     virtual void* allocate(unsigned long size, const AllocParams& params);  // +30
+    virtual void v38();
+    virtual void v40();
+    virtual void v48();
+    virtual void v50();
+    virtual void v58();
+    virtual void free(void* ptr);                                           // +60
 };
 
 class DefaultHeap {
@@ -56,4 +62,14 @@ void* operator new(unsigned long size, const std::nothrow_t&) noexcept {
 // 0x71003ccc34
 void* operator new[](unsigned long size) {
     return heap_allocate(size);
+}
+
+// 0x71003ccc84
+void operator delete(void* ptr) noexcept {
+    get_default_heap()->back_allocator()->free(ptr);
+}
+
+// 0x71003cccb8
+void operator delete[](void* ptr) noexcept {
+    get_default_heap()->back_allocator()->free(ptr);
 }

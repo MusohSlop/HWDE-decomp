@@ -377,3 +377,56 @@ void advance_frame_counter() {
         gFrameCounter = next > 0x5ff ? 0 : next;
     }
 }
+// 0x7100455858; original file: battle setup wrappers, 0x7100455858
+unsigned char battle_flag_0() {
+    return get_battle_setup()->flags & 1;
+}
+
+unsigned char game_has_flag(Game* game, int flag);                          // 0x71002026fc
+
+// 0x710000dbd4; original file: game queries, 0x710000dbd4
+unsigned char game_flag_17() {
+    return game_has_flag(get_game(), 0x11);
+}
+
+struct Global425dd0 {
+    unsigned char pad[0x2ad4];
+    int value2ad4;            // +2ad4
+};
+Global425dd0* load_global_425dd0();                                         // 0x7100425dd0
+
+// 0x71004544f0; original file: global queries, 0x71004544f0
+int global_425dd0_value() {
+    return load_global_425dd0()->value2ad4;
+}
+
+struct Global4449ec {
+    unsigned char pad[0x80];
+    int value80;              // +80
+};
+Global4449ec* load_global_4449ec();                                         // 0x71004449ec
+
+// 0x7100453984; original file: global queries, 0x7100453984
+int global_4449ec_value() {
+    return load_global_4449ec()->value80;
+}
+
+void* load_global_20fbd4();                                                 // 0x710020fbd4
+void* resolve_20ff60(void* object);                                         // 0x710020ff60
+void finish_752d8(void* object);                                            // 0x71000752d8
+
+// 0x710003d04c; original file: global chains, 0x710003d04c
+void global_chain_3d04c() {
+    finish_752d8(resolve_20ff60(load_global_20fbd4()));
+}
+
+// 0x710058fac4; original file: tables, 0x710058fac4
+struct ByteTable {
+    void clear();
+    unsigned char bytes[0x100];
+};
+
+void ByteTable::clear() {
+    for (unsigned int i = 0; i < sizeof(bytes); ++i)
+        bytes[i] = 0;
+}
