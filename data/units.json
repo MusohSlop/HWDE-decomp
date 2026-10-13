@@ -426,9 +426,6 @@
     "_Z15set_fade_framesi": "0x71003f9fac",
     "_Z19show_system_messageiiiii": "0x71003c9668",
     "_Z14close_overlaysiii": "0x71003ade70",
-    "_Z15run_board_eventv": "0x710026ed80",
-    "_Z16run_board_battlev": "0x710026ef60",
-    "_Z16run_board_resultv": "0x710026f05c",
     "_Z14run_board_shopv": "0x710026f214",
     "_Z16run_board_endingv": "0x710026fdf8",
     "_ZN9SaveSlots6selectEv": "0x7100217508",
@@ -440,7 +437,14 @@
     "got:_ZTV9TitleTask": "0x7100c2a718",
     "_Z12player_setupPvS_i": "0x710026a98c",
     "_Z13game_has_flagP4Gamei": "0x71002026fc",
-    "_Z13game_set_flagP4Gameih": "0x7100202730"
+    "_Z13game_set_flagP4Gameih": "0x7100202730",
+    "_ZN9EventTaskC1Ev": "0x7100283fd0",
+    "_ZN10BattleTaskC1Ev": "0x71002d8e2c",
+    "_ZN10BattleTask7prepareEv": "0x71002d8eec",
+    "_ZN10BattleTask6finishEv": "0x71002d901c",
+    "_ZN10ResultTaskC1Ev": "0x71002906dc",
+    "_ZN10ResultTask7prepareEv": "0x7100290778",
+    "_ZN10ResultTask6finishEv": "0x71002907e4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -930,7 +934,10 @@
         "_Z11run_optionsv": "0x710026e9f4",
         "_Z8run_savev": "0x710026ea94",
         "_Z14run_board_menuv": "0x710026eb54",
-        "_ZN11AdvModeTask3runEv": "0x710026e4a8"
+        "_ZN11AdvModeTask3runEv": "0x710026e4a8",
+        "_Z15run_board_eventv": "0x710026ed80",
+        "_Z16run_board_battlev": "0x710026ef60",
+        "_Z16run_board_resultv": "0x710026f05c"
       },
       "map": {
         ".rodata": "0x71007f5718",
