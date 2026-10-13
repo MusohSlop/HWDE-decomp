@@ -1574,7 +1574,24 @@
     "_Z14owner_has_statPvi": "0x710000e1f4",
     "_Z18load_global_2151a0v": "0x71002151a0",
     "_Z10stat_entryP9StatTablei": "0x7100215354",
-    "_Z10stat_valueP9StatEntryi": "0x7100215150"
+    "_Z10stat_valueP9StatEntryi": "0x7100215150",
+    "_Z20finish_update_5932d0P12UpdatedModel": "0x71005932d0",
+    "_Z20finish_update_592540P12UpdatedModel": "0x7100592540",
+    "_Z20finish_update_59105cP12UpdatedModel": "0x710059105c",
+    "_Z20finish_update_222398P12UpdatedModel": "0x7100222398",
+    "_Z20finish_update_5541e8P12UpdatedModel": "0x71005541e8",
+    "_Z20finish_update_2212c4P12UpdatedModel": "0x71002212c4",
+    "_Z20finish_update_54aaa0P12UpdatedModel": "0x710054aaa0",
+    "_Z20finish_update_22794cP12UpdatedModel": "0x710022794c",
+    "_Z20finish_update_591a08P12UpdatedModel": "0x7100591a08",
+    "_Z20finish_update_44c94cP12UpdatedModel": "0x710044c94c",
+    "_Z20finish_update_591ec8P12UpdatedModel": "0x7100591ec8",
+    "_Z20finish_update_5c7d4cP12UpdatedModel": "0x71005c7d4c",
+    "_Z20finish_update_557dfcP12UpdatedModel": "0x7100557dfc",
+    "_ZN11BoneBinding6rebindEv": "0x71005a9be8",
+    "_Z9load_posePviiiiiii": "0x710059685c",
+    "_ZN12UpdatedModel12prepare_poseEv": "0x710059469c",
+    "_ZN12UpdatedModel11bones_movedEv": "0x7100072e2c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -3640,6 +3657,32 @@
       },
       "map": {
         ".rodata.cst4": "0x710073bae8"
+      }
+    },
+    "misc/model_updates.cpp": {
+      "functions": {
+        "_Z18update_model_72c08P14UpdateHost12a0": "0x7100072c08",
+        "_Z18update_model_73c30P14UpdateHost12e0": "0x7100073c30",
+        "_Z18update_model_74300P14UpdateHost12a0": "0x7100074300",
+        "_Z18update_model_749d0P14UpdateHost12a0": "0x71000749d0",
+        "_Z19update_model_21d518P14UpdateHost12e0": "0x710021d518",
+        "_Z19update_model_21dbd8P14UpdateHost12f0": "0x710021dbd8",
+        "_Z19update_model_21e298P14UpdateHost12e0": "0x710021e298",
+        "_Z19update_model_21e978P14UpdateHost12b0": "0x710021e978",
+        "_Z19update_model_21f0f8P14UpdateHost1f20": "0x710021f0f8",
+        "_Z19update_model_21f7d8P14UpdateHost1330": "0x710021f7d8",
+        "_Z19update_model_21fe98P14UpdateHost12e0": "0x710021fe98",
+        "_Z19update_model_220558P14UpdateHost12e0": "0x7100220558",
+        "_Z19update_model_23f47cP14UpdateHost12d0": "0x710023f47c",
+        "_Z19update_model_3e5df8P14UpdateHost12b0": "0x71003e5df8",
+        "_Z19update_model_4105a8P14UpdateHost1320": "0x71004105a8",
+        "_Z19update_model_410c88P14UpdateHost1470": "0x7100410c88",
+        "_Z19update_model_411368P14UpdateHost12c0": "0x7100411368",
+        "_Z19update_model_44df28P14UpdateHost13d0": "0x710044df28",
+        "_Z19update_model_44e62cP14UpdateHost12a0": "0x710044e62c",
+        "_Z19update_model_44ed28P14UpdateHost14c0": "0x710044ed28",
+        "_Z19update_model_450bb0P14UpdateHost12a0": "0x7100450bb0",
+        "_Z19update_model_451298P14UpdateHost1430": "0x7100451298"
       }
     }
   }

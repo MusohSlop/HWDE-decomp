@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,428 of 1,527 attempted functions match: 1,418 inventory functions (117,828 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-nine are near misses, all `m`.
+1,428 of 1,549 attempted functions match: 1,418 inventory functions (117,828 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 121 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -311,6 +311,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `5aea74`, `5afb1c` | two of the static objects | near miss |
 | 26 in `misc/small_families3.cpp` | two-argument getter forwarders, paired calls on a global, null-terminated list walks, manager lookups | match |
 | 27 in `misc/text_lookups.cpp`, 19 in `misc/trophy_best.cpp`, 13 in `misc/pair_singletons.cpp`, 9 in `misc/stat_ratios.cpp` | families that differ only in an immediate (`family_scan.py --immediates`): message-text lookups by id offset, best-slot tests, paired singleton creation, stat percentages | match |
+| 22 in `misc/model_updates.cpp` | skinned-model updates (pose refresh, bone rebind, skin refresh, class update) | near miss (2 words each) |
 | 48 in `misc/skinned_overrides.cpp` | skinned-model overrides (base version, then the skin set's), 28 of them at other skin-set offsets | match |
 | 14 in `misc/small_families4.cpp`, 16 in `misc/small_families5.cpp` | nine-sprite constructors, swapped-argument solves, pool disposals, singleton deletes and creations, command checks, calls under the object manager's lock | match |
 | `3cca08`-`3cccb8` | `malloc`, `operator new` (plain and `nothrow`), `operator new[]`, `operator delete`, `operator delete[]` (`misc/heap_operators.cpp`) | match |
@@ -628,6 +629,8 @@ Counts re-measured after the family rounds (distinct direct callees not yet name
 `3de474`: `TimedTable::reset` clears the whole 0xc0-byte object and then stores four fields, one of them zero. With a loop or an explicit `memset` ours shrinks the clear to 0xbc bytes and drops the zero store. Clearing it as a value-initialized `ByteBlock` (overlaid on the fields with a union) keeps all the stores and brings it to one word: depending on the store order, either the clear is shortened to 0xbc or the stores come out in another order; four orders tried.
 
 `14935c`: `battle_unit_flag` tests bit 13 of the battle setup's flag word with a full 64-bit load and `tbz #13`; ours narrows the load to the byte (`ldrb`, `tbnz #5`), with a mask and with a bitfield, and lays out the early returns differently.
+
+`misc/model_updates.cpp` (22 functions, `72c08` and the rest of its family): two words each. The pose index is clamped at zero and used to index 16-byte entries; the original clamps in 32 bits (`csel w9, w9, wzr, gt`) and zero-extends in the address (`uxtw #4`), ours widens the select to 64 bits (`csel x9`, `lsl #4`). A signed index, an unsigned index and a signed index cast to unsigned at the use all give the same; it may be an InstCombine fold this compiler does and the original's did not. The rest of each function (shared through an `always_inline` helper, since Clang would otherwise outline it once it is used 22 times) matches.
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 
