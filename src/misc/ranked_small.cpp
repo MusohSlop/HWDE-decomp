@@ -285,6 +285,9 @@ public:
     virtual ~FrameHeapBase();
     void finalize();                                                        // 0x71005c2e54
     void* fetch();                                                          // 0x71005c2f18
+    void* first();                                                          // 0x71005c2f5c
+    void* last();                                                           // 0x71005c2fd0
+    void* count_value();                                                    // 0x71005c3a14
     unsigned char pad[0x58];
 };
 
@@ -322,6 +325,9 @@ struct MutexOwner {
 struct LockedFrameHeap {
     void finalize();
     void* fetch();
+    void* first();
+    void* last();
+    void* count_value();
 
     void* value0;             // +00
     FrameHeapBase heap;       // +08
@@ -1035,3 +1041,83 @@ public:
 };
 
 IndexedChild::IndexedChild() : index(-1), value278(nullptr), value280(0) {}
+// 0x71005c4ca0, 0x71005c4d30, 0x71005c5060; original file: heap objects, 0x71005c2c78-0x71005c5060
+void* LockedFrameHeap::first() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    void* result = heap.first();
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    return result;
+}
+
+void* LockedFrameHeap::last() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    void* result = heap.last();
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    return result;
+}
+
+void* LockedFrameHeap::count_value() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    void* result = heap.count_value();
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    return result;
+}
+
+struct Matrix40 {
+    unsigned char bytes[0x40];
+};
+
+// 0x710044c5fc; original file: unit objects, 0x710044c5fc
+struct LockedMatrix {
+    Matrix40 get();
+
+    unsigned char pad[0x50];
+    Matrix40 matrix;          // +50
+    unsigned char pad90[0x18];
+    LockOwner* owner;         // +a8
+};
+
+Matrix40 LockedMatrix::get() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    Matrix40 result = matrix;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    return result;
+}
+
+// 0x7100429d3c; vtable through the GOT slot at 0x7100c2b988.
+class FlagSlot : public Base_41be40 {
+public:
+    FlagSlot();
+    ~FlagSlot() override;
+
+    int index;                // +4c
+    unsigned char enabled;    // +50
+    unsigned char pad51[0x2f];
+    int other;                // +80
+};
+
+FlagSlot::FlagSlot() : index(-1), enabled(1), other(-1) {}
+
+// 0x710041a7f4; vtable through the GOT slot at 0x7100c2b818.
+class CountSlot : public Base_41be40 {
+public:
+    CountSlot();
+    ~CountSlot() override;
+
+    unsigned char pad4c[4];
+    void* a;                  // +50
+    void* b;                  // +58
+    void* c;                  // +60
+    void* d;                  // +68
+    void* e;                  // +70
+    int count;                // +78
+};
+
+CountSlot::CountSlot() {
+    d = nullptr;
+    e = nullptr;
+    count = 3;
+    b = nullptr;
+    c = nullptr;
+    a = nullptr;
+}

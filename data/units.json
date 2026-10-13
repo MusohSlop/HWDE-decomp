@@ -1512,7 +1512,13 @@
     "_Z18forward_flag_6eb7cv": "0x710006eb7c",
     "got:gGlobalMode_c2ec00": "0x7100c2ec00",
     "_ZN13FrameHeapBase5fetchEv": "0x71005c2f18",
-    "got:_ZTV12IndexedChild": "0x7100c227c8"
+    "got:_ZTV12IndexedChild": "0x7100c227c8",
+    "_Z18global_call_44bf70PvS_S_if": "0x710044bf70",
+    "_ZN13FrameHeapBase5firstEv": "0x71005c2f5c",
+    "_ZN13FrameHeapBase4lastEv": "0x71005c2fd0",
+    "_ZN13FrameHeapBase11count_valueEv": "0x71005c3a14",
+    "got:_ZTV8FlagSlot": "0x7100c2b988",
+    "got:_ZTV9CountSlot": "0x7100c2b818"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2360,7 +2366,9 @@
         "_ZN11DelayedNode4showEv": "0x71001ef284",
         "_ZN11OwnedBuffer5resetEv": "0x710006cca4",
         "_ZN11SizedBuffer5resetEv": "0x710003cea8",
-        "_Z17global_mode_basicv": "0x710003e22c"
+        "_Z17global_mode_basicv": "0x710003e22c",
+        "_Z19guarded_play_44bf70Pv": "0x7100454398",
+        "_Z24guarded_play_44bf70_copyPv": "0x7100454354"
       },
       "map": {
         ".rodata.cst4": "0x710073c188"
@@ -3343,7 +3351,13 @@
         "_ZN15LockedFrameHeap5fetchEv": "0x71005c4c5c",
         "_Z15allocate_zeroedP12RawAllocatorm": "0x71005c2cd8",
         "_Z12close_readerP10FileReader": "0x710053e2b0",
-        "_ZN12IndexedChildC2Ev": "0x71000bda6c"
+        "_ZN12IndexedChildC2Ev": "0x71000bda6c",
+        "_ZN15LockedFrameHeap5firstEv": "0x71005c4ca0",
+        "_ZN15LockedFrameHeap4lastEv": "0x71005c4d30",
+        "_ZN15LockedFrameHeap11count_valueEv": "0x71005c5060",
+        "_ZN12LockedMatrix3getEv": "0x710044c5fc",
+        "_ZN8FlagSlotC2Ev": "0x7100429d3c",
+        "_ZN9CountSlotC2Ev": "0x710041a7f4"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",

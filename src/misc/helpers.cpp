@@ -1734,3 +1734,15 @@ bool global_mode_basic() {
         return gGlobalMode_c2ec00 == 0 || gGlobalMode_c2ec00 == 1;
     return false;
 }
+void global_call_44bf70(void* global, void* a, void* b, int c, float d);    // 0x710044bf70
+
+// 0x7100454398, 0x7100454354; original file: global queries, 0x7100454354-0x7100454398
+void guarded_play_44bf70(void* value) {
+    if (load_global_44bc20())
+        global_call_44bf70(load_global_44bc20(), value, nullptr, 1, 1.0f);
+}
+
+void guarded_play_44bf70_copy(void* value) {
+    if (load_global_44bc20())
+        global_call_44bf70(load_global_44bc20(), value, nullptr, 1, 1.0f);
+}
