@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,428 of 1,549 attempted functions match: 1,418 inventory functions (117,828 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 121 are near misses, all `m`.
+1,442 of 1,569 attempted functions match: 1,432 inventory functions (120,908 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 127 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -312,6 +312,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 26 in `misc/small_families3.cpp` | two-argument getter forwarders, paired calls on a global, null-terminated list walks, manager lookups | match |
 | 27 in `misc/text_lookups.cpp`, 19 in `misc/trophy_best.cpp`, 13 in `misc/pair_singletons.cpp`, 9 in `misc/stat_ratios.cpp` | families that differ only in an immediate (`family_scan.py --immediates`): message-text lookups by id offset, best-slot tests, paired singleton creation, stat percentages | match |
 | 22 in `misc/model_updates.cpp` | skinned-model updates (pose refresh, bone rebind, skin refresh, class update) | near miss (2 words each) |
+| 8 in `misc/event_pool.cpp`, 6 in `misc/part_binding.cpp` | event pool adds by kind (`0xb`-`0x16`); five-part binding sequences by count slot, each with its own binder | match |
+| 6 in `misc/part_binders.cpp` | the per-part binders (`59c560`-`59ca10`) | near miss |
 | 48 in `misc/skinned_overrides.cpp` | skinned-model overrides (base version, then the skin set's), 28 of them at other skin-set offsets | match |
 | 14 in `misc/small_families4.cpp`, 16 in `misc/small_families5.cpp` | nine-sprite constructors, swapped-argument solves, pool disposals, singleton deletes and creations, command checks, calls under the object manager's lock | match |
 | `3cca08`-`3cccb8` | `malloc`, `operator new` (plain and `nothrow`), `operator new[]`, `operator delete`, `operator delete[]` (`misc/heap_operators.cpp`) | match |
@@ -577,6 +579,8 @@ Counts re-measured after the family rounds (distinct direct callees not yet name
 `45e160` (1,464 bytes) is a 61-case statistics switch with a jump table at `811194`. It calls at least six game functions whose signatures are unknown (`204728`, `203dfc`, `2028b4`, `200fc0`, `2015a8`, `200294`), so it needs its own effort. The four small virtuals at `45dcd0`–`45dd28` need their class and vtable identified first.
 
 ### Near misses
+
+`59c560`-`59ca10` (`misc/part_binders.cpp`): the structure matches. The original hoists the item table's base (`part + 0x70`) into a register and lets `part` die. Ours indexes from `part` itself and keeps it live, which shifts every register and moves the `return false` block after the epilogue. Hoisting the base into a local and indexing through an accessor made no difference.
 
 `266f6c`: two words. The two `fmul`s have their operands in the other order: the original puts the font size first while loading the group scale first, and every load order and operand order we tried keeps them together.
 

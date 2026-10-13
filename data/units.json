@@ -1591,7 +1591,18 @@
     "_ZN11BoneBinding6rebindEv": "0x71005a9be8",
     "_Z9load_posePviiiiiii": "0x710059685c",
     "_ZN12UpdatedModel12prepare_poseEv": "0x710059469c",
-    "_ZN12UpdatedModel11bones_movedEv": "0x7100072e2c"
+    "_ZN12UpdatedModel11bones_movedEv": "0x7100072e2c",
+    "_Z9bind_partP11BindContextP8BindPartjl": "0x710059c560",
+    "_Z16bind_part_59c560P11BindContextP8BindPartjl": "0x710059c560",
+    "_Z16bind_part_59c650P11BindContextP8BindPartjl": "0x710059c650",
+    "_Z16bind_part_59c740P11BindContextP8BindPartjl": "0x710059c740",
+    "_Z16bind_part_59c830P11BindContextP8BindPartjl": "0x710059c830",
+    "_Z16bind_part_59c920P11BindContextP8BindPartjl": "0x710059c920",
+    "_Z16bind_part_59ca10P11BindContextP8BindPartjl": "0x710059ca10",
+    "_Z19resolve_item_527cbcPvS_": "0x7100527cbc",
+    "_Z19resolve_item_527ba4PvS_": "0x7100527ba4",
+    "_Z19resolve_item_5326c8PvS_": "0x71005326c8",
+    "_Z19resolve_item_527ad4PvS_": "0x7100527ad4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -3683,6 +3694,38 @@
         "_Z19update_model_44ed28P14UpdateHost14c0": "0x710044ed28",
         "_Z19update_model_450bb0P14UpdateHost12a0": "0x7100450bb0",
         "_Z19update_model_451298P14UpdateHost1430": "0x7100451298"
+      }
+    },
+    "misc/event_pool.cpp": {
+      "functions": {
+        "_Z15pool_add_2407b8P9EventPoolPvf": "0x71002407b8",
+        "_Z15pool_add_240928P9EventPoolPvf": "0x7100240928",
+        "_Z15pool_add_240c08P9EventPoolPvf": "0x7100240c08",
+        "_Z15pool_add_240cc0P9EventPoolPvf": "0x7100240cc0",
+        "_Z15pool_add_240d78P9EventPoolPvf": "0x7100240d78",
+        "_Z15pool_add_240e30P9EventPoolPvf": "0x7100240e30",
+        "_Z15pool_add_240ee8P9EventPoolPvf": "0x7100240ee8",
+        "_Z15pool_add_240fa0P9EventPoolPvf": "0x7100240fa0"
+      }
+    },
+    "misc/part_binding.cpp": {
+      "functions": {
+        "_Z17bind_parts_598fa0P7PartSetP11BindContextP8BindArgs": "0x7100598fa0",
+        "_Z17bind_parts_5990acP7PartSetP11BindContextP8BindArgs": "0x71005990ac",
+        "_Z17bind_parts_5991b8P7PartSetP11BindContextP8BindArgs": "0x71005991b8",
+        "_Z17bind_parts_5992c4P7PartSetP11BindContextP8BindArgs": "0x71005992c4",
+        "_Z17bind_parts_5993d0P7PartSetP11BindContextP8BindArgs": "0x71005993d0",
+        "_Z17bind_parts_5994dcP7PartSetP11BindContextP8BindArgs": "0x71005994dc"
+      }
+    },
+    "misc/part_binders.cpp": {
+      "functions": {
+        "_Z16bind_part_59c560P11BindContextP8BindPartjl": "0x710059c560",
+        "_Z16bind_part_59c650P11BindContextP8BindPartjl": "0x710059c650",
+        "_Z16bind_part_59c740P11BindContextP8BindPartjl": "0x710059c740",
+        "_Z16bind_part_59c830P11BindContextP8BindPartjl": "0x710059c830",
+        "_Z16bind_part_59c920P11BindContextP8BindPartjl": "0x710059c920",
+        "_Z16bind_part_59ca10P11BindContextP8BindPartjl": "0x710059ca10"
       }
     }
   }
