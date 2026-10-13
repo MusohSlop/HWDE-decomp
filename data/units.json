@@ -1503,7 +1503,10 @@
     "_Z17part_call3_41d100Pviii": "0x710041d100",
     "got:_ZTV12RecordObject": "0x7100c2b760",
     "_ZN2nn2os10ClearEventEPNS0_9EventTypeE": "0x7100600c00",
-    "_ZN2nn2os11YieldThreadEv": "0x7100600b20"
+    "_ZN2nn2os11YieldThreadEv": "0x7100600b20",
+    "_ZN17EffectManagerView15attach_resourceEP14EffectResource": "0x71001e26e0",
+    "got:_ZTV11IndexedSlot": "0x7100c2b9e0",
+    "got:_ZTV9EightSlot": "0x7100c2b828"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -2343,7 +2346,10 @@
         "_Z22guarded_forward_40d754Pvi": "0x7100454314",
         "_Z20global_part28_4348a4iPvS_": "0x7100454028",
         "_Z20global_part20_41fdd8PvS_i": "0x7100453d08",
-        "_Z20global_part10_41d100iii": "0x71004528fc"
+        "_Z20global_part10_41d100iii": "0x71004528fc",
+        "_Z25release_held_light_c2a9c8v": "0x710037ac7c",
+        "_ZN10TimedTable5resetEv": "0x71003de474",
+        "_ZN9FlagTable5resetEv": "0x71002015c4"
       },
       "map": {
         ".rodata.cst4": "0x710073c188"
@@ -3316,7 +3322,12 @@
         "_ZN12RecordObjectC2ERK9Record150": "0x710057cdc0",
         "_ZN12LockedHandle7is_openEv": "0x710053d978",
         "_ZN11EventWaiter4waitEv": "0x710053c1e4",
-        "_ZN9WorkQueue9wait_idleEv": "0x71004d1920"
+        "_ZN9WorkQueue9wait_idleEv": "0x71004d1920",
+        "_ZN16LockedRecordView7value18Ev": "0x710045dcd0",
+        "_ZN16LockedRecordView6value8Ev": "0x710045da5c",
+        "_ZN11IndexedSlotC2Ev": "0x7100433d54",
+        "_ZN9EightSlotC2Ev": "0x710041b658",
+        "_ZN16TwoResourceScene6attachEv": "0x71002eddf4"
       },
       "map": {
         "_ZZ17shared_zero_shortvE5value": "0x7100cf05d8",

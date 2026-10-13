@@ -702,6 +702,7 @@ struct EffectResource;
 class EffectManagerView {
 public:
     void attach(EffectResource* resource, void* owner);                    // 0x71001e26dc
+    void attach_resource(EffectResource* resource);                         // 0x71001e26e0
 };
 // Reached through the GOT slot at 0x7100c22a00.
 extern EffectManagerView* gEffectManager;
@@ -879,4 +880,81 @@ void WorkQueue::wait_idle() {
     WorkSlot* slot = &base[current];
     while (slot->state == 1)
         nn::os::YieldThread();
+}
+struct InnerRecord {
+    unsigned char pad[8];
+    void* value8;             // +08
+    unsigned char pad10[8];
+    void* value18;            // +18
+};
+
+// 0x710045dcd0, 0x710045da5c; original file: worker objects, 0x710045da5c-0x710045dcd0
+struct LockedRecordView {
+    void* value18();
+    void* value8();
+
+    void* value0;             // +00
+    InnerRecord* record;      // +08
+    LockOwner* owner;         // +10
+};
+
+void* LockedRecordView::value18() {
+    nn::os::MutexType* mutex = reinterpret_cast<nn::os::MutexType*>(owner->mutex);
+    nn::os::LockMutex(mutex);
+    void* result = record->value18;
+    nn::os::UnlockMutex(mutex);
+    return result;
+}
+
+void* LockedRecordView::value8() {
+    nn::os::MutexType* mutex = reinterpret_cast<nn::os::MutexType*>(owner->mutex);
+    nn::os::LockMutex(mutex);
+    void* result = record->value8;
+    nn::os::UnlockMutex(mutex);
+    return result;
+}
+
+// 0x7100433d54; vtable through the GOT slot at 0x7100c2b9e0.
+class IndexedSlot : public Base_41be40 {
+public:
+    IndexedSlot();
+    ~IndexedSlot() override;
+
+    unsigned char pad4c[4];
+    void* a;                  // +50
+    void* b;                  // +58
+    unsigned char pad60[8];
+    long index;               // +68
+    void* c;                  // +70
+    void* d;                  // +78
+};
+
+IndexedSlot::IndexedSlot() : a(nullptr), b(nullptr), index(-1), c(nullptr), d(nullptr) {}
+
+// 0x710041b658; vtable through the GOT slot at 0x7100c2b828.
+class EightSlot : public Base_41be40 {
+public:
+    EightSlot();
+    ~EightSlot() override;
+
+    unsigned char pad4c[4];
+    void* slots[8];           // +50
+};
+
+EightSlot::EightSlot() : slots() {}
+
+// 0x71002eddf4; original file: scene panels, 0x71002eddf4
+struct TwoResourceScene {
+    void attach();
+
+    unsigned char pad[0x10];
+    unsigned char resource10[0x110]; // +10
+    unsigned char resource120[0x120]; // +120
+    unsigned char active;     // +240
+};
+
+void TwoResourceScene::attach() {
+    active = 0;
+    gEffectManager->attach(reinterpret_cast<EffectResource*>(resource10), nullptr);
+    gEffectManager->attach_resource(reinterpret_cast<EffectResource*>(resource120));
 }

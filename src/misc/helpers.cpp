@@ -1607,3 +1607,50 @@ void global_part20_41fdd8(void* a, void* b, int c) {
 void global_part10_41d100(int a, int b, int c) {
     part_call3_41d100(load_global_425dd0()->part10, a, b, c);
 }
+// Reached through the GOT slot at 0x7100c2a9c8.
+extern HeldLight* gGlobal_c2a9c8;
+
+// 0x710037ac7c; original file: held lights, 0x710037ac7c
+void release_held_light_c2a9c8() {
+    if (HeldLight* held = gGlobal_c2a9c8) {
+        if (held->light) {
+            release_light(&held->light);
+            held->light = nullptr;
+        }
+    }
+}
+
+// 0x71003de474; original file: tables, 0x71003de474
+struct TimedTable {
+    void reset();
+
+    unsigned char bytes[0xa8]; // +00 (the clear covers the whole 0xc0 bytes)
+    int valuea8;              // +a8
+    unsigned char padac[8];
+    int id;                   // +b4
+    float duration;           // +b8
+    int valuebc;              // +bc
+};
+
+void TimedTable::reset() {
+    memset(this, 0, sizeof(*this));
+    valuea8 = 0;
+    id = -1;
+    duration = 5000.0f;
+    valuebc = 0;
+}
+
+// 0x71002015c4; original file: game data tables, 0x71002015c4
+struct FlagTable {
+    void reset();
+
+    unsigned char slots[0x1680]; // +0000
+    unsigned char values[0xf0];  // +1680
+};
+
+void FlagTable::reset() {
+    for (unsigned int i = 0; i < sizeof(values); ++i)
+        values[i] = 0;
+    for (unsigned int i = 0; i < sizeof(slots); ++i)
+        slots[i] = 0xff;
+}

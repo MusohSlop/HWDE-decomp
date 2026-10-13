@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,255 of 1,350 attempted functions match: 1,245 inventory functions (104,020 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-five are near misses, all `m`.
+1,262 of 1,358 attempted functions match: 1,252 inventory functions (104,464 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-six are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -327,6 +327,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `3dd0e4` | `SplitTable::clear` | near miss |
 | 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | weapon-slot and mixed-table resets, a stage layout load, a chunk-pair assign, mirrored-table save, entry-array clear, a constructor | match |
 | `20ac40` | `current_unit_table` | near miss |
+| 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | locked record reads, indexed and eight-slot constructors, a two-resource scene attach, a held-light release, a flag-table reset | match |
+| `3de474` | `TimedTable::reset` | near miss |
 | 16 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | record-object and model constructors, locked list removal, frame-heap finalize, handle and event waits, a work-queue spin, a pending-request clear, a request readiness test, a timer start, a mixed-record reset, global forwarders | match |
 | 16 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | ring-node and five/six-slot constructors, locked reads and counter bump, two stage-layout loads, default-pair reset, held-light releases, node widget redraw, resource scene attach, resource and guarded queries | match |
 | 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | dual-slot, attached-model and panel constructors and destructor, a block copy, a line panel draw, a lazy id | match |
@@ -608,6 +610,8 @@ Counts re-measured after the family rounds (distinct direct callees not yet name
 `3dd0e4`: `SplitTable::clear`, the same pattern as `d0930` below (the second region's address kept across the first clear). `d0930`: `BigCleared::reset` keeps `this + 0x30` (the sub-object it initializes after the clear) in a register across the `memset`; ours keeps `this` and adds afterwards, with a local pointer and with a member call. `6fdb8`: `battle_timer_seconds` tests a hidden flag byte against the negated mode bit with `tst w9, w8`; ours folds the two tests into `bic`/`tst #1`, with the flag as `unsigned char` and `&`, and as `bool` and `&&`.
 
 `20ac40`: `current_unit_table`, the select between the two tables comes out with the opposite condition (`csel ..., ne` instead of `eq`) and the two address adds in the other order, whichever way the condition is written.
+
+`3de474`: `TimedTable::reset` clears the whole 0xc0-byte object and then stores four fields, one of them zero. Ours shrinks the clear to 0xbc bytes and drops the zero store (both are redundant after the clear), with a loop and with an explicit `memset`; the original keeps both.
 
 `283b54`: the original loads the mode before the row fields; ours sinks it. `283e88`: two words, the mode range test comes out as `cmp #6; b.hi` instead of `cmp #7; b.hs`. `282d74`, `283028`, `2830f8`: register use and the switch-lowering pattern (`282d74`).
 
