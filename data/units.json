@@ -358,7 +358,15 @@
     "_ZN7Unlocks3hasEi": "0x7100224990",
     "_Z11get_unlocksv": "0x71002248a0",
     "kNeighborOffsets": "0x71007e1ff0",
-    "kGatePairs": "0x71007e3c08"
+    "kGatePairs": "0x71007e3c08",
+    "_ZN10CellRecord7clearedEv": "0x7100202164",
+    "_ZN8Progress10base_levelEi": "0x7100203550",
+    "_ZN9ItemTable8has_rareEi": "0x71001ff280",
+    "_ZN9ItemTable10has_commonEi": "0x71001ff25c",
+    "_ZN4Game10add_rewardEjiih": "0x7100203858",
+    "_ZN4Game11show_rewardEjiih": "0x7100203aa8",
+    "_ZN4Unit8has_flagEi": "0x710020d984",
+    "_Z13item_categoryj": "0x7100211554"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -801,7 +809,14 @@
         "_ZN8BoardRow10gate_stateEih": "0x710026a220",
         "_Z17dlc_unit_unlockedP8BoardRow": "0x710026a7e0",
         "_ZN6Player9cell_openEi": "0x710026a90c",
-        "_Z16update_dlc_gatesv": "0x710026a454"
+        "_Z16update_dlc_gatesv": "0x710026a454",
+        "_Z14dlc_board_flagv": "0x710026b088",
+        "_ZN6Player12cell_clearedEi": "0x710026b0d4",
+        "_Z15cell_selectablei": "0x710026b154",
+        "_ZN10BoardQuery10cell_levelEj": "0x710026b234",
+        "_Z14board_completev": "0x710026b374",
+        "_ZN6Player5setupEP8BoardRowi": "0x710026a98c",
+        "_ZN10BoardQuery10find_entryEjjiPiS0_S0_": "0x710026b3cc"
       },
       "map": {
         ".rodata": "0x71007f51a4"
