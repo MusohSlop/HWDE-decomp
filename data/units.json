@@ -594,7 +594,7 @@
     "_ZN14DemoEffectPool7restartEv": "0x7100262e78",
     "_ZN3Pad7buttonsEi": "0x710045d620",
     "_Z7get_padv": "0x710045ceb4",
-    "_Z7play_seiiPviifff": "0x71003fbe44",
+    "_Z7play_seiiPvifff": "0x71003fbe44",
     "_ZN12BoardOverlay13confirm_readyEv": "0x71002826b0"
   },
   "units": {
