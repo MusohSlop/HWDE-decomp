@@ -1,5 +1,6 @@
 // Matching candidates for the Adventure Mode board queries 0x7100269858-0x710026b3c8.
-// Player::setup (0x710026a98c) and BoardQuery::find_entry (0x710026b3cc) are at the end.
+// Player::setup (0x710026a98c), BoardQuery::find_entry (0x710026b3cc) and the catalog fill
+// (0x710026b798) are at the end.
 // Names are descriptive placeholders. Status: matching/README.md.
 
 extern "C" void* memset(void* dest, int value, unsigned long size);
@@ -39,8 +40,16 @@ class CellRecord {
 public:
     unsigned char cleared();                                                // 0x7100202164
 
-    unsigned char pad[0x3c];
+    int unit;                 // +00
+    int stage;                // +04
+    int value8;               // +08
+    unsigned char padc[8];
+    int value14;              // +14
+    int value18;              // +18
+    unsigned char pad1c[0x1c];
+    int value38;              // +38
 };
+static_assert(sizeof(CellRecord) == 0x3c, "cell record size");
 
 struct PlayerMark {
     int flags;                // +0: bit 1 item held
@@ -100,10 +109,13 @@ public:
 };
 Game* get_game();                                                           // 0x7100204728
 
+// Two runs of bitfields (8 and 4 bytes); the compiler reads them with mixed widths, as the original does.
 struct UnitInfo {
-    int kind : 16;            // +0: a bitfield, so the compare stays 32-bit
-    int value2 : 16;          // +2
-    unsigned char pad4[4];
+    int kind : 16;            // +0
+    int frame : 16;           // +2
+    int override : 16;        // +4: negative when unset
+    int value6 : 16;          // +6
+    int : 0;
     int value8 : 8;           // +8
     int team : 8;             // +9
     int value10 : 8;          // +a
@@ -149,6 +161,7 @@ static_assert(sizeof(BoardRow) == 0x1e0, "board row size");
 
 struct Unit {
     unsigned char has_flag(int flag);                                       // 0x710020d984
+    void set_flag(int flag, bool on);                                       // 0x710020dc10
 
     unsigned char pad0[4];
     int value4;               // +04
@@ -191,9 +204,8 @@ public:
     int stage_kind(int player);                                             // 0x7100290fb0
     int remap_kind(int kind, void* table);                                  // 0x7100290fd4
 };
-// Reached through the GOT slots at 0x7100c2a6f0 and 0x7100c23250.
+// Reached through the GOT slot at 0x7100c2a6f0.
 extern BoardOverride gBoardOverride;
-extern unsigned char gBoardRemapTable[];
 // Gate level thresholds, reached through the GOT slot at 0x7100c2a6f8.
 extern int gGateLevels[];
 
@@ -285,6 +297,8 @@ public:
     unsigned char flags[0x80][0x1c]; // +73d8
     unsigned int items[0x80][0x1c]; // +81d8
 };
+// Reached through the GOT slot at 0x7100c23250.
+extern BoardQuery gBoardQuery;
 
 int BoardQuery::active_count(int slot) {
     Game* game = get_game();
@@ -320,7 +334,7 @@ int unit_kind(int player, int slot) {
         if (kind == 0xd2)
             return gBoardOverride.stage_kind(player);
     } else if (game_mode() == 4) {
-        return gBoardOverride.remap_kind(kind, gBoardRemapTable);
+        return gBoardOverride.remap_kind(kind, &gBoardQuery);
     }
     return kind;
 }
@@ -816,4 +830,301 @@ void BoardQuery::find_entry(unsigned int cell, unsigned int slot, int kind, int*
         }
         count += !hidden || k == 0;
     }
+}
+
+int stage_message() {
+    unsigned int mode = game_mode();
+    return static_cast<int>(mode) > 6 ? mode + 0x461e : 0x4210;
+}
+
+bool is_plain_cell(BoardRow* row) {
+    switch (row->kind) {
+    case 8:
+    case 12:
+    case 14:
+    case 20:
+    case 21:
+        return false;
+    }
+    signed char kind = row->kind;
+    return kind >= 0 && kind < 0x20;
+}
+
+int unit_override_kind(int player, int slot) {
+    unsigned int index = get_unit_database()->rows[player].cells[static_cast<unsigned int>(slot)];
+    int kind = unit_infos(get_unit_database())[index].kind;
+    if (unit_infos(get_unit_database())[index].override < 0)
+        return kind;
+    kind = unit_infos(get_unit_database())[index].override;
+    if (game_mode() == 4)
+        return gBoardOverride.remap_kind(kind, &gBoardQuery);
+    return kind;
+}
+
+int unit_frame(int player, int slot) {
+    unsigned int index = get_unit_database()->rows[player].cells[static_cast<unsigned int>(slot)];
+    int frame = unit_infos(get_unit_database())[index].frame;
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    if (game_mode() == 3) {
+        if (frame == 0xd2)
+            frame = gBoardOverride.stage_kind(player);
+    } else if (game_mode() == 4) {
+        frame = gBoardOverride.remap_kind(frame, &gBoardQuery);
+    }
+    if (player == 0x17 && game_mode() == 7 && game->players[mode].unguarded[player]) {
+        if (static_cast<unsigned short>(index) == 0x87)
+            return 0x8f;
+        if (static_cast<unsigned short>(index) == 0x8c)
+            return 0x90;
+    }
+    return frame;
+}
+
+int unit_override_frame(int player, int slot) {
+    unsigned int index = get_unit_database()->rows[player].cells[static_cast<unsigned int>(slot)];
+    int value = unit_infos(get_unit_database())[index].value6;
+    if (game_mode() == 4)
+        return gBoardOverride.remap_kind(value, &gBoardQuery);
+    return value;
+}
+
+class ShopEntry {
+public:
+    unsigned char valid();                                                  // 0x710019b8c0
+    int item();                                                             // 0x710019bb74
+};
+
+class ShopList {
+public:
+    unsigned char valid();                                                  // 0x710019b8ec
+    ShopEntry* entry(int index);                                            // 0x710019ba6c
+    int kind();                                                             // 0x710019b928
+    unsigned char limited();                                                // 0x710019b9e4
+};
+
+class Catalog {
+public:
+    ShopList* list(int index);                                              // 0x710019bcfc
+};
+
+class ShopManager {
+public:
+    Catalog* catalog();                                                     // 0x71001898b8
+    void select_unit(int unit);                                             // 0x710018ca68
+};
+// Reached through the GOT slot at 0x7100c216e8.
+extern ShopManager* gShop;
+
+struct ItemDef {
+    unsigned char pad0[0x32];
+    unsigned short price;     // +32
+    unsigned char pad34[2];
+    signed char rarity;       // +36
+    unsigned char pad37[6];
+    unsigned char flags;      // +3d: bit 4 tradable
+    unsigned char pad3e[0x12];
+};
+static_assert(sizeof(ItemDef) == 0x50, "item def size");
+// Reached through the GOT slot at 0x7100c216a0.
+extern ItemDef* gItemDefs;
+
+int item_group(int item);                                                   // 0x71001fb810
+
+static inline ItemDef* item_def(int item) {
+    return static_cast<unsigned int>(item) <= 0x44b ? &gItemDefs[item] : nullptr;
+}
+
+static inline bool is_rare_item(int item) {
+    ItemDef* def = item_def(item);
+    if (!def || !(def->flags & 0x10) || def->price > 0x63)
+        return false;
+    switch (def->rarity) {
+    case 4:
+    case 6:
+        return true;
+    }
+    return false;
+}
+
+void fill_cell_entries(unsigned int cell, unsigned int* count, int min_level, int max_level,
+                       unsigned char unique) {
+    if (*count > 0x1b)
+        return;
+    for (int index = 2; index < 0x76; ++index) {
+        ShopList* list = gShop->catalog()->list(index);
+        if (!list->valid())
+            continue;
+        for (int i = 0; i < 3; ++i) {
+            ShopEntry* entry = list->entry(i);
+            if (!entry->valid())
+                continue;
+            int item = entry->item();
+            int level = item_category(item);
+            bool rare = is_rare_item(item);
+            if (level < min_level || level > max_level)
+                continue;
+            if (*count >= 2) {
+                bool known = false;
+                for (unsigned int k = 1; k < *count; ++k) {
+                    if (gBoardQuery.levels[cell][k] != item_group(item))
+                        continue;
+                    if (game_mode() < 3) {
+                        known = true;
+                    } else {
+                        known = !rare && !gBoardQuery.flags[static_cast<int>(cell)][static_cast<int>(k)];
+                        Unit* unit = get_unit_database()->unit(get_unit_database()->rows[static_cast<int>(cell)].value0);
+                        if (!rare && gBoardQuery.kinds[static_cast<int>(cell)][static_cast<int>(k)] == 3 &&
+                            unit->value4 == 0x70)
+                            known = false;
+                    }
+                }
+                if (known && (unique || list->limited())) {
+                    if (*count > 0x1b)
+                        break;
+                    continue;
+                }
+                if (*count > 0x1b)
+                    break;
+            }
+            gBoardQuery.levels[cell][*count] = item_group(item);
+            gBoardQuery.kinds[cell][*count] = list->kind();
+            Unit* unit = get_unit_database()->unit(get_unit_database()->rows[static_cast<int>(cell)].value0);
+            switch (unit->value4) {
+            case 12:
+            case 20:
+            case 22:
+            case 0x70:
+            case 0x73:
+            case 0x74:
+            case 0x75:
+                if (list->kind() == 2)
+                    gBoardQuery.kinds[cell][*count] = 1;
+                break;
+            }
+            bool limited = list->limited();
+            if (index >= 5 && limited) {
+                UnitDatabase* database = get_unit_database();
+                if (level != 5 || database->rows[static_cast<int>(cell)].level <= 0) {
+                    if (!unit->has_flag(0xf)) {
+                        bool shared = unit->has_flag(0x10);
+                        if (!((level == 3 || level == 4) && shared))
+                            gBoardQuery.kinds[cell][*count] = 3;
+                    }
+                }
+            }
+            if (item_group(item) == 0x42)
+                gBoardQuery.kinds[cell][*count] = 3;
+            if (is_rare_item(item))
+                gBoardQuery.flags[static_cast<int>(cell)][*count] = 1;
+            gBoardQuery.items[static_cast<int>(cell)][*count] = item;
+            ++*count;
+            if (*count > 0x1b)
+                break;
+        }
+    }
+}
+
+class OverlayLayer {
+public:
+    void close();                                                           // 0x71003abd40
+};
+
+class Overlay {
+public:
+    OverlayLayer* current_layer();                                          // 0x71003ad160
+};
+Overlay* get_overlay();                                                     // 0x71003abbe0
+
+void begin_board_load();                                                    // 0x710016fac0
+void end_board_load();                                                      // 0x710016fae0
+
+class BattleSetup {
+public:
+    void reset();                                                           // 0x710016ef18
+    void set_flags(int flags);                                              // 0x710016f2ac
+    void set_unit(int unit);                                                // 0x710016f2c4
+};
+BattleSetup* get_battle_setup();                                            // 0x710016ef34
+
+class BattleParams {
+public:
+    void reset();                                                           // 0x71001a8ba4
+    void set_mode(int mode);                                                // 0x71001a8d24
+    void set_side(int side);                                                // 0x71001a8d34
+    void set_level(int slot, int level);                                    // 0x71001a8d48
+    void set_stage(int stage);                                              // 0x71001a8e2c
+
+    unsigned char pad[0x98];
+    int value98;              // +98
+    unsigned char pad9c[8];
+    int valuea4;              // +a4
+    int valuea8;              // +a8
+    int valueac;              // +ac
+};
+BattleParams* get_battle_params();                                          // 0x71001a8c38
+
+void start_board_battle() {
+    unsigned int count;
+    if (get_overlay())
+        get_overlay()->current_layer()->close();
+    begin_board_load();
+    Game* game = get_game();
+    int cell = game->players[game_mode()].id;
+    int unit = get_unit_database()->rows[cell].value0;
+    get_battle_setup()->reset();
+    get_battle_setup()->set_flags(0x400);
+    get_battle_setup()->set_unit(unit);
+    BattleParams* params = get_battle_params();
+    params->reset();
+    params->set_mode(1);
+    params->set_side(1);
+    params->set_level(0, get_game()->progress.base_level(0));
+    int level = get_unit_database()->rows[cell].value4;
+    game = get_game();
+    Player& player = game->players[game_mode()];
+    if (player.gate_levels[player.id] == 3)
+        level = -1;
+    if (game_mode() == 8) {
+        game = get_game();
+        Player& current = game->players[game_mode()];
+        if (static_cast<unsigned int>(level) <= 0x63 && current.value2acd != 5)
+            params->set_level(0, level);
+    } else if (static_cast<unsigned int>(level) <= 0x63) {
+        params->set_level(0, level);
+    }
+    game = get_game();
+    CellRecord record = game->players[game_mode()].records[cell];
+    if (record.cleared()) {
+        params->set_stage(record.stage);
+        params->valuea4 = record.value14;
+        params->value98 = record.value8;
+        params->valuea8 = record.value18;
+        params->valueac = record.value38;
+        unit = record.unit;
+        get_battle_setup()->set_unit(unit);
+        params->set_level(0, get_game()->progress.base_level(0));
+    }
+    get_unit_database()->unit(unit)->set_flag(1, game_mode() == 3);
+    get_unit_database()->unit(unit)->set_flag(4, game_mode() == 4);
+    bool late = game_mode() > 6;
+    get_unit_database()->unit(unit)->set_flag(0x10, late);
+    gShop->select_unit(unit);
+    gBoardQuery.levels[static_cast<unsigned int>(cell)][0] = 0;
+    gBoardQuery.kinds[static_cast<unsigned int>(cell)][0] = 0;
+    count = 1;
+    fill_cell_entries(cell, &count, 5, 5, 0);
+    fill_cell_entries(cell, &count, 3, 4, 1);
+    fill_cell_entries(cell, &count, 2, 2, 1);
+    unsigned int previous = count;
+    if (previous - 1 <= 0x1a) {
+        do {
+            fill_cell_entries(cell, &count, 2, 2, 0);
+            if (count > 0x1b || previous == count)
+                break;
+            previous = count;
+        } while (true);
+    }
+    get_battle_setup()->reset();
+    end_board_load();
 }

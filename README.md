@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-236 of 280 attempted functions match: 226 inventory functions (38,260 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other forty-four are near misses, all `m`.
+237 of 287 attempted functions match: 227 inventory functions (38,316 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other fifty are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -235,6 +235,9 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `26a98c` | `Player::setup` | near miss |
 | `26b088`–`26b374` | `dlc_board_flag`, `Player::cell_cleared`, `cell_selectable`, `BoardQuery::cell_level`, `board_complete` | match |
 | `26b3cc` | `BoardQuery::find_entry` | near miss |
+| `26b798`, `26bd64` | `fill_cell_entries`, `start_board_battle` | near miss |
+| `26c11c` | `stage_message` | match |
+| `26c610`–`26c884` | `is_plain_cell`, `unit_override_kind`, `unit_frame`, `unit_override_frame` | near miss |
 | `26031c` | `TrackLightTableSet::load_tracks` | `m`: the two overflow tests compile to `cmp #0x101; b.lo` instead of `cmp #0x100; b.ls` (4 words) |
 | `25d19c` | `apply_track_light` | `m`: same size; the inlined cosine tests its sign with `cmp` instead of `eor`/`tbz`, and some polynomial blocks are scheduled differently |
 | `45dd2c` | `get_dummy_id` (function-local static) | match |
@@ -375,6 +378,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `UnitInfo::kind` is an `int :16` bitfield. As a `short`, InstCombine narrows `kind == 0xd2` to a 16-bit compare (`and #0xffff`); the bitfield keeps the original's 32-bit compare.
   - The diagonal neighbours are written as the full diagonal first (`cell - 17`/`cell - 16`) with the row edge fixed afterwards; chaining the two single steps gives a different select.
   - `BoardQuery` is a real object: per-cell tables of 28 entries (levels `+3d8`, kinds `+3bd8`, flag bytes `+73d8`, items `+81d8`). The last 0x50 bytes of each `BoardRow` are a `[2][5]` table of {x, y} cell positions. `cell_level` matches once the mode-8 test reads the player byte before the range test.
+  - The 12-byte unit record is two runs of bitfields: four 16-bit fields (kind, frame, override, value6), then `int : 0`, then four bytes. With one run `unit_alive` stops matching; with no bitfields `unit_kind` does.
+  - The GOT slot `c23250` holds the global `BoardQuery` (`gBoardQuery`), which `unit_kind` passes to the remap call. `fill_cell_entries` fills a cell's 28 entries from the shop catalog (`gShop`, lists 2-0x75, three entries each) and the item table (`gItemDefs`, 0x50-byte records). `start_board_battle` sets up the battle parameters and runs four fills.
   - `dlc_unit_unlocked` returns `unsigned char`: its callers test `and #0xff`, which a `bool` result does not produce. `unit_alive` matches with the team and defeated tests in one `||`.
 - **Duplicate names.** `check.py` now stops when `units.json` repeats a key or gives one name two addresses. `tools/add_symbols.py` adds names and refuses to remap an existing one.
 - **Queue booleans.** They are `unsigned char` (tested with `and #0xff; cbnz`), not `bool`. Only `flag2` (`+2`) is `volatile`. That keeps cancel's two flag stores separate while letting `active` and `flag1` merge into the 16-bit clear. The entry reset is written state, callback, completion, argument, elapsed; the compiler then emits the original store order and pairing.
@@ -402,6 +407,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 `26a98c`: `Player::setup` (1,788 bytes). The logic matches, including the inlined `cell_open`, `cell_cleared`, `cell_selectable` and `is_fort_kind` (its 68-entry jump table appears again at `7f52e8`). The fort-scan loop keeps a running flag in the original, and the frame is 0x20 bytes larger; four loop shapes all left about 320 words different.
 
 `26b3cc`: `BoardQuery::find_entry`. The logic matches; the original places the non-flag `kind != 0` path after the loop and indexes the 28-entry tables through a sign-extended 64-bit counter.
+
+`26c654`, `26c730`, `26c884`: the original reads `override` and `value6` with `and #0xffff0000; asr #16` (a redundant mask) and a load narrowed to `+4`; no bitfield layout tried reproduces that, so it may be another compiler difference. `26c610` is the switch-lowering case again.
+
+`26b798`, `26bd64`: the structure matches; the rarity test in `26b798` is another switch-lowering case, and both differ in register allocation and stack layout (capped at two attempts).
 
 `26a220`: only block placement differs. The original falls through to the `raw` return; ours branches to it.
 
