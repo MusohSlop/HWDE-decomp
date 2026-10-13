@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-1,171 of 1,263 attempted functions match: 1,161 inventory functions (99,316 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-two are near misses, all `m`.
+1,190 of 1,282 attempted functions match: 1,180 inventory functions (100,268 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other ninety-two are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -321,6 +321,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `3b5ac8` | `draw_node_and_flush` | near miss |
 | 18 more in `misc/helpers.cpp`, 2 in `misc/ranked_small.cpp` | table resets, global forwarders and record lookups, a sprite widget and chunk-pair constructor, battle-setup wrappers, `FileReader` constructor | match |
 | `4c054` | `CountedBlock::reset` | near miss |
+| 19 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`, `misc/heap_operators.cpp`) | `free`; `HeapMutex` destructor; file-stream, render-object, paired-slot and frame-heap constructors; locked finalize and counter read; caption, fader, layout and lazy-id helpers; global forwarders | match |
 | 6 more in `misc/helpers.cpp` | `battle_flag_0`, `game_flag_17`, two global field reads, a global chain, `ByteTable::clear` | match |
 | 21 in `misc/small_families7.cpp`, 12 in `misc/small_families8.cpp` | frame-heap holder teardowns, shared-state resource calls, field-clearing constructors, list walks, four-byte stream reads, light-holder teardowns, reference resets | match |
 | 55 in `misc/small_families6.cpp` | constant-table lookups, command results passed on, base-calling destructors, two-argument global and deep-member forwarders, channel destructors with the flag at `+50`/`+190` | match |
@@ -517,6 +518,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
   - `misc/small_families3.cpp` and `misc/skinned_overrides.cpp` (46 functions). The family scan masks call targets, so a family can mix callees: four of the skinned overrides call a different base (`591150`), which the check caught; they use a second base class.
   - `misc/heap_operators.cpp` holds the global allocation entry points: `malloc` and the `operator new` forms allocate from the default heap's back frame heap (`+110`) with alignment code 0x2e. As with the posting handlers, a member's address has to be taken before an intervening call to get the original's register use (`CheckHost::idle`).
   - Destructors whose body is empty in the source skip the vtable store in Clang (`CanSkipVTablePointerInitialization`); twelve originals keep it, so their bodies did something that inlined away. An empty inline call (`on_finish`) stands in for it.
+  - Derived classes whose first field sits inside the base's size reuse the base's tail padding (allowed for a non-POD base in the Itanium ABI); the bases are declared with a size that leaves those bytes as padding (`Base_5325e4`, `Base_41be40`).
   - `get_battle_setup` builds its setup in a function-local static that the original addresses separately from its guard. The global merge pass keeps it out of the merged block only if its IR type is packed, which an `int` at the end (leaving tail padding) gives; the same packed-type rule as the default heap, used the other way round.
   - The scan masked the offset of a load whose base register had been loaded from a GOT slot (a field of the global rather than the pointer); it now stops tracking a register once a load replaces its page address. Two getters that read the second word of their global were found that way.
 - **Constant anchors.** `adv_board.cpp` now maps `.rodata.cst4` (base `73bc94`). Before, `board_overflow`'s float constants were masked as unresolved; with the anchor at `73c188` the 32.0 constant resolved to a different equal copy, so the base has to sit at or before the first constant the unit uses.

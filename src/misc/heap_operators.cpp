@@ -73,3 +73,7 @@ void operator delete(void* ptr) noexcept {
 void operator delete[](void* ptr) noexcept {
     get_default_heap()->back_allocator()->free(ptr);
 }
+// 0x71003cca58
+extern "C" void free(void* ptr) {
+    get_default_heap()->back_allocator()->free(ptr);
+}

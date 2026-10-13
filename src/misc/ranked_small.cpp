@@ -82,6 +82,7 @@ MemoryStream::MemoryStream() : data(nullptr), owner(nullptr), size(0) {}
 class FrameHeapImpl {
 public:
     FrameHeapImpl();                                                        // 0x71005c2d24
+    ~FrameHeapImpl();                                                       // 0x71005c2c8c
     unsigned char pad[0x60];
 };
 
@@ -96,6 +97,9 @@ public:
 };
 
 HeapMutex::HeapMutex() {}
+
+// 0x71005c42ec; original file: heap objects, 0x71005c2c78-0x71005c42ec
+HeapMutex::~HeapMutex() {}
 
 inline short zero_short() { return 0; }
 
@@ -195,4 +199,147 @@ unsigned char global_4140a4_check() {
     if (!battle_flag_0() && load_global_4140a4())
         load_global_4140a4();
     return 0;
+}
+// 0x710053d454; original file: file system objects, 0x710053d304-0x710053e718
+// Vtable through the GOT slot at 0x7100c2d2f8.
+class FileStream : public Plain_53e718 {
+public:
+    FileStream();
+    ~FileStream() override;
+
+    void* handle;             // +08
+    void* buffer;             // +10
+    unsigned long size;       // +18
+};
+
+FileStream::FileStream() : handle(nullptr), buffer(nullptr), size(0) {}
+
+// Base of three small classes; its constructor (0x71005325e4) is out of line.
+class Base_5325e4 {
+public:
+    Base_5325e4();
+    virtual ~Base_5325e4();
+    unsigned char pad[0x2c];
+};
+
+// 0x7100527bd8; original file: render objects, 0x7100527b08-0x7100527bd8
+// Vtable through the GOT slot at 0x7100c2d220.
+class RenderPair : public Base_5325e4 {
+public:
+    RenderPair();
+    ~RenderPair() override;
+
+    unsigned char pad34[4];
+    void* first;              // +38
+    void* second;             // +40
+};
+
+RenderPair::RenderPair() : first(nullptr), second(nullptr) {}
+
+// 0x7100527b68; vtable through the GOT slot at 0x7100c2d210.
+class RenderCount : public Base_5325e4 {
+public:
+    RenderCount();
+    ~RenderCount() override;
+
+    int count;                // +34
+};
+
+RenderCount::RenderCount() : count(0) {}
+
+// 0x7100527b08; vtable through the GOT slot at 0x7100c2d208.
+class RenderIndex : public Base_5325e4 {
+public:
+    RenderIndex();
+    ~RenderIndex() override;
+
+    int index;                // +34
+};
+
+RenderIndex::RenderIndex() : index(0) {}
+// Base whose constructor (0x710041be40) is out of line; its last four bytes are tail padding
+// that a derived class reuses.
+class Base_41be40 {
+public:
+    Base_41be40();
+    virtual ~Base_41be40();
+    unsigned char pad[0x44];
+};
+
+// 0x7100434a54; original file: game objects, 0x7100434a54
+// Vtable through the GOT slot at 0x7100c2b9f0.
+class PairedSlot : public Base_41be40 {
+public:
+    PairedSlot();
+    ~PairedSlot() override;
+
+    int first;                // +4c
+    int second;               // +50
+};
+
+PairedSlot::PairedSlot() : first(0), second(0) {}
+
+class FrameHeapBase {
+public:
+    FrameHeapBase();                                                        // 0x71005c2d24
+    virtual ~FrameHeapBase();
+    void finalize();                                                        // 0x71005c2e54
+    unsigned char pad[0x58];
+};
+
+// 0x71000464c8; original file: frame heaps, 0x71000464c8
+// Vtable through the GOT slot at 0x7100c21e58.
+class OwnedFrameHeap : public FrameHeapBase {
+public:
+    OwnedFrameHeap();
+    ~OwnedFrameHeap() override;
+
+    void* owner;              // +60
+};
+
+OwnedFrameHeap::OwnedFrameHeap() : owner(nullptr) {}
+
+namespace nn {
+namespace os {
+struct MutexType;
+void LockMutex(MutexType* mutex);
+void UnlockMutex(MutexType* mutex);
+}  // namespace os
+}  // namespace nn
+
+struct MutexOwner {
+    unsigned char pad[0x10];
+    unsigned char mutex[0x20]; // +10
+};
+
+// 0x71005c4bec; original file: heap objects, 0x71005c2c78-0x71005c4bec
+struct LockedFrameHeap {
+    void finalize();
+
+    void* value0;             // +00
+    FrameHeapBase heap;       // +08
+    MutexOwner* owner;        // +68
+};
+
+void LockedFrameHeap::finalize() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+    heap.finalize();
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(owner->mutex));
+}
+
+// 0x710053c508; original file: file system objects, 0x710053c508
+struct LockedCounter {
+    int value();
+
+    unsigned char pad[0x20];
+    int count;                // +20
+    unsigned char pad24[0x94];
+    unsigned char mutex[0x20]; // +b8
+};
+
+int LockedCounter::value() {
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    int result = count;
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(mutex));
+    return result;
 }

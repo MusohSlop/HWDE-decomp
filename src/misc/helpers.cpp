@@ -715,6 +715,8 @@ void draw_node_and_flush(LightEffectNode* node) {
 }
 
 struct ScreenFaderView {
+    unsigned char busy();                                                   // 0x71001e52c8
+
     unsigned char pad[0x1f8];
     int color;                // +1f8
 };
@@ -980,4 +982,80 @@ struct CountTable {
 
 void CountTable::clear_current() {
     counts[index_3d6fd0(load_global_3d2fd4())] = 0;
+}
+// 0x71003885ac; original file: scene fades, 0x71003885ac-0x71003885d4
+unsigned char screen_fader_busy() {
+    if (screen_fader())
+        return screen_fader()->busy();
+    return 1;
+}
+
+// 0x710000eaec; original file: battle setup wrappers, 0x710000ea88-0x710000eb14
+bool battle_mode_bits_copy() {
+    return *reinterpret_cast<unsigned long*>(get_battle_setup()) & 0x100900000UL;
+}
+
+// 0x710000eac4; original file: battle setup wrappers, 0x710000ea88-0x710000eb14
+bool battle_mode_clear() {
+    return (*reinterpret_cast<unsigned long*>(get_battle_setup()) & 0x10000000cUL) == 0;
+}
+
+void part_call2_41fd80(void* part, int a, int b);                            // 0x710041fd80
+
+// 0x7100453d70; original file: global queries, 0x71004540b4-0x7100453d48 (nearby)
+void global_part20_41fd80(int a, int b) {
+    part_call2_41fd80(load_global_425dd0()->part20, a, b);
+}
+
+// 0x71004535d8; original file: global queries, 0x7100453590-0x7100453638
+int global_4140a4_record_value(int index) {
+    return *reinterpret_cast<int*>(reinterpret_cast<Global4140a4Records*>(load_global_4140a4())->records[index] + 0x794);
+}
+void global_call_4272f0(Global425dd0* global, int id, float value);          // 0x71004272f0
+
+// 0x7100453ecc; original file: global queries, 0x7100453da0-0x7100453ecc
+void global_float_4272f0(int id, float value) {
+    global_call_4272f0(load_global_425dd0(), id, value);
+}
+
+class CaptionLayer {
+public:
+    void show(int a, int b);                                                // 0x71001de2ec
+
+    unsigned char pad[0x10];
+    int value10;              // +10
+};
+// Reached through the GOT slot at 0x7100c22ef8.
+extern CaptionLayer* gCaptionLayer;
+
+// 0x71003890f4; original file: scene captions, 0x71003890f4
+void show_caption_layer(void* owner, int a, int b, int value) {
+    gCaptionLayer->show(a, b);
+    gCaptionLayer->value10 = value;
+}
+
+void release_light(void** slot);                                            // 0x71001f7960
+
+// 0x71002d71b4; original file: scene layouts, 0x71002d7190-0x71002d71b4
+void release_layout_4691() {
+    if (gLayout_4691) {
+        release_light(&gLayout_4691);
+        gLayout_4691 = nullptr;
+    }
+}
+
+short forward_value_3f388();                                                // 0x710003f388
+
+// 0x710024c7f8; original file: lazy ids, 0x710024c7f8
+struct LazyId {
+    int resolve();
+
+    unsigned char pad[0x78];
+    int id;                   // +78
+};
+
+int LazyId::resolve() {
+    if (id == -1)
+        id = forward_value_3f388();
+    return id;
 }
