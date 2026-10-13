@@ -120,9 +120,10 @@ void* create_model_72768(ResourceLoader* loader, ModelResource* resource, int ex
         unsigned int size = end;
         if (resource->weights && resource->weight_count)
             size = end + ((resource->weight_count * 2 + 15) & ~15u);
-        void* objects[4];
         Model* model = static_cast<Model*>(heap->allocate(size, AllocParams(6)));
         if (model) {
+            // Declared after the allocation so it can share the parameters' stack slot.
+            void* objects[4];
             void* skin = nullptr;
             unsigned int count = extra_count;
             void** list = extras;
