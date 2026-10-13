@@ -3,6 +3,8 @@
 // (0x710026b798) are at the end.
 // Names are descriptive placeholders. Status: matching/README.md.
 
+#include "resource/resource_frame.h"
+
 extern "C" void* memset(void* dest, int value, unsigned long size);
 
 class ItemTable {
@@ -203,6 +205,8 @@ class BoardOverride {
 public:
     int stage_kind(int player);                                             // 0x7100290fb0
     int remap_kind(int kind, void* table);                                  // 0x7100290fd4
+    unsigned char has_primary(int player, int slot);                        // 0x71002910b0
+    unsigned char has_secondary(int player, int slot);                      // 0x7100291058
 };
 // Reached through the GOT slot at 0x7100c2a6f0.
 extern BoardOverride gBoardOverride;
@@ -1127,4 +1131,185 @@ void start_board_battle() {
     }
     get_battle_setup()->reset();
     end_board_load();
+}
+
+static inline int ward(int player, int slot, int a, int b, int c, int d) {
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    int result = -1;
+    if (player == 0x49) {
+        int bit = -1;
+        if (slot == a)
+            bit = 0;
+        else if (slot == b)
+            bit = 1;
+        else if (slot == c)
+            bit = 2;
+        else if (slot == d)
+            bit = 3;
+        if (bit != -1 && (game->players[mode].value2ace & (1 << bit)))
+            result = bit;
+    }
+    return result;
+}
+unsigned char unit_has_override(int player, int slot) {
+    Game* game = get_game();
+    unsigned int mode = game_mode();
+    unsigned int index = get_unit_database()->rows[player].cells[static_cast<unsigned int>(slot)];
+    int team = unit_infos(get_unit_database())[index].team;
+    if (is_fort_kind(team))
+        return game->players[mode].no_fort[player];
+    switch (team) {
+    case 8:
+    case 9:
+    case 0xf:
+    case 0x17:
+    case 0x31:
+    case 0x38:
+    case 0x3f:
+    case 0x45:
+        return game->players[mode].open[player];
+    case 0xa:
+    case 0xb:
+    case 0xc:
+    case 0x16:
+    case 0x18:
+    case 0x19:
+    case 0x24:
+    case 0x25:
+    case 0x26:
+    case 0x27:
+    case 0x28:
+    case 0x29:
+    case 0x2a:
+    case 0x2b:
+    case 0x2c:
+    case 0x2d:
+    case 0x2e:
+    case 0x39:
+    case 0x3c:
+    case 0x3d:
+        return game->players[mode].unguarded[player];
+    case 0x1c: {
+        int first = ward(player, slot, 0x38, 0x47, 0x49, 0x58);
+        int second = ward(player, slot, 0x18, 0x45, 0x4b, 0x78);
+        return (first & second) != -1;
+    }
+    case 0x1e:
+        return !(game->players[mode].marks[player].flags & 0x400);
+    case 0x1f:
+        return !(game->players[mode].marks[player].flags & 0x200);
+    case 0x20:
+        return !(game->players[mode].marks[player].flags & 0x800);
+    }
+    if (gBoardOverride.has_primary(player, slot))
+        return !(game->players[mode].marks[player].flags & 0x4000);
+    if (gBoardOverride.has_secondary(player, slot))
+        return !(game->players[mode].marks[player].flags & 0x8000);
+    return 0;
+}
+
+class DataChunk {
+public:
+    DataChunk();                                                            // 0x7100218c18
+    ~DataChunk();                                                           // 0x7100218c2c
+    void set(const void* data);                                             // 0x7100218c34
+    int size();                                                             // 0x71002192c0
+    void* data(int offset, int flags);                                      // 0x7100218cac
+    void release(int flags);                                                // 0x7100218c68
+
+    unsigned char pad[0x10];
+};
+
+class DataStream {
+public:
+    DataStream();                                                           // 0x71001fbbb0
+    ~DataStream();                                                          // 0x71001fbbd0
+    void open(int mode, int size, void* data);                              // 0x71001fbc04
+    void close();                                                           // 0x71001fbbf0
+    void read(unsigned short* value);                                       // 0x71001fbc84
+    void write(unsigned short value);                                       // 0x71001fbe00
+
+    void transfer(short& value) {
+        if (reading)
+            read(reinterpret_cast<unsigned short*>(&value));
+        else
+            write(value);
+    }
+
+    unsigned char pad[0x1c];
+    int reading;              // +1c
+};
+
+static inline unsigned int board_file(unsigned int stage, unsigned int small, unsigned int large) {
+    if (stage <= 5)
+        return stage + small;
+    return stage + large;
+}
+
+static inline void open_chunk(DataChunk& chunk, DataStream& stream, const void* data) {
+    chunk.set(data);
+    int size = chunk.size();
+    stream.open(1, size, chunk.data(0, 0));
+}
+
+static inline void close_chunk(DataChunk& chunk, DataStream& stream) {
+    stream.close();
+    chunk.release(0);
+}
+
+void BoardRow_serialize(BoardRow* row, DataStream* stream, int index);     // 0x710028342c
+void BoardRow_serialize_extra(BoardRow* row, DataStream* stream);          // 0x710028386c
+void UnitInfo_serialize(UnitInfo* info, DataStream* stream);               // 0x7100283964
+void RewardPair_serialize(void* pair, DataStream* stream);                 // 0x7100283aa4
+
+void load_board(unsigned int stage) {
+    ResourceFrame frame;
+    DataChunk chunk;
+    DataStream stream;
+    frame.open(0, board_file(stage, 0x47, 0x4616), nullptr);
+    if (frame.is_open()) {
+        open_chunk(chunk, stream, frame.lookup(0));
+        BoardRow* rows = get_unit_database()->rows;
+        for (int i = 0; i < 0x80; ++i)
+            BoardRow_serialize(&rows[i], &stream, i);
+        close_chunk(chunk, stream);
+        ResourceFrame cells;
+        cells.open(0, board_file(stage, 0x4d, 0x461a), nullptr);
+        for (int i = 0; i < 0x80; ++i) {
+            open_chunk(chunk, stream, cells.lookup(i));
+            BoardRow* row = &get_unit_database()->rows[i];
+            for (int j = 0; j < 0xb0; ++j)
+                stream.transfer(row->cells[j]);
+            close_chunk(chunk, stream);
+        }
+        for (int i = 0; i < 0x80; ++i) {
+            open_chunk(chunk, stream, cells.lookup(i + 0x80));
+            BoardRow_serialize_extra(&get_unit_database()->rows[i], &stream);
+            close_chunk(chunk, stream);
+        }
+        open_chunk(chunk, stream, frame.lookup(1));
+        UnitInfo* infos = unit_infos(get_unit_database());
+        for (int i = 0; i < 500; ++i)
+            UnitInfo_serialize(&infos[i], &stream);
+        close_chunk(chunk, stream);
+        open_chunk(chunk, stream, frame.lookup(2));
+        unsigned char* pairs = reinterpret_cast<unsigned char*>(get_unit_database()) + 0xebd78;
+        for (int i = 0; i < 0x80; ++i)
+            RewardPair_serialize(pairs + i * 8, &stream);
+        close_chunk(chunk, stream);
+        open_chunk(chunk, stream, frame.lookup(3));
+        short* second = reinterpret_cast<short*>(reinterpret_cast<unsigned char*>(get_unit_database()) + 0xec240);
+        for (int i = 0; i < 100; ++i) {
+            stream.transfer(second[i - 100]);
+            stream.transfer(second[i]);
+        }
+        close_chunk(chunk, stream);
+        for (int i = 0; i < 0x80; ++i) {
+            UnitDatabase* database = get_unit_database();
+            Game* game = get_game();
+            if (!database->rows[i].guards)
+                game->players[stage].unguarded[i] = 1;
+        }
+    }
 }

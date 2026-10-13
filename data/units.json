@@ -232,7 +232,6 @@
     "_Z13display_widthv": "0x71003cc930",
     "_Z14display_heightv": "0x71003cc94c",
     "_Z13project_pointP9TrackVec2ff": "0x71001e412c",
-    "_Z17unit_has_overrideii": "0x710026c924",
     "_ZN10UnitRoster5queryEiiiPiS0_S0_": "0x710026b3cc",
     "_ZN13EffectManager4syncEv": "0x71001e26e8",
     "_ZN13EffectManager6finishEi": "0x71001e22e4",
@@ -390,7 +389,25 @@
     "_ZN12BattleParams8set_sideEi": "0x71001a8d34",
     "_ZN12BattleParams9set_levelEii": "0x71001a8d48",
     "_ZN12BattleParams9set_stageEi": "0x71001a8e2c",
-    "_Z17get_battle_paramsv": "0x71001a8c38"
+    "_Z17get_battle_paramsv": "0x71001a8c38",
+    "_ZN13BoardOverride11has_primaryEii": "0x71002910b0",
+    "_ZN13BoardOverride13has_secondaryEii": "0x7100291058",
+    "_ZN9DataChunkC1Ev": "0x7100218c18",
+    "_ZN9DataChunkD1Ev": "0x7100218c2c",
+    "_ZN9DataChunk3setEPKv": "0x7100218c34",
+    "_ZN9DataChunk4sizeEv": "0x71002192c0",
+    "_ZN9DataChunk4dataEii": "0x7100218cac",
+    "_ZN9DataChunk7releaseEi": "0x7100218c68",
+    "_ZN10DataStreamC1Ev": "0x71001fbbb0",
+    "_ZN10DataStreamD1Ev": "0x71001fbbd0",
+    "_ZN10DataStream4openEiiPv": "0x71001fbc04",
+    "_ZN10DataStream5closeEv": "0x71001fbbf0",
+    "_ZN10DataStream4readEPt": "0x71001fbc84",
+    "_ZN10DataStream5writeEt": "0x71001fbe00",
+    "_Z18BoardRow_serializeP8BoardRowP10DataStreami": "0x710028342c",
+    "_Z24BoardRow_serialize_extraP8BoardRowP10DataStream": "0x710028386c",
+    "_Z18UnitInfo_serializeP8UnitInfoP10DataStream": "0x7100283964",
+    "_Z20RewardPair_serializePvP10DataStream": "0x7100283aa4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -847,7 +864,9 @@
         "_Z10unit_frameii": "0x710026c730",
         "_Z19unit_override_frameii": "0x710026c884",
         "_Z17fill_cell_entriesjPjiih": "0x710026b798",
-        "_Z18start_board_battlev": "0x710026bd64"
+        "_Z18start_board_battlev": "0x710026bd64",
+        "_Z17unit_has_overrideii": "0x710026c924",
+        "_Z10load_boardj": "0x710026c154"
       },
       "map": {
         ".rodata": "0x71007f51a4"

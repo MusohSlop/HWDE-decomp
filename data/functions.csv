@@ -8149,12 +8149,12 @@ Address,Quality,Size,Name
 0x710026b798,m,1484,_Z17fill_cell_entriesjPjiih
 0x710026bd64,m,952,_Z18start_board_battlev
 0x710026c11c,O,56,_Z13stage_messagev
-0x710026c154,U,1212,FUN_710026c154
+0x710026c154,m,1212,_Z10load_boardj
 0x710026c610,m,68,_Z13is_plain_cellP8BoardRow
 0x710026c654,m,220,_Z18unit_override_kindii
 0x710026c730,m,340,_Z10unit_frameii
 0x710026c884,m,160,_Z19unit_override_frameii
-0x710026c924,U,780,FUN_710026c924
+0x710026c924,m,780,_Z17unit_has_overrideii
 0x710026cc30,U,252,FUN_710026cc30
 0x710026cd2c,U,96,FUN_710026cd2c
 0x710026cd8c,U,96,FUN_710026cd8c
