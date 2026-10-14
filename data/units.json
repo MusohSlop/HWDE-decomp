@@ -13360,7 +13360,44 @@
     "_Z13callee_5fbb10Pv": "0x71005fbb10",
     "_Z13callee_5fd89cPvS_S_lS_": "0x71005fd89c",
     "_Z13callee_6000b4Pvliiiii": "0x71006000b4",
-    "_Z13callee_6000b4Pvltiiii": "0x71006000b4"
+    "_Z13callee_6000b4Pvltiiii": "0x71006000b4",
+    "got:gGlobalc21df0_1cc990": "0x7100c21df0",
+    "_Z12callee_6b440Pv": "0x710006b440",
+    "_Z12callee_6b4fcPv": "0x710006b4fc",
+    "_Z12callee_6b650Pv": "0x710006b650",
+    "_Z12callee_6b6ecPv": "0x710006b6ec",
+    "_Z12callee_6b8a8Pv": "0x710006b8a8",
+    "_Z12callee_6ba0cPv": "0x710006ba0c",
+    "_Z12callee_6bb04Pv": "0x710006bb04",
+    "_Z12callee_6beb4Pv": "0x710006beb4",
+    "_Z12callee_6bf14Pv": "0x710006bf14",
+    "_Z12callee_6bf74Pv": "0x710006bf74",
+    "_Z13callee_3cccb8Pv": "0x71003cccb8",
+    "_Z12callee_d81a8Pv": "0x71000d81a8",
+    "_Z12callee_d8304Pv": "0x71000d8304",
+    "_Z13callee_2021e8Pv": "0x71002021e8",
+    "_Z13callee_205824i": "0x7100205824",
+    "_Z13callee_2416f4Pv": "0x71002416f4",
+    "_Z13callee_241760Pv": "0x7100241760",
+    "_Z13callee_287e40i": "0x7100287e40",
+    "_Z13callee_28873cl": "0x710028873c",
+    "_Z13callee_289614Pv": "0x7100289614",
+    "_Z13callee_49d06cPvlS_S_": "0x710049d06c",
+    "_Z13callee_2f8160Pv": "0x71002f8160",
+    "_Z13callee_2f8218PvS_": "0x71002f8218",
+    "_Z13callee_32f19cPv": "0x710032f19c",
+    "_Z13callee_3c7618PvS_S_l": "0x71003c7618",
+    "_Z13callee_390058Pv": "0x7100390058",
+    "_Z13callee_398bd0Pv": "0x7100398bd0",
+    "_Z13callee_461208PvS_S_S_li": "0x7100461208",
+    "_Z13callee_462524PvS_S_": "0x7100462524",
+    "_Z13callee_51e7fcPvlS_S_lS_": "0x710051e7fc",
+    "_Z13callee_520a3cPviS_S_": "0x7100520a3c",
+    "_Z13callee_569ea8Pv": "0x7100569ea8",
+    "_Z13callee_56bd74Pv": "0x710056bd74",
+    "_Z13callee_30f004Pvi": "0x710030f004",
+    "_Z13callee_30f118Pvi": "0x710030f118",
+    "_Z12callee_3a8e8lPvS_": "0x710003a8e8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -21433,6 +21470,25 @@
         "_Z11call_5f14e8P11Arg5f14e8_0Pv": "0x71005f14e8",
         "_Z11call_5f45d0P11Arg5f45d0_0": "0x71005f45d0",
         "_Z11call_5fbe84P11Arg5fbe84_0Pv": "0x71005fbe84"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
+      }
+    },
+    "misc/variant_functions48.cpp": {
+      "functions": {
+        "_Z10call_4700cP10Arg4700c_0": "0x710004700c",
+        "_Z10call_d5330P10Argd5330_0i": "0x71000d5330",
+        "_Z11call_20ae40P11Arg20ae40_0P11Arg20ae40_1": "0x710020ae40",
+        "_Z11call_20afb8P11Arg20afb8_0P11Arg20afb8_1": "0x710020afb8",
+        "_Z11call_20b0d4P11Arg20b0d4_0P11Arg20b0d4_1": "0x710020b0d4",
+        "_Z11call_20ca64P11Arg20ca64_0iP11Arg20ca64_2": "0x710020ca64",
+        "_Z11call_21598cP11Arg21598c_0P11Arg21598c_1": "0x710021598c",
+        "_Z11call_290448P11Arg290448_0": "0x7100290448",
+        "_Z11call_332198P11Arg332198_0": "0x7100332198",
+        "_Z11call_38b228P11Arg38b228_0": "0x710038b228",
+        "_Z11call_390854P11Arg390854_0": "0x7100390854",
+        "_Z11call_3cacb8P11Arg3cacb8_0": "0x71003cacb8"
       },
       "map": {
         ".rodata.cst4": "0x710073b000"
