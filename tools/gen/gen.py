@@ -1395,7 +1395,8 @@ def gen_function(a, ins):
                     raise Fail("fsqrt")
                 tgt_ = imm(br_.op_str)
                 def skip_moves_(jj_, end_=None):
-                    while jj_ < len(ins) and ins[jj_].mnemonic in ("mov", "fmov") and (end_ is None or ins[jj_].address < end_):
+                    while jj_ < len(ins) and (end_ is None or ins[jj_].address < end_) and (ins[jj_].mnemonic in ("mov", "fmov") or (
+                            ins[jj_].mnemonic in ("str", "ldr", "stur", "ldur") and "nosqrtspill" not in knobs and re.fullmatch(r"[qds]\d+, \[(sp|x29)(, #-?(0x[0-9a-f]+|\d+))?\]", ins[jj_].op_str))):
                         jj_ += 1
                     return jj_
                 def is_sqrtf_(i_, mn_):
