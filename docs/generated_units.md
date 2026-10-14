@@ -58,6 +58,7 @@ real classes.
 | `misc/variant_functions31.cpp` | variant search, thirty-first run (joins at post-dominators) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions32.cpp` | variant search, thirty-second run (16-bit range tests) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions33.cpp` | variant search, thirty-third run (virtual call results inlined) | as `misc/variant_functions26.cpp` |
+| `misc/variant_functions34.cpp` | variant search, thirty-fourth run (functions of 401 to 1,500 bytes) | as `misc/variant_functions26.cpp` |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/loop_functions2.cpp` | loops with if/else bodies and pointer induction variables | as `misc/loop_functions.cpp`, plus element structs `ElemFUNC_rN` sized to the stride |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |
