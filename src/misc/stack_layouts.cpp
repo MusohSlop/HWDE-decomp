@@ -46,7 +46,8 @@ void update_layout_59ade8(Layout59ade8* layout, LayoutKey* key) {
     LayoutPart59ade8* part3 = layout->fixed[3];
     LayoutPart59ade8* part4 = layout->fixed[4];
     layout->dirty = false;
-    if ((old == key) & !dirty) {
+    bool unchanged = old == key ? !dirty : false;
+    if (unchanged) {
         if (!key) {
             int offset = part0->size + part1->size + part2->size + part3->size + part4->size;
             for (int i = 0; i < 5; ++i) {
