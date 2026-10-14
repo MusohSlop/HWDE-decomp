@@ -1,7 +1,7 @@
 """Compile probe.cpp with the project flags and compare each variant's code with the original."""
 import json, re, struct, subprocess, sys
 from pathlib import Path
-sys.path.insert(0, r"F:\Claude Decomps\project1\.tools\python")
+sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[3] / ".tools" / "python"))
 import capstone
 
 here = Path(__file__).resolve().parent
