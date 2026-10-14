@@ -43,7 +43,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-3,897 of 4,032 attempted functions match: 3,887 inventory functions (184,328 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 135 are near misses, all `m`.
+3,921 of 4,054 attempted functions match: 3,911 inventory functions (185,044 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 133 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -333,11 +333,12 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 5 in `misc/command_posts.cpp`, 3 in `misc/singleton_creates2.cpp`, 5 in `misc/item_states.cpp`, 1 in `misc/ref_releases.cpp`, 2 more in `misc/animation_stops.cpp` | seed-family members: command posts to other queues, large singletons, item state tests, a reference-slot reset (last slot first), animation-set stops | match |
 | 39 in `misc/table_reads.cpp`, 5 in `misc/global_parts.cpp` | range-checked byte and 16-bit reads, signed id fields with limits, row ids, handle-record bytes (table pointer read before the index); calls on parts of a large global | match |
 | 6 in `misc/seven_bytes.cpp` | seven-entry byte settings with a fallback to the last entry | near miss |
-| 26 of 28 in `misc/item_accessors.cpp` | game-data accessors around the item table (`1fe6b0`-`200e94`): item levels and ranks (seed `ItemTable::weapon_of`), grid ids, counted values, bit tests and updates, flag bits, half selectors, board cells, id slots; `200a7c` (select polarity) and `2003c4` (index kept for a zero slot) are near misses | match |
+| 22 in `misc/game_accessors.cpp` | game-object accessors after the item table (`201da0`-`2043f0`): bands, keys, ids, counts, stage, save-block selection, stock counts | match |
+| 26 of 28 in `misc/item_accessors.cpp` | game-data accessors around the item table (`1fe6b0`-`200e94`): item levels and ranks (seed `ItemTable::weapon_of`), grid ids, counted values, bit tests and updates, flag bits, half selectors, board cells, id slots; `2003c4` (index kept for a zero slot) are near misses | match |
 | 8 in `misc/sequence_slots2.cpp` | more sequenced slot plays: with a channel volume set first, and looping on layer 1 | match |
 | 4 of 8 in `misc/ranked_singles3.cpp` | `random_below` (linear congruential generator), a target refresh, a mapped-buffer release, a section reset; near misses: `3fa4c8` (branch layout), `6e070`/`6e0b0` (index extension order), `4623d4` (switch order) | match |
 | 18 of 20 in `misc/ranked_singles2.cpp` | more single ranked leaves: default-argument forwards, cursor rewinds, clears, counters, flag updates, constructors (fields in a non-virtual base), a hooked notify; `DataChunk::set` (`218c34`, compare order) and `5325e4` (constructor store scheduling) are near misses | match |
-| 14 of 16 in `misc/ranked_singles.cpp` | single ranked leaves: slot items, pair ids, a handle constructor, option calls, spans, choices, unit releases, rows, modes, block tests, stage pairs; `387784` (1 word, select operand order) and `446054` (early-out layout) are near misses | match |
+| 14 of 16 in `misc/ranked_singles.cpp` | single ranked leaves: slot items, pair ids, a handle constructor, option calls, spans, choices, unit releases, rows, modes, block tests, stage pairs; `446054` (early-out layout) are near misses | match |
 | 14 in `misc/plain_families.cpp` | identical-code families: state steps on the owner itself, refresh-then-apply virtual pairs, lookups filling one of two outputs | match |
 | 8 in `misc/sequence_slots.cpp`, 9 in `misc/state_steps.cpp` | sequenced slot plays (identical code, one callee each); state-machine steps through a handler table (function plus doubled this-adjustment; a real member-function pointer adds the virtual-bit test the original lacks) | match |
 | 164 in `misc/auto_tiny2.cpp` | more instruction-shape functions (flag sets and clears, wide clears, far reads and member addresses, equality and range tests, child forwards with a constant, chained reads, entry finds, bit fields, constant and masked stores, indexed reads and writes, global addresses and values) | match |
@@ -411,6 +412,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ### Source-shape lessons
 
+- **Select polarity.** Where the original selects with `eq` on a flag (`csel x0, a, b, eq`) and ours comes out with `ne` and the operands swapped, write it as an `if`/`return` pair or compare with `== 0` explicitly; `!flag ? a : b` and `flag ? b : a` give the swapped form (`203de4`, `2020e0`, `200a7c`, `387784`).
 - **A vtable store in the middle of a teardown.** When a destructor body stores a vtable pointer into a member and then destroys that member's own parts, the member is a polymorphic class with an inline virtual destructor and an out-of-line key function (so its vtable comes through the GOT). Calling `group->Group::~Group()` qualified destroys it in place without going through the vtable (`misc/group_teardowns.cpp`).
 - **Clamps through references.** A clamp at zero that indexes a table (csel w9, w9, wzr, gt, then uxtw #4 in the address) needs a std::max-style helper that takes and returns references, copied into a local right away (int index = larger(model->pose_index, 0);). Written as a plain ternary or an if, the clamp comes out as a 64-bit select (misc/model_updates.cpp, 22 functions).
 - **Null-select lookups.** A bounded lookup that is dereferenced directly (`csel x8, x8, xzr, lo`, then a load) keeps its select only when the lookup is a method on the table that returns `&defs[item]` (`misc/item_fields.cpp`). In an inline helper that reads the global inside the ternary, Clang emits a branch, and SimplifyCFG deletes the null path as undefined.
