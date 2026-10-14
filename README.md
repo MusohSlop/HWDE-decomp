@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-4.00% of bytes (224,092 of 5,603,025) and 23.96% of functions (4,140 of 17,282) match exactly; 199 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+4.00% of bytes (224,196 of 5,603,025) and 23.96% of functions (4,141 of 17,282) match exactly; 198 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-4,150 of 4,349 attempted functions match: 4,140 inventory functions (224,092 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 199 are near misses, all `m`.
+4,151 of 4,349 attempted functions match: 4,141 inventory functions (224,196 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 198 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -362,7 +362,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 2 of 2 in `misc/tutorial_panels.cpp` | tutorial panel open/close switches (lazy layout load, part animations, layout release) | match |
 | 3 of 3 in `misc/core_requests.cpp` | locked per-core requests forwarded to an inner service (a second base, so the call stays virtual) | match |
 | 5 of 6 in `misc/phase_lists.cpp` | per-phase passes over four null-terminated item lists (jump tables at `73ea04`), a counter copy; near miss: the pending-list clear (`1fc50`) keeps the list address where the original recomputes it for the `memset` | match |
-| 6 of 10 in `misc/joint_links.cpp` | joint links (four identical), a shape refresh and a record constructor; near misses: a movable test that the original leaves as two returns, a kind capture loaded zero-extended where ours sign-extends, two constructors whose -1 pairs ours merges into 64-bit stores | match |
+| 7 of 10 in `misc/joint_links.cpp` | joint links (four identical), a shape refresh, a record constructor and a kind capture (the mapped kind bound to its own local keeps the load zero-extended); near misses: a movable test that the original leaves as two returns, two constructors whose -1 pairs ours merges into 64-bit stores | match |
 | 3 of 3 in `misc/slot_pools.cpp` | slot pool resets: a 32-iteration loop that Clang unrolls into 32 calls | match |
 | 7 of 11 in `misc/table_teardowns.cpp` | banked text tables: teardown (unload, delete on the default heap, clear the global), unload of both banks and the extra chunks, a per-slot load from a resource frame; near misses: the three creators, where the two zeroing stores after the chunk constructors come out in the other order, and the first table's loader (one register more live in ours) | match |
 | 5 of 5 in `misc/text_table_api.cpp` | text table setup and shutdown entry points (a separate unit, so the table functions stay calls) | match |

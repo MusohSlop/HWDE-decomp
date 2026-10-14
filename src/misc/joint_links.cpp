@@ -215,7 +215,8 @@ struct KindJoint : Joint {
 void capture_kind_59e84(KindJoint* joint) {
     KindMap* map = gGlobal_c21690;
     unsigned short kind = joint->second->body()->kind;
-    joint->kinds = kind | map->kinds[static_cast<short>(kind)] << 16;
+    unsigned short mapped = map->kinds[static_cast<short>(kind)];
+    joint->kinds = kind | mapped << 16;
     joint->second->body()->linked = true;
 }
 
