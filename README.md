@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-8.44% of bytes (472,936 of 5,603,025) and 38.25% of functions (6,611 of 17,282) match exactly; 190 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+8.44% of bytes (473,056 of 5,603,025) and 38.27% of functions (6,613 of 17,282) match exactly; 188 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-6,621 of 6,811 attempted functions match: 6,611 inventory functions (472,936 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 190 are near misses, all `m`.
+6,623 of 6,811 attempted functions match: 6,613 inventory functions (473,056 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 188 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -243,7 +243,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | `26b3cc` | `BoardQuery::find_entry` | near miss |
 | `26b798`, `26bd64` | `fill_cell_entries`, `start_board_battle` | near miss |
 | `26c11c` | `stage_message` | match |
-| `26c610`–`26c884` | `is_plain_cell`, `unit_override_kind`, `unit_frame`, `unit_override_frame` | near miss |
+| `26c610` | `is_plain_cell` (returns `int`, written as a bit-mask test) | match |
+| `26c654`–`26c884` | `unit_override_kind`, `unit_frame`, `unit_override_frame` | near miss |
 | `26c154`, `26c924` | `load_board`, `unit_has_override` | near miss |
 | `26cc30`, `26cdec` | `ward_slot`, `is_shop_kind` | near miss |
 | `26cd2c`, `26cd8c`, `26ce44` | `unit_is_leader`, `cell_group_flag`, `board_enabled` | match |
@@ -464,7 +465,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 26 of 28 in `misc/item_accessors.cpp` | game-data accessors around the item table (`1fe6b0`-`200e94`): item levels and ranks (seed `ItemTable::weapon_of`), grid ids, counted values, bit tests and updates, flag bits, half selectors, board cells, id slots; `2003c4` (index kept for a zero slot) are near misses | match |
 | 8 in `misc/sequence_slots2.cpp` | more sequenced slot plays: with a channel volume set first, and looping on layer 1 | match |
 | 4 of 8 in `misc/ranked_singles3.cpp` | `random_below` (linear congruential generator), a target refresh, a mapped-buffer release, a section reset; near misses: `3fa4c8` (branch layout), `6e070`/`6e0b0` (index extension order), `4623d4` (switch order) | match |
-| 19 of 20 in `misc/ranked_singles2.cpp` | more single ranked leaves: default-argument forwards, cursor rewinds, clears, counters, flag updates, constructors (fields in a non-virtual base; `5325e4` sets its own fields in the body, after the vtable pointer), a hooked notify; `DataChunk::set` (`218c34`, compare order) is a near miss | match |
+| 20 of 20 in `misc/ranked_singles2.cpp` | more single ranked leaves: default-argument forwards, cursor rewinds, clears, counters, flag updates, constructors (fields in a non-virtual base; `5325e4` sets its own fields in the body, after the vtable pointer), a hooked notify, `DataChunk::set` (`218c34`) | match |
 | 14 of 16 in `misc/ranked_singles.cpp` | single ranked leaves: slot items, pair ids, a handle constructor, option calls, spans, choices, unit releases, rows, modes, block tests, stage pairs; `446054` (early-out layout) are near misses | match |
 | 14 in `misc/plain_families.cpp` | identical-code families: state steps on the owner itself, refresh-then-apply virtual pairs, lookups filling one of two outputs | match |
 | 8 in `misc/sequence_slots.cpp`, 9 in `misc/state_steps.cpp` | sequenced slot plays (identical code, one callee each); state-machine steps through a handler table (function plus doubled this-adjustment; a real member-function pointer adds the virtual-bit test the original lacks) | match |
@@ -801,7 +802,7 @@ All other near misses are single functions. The focused passes so far: `model_up
 
 `26b3cc`: `BoardQuery::find_entry`. The logic matches; the original places the non-flag `kind != 0` path after the loop and indexes the 28-entry tables through a sign-extended 64-bit counter.
 
-`26c654`, `26c730`, `26c884`: the original reads `override` and `value6` with `and #0xffff0000; asr #16` (a redundant mask) and a load narrowed to `+4`; no bitfield layout tried reproduces that, so it may be another compiler difference. `26c610` is the switch-lowering case again.
+`26c654`, `26c730`, `26c884`: the original reads `override` and `value6` with `and #0xffff0000; asr #16` (a redundant mask) and a load narrowed to `+4`; no bitfield layout tried reproduces that, so it may be another compiler difference. `26c610` now matches: written to return `int` with a bit-mask test, it compiles to the original's bit test.
 
 `26c154`: `load_board` reads the board rows, cells, unit records, reward pairs and two short lists from two resource frames through a read/write stream. The logic matches; the resource id is a `csel` in ours and a branch in the original, and `ResourceFrame::is_open` is tested as a byte. `26c924`: `unit_has_override` (three jump tables, `is_fort_kind` inlined again); the logic matches, register use differs. Both capped at two attempts.
 
