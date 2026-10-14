@@ -65,7 +65,9 @@ struct UnitRecord {
     float position[9];        // +20
 
     unsigned int team;        // +44
-    unsigned char pad48[0x10];
+    unsigned char pad48[4];
+    int item_field;           // +4c
+    unsigned char pad50[8];
     int item;                 // +58
     int leader;               // +5c
     unsigned char pad60[4];
@@ -118,6 +120,20 @@ struct CampRecord {
     unsigned char pad10[0x20];
 };
 
+struct alignas(16) SpotPosition {
+    float x;                  // +00
+    float y;                  // +04
+    float z;                  // +08
+    float w;                  // +0c
+};
+
+struct SpotRecord {
+    SpotPosition position;    // +00
+    unsigned char pad10[0x194];
+    unsigned int limits[2];   // +1a4
+    unsigned char pad1ac[0x164];
+};
+
 struct OfficerType {
     unsigned char pad[0x30];
     unsigned char flags;      // +30
@@ -137,10 +153,12 @@ struct UnitRoster {
     OfficerRecord officers[300]; // +15e60
     unsigned char pad95a20_gap[0x95a20 - 0x15e60 - 300 * 0x6d0];
     OfficerType* types;       // +95a20
-    unsigned char pad95a28[0xd37c0 - 0x95a28];
+    unsigned char pad95a28[0xcee40 - 0x95a28];
+    SpotRecord spots[0x18];   // +cee40
     CampRecord camps[10];     // +d37c0
 
     CampRecord* camp(unsigned int id) { return id < 10 ? &camps[id] : nullptr; }
+    SpotRecord* spot(unsigned int id) { return id < 0x18 ? &spots[id] : nullptr; }
 
     UnitRecord* unit(unsigned int id) { return id < 0xf6 ? &units[id] : nullptr; }
     OfficerRecord* officer(unsigned int id) { return id < 300 ? &officers[id] : nullptr; }
@@ -715,4 +733,184 @@ void activate_camp_1c7224(const UnitCommand* command) {
         return;
     }
     open_camp_16ee2c(id, kind);
+}unsigned int resolve_spot_1b69cc(int id);                                   // 0x71001b69cc
+void release_spot_1140c4(void* system, unsigned int spot, int flag);        // 0x71001140c4
+void release_spot_f2824(void* system, unsigned int spot, int flag);         // 0x71000f2824
+void queue_spot_19a914(EffectQueue* queue, const SpotPosition* position, int a, void* b, int c); // 0x710019a914
+
+// 0x71001c361c
+void release_spot_1c361c(const UnitCommand* command) {
+    unsigned int id = resolve_spot_1b69cc(command->unit);
+    bool busy = stage_busy_1d740c(gGlobal_c22ca8);
+    if (id > 0x17 || busy)
+        return;
+    SpotPosition position = gShop->spots[id].position;
+    position.w = 1.0f;
+    release_spot_1140c4(gGlobal_c22a60, id, 0);
+    release_spot_f2824(gGlobal_c22be8, id, 0);
+    queue_spot_19a914(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), &position, 0, nullptr, 5);
+}
+
+// Same as resolve_unit, but 0x78 is always the first player's unit.
+static inline int resolve_unit_first(int id) {
+    if (id == 0x78) {
+        id = gRecord_c21698->players[0]->slot->unit;
+    } else {
+        int alias = id - 0x79;
+        if (static_cast<unsigned int>(alias) <= 3)
+            id = gRecord_c21698->slots[alias]->unit;
+    }
+    StepInfo* info = gGlobal_c22ca8->info;
+    if (info && info->step && (id & ~0xf) == 0x50)
+        id += info->step * 5 - 5;
+    return id;
+}
+
+struct SpotSlot;
+struct SpotSlots;
+SpotSlots* spot_slots_1898b8(UnitRoster* roster);                           // 0x71001898b8
+SpotSlot* spot_slot_19cfac(SpotSlots* slots, unsigned int spot);            // 0x710019cfac
+void put_unit_19bde0(SpotSlot* slot, int team, int unit);                   // 0x710019bde0
+
+// 0x71001c2840
+void assign_spot_1c2840(const UnitCommand* command) {
+    int id = resolve_unit_first(command->value);
+    unsigned int spot = resolve_spot_1b69cc(command->unit);
+    UnitRoster* roster = gShop;
+    unsigned int team = roster->unit(id)->team;
+    if (team <= 2)
+        put_unit_19bde0(spot_slot_19cfac(spot_slots_1898b8(roster), spot), team, id);
+}
+struct OrderBoard;
+unsigned char item_below_21121c(int item);                                         // 0x710021121c
+OrderBoard* order_board_18d5d8(UnitRoster* roster);                         // 0x710018d5d8
+void post_order_1a791c(OrderBoard* board, int unit, int value, int kind);   // 0x71001a791c
+
+// 0x71001c65b0
+void post_unit_order_1c65b0(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    UnitRecord* unit = gShop->unit(id);
+    if (unit->flag_bits & 0x80)
+        return;
+    if (item_below_21121c(unit->item))
+        post_order_1a791c(order_board_18d5d8(gShop), id, command->value, 0xd);
+}
+struct ItemCatalog;
+// Reached through the GOT slot at 0x7100c21df8.
+extern ItemCatalog* gCatalog_c21df8;
+int item_level_1fb810(int item);                                            // 0x71001fb810
+int item_for_level_1fb214(ItemCatalog* catalog, int level);                 // 0x71001fb214
+
+// 0x71001c57b0
+void set_item_field_1c57b0(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    UnitRecord* unit = gShop->unit(id);
+    if (unit->team > 2)
+        return;
+    int value = command->value;
+    if (static_cast<unsigned int>(value) > 999)
+        return;
+    if (value == 999) {
+        int item = unit->item;
+        if (item_level_1fb810(item) >= 0 && item_level_1fb810(item) <= 99) {
+            int level = item_level_1fb810(item);
+            item = item_for_level_1fb214(gCatalog_c21df8, level);
+        }
+        value = item_field_21139c(item);
+    }
+    unit->item_field = value;
+}
+
+static inline bool text_ready(int kind) {
+    StepInfo* info = gGlobal_c22ca8->info;
+    int step = info ? info->step * 1000 : 0;
+    int value = text_base_213d38(kind) + step;
+    return static_cast<unsigned int>(value) < 0x47d8 && static_cast<unsigned int>(text_id_213a8c(value)) < 0x1d1a;
+}
+
+// 0x71001c5c34
+void set_spot_limits_1c5c34(const UnitCommand* command) {
+    unsigned int id = resolve_spot_1b69cc(command->unit);
+    SpotRecord* spot = gShop->spot(id);
+    text_base_213d38(1);
+    if (text_ready(1)) {
+        unsigned int limit = command->value;
+        spot->limits[0] = limit > 0x100 ? 0x100 : limit;
+    }
+    if (text_ready(2)) {
+        unsigned int limit = command->extra[0];
+        spot->limits[1] = limit > 0x100 ? 0x100 : limit;
+    }
+}
+void move_unit_16af1c(int unit, const MarkerPosition* position, int flag, float delay); // 0x710016af1c
+void move_unit_16ab4c(int unit, const MarkerPosition* position, int flag, float delay); // 0x710016ab4c
+void move_unit_16b1f8(int unit, const MarkerPosition* position, int flag, float delay); // 0x710016b1f8
+
+// 0x71001c019c
+void move_unit_1c019c(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    float x = static_cast<unsigned int>(command->value * 1000 + 500);
+    float z = static_cast<unsigned int>(command->extra[0] * 1000 + 500);
+    MarkerPosition position = {x, 0.0f, z, 1.0f};
+    UnitRecord* unit = gShop->unit(id);
+    if (unit->state_kind & 4)
+        move_unit_16af1c(id, &position, 1, 0.0f);
+    if (unit->state_kind & 1)
+        move_unit_16ab4c(id, &position, 1, 0.0f);
+    else
+        move_unit_16b1f8(id, &position, 0x80, 0.0f);
+}
+struct PlayerView {
+    unsigned char pad[0x9e0];
+    int mode;                 // +9e0
+};
+// The GOT slot at 0x7100c22ab0 points at this array.
+extern PlayerView* gViews_c22ab0[2];
+
+struct FocusInfo {
+    unsigned char pad[0x12];
+    unsigned char kind;       // +12
+    unsigned char pad13;
+    int item;                 // +14
+};
+FocusInfo* focus_info_18f0e0(UnitRoster* roster);                           // 0x710018f0e0
+void apply_focus_191e3c(FocusInfo* focus);                                  // 0x7100191e3c
+
+// 0x71001c7ebc
+void set_focus_1c7ebc(const UnitCommand* command) {
+    unsigned int id = resolve_unit_first(command->value);
+    int item;
+    if (id > 0xf5)
+        item = -1;
+    else
+        item = gShop->units[id].item;
+    int mode;
+    switch (command->unit) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+        mode = 0;
+        break;
+    case 6:
+    case 8:
+    case 9:
+    case 10:
+        mode = 1;
+        break;
+    case 7:
+        mode = 2;
+        break;
+    default:
+        mode = 3;
+        break;
+    }
+    gViews_c22ab0[0]->mode = mode;
+    if (gRecord_c21698->player_count >= 2)
+        gViews_c22ab0[1]->mode = mode;
+    focus_info_18f0e0(gShop)->kind = command->unit;
+    focus_info_18f0e0(gShop)->item = item;
+    apply_focus_191e3c(focus_info_18f0e0(gShop));
 }

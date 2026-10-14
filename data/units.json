@@ -2918,7 +2918,25 @@
     "_Z17stage_mode_1d7364P9StepOwneri": "0x71001d7364",
     "_Z19focus_camera_113df4Pvff": "0x7100113df4",
     "_Z19queue_marker_19a914P11EffectQueuePK14MarkerPositioniPvi": "0x710019a914",
-    "_Z16open_camp_16ee2cjj": "0x710016ee2c"
+    "_Z16open_camp_16ee2cjj": "0x710016ee2c",
+    "_Z17queue_spot_19a914P11EffectQueuePK12SpotPositioniPvi": "0x710019a914",
+    "_Z18release_spot_f2824Pvji": "0x71000f2824",
+    "_Z19release_spot_1140c4Pvji": "0x71001140c4",
+    "_Z19resolve_spot_1b69cci": "0x71001b69cc",
+    "_Z15put_unit_19bde0P8SpotSlotii": "0x710019bde0",
+    "_Z16spot_slot_19cfacP9SpotSlotsj": "0x710019cfac",
+    "_Z17spot_slots_1898b8P10UnitRoster": "0x71001898b8",
+    "_Z17item_level_1fb810i": "0x71001fb810",
+    "_Z17post_order_1a791cP10OrderBoardiii": "0x71001a791c",
+    "_Z18order_board_18d5d8P10UnitRoster": "0x710018d5d8",
+    "_Z21item_for_level_1fb214P11ItemCatalogi": "0x71001fb214",
+    "got:gCatalog_c21df8": "0x7100c21df8",
+    "got:gViews_c22ab0": "0x7100c22ab0",
+    "_Z16move_unit_16ab4ciPK14MarkerPositionif": "0x710016ab4c",
+    "_Z16move_unit_16af1ciPK14MarkerPositionif": "0x710016af1c",
+    "_Z16move_unit_16b1f8iPK14MarkerPositionif": "0x710016b1f8",
+    "_Z17focus_info_18f0e0P10UnitRoster": "0x710018f0e0",
+    "_Z18apply_focus_191e3cP9FocusInfo": "0x7100191e3c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7924,7 +7942,14 @@
         "_Z24dismiss_team_unit_1b9950PK15TeamUnitCommand": "0x71001b9950",
         "_Z24post_unit_message_1b7b20PK11UnitCommand": "0x71001b7b20",
         "_Z19place_marker_1c3550PK11UnitCommand": "0x71001c3550",
-        "_Z20activate_camp_1c7224PK11UnitCommand": "0x71001c7224"
+        "_Z20activate_camp_1c7224PK11UnitCommand": "0x71001c7224",
+        "_Z19release_spot_1c361cPK11UnitCommand": "0x71001c361c",
+        "_Z18assign_spot_1c2840PK11UnitCommand": "0x71001c2840",
+        "_Z22post_unit_order_1c65b0PK11UnitCommand": "0x71001c65b0",
+        "_Z21set_item_field_1c57b0PK11UnitCommand": "0x71001c57b0",
+        "_Z22set_spot_limits_1c5c34PK11UnitCommand": "0x71001c5c34",
+        "_Z16move_unit_1c019cPK11UnitCommand": "0x71001c019c",
+        "_Z16set_focus_1c7ebcPK11UnitCommand": "0x71001c7ebc"
       },
       "map": {
         "_ZZL12resolve_unitiE5local": "0x7100c44ce0",
