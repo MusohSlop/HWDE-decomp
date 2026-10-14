@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-3.74% of bytes (209,588 of 5,603,025) and 23.44% of functions (4,051 of 17,282) match exactly; 172 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+3.79% of bytes (212,100 of 5,603,025) and 23.49% of functions (4,060 of 17,282) match exactly; 175 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-4,061 of 4,233 attempted functions match: 4,051 inventory functions (209,588 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 172 are near misses, all `m`.
+4,070 of 4,245 attempted functions match: 4,060 inventory functions (212,100 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 175 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -357,6 +357,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 3 of 3 in `misc/core_requests.cpp` | locked per-core requests forwarded to an inner service (a second base, so the call stays virtual) | match |
 | 5 of 6 in `misc/phase_lists.cpp` | per-phase passes over four null-terminated item lists (jump tables at `73ea04`), a counter copy; near miss: the pending-list clear (`1fc50`) keeps the list address where the original recomputes it for the `memset` | match |
 | 6 of 10 in `misc/joint_links.cpp` | joint links (four identical), a shape refresh and a record constructor; near misses: a movable test that the original leaves as two returns, a kind capture loaded zero-extended where ours sign-extends, two constructors whose -1 pairs ours merges into 64-bit stores | match |
+| 3 of 3 in `misc/slot_pools.cpp` | slot pool resets: a 32-iteration loop that Clang unrolls into 32 calls | match |
+| 6 of 9 in `misc/table_teardowns.cpp` | banked text tables: teardown (unload, delete on the default heap, clear the global) and unload of both banks and the extra chunks; near misses: the three creators, where the two zeroing stores after the chunk constructors come out in the other order | match |
 | 0 of 7 in `misc/plane_tests.cpp` | convex-shape plane tests (support point opposite the normal, signed distance); near misses by 3 words: the negated direction lands in another register and one add has its operands swapped. The negation has to go through a by-value `operator-` to get the original's packed integer form | near miss |
 | 0 of 1 in `misc/stack_layouts.cpp` | stacked layout (five fixed and five optional parts at running offsets); near miss by one word: the original branches on the negated dirty flag with `tbz w8, #0` where ours emits `cbz w8`. Tried: `&&`, `&`, `|`, a select into an `unchanged` flag (best), bool/int/unsigned char flags, `^ 1`, `== false`, if/else and preset assignments of `dirty`, inline helper vs written-out loops, member reloads. Five look-alike classes (`59b0a0`-`59bb80`) are left until this one matches | near miss |
 | 16 of 18 in `misc/unit_commands.cpp` | script commands on units: shared id resolution (local player through a guarded static, roster aliases, difficulty-stepped families) then field stores, timer clears, stance bitfields, alias updates, member orders, dismissals, player gauges, modes and conditions; near misses: `1c4c5c` loads the side bit as a byte where the original loads the word; `1b7b20` (unit message) has the opposite compare form for the text-id bound and one moved instruction | match |
@@ -453,6 +455,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Shared tail stores come from separate returns.** When several branches end in `mov w8, #N` followed by one shared `str w8, [x19]` and the same epilogue, each branch stores its own value and returns (`state = 3; pending = 0; return;`). A single store after the `if` makes SimplifyCFG sink it into a phi, which lands in a callee-saved register before the last call (`misc/tutorial_panels.cpp`).
 - **Subobject addresses computed early in destructors.** When a destructor computes `this + N` into a callee-saved register one call before it is needed (or folds it into the vtable store as a post-index), the subobject at `N` belongs to a nested class whose destructor is inlined there: a member group with a base of its own, or a base class built from two bases. Writing the parts as flat members and bases moves those additions next to their calls (`misc/destructors.cpp`).
 - **Deleting destructors.** A destructor body followed by `get_default_heap()` and a tail call of `DefaultHeap::release(this, 1, 0)` is the deleting variant (D0) of the same class. An inline `static void operator delete(void*)` on the root class that calls the default heap makes Clang emit it next to the complete-object destructor (`misc/destructors3.cpp`, `misc/destructors4.cpp`).
+- **Long call lists are often loops.** Thirty-two calls on consecutive 0x88-byte slots come from `for (int i = 0; i < 32; ++i) slots[i].reset();`, which Clang unrolls completely (`misc/slot_pools.cpp`). Repeated free-and-clear sequences on arrays come from small loops too (`TextTable::unload` in `misc/table_teardowns.cpp`).
 - **Translation units and globals.**
   - `DemoSequenceItem` (`2173c4`, `2174d0`) is a separate unit after the sequence unit. If it is in the same file, `release` gets inlined into `clear`.
   - The queue registry (`c8af40`), the worker controls (`c8aef8`) and the high-worker enable byte (`c8af38`) are external hidden globals. As file-static globals in one unit, LLVM's GlobalMerge combines them and addresses one relative to another.

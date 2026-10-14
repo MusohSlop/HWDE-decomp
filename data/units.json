@@ -2732,7 +2732,17 @@
     "_Z20connect_bodies_cb0a8P9JointBodyS0_": "0x71000cb0a8",
     "got:_ZTV11JointRecord": "0x7100c21ff8",
     "got:_ZTV9JointSlot": "0x7100c22000",
-    "got:_ZTV9JointMark": "0x7100c22030"
+    "got:_ZTV9JointMark": "0x7100c22030",
+    "_ZN8PoolSlot5resetEv": "0x71001f0140",
+    "_ZN10TextChunksD1Ev": "0x7100218c2c",
+    "_ZN10TextChunksD2Ev": "0x7100218c2c",
+    "got:gTable_c23340": "0x7100c23340",
+    "got:gTable_c23348": "0x7100c23348",
+    "got:gTable_c23350": "0x7100c23350",
+    "_ZN10TextChunks7releaseEh": "0x7100218c68",
+    "_ZN10TextChunksC1Ev": "0x7100218c18",
+    "_ZN10TextChunksC2Ev": "0x7100218c18",
+    "_ZN11DefaultHeap8allocateEmmhh": "0x710045c458"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7859,6 +7869,26 @@
         "_ZN11JointRecordC2Ev": "0x7100055e50",
         "_ZN9JointSlotC2Ev": "0x7100055e78",
         "_ZN9JointMarkC2Ev": "0x71000593c4"
+      }
+    },
+    "misc/slot_pools.cpp": {
+      "functions": {
+        "_Z16reset_pool_fc5bcP8SlotPool": "0x71000fc5bc",
+        "_Z16reset_pool_fd1ecP8SlotPool": "0x71000fd1ec",
+        "_Z17reset_pool_2dee48P8SlotPool": "0x71002dee48"
+      }
+    },
+    "misc/table_teardowns.cpp": {
+      "functions": {
+        "_Z20destroy_table_211744v": "0x7100211744",
+        "_Z20destroy_table_211c74v": "0x7100211c74",
+        "_Z20destroy_table_212a08v": "0x7100212a08",
+        "_ZN15TextTable2117446unloadEv": "0x71002117d8",
+        "_ZN15TextTable211c746unloadEv": "0x7100211d08",
+        "_ZN15TextTable212a086unloadEv": "0x7100212a9c",
+        "_Z19create_table_2116bcv": "0x71002116bc",
+        "_Z19create_table_211be8v": "0x7100211be8",
+        "_Z19create_table_21297cv": "0x710021297c"
       }
     }
   }
