@@ -50,6 +50,7 @@ real classes.
 | `misc/variant_functions23.cpp` | variant search, twenty-third run (function-pointer calls, extended operands) | as `misc/variant_functions20.cpp` |
 | `misc/variant_functions24.cpp` | variant search, twenty-fourth run (extends, float pairs, `Float2` returns) | as `misc/variant_functions20.cpp`; `Float2` is a placeholder for a two-float struct |
 | `misc/variant_functions25.cpp` | variant search, twenty-fifth run (vector fields, narrow parameters) | as `misc/variant_functions20.cpp`; `Vec4f` is a placeholder for a 16-byte vector type |
+| `misc/variant_functions26.cpp` | variant search, twenty-sixth run (loops) | as `misc/variant_functions20.cpp`, plus `ElemFUNC_rN` element structs of pointer loop variables |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/loop_functions2.cpp` | loops with if/else bodies and pointer induction variables | as `misc/loop_functions.cpp`, plus element structs `ElemFUNC_rN` sized to the stride |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |
