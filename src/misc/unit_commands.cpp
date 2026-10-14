@@ -3,9 +3,17 @@
 // command's value in a field of the unit's record when the unit belongs to one of the three teams.
 // Names are descriptive placeholders. Status: matching/README.md.
 
+struct Gauge19d2 {
+    unsigned char data[1];
+};
+
 struct RosterSlot {
     unsigned char pad[0x1c];
     int unit;                 // +1c
+    unsigned char pad20[4];
+    unsigned int officer_type; // +24
+    unsigned char pad28[0x28];
+    Gauge19d2 gauge;          // +50
 };
 
 struct RosterPlayer {
@@ -17,6 +25,8 @@ struct RosterTable {
     unsigned char pad[0xb08];
     RosterPlayer* players[2]; // +b08
     RosterSlot* slots[4];     // +b18
+    unsigned char padb38[0x10];
+    unsigned int player_count; // +b48
 
     RosterPlayer* player(int index) { return static_cast<unsigned int>(index) < 2 ? players[index] : players[0]; }
 };
@@ -48,12 +58,17 @@ struct UnitRecord {
     int leader;               // +5c
     unsigned char pad60[0x48];
     int values[3];            // +a8
-    unsigned char padb4[0x64];
+    unsigned char padb4[0x40];
+    unsigned int damage;      // +f4
+    unsigned char padf8[0x18];
+    int ai_mode;              // +110
+    unsigned char pad114[4];
     unsigned int flag_bits : 25; // +118
     unsigned int stance : 2;
     unsigned int high_bits : 5;
     unsigned int : 0;
-    unsigned int state_low : 16; // +11c
+    unsigned int state_kind : 3; // +11c
+    unsigned int state_low : 13;
     unsigned int following : 1;
     unsigned int state_mid : 3;
     unsigned int side : 1;
@@ -71,9 +86,15 @@ struct OfficerRecord {
     unsigned char visible : 1; // +20
     unsigned char pad21[7];
     unsigned int kind;        // +28
-    unsigned char pad2c[0x18];
+    unsigned char pad2c[8];
+    int max_level;            // +34
+    int level;                // +38
+    unsigned char pad3c[8];
     unsigned int type;        // +44
-    unsigned char pad48[0x688];
+    unsigned int health;      // +48
+    unsigned char pad4c[0x20];
+    unsigned char status;     // +6c
+    unsigned char pad6d[0x663];
 };
 
 struct OfficerType {
@@ -314,4 +335,185 @@ void set_unit_follow_1c4c5c(const UnitCommand* command) {
     }
     set_side_flag_1949b0(unit, flag);
     unit->following = 1;
+}
+struct SpawnedUnit {
+    unsigned char pad[0x20];
+    float position[10];       // +20
+    unsigned int officer;     // +48
+};
+SpawnedUnit* find_spawned_1b93b8(int unit, int a, int b);                   // 0x71001b93b8
+unsigned char stage_busy_1d740c(StepOwner* owner);                                   // 0x71001d740c
+
+struct BattleMusic {
+    unsigned char pad[0x3e];
+    short level;              // +3e
+};
+BattleMusic* current_music_6b40();                                          // 0x7100006b40
+unsigned char music_flag_20d9c8(BattleMusic* music, int flag);                       // 0x710020d9c8
+void release_unit_1140c4(void* system, unsigned int officer, int flag);     // 0x71001140c4
+void release_unit_f2824(void* system, unsigned int officer, int flag);      // 0x71000f2824
+
+struct Container18f12c;
+struct EffectQueue;
+EffectQueue* member_18f12c(Container18f12c* container);                     // 0x710018f12c
+void queue_effect_19a914(EffectQueue* queue, const float* position, int a, void* b, int c); // 0x710019a914
+
+// 0x71001c2ef8
+void dismiss_unit_1c2ef8(const UnitCommand* command) {
+    if (stage_busy_1d740c(gGlobal_c22ca8))
+        return;
+    SpawnedUnit* spawned = find_spawned_1b93b8(resolve_unit(command->unit), 0, 0x44c);
+    if (!spawned)
+        return;
+    unsigned int officer = spawned->officer;
+    if (current_music_6b40()) {
+        BattleMusic* music = current_music_6b40();
+        if (music_flag_20d9c8(music, 0) && music->level >= 0) {
+            BattleMusic* again = current_music_6b40();
+            int calm = music_flag_20d9c8(again, 0) ? again->level < 3 : 1;
+            if (officer <= 0xf5 && calm && gShop->units[officer].team)
+                return;
+        }
+    }
+    release_unit_1140c4(gGlobal_c22a60, officer, 1);
+    release_unit_f2824(gGlobal_c22be8, officer, 1);
+    queue_effect_19a914(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), spawned->position, 1, nullptr, 5);
+}
+unsigned char type_ready_172160(unsigned int type);                         // 0x7100172160
+unsigned int gauge_max_19d25c(Gauge19d2* gauge);                            // 0x710019d25c
+void set_gauge_19d31c(Gauge19d2* gauge, unsigned int value, unsigned int max); // 0x710019d31c
+void clear_gauge_19d738(Gauge19d2* gauge);                                  // 0x710019d738
+
+static inline int player_for_type(RosterTable* table, unsigned int type) {
+    if (!type_ready_172160(type))
+        return -1;
+    for (int i = 0; i < table->player_count; ++i) {
+        if (table->players[i]->slot->officer_type == type)
+            return static_cast<unsigned int>(i) < 2 ? i : -1;
+    }
+    return -1;
+}
+
+// 0x71001c260c
+void set_player_gauge_1c260c(const UnitCommand* command) {
+    int id = resolve_unit(command->unit);
+    UnitRoster* roster = gShop;
+    UnitRecord* unit = roster->unit(id);
+    if (unit->team > 2 || unit->state_kind)
+        return;
+    unsigned int level = static_cast<unsigned int>(command->value) > 3 ? 3 : command->value;
+    unsigned int type = roster->officer(unit->members.get(unit->leader))->type;
+    int player = player_for_type(gRecord_c21698, type);
+    if (!type_ready_172160(type) || static_cast<unsigned int>(player) > 1)
+        return;
+    Gauge19d2* gauge = &gRecord_c21698->players[player]->slot->gauge;
+    unsigned int max = gauge_max_19d25c(gauge);
+    set_gauge_19d31c(gauge, level > max ? max : level, max);
+    if (!level)
+        clear_gauge_19d738(gauge);
+}
+void set_officer_mode_3e27c(unsigned int type, int mode, int flag);         // 0x710003e27c
+void raise_unit_flags_133cf8(UnitState* state);                             // 0x7100133cf8
+void refresh_unit_1d3f74(int unit);                                         // 0x71001d3f74
+void reset_officer_1adac4(unsigned int officer, int a, int b, void* c);     // 0x71001adac4
+void update_officer_1999d8(OfficerRecord* officer, int a, int b);           // 0x71001999d8
+void sync_officer_1adf80(unsigned int officer);                             // 0x71001adf80
+
+// 0x71001c4478
+void set_unit_mode_1c4478(const UnitCommand* command) {
+    int id = resolve_unit(command->unit);
+    UnitRoster* roster = gShop;
+    UnitRecord* unit = roster->unit(id);
+    if (unit->team > 2 || (unit->state_kind & 5))
+        return;
+    int mode = command->value;
+    unsigned short leader_id = unit->members.get(unit->leader);
+    OfficerRecord* leader = roster->officer(leader_id);
+    unsigned int type = leader->type;
+    if (type_ready_172160(type)) {
+        set_officer_mode_3e27c(type, mode, 0);
+        switch (mode) {
+        case 3:
+        case 4:
+            raise_unit_flags_133cf8(&gBlock_c22bd8->units[static_cast<unsigned int>(id)]);
+            refresh_unit_1d3f74(id);
+            break;
+        case 7:
+            unit->ai_mode = 2;
+            break;
+        }
+        return;
+    }
+    switch (mode) {
+    case 3:
+    case 4:
+        if (!(unit->state_kind & 2)) {
+            refresh_unit_1d3f74(id);
+            reset_officer_1adac4(leader_id, 300, 1, nullptr);
+            update_officer_1999d8(leader, 0, 0);
+            int level = leader->level - 1;
+            level = level < 0 ? 0 : level;
+            leader->level = level > leader->max_level ? leader->max_level : level;
+            sync_officer_1adf80(leader_id);
+        }
+        raise_unit_flags_133cf8(&gBlock_c22bd8->units[static_cast<unsigned int>(id)]);
+        break;
+    case 5:
+        unit->ai_mode = 2;
+        break;
+    }
+}
+void load_type_17097c(unsigned int type);                                   // 0x710017097c
+void start_type_170530(unsigned int type);                                  // 0x7100170530
+
+// 0x71001c4888
+void set_unit_condition_1c4888(const UnitCommand* command) {
+    int id = resolve_unit(command->unit);
+    UnitRoster* roster = gShop;
+    UnitRecord* unit = roster->unit(id);
+    if (unit->team > 2 || (unit->state_kind & 5))
+        return;
+    unsigned short leader_id = unit->members.get(unit->leader);
+    OfficerRecord* leader = roster->officer(leader_id);
+    int condition = command->value;
+    unsigned int type = leader->type;
+    int mode;
+    switch (condition) {
+    case 0: {
+        unsigned int health = 1000 - unit->damage * 1000 / 100;
+        if (health < 1 || health > 1000)
+            health = 1;
+        leader->health = health > 1000 ? 1000 : health;
+        if (type_ready_172160(type)) {
+            load_type_17097c(type);
+            start_type_170530(type);
+        }
+        leader->status &= ~6;
+        unit->state_kind &= ~6;
+        mode = 8;
+        break;
+    }
+    case 1:
+        raise_unit_flags_133cf8(&gBlock_c22bd8->units[static_cast<unsigned int>(id)]);
+        mode = 10;
+        break;
+    default:
+        raise_unit_flags_133cf8(&gBlock_c22bd8->units[static_cast<unsigned int>(id)]);
+        mode = 9;
+        break;
+    }
+    unit->ai_mode = 0;
+    if (type_ready_172160(type)) {
+        set_officer_mode_3e27c(type, mode, 0);
+        return;
+    }
+    if (!command->value)
+        return;
+    if (!(leader->status & 2))
+        reset_officer_1adac4(leader_id, 300, 1, nullptr);
+    update_officer_1999d8(leader, 0, 0);
+    int level = leader->level - 1;
+    level = level < 0 ? 0 : level;
+    leader->level = level > leader->max_level ? leader->max_level : level;
+    sync_officer_1adf80(leader_id);
 }

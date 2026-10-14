@@ -2311,7 +2311,27 @@
     "_Z18leader_rate_1947f0P10UnitRecord": "0x71001947f0",
     "_Z15set_rate_1949a8P10UnitRecordj": "0x71001949a8",
     "_Z20set_side_flag_1949b0P10UnitRecordb": "0x71001949b0",
-    "_Z18type_loaded_172174i": "0x7100172174"
+    "_Z18type_loaded_172174i": "0x7100172174",
+    "_Z19find_spawned_1b93b8iii": "0x71001b93b8",
+    "_Z17stage_busy_1d740cP9StepOwner": "0x71001d740c",
+    "_Z18current_music_6b40v": "0x7100006b40",
+    "_Z17music_flag_20d9c8P11BattleMusici": "0x710020d9c8",
+    "_Z19release_unit_1140c4Pvji": "0x71001140c4",
+    "_Z18release_unit_f2824Pvji": "0x71000f2824",
+    "_Z19queue_effect_19a914P11EffectQueuePKfiPvi": "0x710019a914",
+    "_Z13member_18f12cP15Container18f12c": "0x710018f12c",
+    "_Z17type_ready_172160j": "0x7100172160",
+    "_Z16gauge_max_19d25cP9Gauge19d2": "0x710019d25c",
+    "_Z16set_gauge_19d31cP9Gauge19d2jj": "0x710019d31c",
+    "_Z18clear_gauge_19d738P9Gauge19d2": "0x710019d738",
+    "_Z19refresh_unit_1d3f74i": "0x71001d3f74",
+    "_Z19sync_officer_1adf80j": "0x71001adf80",
+    "_Z20reset_officer_1adac4jiiPv": "0x71001adac4",
+    "_Z21update_officer_1999d8P13OfficerRecordii": "0x71001999d8",
+    "_Z22set_officer_mode_3e27cjii": "0x710003e27c",
+    "_Z23raise_unit_flags_133cf8P9UnitState": "0x7100133cf8",
+    "_Z16load_type_17097cj": "0x710017097c",
+    "_Z17start_type_170530j": "0x7100170530"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7299,7 +7319,11 @@
         "_Z18notify_unit_1c36f0PK11UnitCommand": "0x71001c36f0",
         "_Z20order_members_1c46f4PK11UnitCommand": "0x71001c46f4",
         "_Z23play_unit_effect_1c1ec4PK11UnitCommand": "0x71001c1ec4",
-        "_Z22set_unit_follow_1c4c5cPK11UnitCommand": "0x71001c4c5c"
+        "_Z22set_unit_follow_1c4c5cPK11UnitCommand": "0x71001c4c5c",
+        "_Z19dismiss_unit_1c2ef8PK11UnitCommand": "0x71001c2ef8",
+        "_Z23set_player_gauge_1c260cPK11UnitCommand": "0x71001c260c",
+        "_Z20set_unit_mode_1c4478PK11UnitCommand": "0x71001c4478",
+        "_Z25set_unit_condition_1c4888PK11UnitCommand": "0x71001c4888"
       },
       "map": {
         "_ZZL12resolve_unitiE5local": "0x7100c44ce0",
