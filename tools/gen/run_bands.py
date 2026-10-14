@@ -145,8 +145,23 @@ def check(un):
     bad = {int(x, 16) for x in re.findall(r"^\s+>?\s*([0-9a-f]+) \S+: (?:MISMATCH|SIZE MISMATCH|MISSING)", out, re.M)}
     return good, bad, ("unresolved" in out)
 
+IMG = open(os.path.join(os.path.dirname(M), "analysis", "extracted", "update", "decompressed", "main.memory.bin"), "rb").read()
+SIZES = {int(r_[0], 16) - 0x7100000000: int(r_[2]) for r_ in csv.reader(open(M + r"\data\functions.csv")) if r_[0].startswith("0x")}
+def has_br(a):
+    """True when the function has a br (a switch jump table or a computed jump)."""
+    return any((int.from_bytes(IMG[a + k:a + k + 4], "little") & 0xFFFFFC1F) == 0xD61F0000 for k in range(0, SIZES.get(a, 0), 4))
+
 def attempt_chunks(cands, knobs, tag):
-    chunks = [sorted(cands)[i:i + CH] for i in range(0, len(cands), CH)]
+    # a unit's jump tables share one .rodata anchor, so each chunk takes at most one function with a br
+    jt = sorted(a for a in cands if has_br(a))
+    rest = sorted(set(cands) - set(jt))
+    n = max(len(jt), (len(cands) + CH - 1) // CH)
+    chunks = [[] for _ in range(n)]
+    for i, a in enumerate(jt):
+        chunks[i].append(a)
+    for i, a in enumerate(rest):
+        chunks[i % n].append(a)
+    chunks = [sorted(c) for c in chunks if c]
     names = [f"misc/rvpar_{tag}_{i}.cpp" for i in range(len(chunks))]
     excl = [set() for _ in chunks]
     dropped = set()
@@ -259,14 +274,31 @@ def candidates():
         found &= {int(x, 16) for x in re.split(r"[\s,]+", open(os.environ["RV_ONLY"], encoding="utf-8").read()) if x}
     return found
 
-def final_unit(best):
+def final_units(best):
+    """Write the winners into UNIT, and those whose jump tables do not follow the unit's into UNIT_2, UNIT_3, ..."""
+    pending, n, out = dict(best), 1, {}
+    while pending and n < 300:
+        un = unit if n == 1 else unit[:-4] + f"_{n}.cpp"
+        apart = set()
+        out.update(final_unit(pending, un, apart))
+        pending = {a: k for a, k in best.items() if a in apart}
+        n += 1
+    return out
+
+def final_unit(best, unit, apart):
     """Write every winner into UNIT under its knobs; drop any that do not match there."""
+    best = dict(best)
     for rnd in range(4):
         drop_units([unit], remove_files=False)
         src = os.path.join(M, "src", *unit.split("/"))
         env = dict(os.environ, ONLY=",".join("%x" % a for a in sorted(best)), EXCLUDE="", VARIANT="",
-                   VARIANT_MAP=";".join("%x:%s" % (a, k) for a, k in best.items()), DRYRUN="", FAILDUMP="", TRACE="", SYMOUT="")
+                   VARIANT_MAP=";".join("%x:%s" % (a, k) for a, k in best.items()), DRYRUN="", FAILDUMP="", TRACE="", SYMOUT="",
+                   APARTOUT=os.path.join(TMP, "apart.txt"))
         subprocess.run([py, "-B", "-I", gen, src, unit, "8", "1000000"], cwd=M, capture_output=True, text=True, env=env)
+        apart.clear()
+        apart |= {int(x, 16) for x in open(os.path.join(TMP, "apart.txt"), encoding="utf-8").read().split()}
+        for a in apart:
+            best.pop(a, None)
         bad, slow = syntax_bad(src)
         if slow or bad:
             for a in (bad or set()):
@@ -306,7 +338,7 @@ for n_, knobs in enumerate(KNOBS):
         f"{LOST[0]} lost to chunk failures so far ({int(time.time() - t0)}s)")
     json.dump({"%x" % a: k for a, k in best.items()}, open(os.path.join(TMP, "best.json"), "w"))
 if best:
-    final_unit(best)
+    final_units(best)
 else:
     log("no matches")
 log(f"done in {int(time.time() - t0)}s")

@@ -3665,6 +3665,7 @@ CALLEES = {}
 IMPORTS_USED = {}
 GSYMS = set()
 JT = [None, None]   # first jump table address, end of the last
+APART = []          # functions left out because their jump tables do not follow the unit's
 for size, a in sorted(U, key=lambda x: x[1]):
     ins = list(md.disasm(d[a:a + size], a))
     try:
@@ -3722,6 +3723,8 @@ for size, a in sorted(U, key=lambda x: x[1]):
         if os.environ.get("TRACE") and not isinstance(e, Fail):
             raise
         skipped += 1
+        if str(e) == "switch table apart":
+            APART.append(a)
         if os.environ.get("FAILDUMP"):
             with open(os.environ["FAILDUMP"], "a", encoding="utf-8") as fd_:
                 fd_.write(f"{a:x}\t{size}\t{type(e).__name__}\t{e}\n")
@@ -3757,12 +3760,15 @@ m = MATCHDIR
 if os.environ.get("SYMOUT"):
     json.dump({"unit": unit, "gsyms": sorted(GSYMS),
                "imports": ["%s=0x71%08x" % (mn, ad) for mn, ad in sorted(IMPORTS_USED.items())],
-               "funcs": funcs, "rodata": "0x71%08x" % JT[0] if JT[0] is not None else None},
+               "funcs": funcs, "rodata": "0x71%08x" % JT[0] if JT[0] is not None else None,
+               "apart": ["%x" % x for x in APART]},
               open(os.environ["SYMOUT"], "w", encoding="utf-8"))
     print("generated", len(funcs), "skipped", skipped)
     print(sorted(reasons.items(), key=lambda x: -x[1])[:16])
     print("internal errors:", sum(internal.values()), sorted(internal.items(), key=lambda x: -x[1])[:8])
     sys.exit(0)
+if os.environ.get("APARTOUT"):
+    open(os.environ["APARTOUT"], "w", encoding="utf-8").write(" ".join("%x" % x for x in APART))
 if os.environ.get("DRYRUN"):
     GSYMS, IMPORTS_USED, funcs = set(), {}, funcs if False else []
 if GSYMS:
