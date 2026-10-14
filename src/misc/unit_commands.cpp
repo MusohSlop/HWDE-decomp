@@ -45,11 +45,17 @@ struct MessageQueue {
     MessageEntry entries[1];  // +04
 };
 
+struct StepBits {
+    unsigned char data[0x7a8];
+};
+
 struct StepOwner {
-    unsigned char pad[0x139338];
+    unsigned char pad[0x138b90];
+    StepBits bits;            // +138b90
     MessageQueue messages;    // +139338
     unsigned char pad13958c[0x3bc];
     StepInfo* info;           // +139948
+    unsigned char recording;  // +139950
 };
 
 struct MemberList {
@@ -134,6 +140,21 @@ struct SpotRecord {
     unsigned char pad1ac[0x164];
 };
 
+struct PointPosition {
+    float x;                  // +00
+    float y;                  // +04
+    float z;                  // +08
+    float w;                  // +0c
+};
+
+struct PointRecord {
+    unsigned char pad[0x10];
+    PointPosition position;   // +10
+    unsigned char pad20[0x14];
+    int active;               // +34
+    unsigned char pad38[0x18];
+};
+
 struct OfficerType {
     unsigned char pad[0x30];
     unsigned char flags;      // +30
@@ -156,9 +177,11 @@ struct UnitRoster {
     unsigned char pad95a28[0xcee40 - 0x95a28];
     SpotRecord spots[0x18];   // +cee40
     CampRecord camps[10];     // +d37c0
+    PointRecord points[0x40]; // +d39a0
 
     CampRecord* camp(unsigned int id) { return id < 10 ? &camps[id] : nullptr; }
     SpotRecord* spot(unsigned int id) { return id < 0x18 ? &spots[id] : nullptr; }
+    PointRecord* point(unsigned int id) { return id < 0x40 ? &points[id] : nullptr; }
 
     UnitRecord* unit(unsigned int id) { return id < 0xf6 ? &units[id] : nullptr; }
     OfficerRecord* officer(unsigned int id) { return id < 300 ? &officers[id] : nullptr; }
@@ -868,7 +891,9 @@ struct PlayerView {
 extern PlayerView* gViews_c22ab0[2];
 
 struct FocusInfo {
-    unsigned char pad[0x12];
+    unsigned char pad[0x10];
+    unsigned char done;       // +10
+    unsigned char ready;      // +11
     unsigned char kind;       // +12
     unsigned char pad13;
     int item;                 // +14
@@ -913,4 +938,177 @@ void set_focus_1c7ebc(const UnitCommand* command) {
     focus_info_18f0e0(gShop)->kind = command->unit;
     focus_info_18f0e0(gShop)->item = item;
     apply_focus_191e3c(focus_info_18f0e0(gShop));
+}
+void queue_spot_19a858(EffectQueue* queue, const SpotPosition* position, int a, void* b, int c); // 0x710019a858
+
+// 0x71001b9c88
+void release_spot_1b9c88(const UnitCommand* command) {
+    unsigned int id = resolve_spot_1b69cc(command->unit);
+    if (stage_busy_1d740c(gGlobal_c22ca8))
+        return;
+    SpotPosition position = gShop->spot(id)->position;
+    position.w = 1.0f;
+    release_unit_113c40(gGlobal_c22a60, id, 0);
+    release_unit_f2404(gGlobal_c22be8, id, 0);
+    queue_spot_19a858(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), &position, 0, nullptr, 5);
+}
+void focus_camera_113a60(void* system, float x, float z);                   // 0x7100113a60
+void focus_map_f2234(void* system, float x, float z);                       // 0x71000f2234
+void queue_marker_19a858(EffectQueue* queue, const MarkerPosition* position, int a, void* b, int c); // 0x710019a858
+
+// 0x71001b9ba8
+void place_marker_1b9ba8(const UnitCommand* command) {
+    if (stage_busy_1d740c(gGlobal_c22ca8))
+        return;
+    float x = static_cast<unsigned int>(command->unit * 1000 + 500);
+    float z = static_cast<unsigned int>(command->value * 1000 + 500);
+    MarkerPosition position = {x, 0.0f, z, 1.0f};
+    focus_camera_113a60(gGlobal_c22a60, x, z);
+    focus_map_f2234(gGlobal_c22be8, x, z);
+    queue_marker_19a858(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), &position, 2, nullptr, 5);
+}
+void queue_point_19a858(EffectQueue* queue, const PointPosition* position, int a, void* b, int c); // 0x710019a858
+
+// 0x71001b9d58
+void show_point_1b9d58(const UnitCommand* command) {
+    PointRecord* point = gShop->point(command->unit);
+    if (stage_busy_1d740c(gGlobal_c22ca8))
+        return;
+    if (!point->active)
+        return;
+    PointPosition* position = &point->position;
+    focus_camera_113a60(gGlobal_c22a60, position->x, position->z);
+    focus_map_f2234(gGlobal_c22be8, position->x, position->z);
+    queue_point_19a858(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), position, 2, nullptr, 5);
+}
+
+// 0x71001b981c
+void dismiss_spawned_1b981c(const UnitCommand* command) {
+    if (stage_busy_1d740c(gGlobal_c22ca8))
+        return;
+    SpawnedUnit* spawned = find_spawned_1b93b8(command->unit, command->extra[0], command->value);
+    if (!spawned)
+        return;
+    unsigned int officer = spawned->officer;
+    const float* position = spawned->position;
+    if (current_music_6b40()) {
+        BattleMusic* music = current_music_6b40();
+        if (music_flag_20d9c8(music, 0) && music->level >= 0) {
+            BattleMusic* again = current_music_6b40();
+            int calm = music_flag_20d9c8(again, 0) ? again->level < 3 : 1;
+            if (officer <= 0xf5 && calm && gShop->units[officer].team)
+                return;
+        }
+    }
+    release_unit_113c40(gGlobal_c22a60, officer, 1);
+    release_unit_f2404(gGlobal_c22be8, officer, 1);
+    queue_unit_effect_19a858(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), position, 1, nullptr, 5);
+}
+struct MusicPlayer;
+// Reached through the GOT slot at 0x7100c22d90.
+extern MusicPlayer* gMusic_c22d90;
+unsigned int current_track_3f50cc(MusicPlayer* player);                     // 0x71003f50cc
+void set_track_3f50d4(MusicPlayer* player, int track);                      // 0x71003f50d4
+void prepare_track_3fa4a8(int track);                                       // 0x71003fa4a8
+void play_bgm_3f9b34(int track, int a, int b, void* c, float fade);         // 0x71003f9b34
+void record_track_1a7650(OrderBoard* board, int track);                     // 0x71001a7650
+
+struct MusicCommand {
+    int pad0;
+    int track;                // +04
+    int pad8;
+    int start;                // +0c
+    int length;               // +10
+};
+
+// 0x71001b9e14
+void play_music_1b9e14(MusicCommand* command) {
+    if (stage_busy_1d740c(gGlobal_c22ca8))
+        return;
+    if (gMusic_c22d90) {
+        unsigned int current = current_track_3f50cc(gMusic_c22d90);
+        if (current <= 0x31f)
+            command->track = current;
+    }
+    if (get_battle_setup()->flags & 0x4000) {
+        record_track_1a7650(order_board_18d5d8(gShop), command->track);
+        return;
+    }
+    int track = command->track;
+    switch (track) {
+    case 0x3a:
+    case 0x3b:
+    case 0x61:
+    case 0x62:
+    case 0x63:
+        prepare_track_3fa4a8(track);
+        break;
+    }
+    play_bgm_3f9b34(track, 1, 0, nullptr, 0.668f);
+    if (gMusic_c22d90)
+        set_track_3f50d4(gMusic_c22d90, track);
+    if (gGlobal_c22ca8->recording)
+        record_track_1a7650(order_board_18d5d8(gShop), track);
+}
+void set_bit_1ccdc0(StepBits* bits, int index, unsigned char value);        // 0x71001ccdc0
+unsigned char focus_open_190f24(FocusInfo* focus);                          // 0x7100190f24
+unsigned char focus_busy_190f04(FocusInfo* focus);                          // 0x7100190f04
+void start_focus_1d3528();                                                  // 0x71001d3528
+
+static inline int resolve_flag(int id) {
+    StepInfo* info = gGlobal_c22ca8->info;
+    if (info && info->step && (id & ~0xf) == 0x10)
+        id += info->step * 4 - 4;
+    return id;
+}
+
+// 0x71001ba1b4
+void set_flag_1ba1b4(const UnitCommand* command) {
+    set_bit_1ccdc0(&gGlobal_c22ca8->bits, resolve_flag(command->unit), command->value);
+    if (!(get_battle_setup()->flags & 0x400))
+        return;
+    if (resolve_flag(command->unit) != 2)
+        return;
+    if (!focus_info_18f0e0(gShop)->ready || focus_info_18f0e0(gShop)->done)
+        return;
+    if (focus_open_190f24(focus_info_18f0e0(gShop)) && !focus_busy_190f04(focus_info_18f0e0(gShop)))
+        start_focus_1d3528();
+}
+
+struct BgmParams {
+    BgmParams()
+        : volume(1.0f), flags(0), offset(0), start(0), length(200), gains{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
+          fade(0.668f), balance(0.5f) {}
+
+    float volume;             // +00
+    int flags;                // +04
+    int offset;               // +08
+    int start;                // +0c
+    int length;               // +10
+    float gains[6];           // +14
+    float fade;               // +2c
+    float balance;            // +30
+};
+void play_bgm_params_3f9b34(int track, int a, int b, BgmParams* params, float fade); // 0x71003f9b34
+
+// 0x71001c1ff0
+void play_music_part_1c1ff0(MusicCommand* command) {
+    if (stage_busy_1d740c(gGlobal_c22ca8))
+        return;
+    BgmParams params;
+    if (gMusic_c22d90) {
+        unsigned int current = current_track_3f50cc(gMusic_c22d90);
+        if (current <= 0x31f)
+            command->track = current;
+    }
+    params.volume = 0.0f;
+    params.start = command->start;
+    params.length = command->length;
+    params.fade = 0.668f;
+    int track = command->track;
+    play_bgm_params_3f9b34(track, 1, 0, &params, 0.668f);
+    if (gMusic_c22d90)
+        set_track_3f50d4(gMusic_c22d90, track);
+    if (gGlobal_c22ca8->recording)
+        record_track_1a7650(order_board_18d5d8(gShop), track);
 }

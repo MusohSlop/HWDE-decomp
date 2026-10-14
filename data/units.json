@@ -2936,7 +2936,23 @@
     "_Z16move_unit_16af1ciPK14MarkerPositionif": "0x710016af1c",
     "_Z16move_unit_16b1f8iPK14MarkerPositionif": "0x710016b1f8",
     "_Z17focus_info_18f0e0P10UnitRoster": "0x710018f0e0",
-    "_Z18apply_focus_191e3cP9FocusInfo": "0x7100191e3c"
+    "_Z18apply_focus_191e3cP9FocusInfo": "0x7100191e3c",
+    "_Z15focus_map_f2234Pvff": "0x71000f2234",
+    "_Z17queue_spot_19a858P11EffectQueuePK12SpotPositioniPvi": "0x710019a858",
+    "_Z18queue_point_19a858P11EffectQueuePK13PointPositioniPvi": "0x710019a858",
+    "_Z19focus_camera_113a60Pvff": "0x7100113a60",
+    "_Z19queue_marker_19a858P11EffectQueuePK14MarkerPositioniPvi": "0x710019a858",
+    "got:gMusic_c22d90": "0x7100c22d90",
+    "_Z14set_bit_1ccdc0P8StepBitsih": "0x71001ccdc0",
+    "_Z15play_bgm_3f9b34iiiPvf": "0x71003f9b34",
+    "_Z16set_track_3f50d4P11MusicPlayeri": "0x71003f50d4",
+    "_Z17focus_busy_190f04P9FocusInfo": "0x7100190f04",
+    "_Z17focus_open_190f24P9FocusInfo": "0x7100190f24",
+    "_Z18start_focus_1d3528v": "0x71001d3528",
+    "_Z19record_track_1a7650P10OrderBoardi": "0x71001a7650",
+    "_Z20current_track_3f50ccP11MusicPlayer": "0x71003f50cc",
+    "_Z20prepare_track_3fa4a8i": "0x71003fa4a8",
+    "_Z22play_bgm_params_3f9b34iiiP9BgmParamsf": "0x71003f9b34"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7949,7 +7965,14 @@
         "_Z21set_item_field_1c57b0PK11UnitCommand": "0x71001c57b0",
         "_Z22set_spot_limits_1c5c34PK11UnitCommand": "0x71001c5c34",
         "_Z16move_unit_1c019cPK11UnitCommand": "0x71001c019c",
-        "_Z16set_focus_1c7ebcPK11UnitCommand": "0x71001c7ebc"
+        "_Z16set_focus_1c7ebcPK11UnitCommand": "0x71001c7ebc",
+        "_Z19release_spot_1b9c88PK11UnitCommand": "0x71001b9c88",
+        "_Z19place_marker_1b9ba8PK11UnitCommand": "0x71001b9ba8",
+        "_Z17show_point_1b9d58PK11UnitCommand": "0x71001b9d58",
+        "_Z22dismiss_spawned_1b981cPK11UnitCommand": "0x71001b981c",
+        "_Z17play_music_1b9e14P12MusicCommand": "0x71001b9e14",
+        "_Z15set_flag_1ba1b4PK11UnitCommand": "0x71001ba1b4",
+        "_Z22play_music_part_1c1ff0P12MusicCommand": "0x71001c1ff0"
       },
       "map": {
         "_ZZL12resolve_unitiE5local": "0x7100c44ce0",
