@@ -248,8 +248,12 @@ def candidates():
     rows = [r for r in csv.reader(open(M + r"\data\functions.csv")) if r[0].startswith("0x")]
     taken = {int(v, 16) - 0x7100000000 for u_ in units()["units"].values() for v in u_.get("functions", {}).values()}
     alo = int(os.environ.get("RV_ADDR_LO", "0"), 16); ahi = int(os.environ.get("RV_ADDR_HI", "ffffffff"), 16)
-    return {int(r[0], 16) - 0x7100000000 for r in rows if r[1] == "U" and lo <= int(r[2]) <= hi
-            and alo <= int(r[0], 16) - 0x7100000000 < ahi} - taken
+    found = {int(r[0], 16) - 0x7100000000 for r in rows if r[1] == "U" and lo <= int(r[2]) <= hi
+             and alo <= int(r[0], 16) - 0x7100000000 < ahi} - taken
+    if os.environ.get("RV_ONLY"):
+        # a file of hex image offsets (whitespace or comma separated): only these functions
+        found &= {int(x, 16) for x in re.split(r"[\s,]+", open(os.environ["RV_ONLY"], encoding="utf-8").read()) if x}
+    return found
 
 def final_unit(best):
     """Write every winner into UNIT under its knobs; drop any that do not match there."""

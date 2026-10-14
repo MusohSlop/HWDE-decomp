@@ -19,7 +19,9 @@ decompressed game image under `analysis/extracted/update/decompressed/` next to 
   that are clean on their own even when another function in it has an unresolved relocation; a chunk that times out
   or fails to compile is split until only the offending function is lost, and the log counts those losses.
   `RV_JOBS` sets the number of parallel jobs, `RV_TIMEOUT` the timeout, and `RV_ADDR_LO` and `RV_ADDR_HI` (hex
-  image offsets) restrict the address range. Timed-out chunks are logged to `build/rvpar_slow.txt`.
+  image offsets) restrict the address range; `RV_ONLY` names a file of hex image offsets to restrict the run to
+  (for a rerun of only the functions a generator change newly covers). Timed-out chunks are logged to
+  `build/rvpar_slow.txt`.
 - `mm_probe.py gen.py LO HI` classifies the first differing instruction pair of every mismatch.
 - `probe_one.py gen.py ADDR` generates one function into a scratch unit, prints its diff and source, and removes the
   scratch unit again.
@@ -52,7 +54,11 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   as one `sqrtf` call;
 - branches on float compares with `mi`/`pl`, and register-indexed and pre-indexed float loads and stores;
 - with the `copy64` knob, an `ldr x` whose value is only stored again is an 8-byte copy, written as
-  `__builtin_memcpy` on byte addresses so the fields on both sides keep their own types.
+  `__builtin_memcpy` on byte addresses so the fields on both sides keep their own types;
+- fields typed only by 8-byte constant stores (`str xzr`, `stp xzr, xzr` on stack objects) take the type of a
+  later narrower access, and the constant store is split over the fields it covers;
+- integer reads of different widths at one offset (Clang narrows a load whose value is only truncated) are one
+  field of the wider type, read back with each load's own type (knob `nowiden` turns this off).
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
