@@ -4,7 +4,7 @@
 
 void callee_389590(void* a, int b, int c);                      // 0x7100389590
 void callee_6f6fc(void* a, int b, int c);                       // 0x710006f6fc
-void callee_600870(void* a, int b, int c);                      // 0x7100600870
+extern "C" void* memcpy(void* to, const void* from, unsigned long size);
 struct Part14a874;
 void callee_157e74(Part14a874* part);                              // 0x7100157e74
 struct Part1523bc;
@@ -18,8 +18,15 @@ void callee_453cb8(int a);                                      // 0x7100453cb8
 void callee_453ce0(int a);                                      // 0x7100453ce0
 void callee_453d70(int a);                                      // 0x7100453d70
 void callee_453da0(int a);                                      // 0x7100453da0
-struct Part204710;
-void callee_600ab0(Part204710* part);                              // 0x7100600ab0
+namespace nn {
+namespace time {
+struct PosixTime;
+class StandardUserSystemClock {
+public:
+    static int GetCurrentTime(PosixTime* out);                              // 0x7100600ab0
+};
+}  // namespace time
+}  // namespace nn
 // Reached through the GOT slot at 0x7100c23278.
 extern unsigned char gData_c23278[];
 // Reached through the GOT slot at 0x7100c23458.
@@ -83,8 +90,8 @@ int offset_6ebbc(int value) {
 }
 
 // 0x7100075ac8
-void forward_75ac8(void* a, int b) {
-    callee_600870(a, b, 62);
+void forward_75ac8(void* to, const void* from) {
+    memcpy(to, from, 62);
 }
 
 struct Part14a874;
@@ -297,7 +304,7 @@ struct Holder204710 {
 
 // 0x7100204710
 void forward_204710(Holder204710* holder) {
-    callee_600ab0(reinterpret_cast<Part204710*>(holder->part));
+    nn::time::StandardUserSystemClock::GetCurrentTime(reinterpret_cast<nn::time::PosixTime*>(holder->part));
 }
 
 // 0x7100207648
