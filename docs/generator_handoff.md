@@ -7,11 +7,13 @@ State of the generated-unit work at commit time, for a session picking it up.
 The generator and its drivers are local scratch scripts, not part of this repository. They live in the
 session scratchpad under `%TEMP%\claude\F--Claude-Decomps-project1\a4886e8e-540c-4eed-9f51-3566a18d420d\scratchpad\tools`.
 
-- `gen_allNN.py` is the generator, one file per step (`gen_all46.py` is the latest). Each `patch_allNN.py`
+- `gen_allNN.py` is the generator, one file per step (`gen_all47.py` is the latest). Each `patch_allNN.py`
   derives `gen_allNN.py` from the previous one and documents the change in its first lines.
-- `run_variants8.py GEN UNIT LO HI` runs the generator over unmatched functions of LO to HI bytes. It tries each
-  knob set in turn, drops functions that fail to compile, and writes every exact match into UNIT under its
-  winning knobs. Mismatches are not kept.
+- `rv_par.py GEN UNIT LO HI [KNOBFILE]` runs the generator over unmatched functions of LO to HI bytes. It splits
+  the candidates into units of about 25 functions, compiles them in parallel with a timeout per compile, tries
+  each knob set in turn, and writes every exact match into UNIT under its winning knobs. Mismatches are not kept.
+  Chunks that time out are logged to `rvpar_slow.txt` next to the tools directory. `run_variants8.py` is the older
+  single-unit version.
 - `mm_probe.py GEN LO HI` classifies the first differing instruction pair of every mismatch.
 - `probe_one.py GEN ADDR` generates one function into a scratch unit, prints its diff and source, and removes the
   scratch unit again.
@@ -36,15 +38,14 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst` and
-`inlmask_N`.
+`inlmask_N`, `memberaddr`, `sortstores` and `vptrlast`. Functions whose generated source would exceed 2 MB
+are skipped (forking at every branch can grow a function's source exponentially).
 
 ## Queued next
 
-1. Test the two largest regular functions the generator now produces: `3b8504` (6,088 bytes, a constructor with
-   499 member constructor calls) and `462678` (12,936 bytes, 461 function-pointer lookups by name).
-2. Rerun `nm_probe.py` with the latest generator over the near misses and fix any that match in their
+1. Rerun `nm_probe.py` with the latest generator over the near misses and fix any that match in their
    hand-written units, keeping the hand-written names.
-3. Keep sampling the largest mismatch groups (`mm_probe.py`) for shared causes. The remaining big groups are
+2. Keep sampling the largest mismatch groups (`mm_probe.py`) for shared causes. The remaining big groups are
    mostly register allocation and scheduling inside large functions.
 
 ## Rules carried over
