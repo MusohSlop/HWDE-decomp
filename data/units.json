@@ -2908,7 +2908,10 @@
     "_ZN16Member5f79fc_538D1Ev": "0x71005f79fc",
     "_ZN16Member5f79fc_538D2Ev": "0x71005f79fc",
     "_ZN15Member5eb124_10D1Ev": "0x71005eb124",
-    "_ZN15Member5eb124_10D2Ev": "0x71005eb124"
+    "_ZN15Member5eb124_10D2Ev": "0x71005eb124",
+    "_ZN13SlotRootAde48D2Ev": "0x71000ade48",
+    "got:_ZTV13SlotBankAf10c": "0x7100c224e8",
+    "got:_ZTV13SlotBankB63f4": "0x7100c22748"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -8149,6 +8152,12 @@
         "_ZN13Members1af914D2Ev": "0x71001af914",
         "_ZN13Members23a4bcD2Ev": "0x710023a4bc",
         "_ZN13Members5eede8D2Ev": "0x71005eede8"
+      }
+    },
+    "misc/member_dtors2.cpp": {
+      "functions": {
+        "_ZN13Members217608D2Ev": "0x7100217608",
+        "_ZN13Members5d383cD2Ev": "0x71005d383c"
       }
     }
   }
