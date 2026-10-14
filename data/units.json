@@ -2340,7 +2340,10 @@
     "_Z16text_base_213d38i": "0x7100213d38",
     "_Z19fill_message_1b7dc4iiiiPiS_S_S_S_S_PPKci": "0x71001b7dc4",
     "_Z19post_message_1d7444P12MessageEntryiiiiiPKcii": "0x71001d7444",
-    "_Z20flush_effects_19a7f4P11EffectQueue": "0x710019a7f4"
+    "_Z20flush_effects_19a7f4P11EffectQueue": "0x710019a7f4",
+    "_Z17place_last_5a86c8P16LayoutPart59ade8P9LayoutKeyib": "0x71005a86c8",
+    "_Z17place_part_5a4848P16LayoutPart59ade8P9LayoutKeyib": "0x71005a4848",
+    "_Z19notify_owner_52c97cP17LayoutOwner59ade8m": "0x710052c97c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7343,6 +7346,11 @@
         ".rodata": "0x71007e6ca8",
         ".rodata.cst4": "0x710073bbd4",
         ".rodata.str1.1": "0x7100740512"
+      }
+    },
+    "misc/stack_layouts.cpp": {
+      "functions": {
+        "_Z20update_layout_59ade8P12Layout59ade8P9LayoutKey": "0x710059ade8"
       }
     }
   }
