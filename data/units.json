@@ -14838,7 +14838,10 @@
     "_Z13callee_4fe9bcPvl": "0x71004fe9bc",
     "_Z13callee_5705b4PvS_i": "0x71005705b4",
     "_Z13callee_59457cl": "0x710059457c",
-    "_Z13callee_5e500cPvii": "0x71005e500c"
+    "_Z13callee_5e500cPvii": "0x71005e500c",
+    "got:gGlobalc2cd68_4d5fec": "0x7100c2cd68",
+    "got:gGlobalc2cd68_4d9824": "0x7100c2cd68",
+    "_Z13callee_5af3e0Pv": "0x71005af3e0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -23184,6 +23187,15 @@
       },
       "functions": {
         "_Z11call_507f5cP11Arg507f5c_0P11Arg507f5c_1": "0x7100507f5c"
+      }
+    },
+    "misc/s2_functions7.cpp": {
+      "functions": {
+        "_Z11call_5afab4P11Arg5afab4_0P11Arg5afab4_1": "0x71005afab4"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
       }
     }
   }

@@ -15468,7 +15468,7 @@ Address,Quality,Size,Name
 0x71005af290,U,200,FUN_71005af290
 0x71005af3e0,U,616,FUN_71005af3e0
 0x71005af648,U,936,FUN_71005af648
-0x71005afab4,U,104,FUN_71005afab4
+0x71005afab4,O,104,_Z11call_5afab4P11Arg5afab4_0P11Arg5afab4_1
 0x71005afb1c,m,136,_Z19build_static_5afb1cv
 0x71005afba4,O,64,_Z11call_5afba4PvS_
 0x71005afbe4,O,64,_Z11call_5afbe4PvS_
