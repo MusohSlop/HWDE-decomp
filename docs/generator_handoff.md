@@ -19,7 +19,9 @@ decompressed game image under `analysis/extracted/update/decompressed/` next to 
   that are clean on their own even when another function in it has an unresolved relocation; a chunk that times out
   or fails to compile is split until only the offending function is lost, and the log counts those losses.
   `RV_JOBS` sets the number of parallel jobs, `RV_TIMEOUT` the timeout, and `RV_ADDR_LO` and `RV_ADDR_HI` (hex
-  image offsets) restrict the address range. Timed-out chunks are logged to `build/rvpar_slow.txt`.
+  image offsets) restrict the address range; `RV_ONLY` names a file of hex image offsets to restrict the run to
+  (for a rerun of only the functions a generator change newly covers). Timed-out chunks are logged to
+  `build/rvpar_slow.txt`.
 - `mm_probe.py gen.py LO HI` classifies the first differing instruction pair of every mismatch.
 - `probe_one.py gen.py ADDR` generates one function into a scratch unit, prints its diff and source, and removes the
   scratch unit again.
