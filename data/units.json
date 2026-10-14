@@ -2716,7 +2716,14 @@
     "_ZN12Root7a104_a0D2Ev": "0x710007a104",
     "_ZN13Root5c4278_30D2Ev": "0x71005c4278",
     "_ZN13Root3ccc84_b0D2Ev": "0x71003ccc84",
-    "_ZN13Root316aa4_40D2Ev": "0x7100316aa4"
+    "_ZN13Root316aa4_40D2Ev": "0x7100316aa4",
+    "_Z14support_4e5994P11Shape4e5994PK12SupportPointPv": "0x71004e5994",
+    "_Z14support_4ff0e8P11Shape4ff0e8PK12SupportPointPv": "0x71004ff0e8",
+    "_Z14support_50584cP11Shape50584cPK12SupportPointPv": "0x710050584c",
+    "_Z14support_506264P11Shape506264PK12SupportPointPv": "0x7100506264",
+    "_Z14support_5065fcP11Shape5065fcPK12SupportPointPv": "0x71005065fc",
+    "_Z14support_507140P11Shape507140PK12SupportPointPv": "0x7100507140",
+    "_Z14support_508314P11Shape508314PK12SupportPointPv": "0x7100508314"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7805,6 +7812,17 @@
         "_ZN15Destructedd4dd8D0Ev": "0x71000d4e1c",
         "_ZN15Destructedc70c0D0Ev": "0x71000c7104",
         "_ZN15Destructed99b78D0Ev": "0x7100099bbc"
+      }
+    },
+    "misc/plane_tests.cpp": {
+      "functions": {
+        "_Z18below_plane_4fe40cP11Shape506264PK5Plane": "0x71004fe40c",
+        "_Z18below_plane_4fe578P11Shape5065fcPK5Plane": "0x71004fe578",
+        "_Z18below_plane_4fe6e4P11Shape507140PK5Plane": "0x71004fe6e4",
+        "_Z18below_plane_4fe850P11Shape50584cPK5Plane": "0x71004fe850",
+        "_Z18below_plane_4fe9bcP11Shape508314PK5Plane": "0x71004fe9bc",
+        "_Z18below_plane_4feb28P11Shape4ff0e8PK5Plane": "0x71004feb28",
+        "_Z18below_plane_4fec94P11Shape4e5994PK5Plane": "0x71004fec94"
       }
     }
   }
