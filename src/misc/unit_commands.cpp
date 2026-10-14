@@ -1563,3 +1563,78 @@ void close_spot_points_1c0a98(const UnitCommand* command) {
             close_point_1a9ac4(point, get_battle_setup()->flags & 0x4000);
     }
 }
+void refresh_type_1704e0(unsigned int type);                                // 0x71001704e0
+
+// 0x71001c61f0
+void set_unit_damage_1c61f0(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    UnitRoster* roster = gShop;
+    UnitRecord* unit = roster->unit(id);
+    if (unit->team > 2)
+        return;
+    unsigned int percent = command->value;
+    unsigned int damage = 100 - (percent > 100 ? 100 : percent);
+    unit->damage = damage > 100 ? 100 : damage;
+    OfficerRecord* leader = roster->officer(unit->members.get(unit->leader));
+    unsigned int type = leader->type;
+    if (type_ready_172160(type)) {
+        refresh_type_1704e0(type);
+        start_type_170530(type);
+        return;
+    }
+    unsigned int health = 1000 - damage * 1000 / 100;
+    if (health < 1 || health > 1000)
+        health = 1;
+    unsigned int current = leader->health > health ? health : leader->health;
+    leader->health = current > 1000 ? 1000 : current;
+}
+
+// Same as resolve_unit_first, with the step read before the family test.
+static inline int resolve_unit_family(int id) {
+    if (id == 0x78) {
+        id = gRecord_c21698->players[0]->slot->unit;
+    } else {
+        int alias = id - 0x79;
+        if (static_cast<unsigned int>(alias) <= 3)
+            id = gRecord_c21698->slots[alias]->unit;
+    }
+    StepInfo* info = gGlobal_c22ca8->info;
+    int step = info ? info->step : 0;
+    if (step && (id & ~0xf) == 0x50)
+        id += step * 5 - 5;
+    return id;
+}
+
+struct TurnCommand {
+    int pad0;
+    int unit;                 // +04
+    unsigned int x;           // +08
+    unsigned int z;           // +0c
+    int heading;              // +10
+};
+
+static inline float wrap_angle(float angle) {
+    if (angle > 3.14159265f)
+        return angle - 6.28318531f;
+    return angle <= -3.14159265f ? angle + 6.28318531f : angle;
+}
+
+// 0x71001c02e4
+void turn_unit_1c02e4(const TurnCommand* command) {
+    int id = resolve_unit_family(command->unit);
+    float x = command->x * 100.0f;
+    float z = command->z * 100.0f;
+    MarkerPosition position;
+    position.w = 1.0f;
+    position.z = z;
+    position.x = x;
+    position.y = 0.0f;
+    float angle = wrap_angle(static_cast<float>(static_cast<unsigned int>(command->heading * 45)) * 0.017453292f);
+    UnitRecord* unit = gShop->unit(id);
+    if (unit->state_kind & 4)
+        move_unit_16af1c(id, &position, 1, angle);
+    if (unit->state_kind & 1)
+        move_unit_16ab4c(id, &position, 1, angle);
+    else
+        move_unit_16b1f8(id, &position, 0x80, angle);
+}

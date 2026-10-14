@@ -2974,7 +2974,8 @@
     "_Z18slot_locked_1a3240P11RosterTablei": "0x71001a3240",
     "_Z17team_group_197ac4P10RosterTeami": "0x7100197ac4",
     "_Z17open_point_1a99c8jb": "0x71001a99c8",
-    "_Z18close_point_1a9ac4jb": "0x71001a9ac4"
+    "_Z18close_point_1a9ac4jb": "0x71001a9ac4",
+    "_Z19refresh_type_1704e0j": "0x71001704e0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -8013,13 +8014,15 @@
         "_Z22set_unit_limits_1c5a9cPK11UnitCommand": "0x71001c5a9c",
         "_Z22set_group_value_1c3d38PK12GroupCommand": "0x71001c3d38",
         "_Z23open_spot_points_1c08fcPK11UnitCommand": "0x71001c08fc",
-        "_Z24close_spot_points_1c0a98PK11UnitCommand": "0x71001c0a98"
+        "_Z24close_spot_points_1c0a98PK11UnitCommand": "0x71001c0a98",
+        "_Z22set_unit_damage_1c61f0PK11UnitCommand": "0x71001c61f0",
+        "_Z16turn_unit_1c02e4PK11TurnCommand": "0x71001c02e4"
       },
       "map": {
         "_ZZL12resolve_unitiE5local": "0x7100c44ce0",
         "_ZGVZL12resolve_unitiE5local": "0x7100c44ce8",
         ".rodata": "0x71007e6ca8",
-        ".rodata.cst4": "0x710073bbd4",
+        ".rodata.cst4": "0x710073bae8",
         ".rodata.str1.1": "0x7100740512"
       }
     },
