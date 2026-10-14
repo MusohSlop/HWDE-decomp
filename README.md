@@ -1,11 +1,5 @@
 # Matching decompilation
 
-<!-- progress -->
-![Progress map](docs/progress.png)
-
-3.30% of bytes (185,044 of 5,603,025) and 22.63% of functions (3,911 of 17,282) match exactly; 82 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
-<!-- /progress -->
-
 This decomp is being entirely handled by Claude Opus 5.5. I am not a programmer or coder at all.
 
 > **About this repository.** This is the matching-decompilation part of a Hyrule Warriors: Definitive Edition (update 1.0.1, `main`) project, published on its own. It contains only hand-written C++ source, the matching tools and small data files (function addresses, sizes and names). It does **not** include the game, any extracted game files or executables, any decryption keys, or the raw decompiler exports. To build and check anything you need your own legally obtained copy of the game and must extract the update's `main` module yourself; the tools expect it at `analysis/extracted/update/decompressed/main.memory.bin` next to this folder. References below to `src/`, `docs/` and `handoff/` point to the larger private project and are not part of this repository.
