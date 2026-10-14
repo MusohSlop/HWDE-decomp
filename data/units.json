@@ -5596,7 +5596,29 @@
     "_Z13callee_1f79a4PvS_": "0x71001f79a4",
     "_Z13callee_387784iii": "0x7100387784",
     "_Z13callee_391aa0i": "0x7100391aa0",
-    "_Z13callee_391aa8Pv": "0x7100391aa8"
+    "_Z13callee_391aa8Pv": "0x7100391aa8",
+    "gLocal7d7672_2a6304": "0x71007d7672",
+    "got:gGlobalc21690_bef00": "0x7100c21690",
+    "got:gGlobalc21690_bf000": "0x7100c21690",
+    "got:gGlobalc21c20_560dc": "0x7100c21c20",
+    "got:gGlobalc22f00_2b3350": "0x7100c22f00",
+    "got:gGlobalc22f00_2b8068": "0x7100c22f00",
+    "got:gGlobalc2d3e8_56ebbc": "0x7100c2d3e8",
+    "_Z12callee_313dcl": "0x71000313dc",
+    "_Z12callee_45fd0lii": "0x7100045fd0",
+    "_Z12callee_46090lii": "0x7100046090",
+    "_Z12callee_56184Pv": "0x7100056184",
+    "_Z12callee_6ed14ii": "0x710006ed14",
+    "_Z12callee_6ed60ii": "0x710006ed60",
+    "_Z12callee_99fb8it": "0x7100099fb8",
+    "_Z13callee_51c698Pvliii": "0x710051c698",
+    "_Z13callee_531be8PvS_ilS_": "0x7100531be8",
+    "_Z13callee_531e1cPv": "0x7100531e1c",
+    "_Z13callee_545394Pvi": "0x7100545394",
+    "_Z13callee_5454f4PvS_S_S_": "0x71005454f4",
+    "_Z13callee_56f7c4PvS_S_S_": "0x710056f7c4",
+    "_Z13callee_572d84PvS_": "0x7100572d84",
+    "_Z13callee_572f7cPvS_S_S_ll": "0x7100572f7c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -12176,6 +12198,31 @@
         "_Z11call_4e1604P11Arg4e1604_0": "0x71004e1604",
         "_Z11call_5217c8P11Arg5217c8_0": "0x71005217c8",
         "_Z11call_521accP11Arg521acc_0": "0x7100521acc"
+      }
+    },
+    "misc/variant_functions2.cpp": {
+      "functions": {
+        "_Z10call_2558cP10Arg2558c_0i": "0x710002558c",
+        "_Z10call_5287cP10Arg5287c_0": "0x710005287c",
+        "_Z10call_581f4P10Arg581f4_0": "0x71000581f4",
+        "_Z10call_58a8cP10Arg58a8c_0": "0x7100058a8c",
+        "_Z10call_599c8P10Arg599c8_0": "0x71000599c8",
+        "_Z10call_c0b88P10Argc0b88_0": "0x71000c0b88",
+        "_Z10call_cafd4P10Argcafd4_0": "0x71000cafd4",
+        "_Z11call_1fbbb0P11Arg1fbbb0_0": "0x71001fbbb0",
+        "_Z11call_1fbbd0P11Arg1fbbd0_0": "0x71001fbbd0",
+        "_Z11call_2a6304P11Arg2a6304_0": "0x71002a6304",
+        "_Z11call_4e261cP11Arg4e261c_0": "0x71004e261c",
+        "_Z11call_545310P11Arg545310_0PvS1_S1_": "0x7100545310",
+        "_Z11call_5c216cP11Arg5c216c_0PvS1_": "0x71005c216c",
+        "_Z11call_5c21a4P11Arg5c21a4_0PvS1_": "0x71005c21a4",
+        "_Z11call_5c21dcP11Arg5c21dc_0PvS1_": "0x71005c21dc",
+        "_Z11call_5c2214P11Arg5c2214_0PvS1_S1_": "0x71005c2214",
+        "_Z11call_5c5b88P11Arg5c5b88_0P11Arg5c5b88_1": "0x71005c5b88",
+        "_Z11call_5c5be4P11Arg5c5be4_0P11Arg5c5be4_1": "0x71005c5be4",
+        "_Z11call_5d6094P11Arg5d6094_0": "0x71005d6094",
+        "_Z11call_5dacccP11Arg5daccc_0": "0x71005daccc",
+        "_Z11call_5db018P11Arg5db018_0PvS1_S1_": "0x71005db018"
       }
     }
   }
