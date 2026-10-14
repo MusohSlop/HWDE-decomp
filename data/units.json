@@ -1589,7 +1589,6 @@
     "_Z20finish_update_5c7d4cP12UpdatedModel": "0x71005c7d4c",
     "_Z20finish_update_557dfcP12UpdatedModel": "0x7100557dfc",
     "_ZN11BoneBinding6rebindEv": "0x71005a9be8",
-    "_Z9load_posePviiiiiii": "0x710059685c",
     "_ZN12UpdatedModel12prepare_poseEv": "0x710059469c",
     "_ZN12UpdatedModel11bones_movedEv": "0x7100072e2c",
     "_Z9bind_partP11BindContextP8BindPartjl": "0x710059c560",
@@ -2180,7 +2179,19 @@
     "got:gNotifyContext_c2dca0": "0x7100c2dca0",
     "got:_ZTV11Queue5325e4": "0x7100c2d288",
     "got:_ZTV11Owned5c2d24": "0x7100c2db68",
-    "got:_ZTV10Pair_ade30": "0x7100c224d0"
+    "got:_ZTV10Pair_ade30": "0x7100c224d0",
+    "gRandomSeed": "0x7100cf03f8",
+    "got:gSettings3fa4c8": "0x7100c2b700",
+    "got:gUnmap_c2bc40": "0x7100c2bc40",
+    "got:gFree_c2bc48": "0x7100c2bc48",
+    "got:gCloseA_c2bdb0": "0x7100c2bdb0",
+    "got:gCloseB_c2bdb8": "0x7100c2bdb8",
+    "_Z17reset_part_46611cPvS_": "0x710046611c",
+    "_Z17reset_part_46637cPvS_": "0x710046637c",
+    "_Z17reset_part_46653cPvS_": "0x710046653c",
+    "_Z17reset_part_4668d8PvS_": "0x71004668d8",
+    "_Z17reset_part_4668f4PvS_": "0x71004668f4",
+    "_Z9load_posePviiiiiii": "0x710059685c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -6922,6 +6933,18 @@
         "_ZN11Owned5c2d24C2Ev": "0x71005c2d24",
         "_ZN10Pair_ade30C2Ev": "0x71000ade30",
         "_Z10mark_527a0P9Once527a0": "0x71000527a0"
+      }
+    },
+    "misc/ranked_singles3.cpp": {
+      "functions": {
+        "_Z12random_belowi": "0x7100459bd8",
+        "_Z15set_mode_3fa4c8j": "0x71003fa4c8",
+        "_Z15placement_6e070P12Placement6e0iPvPiS2_": "0x710006e070",
+        "_Z15placement_6e0b0P12Placement6e0iPvPiS2_": "0x710006e0b0",
+        "_Z20refresh_target_1928cP10Probe1928c": "0x710001928c",
+        "_Z14release_461538P11Owner461538": "0x7100461538",
+        "_Z12close_4623d4P11Owner4623d4": "0x71004623d4",
+        "_Z20reset_section_5f8f78P13Section5f8f78Pv": "0x71005f8f78"
       }
     }
   }
