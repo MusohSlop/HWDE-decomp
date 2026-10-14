@@ -7766,7 +7766,14 @@
         "_ZN15Destructed30418D2Ev": "0x7100030418",
         "_ZN15Destructed2fd40D2Ev": "0x710002fd40",
         "_ZN15Destructed2f0e8D2Ev": "0x710002f0e8",
-        "_ZN15Destructed2bd5cD2Ev": "0x710002bd5c"
+        "_ZN15Destructed2bd5cD2Ev": "0x710002bd5c",
+        "_ZN15Destructed2ffe0D0Ev": "0x7100030058",
+        "_ZN15Destructed2f628D0Ev": "0x710002f6a0",
+        "_ZN15Destructed30418D0Ev": "0x710003048c",
+        "_ZN15Destructed2fd40D0Ev": "0x710002fdb4",
+        "_ZN15Destructed2f0e8D0Ev": "0x710002f15c",
+        "_ZN15Destructed30690D0Ev": "0x7100030704",
+        "_ZN15Destructed30554D0Ev": "0x71000305c8"
       }
     },
     "misc/destructors4.cpp": {
@@ -7792,7 +7799,12 @@
         "_ZN16Destructed49d260D2Ev": "0x710049d260",
         "_ZN16Destructed49d21cD2Ev": "0x710049d21c",
         "_ZN16Destructed33918cD2Ev": "0x710033918c",
-        "_ZN16Destructed333318D2Ev": "0x7100333318"
+        "_ZN16Destructed333318D2Ev": "0x7100333318",
+        "_ZN15Destructed76274D0Ev": "0x71000762c0",
+        "_ZN16Destructed32d954D0Ev": "0x710032d9a0",
+        "_ZN15Destructedd4dd8D0Ev": "0x71000d4e1c",
+        "_ZN15Destructedc70c0D0Ev": "0x71000c7104",
+        "_ZN15Destructed99b78D0Ev": "0x7100099bbc"
       }
     }
   }

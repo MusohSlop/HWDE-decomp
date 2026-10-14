@@ -3,6 +3,12 @@
 // then its second base if it has one, and tail-calls its root base's destructor. Classes are named
 // after the destructor's address. Status: matching/README.md.
 
+class DefaultHeap {
+public:
+    void release(void* ptr, int a, int b);                                   // 0x710045c2f4
+};
+DefaultHeap* get_default_heap();                                            // 0x710045c96c
+
 class Root38d054_258 {
 public:
     virtual ~Root38d054_258();                      // 0x710038d054
@@ -39,6 +45,7 @@ public:
 class Root7a104_b0 {
 public:
     virtual ~Root7a104_b0();                          // 0x710007a104
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
 
     unsigned char pad8[0xa8];
 };
@@ -60,6 +67,7 @@ public:
 class Root316aa4_50 {
 public:
     virtual ~Root316aa4_50();                        // 0x7100316aa4
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
 
     unsigned char pad8[0x48];
 };
@@ -74,6 +82,7 @@ public:
 class Rootcb000_48 {
 public:
     virtual ~Rootcb000_48();                          // 0x71000cb000
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
 
     unsigned char pad8[0x40];
 };
@@ -81,6 +90,7 @@ public:
 class Root7a104_a0 {
 public:
     virtual ~Root7a104_a0();                          // 0x710007a104
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
 
     unsigned char pad8[0x98];
 };
@@ -440,6 +450,7 @@ Destructedd4dd8::~Destructedd4dd8() {}
 class Destructedc70c0 {
 public:
     virtual ~Destructedc70c0();
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
     virtual void key_function();
 
     unsigned char pad8[0x58];       // +8

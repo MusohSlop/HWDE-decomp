@@ -3,9 +3,16 @@
 // own bases, then the second base. Classes are named after the destructor's address. Status:
 // matching/README.md.
 
+class DefaultHeap {
+public:
+    void release(void* ptr, int a, int b);                                   // 0x710045c2f4
+};
+DefaultHeap* get_default_heap();                                            // 0x710045c96c
+
 class DestructRoot16 {
 public:
     virtual ~DestructRoot16();                                              // 0x7100018580
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
 
     unsigned char pad8[8];
 };
@@ -13,6 +20,7 @@ public:
 class DestructRoot8 {
 public:
     virtual ~DestructRoot8();                                               // 0x7100018580
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
 };
 
 struct Part23818_eff0 { ~Part23818_eff0(); unsigned char data[0xeff0]; };      // 0x7100023818
