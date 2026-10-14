@@ -585,6 +585,29 @@ def gen_function(a, ins):
         """x / d and x % d for the multiply-high forms of an unsigned 32-bit division by a constant."""
         if v_[0] != "bin":
             return v_
+        if v_[1] == ">>" and v_[5] == "lsr" and v_[4] == "x" and v_[3][0] == "const" and v_[2][0] == "umulh" \
+                and "noudiv64" not in knobs:
+            s_ = v_[3][1]
+            for a_, b_ in ((v_[2][1], v_[2][2]), (v_[2][2], v_[2][1])):
+                if b_[0] != "const":
+                    continue
+                M_ = b_[1] & ((1 << 64) - 1)
+                pre_ = 0
+                x_ = a_
+                if a_[0] == "bin" and a_[1] == ">>" and a_[5] == "lsr" and a_[3][0] == "const":
+                    pre_, x_ = a_[3][1], a_[2]
+                if M_ == 0:
+                    continue
+                d_ = round((1 << (64 + s_ + pre_)) / M_)
+                if d_ < 2:
+                    continue
+                import random as _r
+                rng_ = _r.Random(d_)
+                xs_ = [0, 1, d_ - 1, d_, d_ + 1, (1 << 64) - 1, (1 << 63), (1 << 32) - 1] + [rng_.getrandbits(64) for _ in range(3000)] \
+                      + [rng_.getrandbits(64) // d_ * d_ + k_ for k_ in (-1, 0, 1) for _ in range(300)]
+                if all((((x2_ & ((1 << 64) - 1)) >> pre_) * M_ >> (64 + s_)) == (x2_ & ((1 << 64) - 1)) // d_ for x2_ in xs_):
+                    return ("udiv64", x_, d_)
+            return v_
         if v_[1] == ">>" and v_[5] == "lsr" and v_[4] == "x" and v_[3][0] == "const" and v_[3][1] >= 32 \
                 and v_[2][0] == "bin" and v_[2][1] == "*":
             sh_ = v_[3][1]
@@ -600,6 +623,10 @@ def gen_function(a, ins):
                 if d_ >= 2 and M_ == -(-(1 << sh_) // d_) and 0 <= M_ * d_ - (1 << sh_) <= 1 << (sh_ - 32):
                     return ("udiv", x_, d_)
             return v_
+        if v_[1] == "-" and v_[4] in ("x", "w") and "noudiv64" not in knobs:
+            m_ = times_(v_[3])
+            if m_ is not None and m_[0][0] == "udiv64" and m_[0][2] == m_[1] and m_[0][1] == v_[2]:
+                return ("urem64", m_[0][1], m_[1])
         if v_[1] == "-" and v_[4] == "w":
             m_ = times_(v_[3])
             if m_ is not None and m_[0][0] == "udiv" and m_[0][2] == m_[1] and strip_u32_(m_[0][1]) == strip_u32_(v_[2]):
@@ -2512,6 +2539,10 @@ def gen_function(a, ins):
                 y = ("ext", "unsigned int" if m == "umull" else "int", use(regs, ops[2]))
                 regs[dn] = ("bin", "*", x, y, "x", "mul")
                 if dn < 8: written.add(dn)
+            elif m == "umulh" and len(ops) == 3 and "noudiv64" not in knobs:
+                dn, w = regname(ops[0])
+                regs[dn] = ("umulh", use(regs, ops[1]), use(regs, ops[2]))
+                if dn < 8: written.add(dn)
             elif m == "msub" and len(ops) == 4 and "nodivmagic" not in knobs:
                 dn, w = regname(ops[0])
                 x_ = use(regs, ops[1]); y_ = use(regs, ops[2]); z_ = use(regs, ops[3])
@@ -2726,7 +2757,7 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] == "copy":
             kids = [v[1]]
-        if v[0] in ("vlane", "vecu", "vpart", "udiv", "urem", "sdiv", "srem"):
+        if v[0] in ("vlane", "vecu", "vpart", "udiv", "urem", "sdiv", "srem", "udiv64", "urem64"):
             kids = [v[1]]
         if v[0] == "vins":
             kids = [v[1], v[2]]
@@ -2831,7 +2862,11 @@ def gen_function(a, ins):
         if v[0] == "vecu":
             return "VecU"
         if v[0] in ("udiv", "urem", "sdiv", "srem"):
-            return "int"  # below 2**31: the divisor is at least 2
+            return "int"
+        if v[0] in ("udiv64", "urem64"):
+            return "unsigned long"
+        if v[0] == "umulh":
+            raise Fail("umulh")  # below 2**31: the divisor is at least 2
         if v[0] == "f2i":
             return "long" if v[3] == "x" else "int"
         if v[0] == "stackaddr":
@@ -3001,6 +3036,20 @@ def gen_function(a, ins):
             return f"{expr(v[1], False)}[{v[2]}]"
         if v[0] == "vparam":
             return f"p{v[1]}.v"
+        if v[0] == "udiv64":
+            xs_ = expr(v[1])
+            if vtype(v[1]).endswith("*"):
+                xs_ = f"reinterpret_cast<unsigned long>({xs_})"
+            s_ = f"static_cast<unsigned long>({xs_}) / {v[2]}ul"
+            return s_ if top else f"({s_})"
+        if v[0] == "urem64":
+            xs_ = expr(v[1])
+            if vtype(v[1]).endswith("*"):
+                xs_ = f"reinterpret_cast<unsigned long>({xs_})"
+            s_ = f"static_cast<unsigned long>({xs_}) % {v[2]}ul"
+            return s_ if top else f"({s_})"
+        if v[0] == "umulh":
+            raise Fail("umulh")
         if v[0] in ("sdiv", "srem"):
             if vtype(v[1]).endswith("*"):
                 raise Fail("division of a pointer")

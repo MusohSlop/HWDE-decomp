@@ -92,7 +92,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   is `x % d`; `msub` is supported as `c - a*b`;
 - signed division and modulo by a constant (knob `nosdivmagic`): `smull` by a magic number with Clang's sign fix
   (`asr` of the product plus its sign bit, or `asr` of high half plus x plus `lsr #31`), checked against truncating
-  division, is `x / d`, and `x - d * (x / d)` is `x % d`.
+  division, is `x / d`, and `x - d * (x / d)` is `x % d`;
+- 64-bit unsigned division and modulo by a constant (knob `noudiv64`): `umulh` by a magic number and a shift (after a
+  shift of x for an even divisor), checked on extreme and random values, is `x / d`, and `x - d * (x / d)` is
+  `x % d`.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
