@@ -13649,7 +13649,53 @@
     "_Z13callee_11a374l": "0x710011a374",
     "_Z13callee_11a78cl": "0x710011a78c",
     "_Z13callee_11ae00l": "0x710011ae00",
-    "_Z13callee_3aea0cPv": "0x71003aea0c"
+    "_Z13callee_3aea0cPv": "0x71003aea0c",
+    "gLocal740dcf_342498": "0x7100740dcf",
+    "gLocal7d878a_342498": "0x71007d878a",
+    "gLocal7d8905_342498": "0x71007d8905",
+    "gLocal7d8916_342498": "0x71007d8916",
+    "got:gGlobalc216f8_3e82b0": "0x7100c216f8",
+    "got:gGlobalc216f8_c8e30": "0x7100c216f8",
+    "got:gGlobalc21880_3e82b0": "0x7100c21880",
+    "got:gGlobalc219e0_46284": "0x7100c219e0",
+    "got:gGlobalc21ad8_46284": "0x7100c21ad8",
+    "got:gGlobalc21df0_fddc0": "0x7100c21df0",
+    "got:gGlobalc221f0_7b288": "0x7100c221f0",
+    "got:gGlobalc22308_f8fac": "0x7100c22308",
+    "got:gGlobalc228e8_c8e30": "0x7100c228e8",
+    "got:gGlobalc229f0_d4d40": "0x7100c229f0",
+    "got:gGlobalc22a00_342498": "0x7100c22a00",
+    "got:gGlobalc22d58_3e981c": "0x7100c22d58",
+    "got:gGlobalc22f00_3b464c": "0x7100c22f00",
+    "got:gGlobalc23270_2074d0": "0x7100c23270",
+    "got:gGlobalc232c0_20b3e8": "0x7100c232c0",
+    "got:gGlobalc2ab80_2da2b8": "0x7100c2ab80",
+    "got:gGlobalc2ab88_2da2b8": "0x7100c2ab88",
+    "got:gGlobalc2af28_342498": "0x7100c2af28",
+    "got:gGlobalc2af30_342498": "0x7100c2af30",
+    "got:gGlobalc2b430_3b464c": "0x7100c2b430",
+    "got:gGlobalc2b690_3e82b0": "0x7100c2b690",
+    "_Z12callee_fde20Pv": "0x71000fde20",
+    "_Z12callee_fdee0Pv": "0x71000fdee0",
+    "_Z13callee_209dacllPv": "0x7100209dac",
+    "_Z13callee_217d9ci": "0x7100217d9c",
+    "_Z13callee_2249a0i": "0x71002249a0",
+    "_Z13callee_2249a8i": "0x71002249a8",
+    "_Z13callee_37df44l": "0x710037df44",
+    "_Z13callee_39dfc4lPv": "0x710039dfc4",
+    "_Z13callee_39dff0lPv": "0x710039dff0",
+    "_Z13callee_3d12b8l": "0x71003d12b8",
+    "_Z13callee_416b28Pvf": "0x7100416b28",
+    "_Z13callee_416cdcPvf": "0x7100416cdc",
+    "_Z13callee_5e66ccPvi": "0x71005e66cc",
+    "_Z13callee_4a1c70Pv": "0x71004a1c70",
+    "_Z13callee_52effcPvff": "0x710052effc",
+    "_Z13callee_37df44Pv": "0x710037df44",
+    "_Z13callee_38c480PviS_l": "0x710038c480",
+    "_Z13callee_39dfc4PvS_": "0x710039dfc4",
+    "_Z13callee_39dff0PvS_": "0x710039dff0",
+    "_Z13callee_3d12b8Pv": "0x71003d12b8",
+    "_Z13callee_5a42fcPviS_i": "0x71005a42fc"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -21779,6 +21825,27 @@
     "misc/variant_functions50.cpp": {
       "functions": {
         "_Z10call_e2148P10Arge2148_0": "0x71000e2148"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
+      }
+    },
+    "misc/variant_functions51.cpp": {
+      "functions": {
+        "_Z10call_7b288P10Arg7b288_0": "0x710007b288",
+        "_Z10call_c8e30P10Argc8e30_0": "0x71000c8e30",
+        "_Z10call_fddc0P10Argfddc0_0": "0x71000fddc0",
+        "_Z11call_164944P11Arg164944_0f": "0x7100164944",
+        "_Z11call_1649a0P11Arg1649a0_0f": "0x71001649a0",
+        "_Z11call_1a8510P11Arg1a8510_0": "0x71001a8510",
+        "_Z11call_379e44P11Arg379e44_0": "0x7100379e44",
+        "_Z11call_3dd514P11Arg3dd514_0": "0x71003dd514",
+        "_Z11call_3dd520P11Arg3dd520_0P11Arg3dd520_1iiif": "0x71003dd520",
+        "_Z11call_3dd584P11Arg3dd584_0PvS1_S1_S1_S1_iiif": "0x71003dd584",
+        "_Z11call_43b408P11Arg43b408_0": "0x710043b408",
+        "_Z11call_4a39d4P11Arg4a39d4_0P11Arg4a39d4_1": "0x71004a39d4",
+        "_Z11call_4a3a10P11Arg4a3a10_0P11Arg4a3a10_1": "0x71004a3a10",
+        "_Z11call_4a3a4cP11Arg4a3a4c_0P11Arg4a3a4c_1": "0x71004a3a4c"
       },
       "map": {
         ".rodata.cst4": "0x710073b000"

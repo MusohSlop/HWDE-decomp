@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-8.26% of bytes (462,532 of 5,603,025) and 37.75% of functions (6,524 of 17,282) match exactly; 197 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+8.27% of bytes (463,508 of 5,603,025) and 37.83% of functions (6,538 of 17,282) match exactly; 197 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-6,534 of 6,731 attempted functions match: 6,524 inventory functions (462,532 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 197 are near misses, all `m`.
+6,548 of 6,745 attempted functions match: 6,538 inventory functions (463,508 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 197 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -376,6 +376,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 12 of 12 in `misc/variant_functions48.cpp` | the parallel variant search over 8 to 1,500 bytes with member addresses and field-order stores combined with the earlier knobs | match |
 | 23 of 23 in `misc/variant_functions49.cpp` | the parallel variant search over 8 to 1,500 bytes with byte arrays inside elements (`E[i].field_c[j]` with an unscaled index), 32-bit constants extended into offsets, registers first written in a loop body kept as its last value, and loop pointers moved back by whole elements | match |
 | 1 of 1 in `misc/variant_functions50.cpp` | the parallel variant search with loops Clang unrolled by two written back as single-element loops (each statement's twin half a step further on is dropped, the element halved and the count doubled) | match |
+| 14 of 14 in `misc/variant_functions51.cpp` | the parallel variant search with 4-byte fields read both as `float` and as `int` written as reinterpreted accesses (a union), and constant stores Clang merged over narrower fields split back along those fields | match |
 | 35 of 35 in `misc/variant_functions16.cpp` | the variant search with library calls named after their imports (stub addresses mapped through the PLT relocations to the dynamic symbol names): C functions with their prototypes and `nn::os`/`nn::oe`/`nn::util` functions declared in their namespaces | match |
 | 107 of 107 in `misc/variant_functions15.cpp` | the variant search with element arrays that start inside a struct (the element base shifted by whole strides) and unscaled indexes on wider accesses as byte offsets (`*reinterpret_cast<T*>(&field[i])`) | match |
 | 20 of 20 in `misc/variant_functions14.cpp` | the variant search with float register copies through the vector unit (`mov v8.16b, v0.16b`) and `ccmp` chains written as `&&`/`||` (the `nzcv` immediate decides which) | match |
