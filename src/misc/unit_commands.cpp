@@ -517,3 +517,74 @@ void set_unit_condition_1c4888(const UnitCommand* command) {
     leader->level = level > leader->max_level ? leader->max_level : level;
     sync_officer_1adf80(leader_id);
 }
+void release_unit_113c40(void* system, int unit, int flag);                 // 0x7100113c40
+void release_unit_f2404(void* system, int unit, int flag);                  // 0x71000f2404
+void queue_unit_effect_19a858(EffectQueue* queue, const float* position, int a, void* b, int c); // 0x710019a858
+
+// 0x71001b91a0
+void dismiss_group_1b91a0(const UnitCommand* command) {
+    if (stage_busy_1d740c(gGlobal_c22ca8))
+        return;
+    unsigned int id = resolve_unit(command->unit);
+    if (id > 0xf5)
+        return;
+    UnitRoster* roster = gShop;
+    if (roster->units[id].team > 2)
+        return;
+    if (!command->value && roster->units[id].state_kind)
+        return;
+    const float* position = roster->units[id].position;
+    if (current_music_6b40()) {
+        BattleMusic* music = current_music_6b40();
+        if (music_flag_20d9c8(music, 0) && music->level >= 0) {
+            BattleMusic* again = current_music_6b40();
+            int calm = music_flag_20d9c8(again, 0) ? again->level < 3 : 1;
+            if (calm && gShop->units[id].team)
+                return;
+        }
+    }
+    release_unit_113c40(gGlobal_c22a60, id, 1);
+    release_unit_f2404(gGlobal_c22be8, id, 1);
+    queue_unit_effect_19a858(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), position, 1, nullptr, 5);
+}
+struct TeamUnitCommand {
+    int pad0;
+    int unit;                 // +04
+    int teams[2];             // +08
+    int force;                // +10
+};
+
+// 0x71001b9950
+void dismiss_team_unit_1b9950(const TeamUnitCommand* command) {
+    if (stage_busy_1d740c(gGlobal_c22ca8))
+        return;
+    unsigned int id = resolve_unit(command->unit);
+    if (id > 0xf5)
+        return;
+    UnitRoster* roster = gShop;
+    unsigned int team = roster->units[id].team;
+    if (team > 2)
+        return;
+    unsigned char matches = 0;
+    for (int i = 0; i < 2; ++i) {
+        if (command->teams[i] != -1)
+            matches |= static_cast<unsigned int>(command->teams[i]) == team;
+    }
+    if (!matches)
+        return;
+    if (!command->force && roster->units[id].state_kind)
+        return;
+    const float* position = roster->units[id].position;
+    if (current_music_6b40()) {
+        BattleMusic* music = current_music_6b40();
+        if (music_flag_20d9c8(music, 0) && music->level >= 0) {
+            BattleMusic* again = current_music_6b40();
+            int calm = music_flag_20d9c8(again, 0) ? again->level < 3 : 1;
+            if (calm && gShop->units[id].team)
+                return;
+        }
+    }
+    release_unit_113c40(gGlobal_c22a60, id, 1);
+    release_unit_f2404(gGlobal_c22be8, id, 1);
+    queue_unit_effect_19a858(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), position, 1, nullptr, 5);
+}

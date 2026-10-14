@@ -2331,7 +2331,10 @@
     "_Z22set_officer_mode_3e27cjii": "0x710003e27c",
     "_Z23raise_unit_flags_133cf8P9UnitState": "0x7100133cf8",
     "_Z16load_type_17097cj": "0x710017097c",
-    "_Z17start_type_170530j": "0x7100170530"
+    "_Z17start_type_170530j": "0x7100170530",
+    "_Z18release_unit_f2404Pvii": "0x71000f2404",
+    "_Z19release_unit_113c40Pvii": "0x7100113c40",
+    "_Z24queue_unit_effect_19a858P11EffectQueuePKfiPvi": "0x710019a858"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7323,7 +7326,9 @@
         "_Z19dismiss_unit_1c2ef8PK11UnitCommand": "0x71001c2ef8",
         "_Z23set_player_gauge_1c260cPK11UnitCommand": "0x71001c260c",
         "_Z20set_unit_mode_1c4478PK11UnitCommand": "0x71001c4478",
-        "_Z25set_unit_condition_1c4888PK11UnitCommand": "0x71001c4888"
+        "_Z25set_unit_condition_1c4888PK11UnitCommand": "0x71001c4888",
+        "_Z20dismiss_group_1b91a0PK11UnitCommand": "0x71001b91a0",
+        "_Z24dismiss_team_unit_1b9950PK15TeamUnitCommand": "0x71001b9950"
       },
       "map": {
         "_ZZL12resolve_unitiE5local": "0x7100c44ce0",
