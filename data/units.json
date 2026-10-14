@@ -23165,6 +23165,15 @@
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
       }
+    },
+    "misc/s2_functions6.cpp": {
+      "functions": {
+        "_Z11call_507f5cP11Arg507f5c_0P11Arg507f5c_1": "0x7100507f5c"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      }
     }
   }
 }
