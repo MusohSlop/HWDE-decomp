@@ -2975,7 +2975,13 @@
     "_Z17team_group_197ac4P10RosterTeami": "0x7100197ac4",
     "_Z17open_point_1a99c8jb": "0x71001a99c8",
     "_Z18close_point_1a9ac4jb": "0x71001a9ac4",
-    "_Z19refresh_type_1704e0j": "0x71001704e0"
+    "_Z19refresh_type_1704e0j": "0x71001704e0",
+    "got:gItems_c216a0": "0x7100c216a0",
+    "_Z17field_rank_1f4b1ci": "0x71001f4b1c",
+    "_Z18type_health_17097cj": "0x710017097c",
+    "_Z21set_item_field_194778P10UnitRecordi": "0x7100194778",
+    "_Z22set_type_health_170530jf": "0x7100170530",
+    "_Z22swap_field_rank_1f4b40ii": "0x71001f4b40"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -8016,7 +8022,10 @@
         "_Z23open_spot_points_1c08fcPK11UnitCommand": "0x71001c08fc",
         "_Z24close_spot_points_1c0a98PK11UnitCommand": "0x71001c0a98",
         "_Z22set_unit_damage_1c61f0PK11UnitCommand": "0x71001c61f0",
-        "_Z16turn_unit_1c02e4PK11TurnCommand": "0x71001c02e4"
+        "_Z16turn_unit_1c02e4PK11TurnCommand": "0x71001c02e4",
+        "_Z24set_leader_health_1c5d60PK11UnitCommand": "0x71001c5d60",
+        "_Z24assign_item_field_1c58d4PK11UnitCommand": "0x71001c58d4",
+        "_Z23step_group_value_1c3ec0PK16GroupStepCommand": "0x71001c3ec0"
       },
       "map": {
         "_ZZL12resolve_unitiE5local": "0x7100c44ce0",

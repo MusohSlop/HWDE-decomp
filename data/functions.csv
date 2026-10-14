@@ -5188,7 +5188,7 @@ Address,Quality,Size,Name
 0x71001c37f4,m,344,_Z20set_team_flag_1c37f4PK11UnitCommand
 0x71001c394c,U,1004,FUN_71001c394c
 0x71001c3d38,m,392,_Z22set_group_value_1c3d38PK12GroupCommand
-0x71001c3ec0,U,480,FUN_71001c3ec0
+0x71001c3ec0,m,480,_Z23step_group_value_1c3ec0PK16GroupStepCommand
 0x71001c40a0,U,984,FUN_71001c40a0
 0x71001c4478,O,636,_Z20set_unit_mode_1c4478PK11UnitCommand
 0x71001c46f4,O,404,_Z20order_members_1c46f4PK11UnitCommand
@@ -5197,10 +5197,10 @@ Address,Quality,Size,Name
 0x71001c4c5c,m,464,_Z22set_unit_follow_1c4c5cPK11UnitCommand
 0x71001c4e2c,U,2436,FUN_71001c4e2c
 0x71001c57b0,O,292,_Z21set_item_field_1c57b0PK11UnitCommand
-0x71001c58d4,U,456,FUN_71001c58d4
+0x71001c58d4,m,456,_Z24assign_item_field_1c58d4PK11UnitCommand
 0x71001c5a9c,O,408,_Z22set_unit_limits_1c5a9cPK11UnitCommand
 0x71001c5c34,O,300,_Z22set_spot_limits_1c5c34PK11UnitCommand
-0x71001c5d60,U,468,FUN_71001c5d60
+0x71001c5d60,O,468,_Z24set_leader_health_1c5d60PK11UnitCommand
 0x71001c5f34,U,700,FUN_71001c5f34
 0x71001c61f0,O,420,_Z22set_unit_damage_1c61f0PK11UnitCommand
 0x71001c6394,U,540,FUN_71001c6394

@@ -92,7 +92,9 @@ struct UnitRecord {
     int leader;               // +5c
     unsigned char pad60[4];
     int rank;                 // +64
-    unsigned char pad68[0xc];
+    unsigned char pad68[4];
+    int category;             // +6c
+    unsigned char pad70[4];
     int group_value;          // +74
     unsigned char pad78[0x30];
     int values[3];            // +a8
@@ -1519,11 +1521,10 @@ void set_group_value_1c3d38(const GroupCommand* command) {
             UnitRecord* unit = roster->unit(id);
             if (unit->team > 2 || unit->state_kind || (unit->flag_bits & 0x80))
                 continue;
-            UnitRoster* now = gShop;
-            UnitRecord* current = now->unit(id);
+            UnitRecord* current = gShop->unit(id);
             switch (command->filter) {
             case 1: {
-                OfficerRecord* leader = now->officer(current->members.get(current->leader));
+                OfficerRecord* leader = gShop->officer(current->members.get(current->leader));
                 if (static_cast<unsigned int>(item_field_211554(leader->item) - 2) >= 4)
                     continue;
                 break;
@@ -1637,4 +1638,121 @@ void turn_unit_1c02e4(const TurnCommand* command) {
         move_unit_16ab4c(id, &position, 1, angle);
     else
         move_unit_16b1f8(id, &position, 0x80, angle);
+}
+float type_health_17097c(unsigned int type);                                // 0x710017097c
+void set_type_health_170530(unsigned int type, float health);               // 0x7100170530
+
+// 0x71001c5d60
+void set_leader_health_1c5d60(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    UnitRoster* roster = gShop;
+    UnitRecord* unit = roster->unit(id);
+    if (unit->team > 2 || unit->state_kind)
+        return;
+    unsigned int percent = command->value;
+    percent = percent == 0 ? 1 : (percent > 100 ? 100 : percent);
+    OfficerRecord* leader = roster->officer(unit->members.get(unit->leader));
+    unsigned int type = leader->type;
+    if (type_ready_172160(type)) {
+        float health = type_health_17097c(type);
+        if (percent != 100)
+            health = percent * health / 100.0f;
+        set_type_health_170530(type, health);
+        return;
+    }
+    unsigned int limit = 1000 - unit->damage * 1000 / 100;
+    if (limit < 1 || limit > 1000)
+        limit = 1;
+    unsigned int target = percent * 1000 / 100;
+    unsigned int health = target > limit ? limit : target;
+    leader->health = health > 1000 ? 1000 : health;
+}
+struct ItemRecord {
+    unsigned char pad[4];
+    short field;              // +04
+    unsigned char pad6[0x4a];
+};
+
+struct ItemTable {
+    ItemRecord items[0x44c];
+
+    ItemRecord* item(int id) { return static_cast<unsigned int>(id) < 0x44c ? &items[id] : nullptr; }
+};
+// Reached through the GOT slot at 0x7100c216a0.
+extern ItemTable* gItems_c216a0;
+int field_rank_1f4b1c(int field);                                           // 0x71001f4b1c
+void swap_field_rank_1f4b40(int field, int rank);                           // 0x71001f4b40
+void set_item_field_194778(UnitRecord* unit, int field);                    // 0x7100194778
+
+// 0x71001c58d4
+void assign_item_field_1c58d4(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    UnitRecord* unit = gShop->unit(id);
+    if (unit->team > 2)
+        return;
+    unsigned int value = command->value;
+    if (value > 999)
+        return;
+    int item = unit->item;
+    if (unit->category == 1)
+        return;
+    if (value == 999) {
+        if (item_level_1fb810(item) >= 0 && item_level_1fb810(item) <= 99) {
+            int level = item_level_1fb810(item);
+            value = item_field_21139c(item_for_level_1fb214(gCatalog_c21df8, level));
+        } else {
+            value = item_field_21139c(item);
+        }
+    }
+    if (field_rank_1f4b1c(value) < 0)
+        swap_field_rank_1f4b40(value, field_rank_1f4b1c(gItems_c216a0->item(item)->field));
+    if (value <= 999 && value + 0x8000 < 0x10000)
+        gItems_c216a0->item(item)->field = value;
+    set_item_field_194778(unit, value);
+}
+
+struct GroupStepCommand {
+    int pad0;
+    int team;                 // +04
+    int mode;                 // +08
+    int delta;                // +0c
+    int filter;               // +10
+};
+
+// 0x71001c3ec0
+void step_group_value_1c3ec0(const GroupStepCommand* command) {
+    UnitRoster* roster = gShop;
+    RosterTeam* team = roster->team(command->team);
+    for (int group = 0; group < 8; ++group) {
+        MemberList* list = team_group_197ac4(team, group);
+        unsigned int count = list->count;
+        for (unsigned int i = 0; i < count; ++i) {
+            unsigned short id = list->get(i);
+            UnitRecord* unit = roster->unit(id);
+            if (unit->team > 2 || unit->state_kind || (unit->flag_bits & 0x80))
+                continue;
+            UnitRecord* current = gShop->unit(id);
+            switch (command->filter) {
+            case 1: {
+                OfficerRecord* leader = gShop->officer(current->members.get(current->leader));
+                if (static_cast<unsigned int>(item_field_211554(leader->item) - 2) >= 4)
+                    continue;
+                break;
+            }
+            case 2:
+                if (static_cast<unsigned int>(id - 0x84) > 0x17)
+                    continue;
+                break;
+            }
+            int old = unit->group_value;
+            int value = old + command->delta;
+            int wide = value < 0 ? 0 : value;
+            wide = wide > 4 ? 4 : wide;
+            int narrow = value < 1 ? 1 : value;
+            narrow = narrow > 3 ? 3 : narrow;
+            int next = command->mode != 1 ? wide : narrow;
+            if (command->delta >= 1 ? next >= old : next <= old)
+                unit->group_value = next;
+        }
+    }
 }
