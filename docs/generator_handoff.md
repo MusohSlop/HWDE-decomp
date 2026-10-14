@@ -67,7 +67,9 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   that the AAPCS passes in two general registers, written as `union VecU { Vec4f v; long l[2]; }`, a parameter
   `VecU pN` (registers N and N+1) read as `pN.v`, and `vecu(v)` for a vector returned or passed on;
 - `fmov vD.4s, #imm` as a vector of one constant, `(Vec4f)(c)` (knob `novecsplat`);
-- the `sqrtf` slow path may spill and reload float registers around its call (knob `nosqrtspill`).
+- the `sqrtf` slow path may spill and reload float registers around its call (knob `nosqrtspill`);
+- vector lane inserts `mov vD.s[i], vS.s[j]` (knob `novecins`), written with the unit helpers `vins(v, s, i)` and
+  `vundef()` (a vector built lane by lane starts undefined, with lane 0 the scalar already in `sD`).
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
