@@ -2347,7 +2347,8 @@
     "_Z17init_panel_32e9a0P19TutorialPanel32ef7c": "0x710032e9a0",
     "_Z17init_panel_39863cP19TutorialPanel3989b0": "0x710039863c",
     "_Z19update_panel_32f19cPv": "0x710032f19c",
-    "_Z19update_panel_398bd0Pv": "0x7100398bd0"
+    "_Z19update_panel_398bd0Pv": "0x7100398bd0",
+    "_Z17core_index_3cc9c0v": "0x71003cc9c0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7247,7 +7248,9 @@
       "functions": {
         "_Z14trigger_21c5d4P13Trigger21c5d4Pv": "0x710021c5d4",
         "_Z14trigger_21c6c0P13Trigger21c6c0Pv": "0x710021c6c0",
-        "_Z14trigger_21cf88P13Trigger21cf88Pv": "0x710021cf88"
+        "_Z14trigger_21cf88P13Trigger21cf88Pv": "0x710021cf88",
+        "_Z20trigger_value_21c974P13Trigger21c974f": "0x710021c974",
+        "_Z20trigger_value_21ca54P13Trigger21ca54f": "0x710021ca54"
       }
     },
     "misc/team_removals.cpp": {
@@ -7364,6 +7367,13 @@
       },
       "map": {
         ".rodata.str1.1": "0x71007d82d4"
+      }
+    },
+    "misc/core_requests.cpp": {
+      "functions": {
+        "_Z21locked_request_2ab480P10CoreClientPvS1_PK9CoreEntry": "0x71002ab480",
+        "_Z21locked_request_2ab5a4P10CoreClientPvS1_PK9CoreEntry": "0x71002ab5a4",
+        "_Z21locked_request_2ab6c8P10CoreClientPvS1_PK9CoreEntry": "0x71002ab6c8"
       }
     }
   }

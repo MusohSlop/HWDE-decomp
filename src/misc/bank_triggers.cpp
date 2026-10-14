@@ -111,3 +111,58 @@ unsigned char trigger_21cf88(Trigger21cf88* owner, void* arg) {
         return play_594144(owner, id, 4, 1, arg, nullptr);
     return 0;
 }
+
+struct Trigger21c974 : TriggerOwner {
+    unsigned char pad38[0x129c];
+    unsigned int id;          // +12d4
+};
+
+// 0x710021c974
+unsigned char trigger_value_21c974(Trigger21c974* owner, float value) {
+    unsigned int id = owner->id;
+    if (id >= 0x4000 && play_594144(owner, id, 1, 1, &value, nullptr))
+        return 1;
+    Bank* bank = owner->bank;
+    if (bank) {
+        unsigned int slot = id & 0xff;
+        if (slot < bank->count) {
+            void* context = owner->context;
+            if (bank->slots[slot].flag) {
+                bank_play_5a7d6c(bank, slot, 1, 1, &value, context);
+                return 1;
+            }
+            bank_play_short_5a81c4(bank, slot, 1, &value, context);
+            return 1;
+        }
+    }
+    if ((id >> 14) == 0)
+        return play_594144(owner, id, 1, 1, &value, nullptr);
+    return 0;
+}
+struct Trigger21ca54 : TriggerOwner {
+    unsigned char pad38[0x12a0];
+    unsigned int id;          // +12d8
+};
+
+// 0x710021ca54
+unsigned char trigger_value_21ca54(Trigger21ca54* owner, float value) {
+    unsigned int id = owner->id;
+    if (id >= 0x4000 && play_594144(owner, id, 1, 1, &value, nullptr))
+        return 1;
+    Bank* bank = owner->bank;
+    if (bank) {
+        unsigned int slot = id & 0xff;
+        if (slot < bank->count) {
+            void* context = owner->context;
+            if (bank->slots[slot].flag) {
+                bank_play_5a7d6c(bank, slot, 1, 1, &value, context);
+                return 1;
+            }
+            bank_play_short_5a81c4(bank, slot, 1, &value, context);
+            return 1;
+        }
+    }
+    if ((id >> 14) == 0)
+        return play_594144(owner, id, 1, 1, &value, nullptr);
+    return 0;
+}
