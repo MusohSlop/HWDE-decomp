@@ -13645,7 +13645,11 @@
     "_Z14callee2_1f7a0cPviif": "0x71001f7a0c",
     "_Z13callee_5948a8PvS_S_S_S_": "0x71005948a8",
     "_Z13callee_5949e8PvS_S_S_S_": "0x71005949e8",
-    "_Z13callee_595764PvS_S_": "0x7100595764"
+    "_Z13callee_595764PvS_S_": "0x7100595764",
+    "_Z13callee_11a374l": "0x710011a374",
+    "_Z13callee_11a78cl": "0x710011a78c",
+    "_Z13callee_11ae00l": "0x710011ae00",
+    "_Z13callee_3aea0cPv": "0x71003aea0c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -21767,6 +21771,14 @@
         "_Z11call_3a260cP11Arg3a260c_0": "0x71003a260c",
         "_Z11call_4267c4P11Arg4267c4_0": "0x71004267c4",
         "_Z11call_54dcb8P11Arg54dcb8_0": "0x710054dcb8"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
+      }
+    },
+    "misc/variant_functions50.cpp": {
+      "functions": {
+        "_Z10call_e2148P10Arge2148_0": "0x71000e2148"
       },
       "map": {
         ".rodata.cst4": "0x710073b000"
