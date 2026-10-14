@@ -24,7 +24,7 @@ struct LightAllocator {
 
 template <unsigned int HeadSize, unsigned long Kept, unsigned long Cleared>
 struct ObjectTable {
-    ObjectTable() : head(nullptr) { memset(slots, 0, sizeof(slots)); }
+    ObjectTable() : head(nullptr) { memset(kept, 0, sizeof(kept) + sizeof(listed)); }
     static void* operator new(unsigned long size) { return get_default_heap()->allocate(0x10, size, 1, 0); }
 
     void init() {
@@ -33,7 +33,7 @@ struct ObjectTable {
     }
 
     void reset() {
-        memset(slots + Kept, 0, Cleared);
+        memset(listed, 0, sizeof(listed));
         allocator.clear();
         if (head) {
             free_block_255e40(head);
@@ -43,7 +43,8 @@ struct ObjectTable {
 
     void* head;               // +00
     LightAllocator allocator; // +08
-    unsigned char slots[Kept + Cleared]; // +68
+    void* kept[Kept / 8];     // +68: by id, kept on reset
+    void* listed[Cleared / 8]; // cleared on reset
 };
 
 typedef ObjectTable<0x4000, 0x328, 0x328> ObjectTableA;
@@ -54,7 +55,7 @@ typedef ObjectTable<0x4000, 0x960, 0x968> ObjectTableC;
 template <>
 void ObjectTable<0x8000, 0x800, 0x1818>::reset() {
     LightAllocator& slots_allocator = allocator;
-    memset(slots + 0x800, 0, 0x1818);
+    memset(listed, 0, sizeof(listed));
     slots_allocator.clear();
     if (head) {
         free_block_255e40(head);
@@ -88,4 +89,53 @@ extern ObjectTableC* gObjects_c2a530;
 void create_objects_24c82c() {
     if (!gObjects_c2a530)
         gObjects_c2a530 = new ObjectTableC;
+}
+
+struct ObjectEntry {
+    int kind;                 // +00
+};
+void attach_object_247168(ObjectEntry* entry);                              // 0x7100247168
+
+static inline bool is_ticket_kind(int kind) {
+    return static_cast<unsigned int>(kind - 0x31e) <= 3;
+}
+
+static const unsigned int kListedA = 100;
+
+// 0x71002474a4
+void enroll_object_2474a4(ObjectTableA* table, int keep_only, int id, ObjectEntry* entry) {
+    int index = id - 0x118;
+    if (static_cast<unsigned int>(index) > 0x63)
+        return;
+    table->kept[index] = entry;
+    int kind = entry->kind;
+    if (kind == 0x31e && is_ticket_kind(kind))
+        table->kept[100] = entry;
+    if (!keep_only) {
+        for (int i = 0; i < kListedA; ++i) {
+            if (!table->listed[i]) {
+                table->listed[i] = table->kept[index];
+                break;
+            }
+        }
+    }
+    attach_object_247168(entry);
+}
+
+static const unsigned int kListedB = 0x100;
+
+// 0x71002487e0
+void add_object_2487e0(ObjectTableB* table, void* object) {
+    int index;
+    for (index = 0; index < kListedB; ++index) {
+        if (!table->listed[index])
+            break;
+    }
+    table->kept[index] = object;
+    for (int i = 0; i < kListedB; ++i) {
+        if (!table->listed[i]) {
+            table->listed[i] = object;
+            break;
+        }
+    }
 }
