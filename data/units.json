@@ -2268,7 +2268,10 @@
     "got:gHub_c2d010": "0x7100c2d010",
     "_Z11play_594144P12TriggerOwnerjiiPvS1_": "0x7100594144",
     "_Z16bank_play_5a7d6cP4BankjiiPvS1_": "0x71005a7d6c",
-    "_Z22bank_play_short_5a81c4P4BankjiPvS1_": "0x71005a81c4"
+    "_Z22bank_play_short_5a81c4P4BankjiPvS1_": "0x71005a81c4",
+    "_Z16has_entry_1a78d4P9PostStateji": "0x71001a78d4",
+    "_Z19post_message_1cea08iiiiiiiiiiP13OfficerRecordijll": "0x71001cea08",
+    "_Z17query_info_5790c4P9BlobQueryiP8BlobInfo": "0x71005790c4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7177,6 +7180,32 @@
         "_Z23remove_from_team_167da4j": "0x7100167da4",
         "_Z23remove_from_team_168054j": "0x7100168054",
         "_Z23remove_from_team_16814cj": "0x710016814c"
+      }
+    },
+    "misc/part_restarts.cpp": {
+      "functions": {
+        "_Z20restart_parts_3bdae4P13Restart3bdae4f": "0x71003bdae4",
+        "_Z20restart_parts_3c0870P13Restart3c0870f": "0x71003c0870",
+        "_Z20restart_parts_3c324cP13Restart3c324cf": "0x71003c324c",
+        "_Z20restart_parts_3c5608P13Restart3c5608f": "0x71003c5608"
+      }
+    },
+    "misc/record_loads.cpp": {
+      "functions": {
+        "_Z19load_records_249494P11RecordOwnerPv": "0x7100249494",
+        "_Z19load_records_2495e8P11RecordOwnerPv": "0x71002495e8"
+      }
+    },
+    "misc/officer_posts.cpp": {
+      "functions": {
+        "_Z19post_officer_1d36c8j": "0x71001d36c8",
+        "_Z19post_officer_1d381cj": "0x71001d381c"
+      }
+    },
+    "misc/blob_writes.cpp": {
+      "functions": {
+        "_Z17write_blob_5710a8P9BlobTablePKhS2_j": "0x71005710a8",
+        "_Z17write_blob_5711e0P9BlobTablePKhS2_j": "0x71005711e0"
       }
     }
   }

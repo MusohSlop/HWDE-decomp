@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-3.36% of bytes (188,440 of 5,603,025) and 22.83% of functions (3,945 of 17,282) match exactly; 152 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+3.38% of bytes (189,120 of 5,603,025) and 22.84% of functions (3,947 of 17,282) match exactly; 160 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-3,955 of 4,107 attempted functions match: 3,945 inventory functions (188,440 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 152 are near misses, all `m`.
+3,957 of 4,117 attempted functions match: 3,947 inventory functions (189,120 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 160 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -341,6 +341,10 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 3 of 3 in `misc/listener_detach.cpp` | listener detach under the registry mutex (handler or own id list) | match |
 | 3 of 3 in `misc/bank_triggers.cpp` | sound or effect triggers routed to the global player or the object's bank | match |
 | 0 of 4 in `misc/team_removals.cpp` | remove a unit id from a team's short list; near misses: the original keeps a second `ret` for the shift-loop exit | near miss |
+| 0 of 4 in `misc/part_restarts.cpp` | four-part animation restarts; near misses: the original keeps the first part's null checks, which our build deletes because the null path calls through the pointer | near miss |
+| 2 of 2 in `misc/record_loads.cpp` | 22-byte record tables read from a resource frame into allocator memory | match |
+| 0 of 2 in `misc/officer_posts.cpp` | officer reinforcement messages; near misses: the original loads the setup flags as a whole word and re-checks the slot range for the officer record | near miss |
+| 0 of 2 in `misc/blob_writes.cpp` | named blob writes (31-power name hash, entry lookup, sized copy); near misses: the hash loop's two registers are swapped | near miss |
 | 5 of 9 in `misc/game_accessors3.cpp` | record transfer, save and restore loops, a capped value, a board shift; near misses: `2041d0` (return block placement), the three grid lookups `205420`/`205474`/`2054cc` (the original computes the row-or-flag test before the range checks) | match |
 | 13 of 15 in `misc/game_accessors2.cpp` | game-object and unit-record accessors (`2045f0`-`2062c0`): picks, flags, save backup and restore, levels, grades; `206040` (shared return block) and `20629c` (branches kept as branches) are near misses | match |
 | 22 in `misc/game_accessors.cpp` | game-object accessors after the item table (`201da0`-`2043f0`): bands, keys, ids, counts, stage, save-block selection, stock counts | match |
@@ -426,6 +430,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **A vtable store in the middle of a teardown.** When a destructor body stores a vtable pointer into a member and then destroys that member's own parts, the member is a polymorphic class with an inline virtual destructor and an out-of-line key function (so its vtable comes through the GOT). Calling `group->Group::~Group()` qualified destroys it in place without going through the vtable (`misc/group_teardowns.cpp`).
 - **Clamps through references.** A clamp at zero that indexes a table (csel w9, w9, wzr, gt, then uxtw #4 in the address) needs a std::max-style helper that takes and returns references, copied into a local right away (int index = larger(model->pose_index, 0);). Written as a plain ternary or an if, the clamp comes out as a 64-bit select (misc/model_updates.cpp, 22 functions).
 - **Null-select lookups.** A bounded lookup that is dereferenced directly (`csel x8, x8, xzr, lo`, then a load) keeps its select only when the lookup is a method on the table that returns `&defs[item]` (`misc/item_fields.cpp`). In an inline helper that reads the global inside the ternary, Clang emits a branch, and SimplifyCFG deletes the null path as undefined.
+- **Argument temporaries in inline helpers.** When a stack argument block sits above a local object (higher address) but is filled only after the callee's vtable slot is loaded, the block is a temporary built in the call expression of an inline helper (`alloc(size, RecordDesc(0x2e))` inside `alloc_records`). The inliner puts the helper's allocas first, which gives the stack order. A named local in the caller gives the wrong store order, and a temporary in the caller gives the wrong slot (`misc/record_loads.cpp`).
 - **Translation units and globals.**
   - `DemoSequenceItem` (`2173c4`, `2174d0`) is a separate unit after the sequence unit. If it is in the same file, `release` gets inlined into `clear`.
   - The queue registry (`c8af40`), the worker controls (`c8aef8`) and the high-worker enable byte (`c8af38`) are external hidden globals. As file-static globals in one unit, LLVM's GlobalMerge combines them and addresses one relative to another.
