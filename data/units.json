@@ -2171,7 +2171,16 @@
     "_Z18release_unit_3141cPvi": "0x710003141c",
     "_Z17apply_mode_3df768P10Mode3df5e4": "0x71003df768",
     "kStagePairs_7e2060": "0x71007e2060",
-    "gStageIndex_ca31b8": "0x7100ca31b8"
+    "gStageIndex_ca31b8": "0x7100ca31b8",
+    "_Z12begin_52ada0Pvi": "0x710052ada0",
+    "_Z11open_4f9aa0PvS_S_S_": "0x71004f9aa0",
+    "got:_ZTV10Link218c18": "0x7100c233b0",
+    "_Z15configure_4a764Pvii": "0x710004a764",
+    "got:gNotify_c2dc90": "0x7100c2dc90",
+    "got:gNotifyContext_c2dca0": "0x7100c2dca0",
+    "got:_ZTV11Queue5325e4": "0x7100c2d288",
+    "got:_ZTV11Owned5c2d24": "0x7100c2db68",
+    "got:_ZTV10Pair_ade30": "0x7100c224d0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -6889,6 +6898,30 @@
         "_Z19stage_second_3cc94cv": "0x71003cc94c",
         "_Z13record_446054P13Records446054i": "0x7100446054",
         "_Z19block_active_3890bcP12Blocks3890bc": "0x71003890bc"
+      }
+    },
+    "misc/ranked_singles2.cpp": {
+      "functions": {
+        "_Z20begin_default_52ad98Pv": "0x710052ad98",
+        "_Z17open_plain_4f9a98PvS_S_": "0x71004f9a98",
+        "_Z13rewind_5c3a1cP12Cursor5c3a1c": "0x71005c3a1c",
+        "_Z12clear_53d388P12Triple53d388": "0x710053d388",
+        "_Z17clear_slot_466e20P10Slot466e20": "0x7100466e20",
+        "_Z17clear_slot_466f24P10Slot466e20": "0x7100466f24",
+        "_Z17clear_slot_467004P10Slot466e20": "0x7100467004",
+        "_Z12store_5155a4P12Holder5155a4PKl": "0x71005155a4",
+        "_Z14release_471e90P13Counter471e90": "0x7100471e90",
+        "_Z15has_many_1a8e1cP11Count1a8e1c": "0x71001a8e1c",
+        "_Z18clear_flags_16f29cP11Flags16f29cm": "0x710016f29c",
+        "_Z16invalidate_cf5c4P11Range_cf5c4": "0x71000cf5c4",
+        "_ZN10Link218c18C2Ev": "0x7100218c18",
+        "_Z15configure_475d8Ph": "0x71000475d8",
+        "_Z13notify_5d4380Pv": "0x71005d4380",
+        "_ZN9DataChunk3setEPKv": "0x7100218c34",
+        "_ZN11Queue5325e4C2Ev": "0x71005325e4",
+        "_ZN11Owned5c2d24C2Ev": "0x71005c2d24",
+        "_ZN10Pair_ade30C2Ev": "0x71000ade30",
+        "_Z10mark_527a0P9Once527a0": "0x71000527a0"
       }
     }
   }
