@@ -2303,7 +2303,15 @@
     "got:_ZGVZN6TypeOfI9ActorRootE3getEvE4node": "0x7100c22fa0",
     "got:_ZZN6TypeOfI9ActorRootE3getEvE4node": "0x7100c22fa8",
     "got:_ZGVZN6TypeOfI14ActorScaleStopE3getEvE4node": "0x7100c2dce0",
-    "got:_ZZN6TypeOfI14ActorScaleStopE3getEvE4node": "0x7100c2dce8"
+    "got:_ZZN6TypeOfI14ActorScaleStopE3getEvE4node": "0x7100c2dce8",
+    "_Z18notify_unit_114540Pvii": "0x7100114540",
+    "_Z17notify_unit_f2b34Pvii": "0x71000f2b34",
+    "got:gGlobal_c22be8": "0x7100c22be8",
+    "_Z18play_effect_180850iiPKfiif": "0x7100180850",
+    "_Z18leader_rate_1947f0P10UnitRecord": "0x71001947f0",
+    "_Z15set_rate_1949a8P10UnitRecordj": "0x71001949a8",
+    "_Z20set_side_flag_1949b0P10UnitRecordb": "0x71001949b0",
+    "_Z18type_loaded_172174i": "0x7100172174"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7277,6 +7285,27 @@
     "misc/scale_walk.cpp": {
       "functions": {
         "_Z20collect_scale_5d9d20PvP6Scale2P9ScaleNode": "0x71005d9d20"
+      }
+    },
+    "misc/unit_commands.cpp": {
+      "functions": {
+        "_Z22set_unit_value0_1c6db0PK11UnitCommand": "0x71001c6db0",
+        "_Z22set_unit_value1_1c6ec0PK11UnitCommand": "0x71001c6ec0",
+        "_Z22set_unit_value2_1c6fd0PK11UnitCommand": "0x71001c6fd0",
+        "_Z21set_unit_state_1c4b64PK11UnitCommand": "0x71001c4b64",
+        "_Z24clear_unit_timers_1c70e0PK11UnitCommand": "0x71001c70e0",
+        "_Z22set_unit_stance_1c66b4PK11UnitCommand": "0x71001c66b4",
+        "_Z18set_aliases_1c83d4PK11UnitCommand": "0x71001c83d4",
+        "_Z18notify_unit_1c36f0PK11UnitCommand": "0x71001c36f0",
+        "_Z20order_members_1c46f4PK11UnitCommand": "0x71001c46f4",
+        "_Z23play_unit_effect_1c1ec4PK11UnitCommand": "0x71001c1ec4",
+        "_Z22set_unit_follow_1c4c5cPK11UnitCommand": "0x71001c4c5c"
+      },
+      "map": {
+        "_ZZL12resolve_unitiE5local": "0x7100c44ce0",
+        "_ZGVZL12resolve_unitiE5local": "0x7100c44ce8",
+        ".rodata": "0x71007e6ca8",
+        ".rodata.cst4": "0x710073bbd4"
       }
     }
   }
