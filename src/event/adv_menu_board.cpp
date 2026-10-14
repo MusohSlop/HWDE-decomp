@@ -288,47 +288,6 @@ void note_cell_item(int item) {
         gBoardQuery.item_found = 1;
 }
 
-struct SharedState {
-    unsigned char pad0[4];
-    int language;             // +04
-};
-SharedState* get_shared_state();                                            // 0x71002aae3c
-unsigned char shared_state_exiting(SharedState* state);                     // 0x71002ac7f0
-void* load_layout(int id);                                                  // 0x71001f7868
-extern const int kMenuUnitLayouts[7] __attribute__((visibility("hidden"))); // 0x71007f7a20
-
-void prepare_menu_board(int mode, unsigned char flag) {
-    if (shared_state_exiting(get_shared_state()))
-        return;
-    MenuBoard* board = gMenuBoard;
-    if (!board)
-        return;
-    board->value10 = flag;
-    SharedState* shared = get_shared_state();
-    if (!board->board.resource) {
-        int language = shared->language;
-        void* layout = load_layout(language == 6 ? 0x2d55 : language + 0x2d54);
-        board->board.resource = layout;
-        if (mode == -1 || !layout)
-            return;
-    } else if (mode == -1) {
-        return;
-    }
-    MenuBoard* current = gMenuBoard;
-    int index;
-    if (static_cast<unsigned int>(mode - 2) < 7)
-        index = kMenuUnitLayouts[mode - 2];
-    else
-        index = mode == 9 ? 3 : 0;
-    if (!current->units.resource) {
-        void* layout = load_layout(static_cast<unsigned int>(mode) < 6 ? (index | 0x2d60) : index + 0x4629);
-        current->units.resource = layout;
-        if (!layout)
-            return;
-    }
-    current->loaded = 1;
-}
-
 struct UnitSlot {
     int unit;
     int slot;

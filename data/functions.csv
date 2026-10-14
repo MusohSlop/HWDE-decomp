@@ -8244,7 +8244,7 @@ Address,Quality,Size,Name
 0x7100283db0,O,20,_ZN9MenuIcons10draw_entryEPvPK9IconEntry
 0x7100283dc4,O,76,_Z17create_menu_boardv
 0x7100283e10,O,120,_Z18release_menu_unitsv
-0x7100283e88,m,240,_Z18prepare_menu_boardih
+0x7100283e88,O,240,_Z18prepare_menu_boardih
 0x7100283f78,O,88,_Z18release_menu_boardv
 0x7100283fd0,O,128,_ZN9EventTaskC2Ev
 0x7100284140,O,336,_Z11call_284140P11Arg284140_0

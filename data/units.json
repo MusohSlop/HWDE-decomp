@@ -15390,7 +15390,6 @@
         "_Z16cell_short_routei": "0x71002830f8",
         "_Z18cell_reward_lockedi": "0x71002831a4",
         "_Z14note_cell_itemi": "0x7100283234",
-        "_Z18prepare_menu_boardih": "0x7100283e88",
         "_Z19unit_class_unlockedi": "0x7100282df8"
       },
       "map": {
@@ -23196,6 +23195,14 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "event/adv_menu_prepare.cpp": {
+      "functions": {
+        "_Z18prepare_menu_boardih": "0x7100283e88"
+      },
+      "map": {
+        ".rodata": "0x71007f7a20"
       }
     }
   }
