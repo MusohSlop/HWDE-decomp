@@ -509,7 +509,7 @@ def gen_function(a, ins):
         """A 128-bit float vector value (Vec4f)."""
         if v is None:
             return False
-        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg"):
+        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg", "vparam"):
             return True
         if v[0] == "var":
             tv_ = vars_.get(v[1])
@@ -781,7 +781,18 @@ def gen_function(a, ins):
             if v[0] == "fparam":
                 fparams.add(v[1])
             fargs.append(v)
-        args = args + fargs
+        merged_ = []
+        k_ = 0
+        while k_ < len(args):
+            a0_ = args[k_]
+            if a0_[0] == "vpart" and k_ + 1 < len(args) and args[k_ + 1][0] == "vpart" and args[k_ + 1][1] == a0_[1] \
+                    and a0_[2] == 0 and args[k_ + 1][2] == 1:
+                merged_.append(("vecu", a0_[1])); k_ += 2
+            elif a0_[0] == "vpart":
+                raise Fail("vector half argument")
+            else:
+                merged_.append(a0_); k_ += 1
+        args = merged_ + fargs
         name = f"c{counter[0]}"; counter[0] += 1
         vars_[name] = "?"
         imp0_ = import_of(target)
@@ -1069,6 +1080,11 @@ def gen_function(a, ins):
                 continue
             if is_frame(i):
                 k += 1; continue
+            if m == "ret" and "novecu" not in knobs and (regs.get(0) or ("",))[0] == "vpart" and (regs.get(1) or ("",))[0] == "vpart" \
+                    and regs[0][1] == regs[1][1] and regs[0][2] == 0 and regs[1][2] == 1:
+                items.append(("return", ("vecu", regs[0][1])))
+                returns.append(items[-1][1])
+                return items
             if m == "ret":
                 v = regs.get(0)
                 fv = regs["f"].get(0)
@@ -1274,8 +1290,44 @@ def gen_function(a, ins):
                 regs["f"][fd_] = v_
                 if fd_ < 8: regs.setdefault("fw", set()).add(fd_)
                 k += 1; continue
+            if "novecu" not in knobs and len(ops) == 2 and m in ("fmov", "mov") and (
+                    (m == "fmov" and re.fullmatch(r"d\d+", ops[0]) and re.fullmatch(r"x\d+", ops[1])) or
+                    (m == "mov" and re.fullmatch(r"v\d+\.d\[1\]", ops[0]) and re.fullmatch(r"x\d+", ops[1])) or
+                    (m == "fmov" and re.fullmatch(r"x\d+", ops[0]) and re.fullmatch(r"d\d+", ops[1])) or
+                    (m == "mov" and re.fullmatch(r"x\d+", ops[0]) and re.fullmatch(r"v\d+\.d\[1\]", ops[1]))):
+                # a 16-byte vector moved between two x registers and a q register
+                if ops[0][0] in "dv":
+                    fn_ = int(re.match(r"[dv](\d+)", ops[0]).group(1))
+                    xv_ = regs.get(regname(ops[1])[0])
+                    if xv_ is None:
+                        raise Fail("undefined vector half")
+                    if ops[0][0] == "d":
+                        regs["f"][fn_] = ("vlo", xv_)
+                    else:
+                        lo_ = regs["f"].get(fn_)
+                        if lo_ is None or lo_[0] != "vlo":
+                            raise Fail("vector high half alone")
+                        lo_ = lo_[1]
+                        if lo_[0] == "param" and xv_ == ("param", lo_[1] + 1) and pwidth.get(lo_[1]) in (None, "x") \
+                                and pwidth.get(lo_[1] + 1) in (None, "x"):
+                            pwidth[lo_[1]] = "VecU"; pwidth[lo_[1] + 1] = "VecU_hi"
+                            regs["f"][fn_] = ("vparam", lo_[1])
+                        elif lo_[0] == "vpart" and xv_[0] == "vpart" and lo_[1] == xv_[1] and lo_[2] == 0 and xv_[2] == 1:
+                            regs["f"][fn_] = lo_[1]
+                        else:
+                            raise Fail("vector halves")
+                    if fn_ < 8: regs.setdefault("fw", set()).add(fn_)
+                else:
+                    xn_ = regname(ops[0])[0]
+                    fn_ = int(re.match(r"[dv](\d+)", ops[1]).group(1))
+                    vv_ = regs["f"].get(fn_)
+                    if not is_vecval_(vv_):
+                        raise Fail("vector half of a scalar")
+                    regs[xn_] = ("vpart", vv_, 0 if ops[1][0] == "d" else 1)
+                    if xn_ < 8: written.add(xn_)
+                k += 1; continue
             vd_ = re.fullmatch(r"v(\d+)\.(4s|2d|16b)", ops[0]) if ops else None
-            if vd_ and m in ("fadd", "fsub", "fmul", "fmla", "fmls", "fneg", "dup", "movi") and "novec" not in knobs:
+            if vd_ and m in ("fadd", "fsub", "fmul", "fmla", "fmls", "fneg", "dup", "movi", "fmov") and "novec" not in knobs:
                 dn_ = int(vd_.group(1))
                 def vec_(o_):
                     mv_ = re.fullmatch(r"v(\d+)\.4s", o_)
@@ -1314,6 +1366,8 @@ def gen_function(a, ins):
                         if lo_ is None:
                             raise Fail("dup form")
                         regs["f"][dn_] = ("vsplat", lo_)
+                elif m == "fmov" and len(ops) == 2 and vd_.group(2) == "4s" and ops[1].startswith("#") and "novecsplat" not in knobs:
+                    regs["f"][dn_] = ("vsplat", ("fconst", float(ops[1].lstrip("#"))))
                 elif m == "movi" and len(ops) == 2 and re.fullmatch(r"#0+|#0x0+", ops[1]):
                     regs["f"][dn_] = ("vsplat", ("fconst", 0.0))
                 else:
@@ -1373,7 +1427,8 @@ def gen_function(a, ins):
                     raise Fail("fsqrt")
                 tgt_ = imm(br_.op_str)
                 def skip_moves_(jj_, end_=None):
-                    while jj_ < len(ins) and ins[jj_].mnemonic in ("mov", "fmov") and (end_ is None or ins[jj_].address < end_):
+                    while jj_ < len(ins) and (end_ is None or ins[jj_].address < end_) and (ins[jj_].mnemonic in ("mov", "fmov") or (
+                            ins[jj_].mnemonic in ("str", "ldr", "stur", "ldur") and "nosqrtspill" not in knobs and re.fullmatch(r"[qds]\d+, \[(sp|x29)(, #-?(0x[0-9a-f]+|\d+))?\]", ins[jj_].op_str))):
                         jj_ += 1
                     return jj_
                 def is_sqrtf_(i_, mn_):
@@ -2256,7 +2311,7 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] == "copy":
             kids = [v[1]]
-        if v[0] == "vlane":
+        if v[0] in ("vlane", "vecu", "vpart"):
             kids = [v[1]]
         if v[0] == "vbin":
             kids = [v[2], v[3]]
@@ -2340,6 +2395,8 @@ def gen_function(a, ins):
         mark_items(items)
     def ptype(n):
         p = pwidth.get(n, "x")
+        if p == "VecU":
+            return "VecU"
         if p == "w":
             return "int"
         if p in ("short", "unsigned short", "signed char", "unsigned char"):
@@ -2350,8 +2407,10 @@ def gen_function(a, ins):
     def vtype(v):
         if v[0] in ("fparam", "fconst", "fbin", "funary", "i2f", "fselect", "vlane"):
             return "float"
-        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg"):
+        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg", "vparam"):
             return "Vec4f"
+        if v[0] == "vecu":
+            return "VecU"
         if v[0] == "f2i":
             return "long" if v[3] == "x" else "int"
         if v[0] == "stackaddr":
@@ -2517,6 +2576,12 @@ def gen_function(a, ins):
             return "(Vec4f){" + ", ".join(expr(("fconst", x_)) for x_ in v[1]) + "}"
         if v[0] == "vlane":
             return f"{expr(v[1], False)}[{v[2]}]"
+        if v[0] == "vparam":
+            return f"p{v[1]}.v"
+        if v[0] == "vecu":
+            return f"vecu({expr(v[1])})"
+        if v[0] in ("vpart", "vlo"):
+            raise Fail("vector half used")
         if v[0] == "vbin":
             s_ = f"{expr(v[2], False)} {v[1]} {expr(v[3], False)}"
             return s_ if top else f"({s_})"
@@ -3504,7 +3569,7 @@ def gen_function(a, ins):
             sigs[(t, ak_)] = (list(ak_), rt_)
 
     nparams = (max(pwidth) + 1) if pwidth else 0
-    params = ", ".join([f"{ptype(n)} p{n}" for n in range(nparams)] + [f"float f{n}" for n in range(max(fparams) + 1 if fparams else 0)])
+    params = ", ".join([f"{ptype(n)} p{n}" for n in range(nparams) if pwidth.get(n) != "VecU_hi"] + [f"float f{n}" for n in range(max(fparams) + 1 if fparams else 0)])
     body = "\n".join(sdefs) + "\n".join(gdecls) + f"\n\n// 0x71{a:08x}\n{rtype} call_{a:x}({params}) {{\n" + "\n".join(lines) + "\n}\n"
     return body, sigs, gsyms + ["IMPORT=%s=%x" % (import_of(tt)[1], tt) for tt in callees if import_of(tt)]
 
@@ -3565,6 +3630,8 @@ for size, a in sorted(U, key=lambda x: x[1]):
             internal[k] = internal.get(k, 0) + 1
 VEC4_DECL = "typedef float Vec4f __attribute__((ext_vector_type(4)));\n\n"
 FLOAT2_DECL = "struct Float2 {\n    float x;\n    float y;\n};\n\n"
+VECU_DECL = ("// A 16-byte vector passed and returned in two x registers.\nunion VecU {\n    Vec4f v;\n    long l[2];\n};\n"
+             "static inline VecU vecu(Vec4f v) {\n    VecU u;\n    u.v = v;\n    return u;\n}\n\n")
 head = ("// Small functions generated by symbolic execution (calls, virtual calls, stack locals, guards, arrays, floats): loads and call results are named\n"
         "// locals in their original order. Struct, field and callee names are placeholders after the\n"
         "// address and offset. Status: matching/README.md.\n\n")
@@ -3582,7 +3649,7 @@ for mn in sorted(IMPORTS_USED):
         imp_lines.append(f'extern "C" {r_} {mn}({", ".join(ps_)});')
 cdecl_text = "\n".join(imp_lines) + "\n\n" + "\n".join(f"{rts} {nm}_{t:x}({', '.join(atypes)});{' ' * 8}// 0x71{t:08x}" for (t, atypes, nm), rts in sorted(CALLEES.items())
                        if not any(x.endswith("*") and x != "void*" for x in list(atypes) + [rts]))
-open(out, "w", encoding="utf-8", newline="\n").write(head + ("#include <arm_neon.h>\n\n" if any("float32x4_t" in d_ for d_ in defs) else "") + (VEC4_DECL if any("Vec4f" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))
+open(out, "w", encoding="utf-8", newline="\n").write(head + ("#include <arm_neon.h>\n\n" if any("float32x4_t" in d_ for d_ in defs) else "") + (VEC4_DECL if any("Vec4f" in d_ or "VecU" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + (VECU_DECL if any("VecU" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))
 m = MATCHDIR
 if os.environ.get("SYMOUT"):
     json.dump({"unit": unit, "gsyms": sorted(GSYMS),

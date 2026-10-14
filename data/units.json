@@ -14815,7 +14815,30 @@
     "_Z13callee_1af4d0lPv": "0x71001af4d0",
     "_Z13callee_1af4d0ll": "0x71001af4d0",
     "_Z13callee_1af564lPv": "0x71001af564",
-    "_Z13callee_459a48lPv": "0x7100459a48"
+    "_Z13callee_459a48lPv": "0x7100459a48",
+    "gLocal80347c_397750": "0x710080347c",
+    "gLocal80fb48_41d63c": "0x710080fb48",
+    "got:gGlobalc23100_39fe48": "0x7100c23100",
+    "got:gGlobalc2b230_397750": "0x7100c2b230",
+    "got:gGlobalc2ba50_43c764": "0x7100c2ba50",
+    "got:gGlobalc2dac8_5bb4dc": "0x7100c2dac8",
+    "_Z13callee_1ee4dcPvS_": "0x71001ee4dc",
+    "_Z13callee_397378l": "0x7100397378",
+    "_Z13callee_397488l": "0x7100397488",
+    "_Z13callee_3fbec4Pvii": "0x71003fbec4",
+    "_Z13callee_3fdd44ii": "0x71003fdd44",
+    "_Z13callee_3ffb00i": "0x71003ffb00",
+    "_Z13callee_455b04lPvffffffff": "0x7100455b04",
+    "_Z13callee_465bd0PvS_": "0x7100465bd0",
+    "_Z13callee_4668fcPvS_": "0x71004668fc",
+    "_Z13callee_466b68PvS_": "0x7100466b68",
+    "_Z13callee_471fd8Pvlllllii": "0x7100471fd8",
+    "_Z13callee_4972d0Pvl": "0x71004972d0",
+    "_Z13callee_4ce8e0Pv": "0x71004ce8e0",
+    "_Z13callee_4fe9bcPvl": "0x71004fe9bc",
+    "_Z13callee_5705b4PvS_i": "0x71005705b4",
+    "_Z13callee_59457cl": "0x710059457c",
+    "_Z13callee_5e500cPvii": "0x71005e500c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -23141,6 +23164,17 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s2_functions5.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z11call_43c764P11Arg43c764_0": "0x710043c764",
+        "_Z11call_506264P11Arg506264_0P11Arg506264_1": "0x7100506264",
+        "_Z11call_5fa7f0Pvl": "0x71005fa7f0"
       }
     }
   }
