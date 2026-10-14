@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-5.31% of bytes (297,324 of 5,603,025) and 31.47% of functions (5,439 of 17,282) match exactly; 201 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+5.31% of bytes (297,696 of 5,603,025) and 31.53% of functions (5,449 of 17,282) match exactly; 201 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-5,449 of 5,650 attempted functions match: 5,439 inventory functions (297,324 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 201 are near misses, all `m`.
+5,459 of 5,660 attempted functions match: 5,449 inventory functions (297,696 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 201 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -341,6 +341,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 19 of 19 in `misc/destructors3.cpp` | complete-object destructors with a root base and an out-of-line second base at +8 or +10, own members with inner groups; seven deleting variants through the root's `operator delete` (default heap) | match |
 | 27 of 27 in `misc/destructors4.cpp` | complete-object destructors found by a shape scan (vtable store, member destructor calls, tail call): root base or own vtable, optional second base; five deleting variants | match |
 | 7 of 7 in `misc/destructors5.cpp` | destructors whose direct base is polymorphic with an inline destructor (its vtable is stored again partway through), one deleting variant | match |
+| 9 of 9 in `misc/variant_functions7.cpp` | the variant search after indexed loads stopped being rejected by the page-load check | match |
+| 1 of 1 in `misc/loop_functions3.cpp` | the loop generator rebuilt on the newest combined generator | match |
 | 45 of 45 in `misc/variant_functions6.cpp` | the variant search with tail calls allowed anywhere in a function, not only as its last instruction | match |
 | 3 of 3 in `misc/switches/` | generated functions with a `switch` through a jump table, one unit each so its table can be mapped as the unit's `.rodata` (`switch_197ac4.cpp`, `switch_28874c.cpp`, `switch_f08.cpp`) | match |
 | 19 of 19 in `misc/variant_functions5.cpp` | the variant search with `adrp` pages as local objects, element access (base plus a scaled index, `umaddl`/`madd`) as `reinterpret_cast<Elem*>(base)[i].field`, and bit tests on pointer-typed fields cast to `long` | match |
