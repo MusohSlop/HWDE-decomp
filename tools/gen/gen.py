@@ -1295,7 +1295,7 @@ def gen_function(a, ins):
                     if xn_ < 8: written.add(xn_)
                 k += 1; continue
             vd_ = re.fullmatch(r"v(\d+)\.(4s|2d|16b)", ops[0]) if ops else None
-            if vd_ and m in ("fadd", "fsub", "fmul", "fmla", "fmls", "fneg", "dup", "movi") and "novec" not in knobs:
+            if vd_ and m in ("fadd", "fsub", "fmul", "fmla", "fmls", "fneg", "dup", "movi", "fmov") and "novec" not in knobs:
                 dn_ = int(vd_.group(1))
                 def vec_(o_):
                     mv_ = re.fullmatch(r"v(\d+)\.4s", o_)
@@ -1334,6 +1334,8 @@ def gen_function(a, ins):
                         if lo_ is None:
                             raise Fail("dup form")
                         regs["f"][dn_] = ("vsplat", lo_)
+                elif m == "fmov" and len(ops) == 2 and vd_.group(2) == "4s" and ops[1].startswith("#") and "novecsplat" not in knobs:
+                    regs["f"][dn_] = ("vsplat", ("fconst", float(ops[1].lstrip("#"))))
                 elif m == "movi" and len(ops) == 2 and re.fullmatch(r"#0+|#0x0+", ops[1]):
                     regs["f"][dn_] = ("vsplat", ("fconst", 0.0))
                 else:
