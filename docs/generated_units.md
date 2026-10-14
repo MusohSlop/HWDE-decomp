@@ -39,6 +39,7 @@ real classes.
 | `misc/variant_functions10.cpp`, `misc/variant_functions11.cpp` | variant search, tenth and eleventh runs | as `misc/variant_functions5.cpp` |
 | `misc/variant_functions12.cpp` | variant search, twelfth run (zero-extension) | as `misc/variant_functions5.cpp` |
 | `misc/variant_functions13.cpp`, `misc/variant_functions14.cpp` | variant search, thirteenth and fourteenth runs | as `misc/variant_functions5.cpp` |
+| `misc/variant_functions15.cpp` | variant search, fifteenth run (inner element arrays, byte-offset indexes) | as `misc/variant_functions5.cpp`, plus byte arrays `field_OFF[1]` read through casts |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/loop_functions2.cpp` | loops with if/else bodies and pointer induction variables | as `misc/loop_functions.cpp`, plus element structs `ElemFUNC_rN` sized to the stride |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |
