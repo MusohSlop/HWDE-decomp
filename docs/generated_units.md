@@ -46,6 +46,7 @@ real classes.
 | `misc/variant_functions19.cpp` | variant search, nineteenth run (dead merges dropped, void tail-call functions) | as `misc/variant_functions17.cpp` |
 | `misc/variant_functions20.cpp` | variant search, twentieth run (callee overloads and second names) | as `misc/variant_functions17.cpp`; `callee2_ADDR`/`callee3_ADDR` are second placeholder names for `callee_ADDR` |
 | `misc/variant_functions21.cpp` | variant search, twenty-first run (compile-error fixes) | as `misc/variant_functions20.cpp` |
+| `misc/variant_functions22.cpp` | variant search, twenty-second run (shifted operands, zero-extended parameters, large constant offsets) | as `misc/variant_functions20.cpp` |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/loop_functions2.cpp` | loops with if/else bodies and pointer induction variables | as `misc/loop_functions.cpp`, plus element structs `ElemFUNC_rN` sized to the stride |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |
