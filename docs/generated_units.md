@@ -27,6 +27,7 @@ real classes.
 | `misc/general_functions5.cpp` | combined generator with if/else structuring | as `misc/general_functions4.cpp`, plus merged locals `mN` assigned in both branches |
 | `misc/variant_functions.cpp` | combined generator with a per-function variant search | as `misc/general_functions5.cpp` |
 | `misc/variant_functions2.cpp` | variant search, second run | as `misc/general_functions5.cpp` |
+| `misc/variant_functions3.cpp` | variant search, third run | as `misc/general_functions5.cpp` |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |
 
