@@ -257,11 +257,9 @@ public:
 // 0x7100055e78
 JointSlot::JointSlot() : owner(nullptr), link(nullptr), a(-1), b(-1), c(0), d(-1), data(nullptr), extra(nullptr) {}
 
-// Vtable through the GOT slot at 0x7100c22030.
-class JointMark {
-public:
-    JointMark();
-    virtual void key_function();
+// The fields sit in a non-virtual base, so they are set before the vtable pointer is stored.
+struct JointMarkBase {
+    JointMarkBase() : owner(nullptr), link(nullptr), a(-1), b(-1), c(0) {}
 
     void* owner;              // +08
     void* link;               // +10
@@ -269,6 +267,12 @@ public:
     int b;                    // +1c
     int c;                    // +20
 };
+// Vtable through the GOT slot at 0x7100c22030.
+class JointMark : public JointMarkBase {
+public:
+    JointMark();
+    virtual void key_function();
+};
 
 // 0x71000593c4
-JointMark::JointMark() : owner(nullptr), link(nullptr), a(-1), b(-1), c(0) {}
+JointMark::JointMark() {}

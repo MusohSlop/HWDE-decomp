@@ -37,7 +37,7 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   arithmetic and bit-field instructions.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
-`bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst` and
+`bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
 `inlmask_N`, `memberaddr`, `sortstores` and `vptrlast`. Functions whose generated source would exceed 2 MB
 are skipped (forking at every branch can grow a function's source exponentially).
 
