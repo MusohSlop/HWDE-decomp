@@ -19561,6 +19561,20 @@
       "map": {
         ".rodata.cst4": "0x710073b000"
       }
+    },
+    "misc/variant_functions43.cpp": {
+      "functions": {
+        "_Z9call_1b4cPv": "0x7100001b4c",
+        "_Z9call_9f28i": "0x7100009f28",
+        "_Z9call_a00cPv": "0x710000a00c",
+        "_Z10call_34e1csi": "0x7100034e1c",
+        "_Z11call_193c54P11Arg193c54_0i": "0x7100193c54",
+        "_Z11call_1a76f8P11Arg1a76f8_0": "0x71001a76f8",
+        "_Z11call_3fe75ci": "0x71003fe75c"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
+      }
     }
   }
 }
