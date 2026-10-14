@@ -14,6 +14,9 @@ struct RosterSlot {
     unsigned int officer_type; // +24
     unsigned char pad28[0x28];
     Gauge19d2 gauge;          // +50
+    unsigned char pad51[0x147];
+    int defeated;             // +198
+    int captured;             // +19c
 };
 
 struct RosterPlayer {
@@ -27,8 +30,11 @@ struct RosterTable {
     RosterSlot* slots[4];     // +b18
     unsigned char padb38[0x10];
     unsigned int player_count; // +b48
+    unsigned int slot_count;  // +b4c
 
     RosterPlayer* player(int index) { return static_cast<unsigned int>(index) < 2 ? players[index] : players[0]; }
+    RosterSlot* slot(int index) { return static_cast<unsigned int>(index) < 4 ? slots[index] : slots[0]; }
+    static int slot_index(int index) { return static_cast<unsigned int>(index) < 4 ? index : -1; }
 };
 
 struct StepInfo {
@@ -53,7 +59,11 @@ struct StepOwner {
     unsigned char pad[0x138b90];
     StepBits bits;            // +138b90
     MessageQueue messages;    // +139338
-    unsigned char pad13958c[0x3bc];
+    unsigned char pad139588[0x350];
+    int fade_mode;            // +1398d8
+    float fade_rate;          // +1398dc
+    unsigned char pad1398e0[0x60];
+    unsigned char state;      // +139940
     StepInfo* info;           // +139948
     unsigned char recording;  // +139950
 };
@@ -90,7 +100,9 @@ struct UnitRecord {
     unsigned int high_bits : 5;
     unsigned int : 0;
     unsigned int state_kind : 3; // +11c
-    unsigned int state_low : 13;
+    unsigned int state_low : 7;
+    unsigned int order : 3;
+    unsigned int state_mid_low : 3;
     unsigned int following : 1;
     unsigned int state_mid : 3;
     unsigned int side : 1;
@@ -135,7 +147,9 @@ struct alignas(16) SpotPosition {
 
 struct SpotRecord {
     SpotPosition position;    // +00
-    unsigned char pad10[0x194];
+    unsigned char pad10[0x20];
+    unsigned int points[4];   // +30
+    unsigned char pad40[0x164];
     unsigned int limits[2];   // +1a4
     unsigned char pad1ac[0x164];
 };
@@ -153,6 +167,14 @@ struct PointRecord {
     unsigned char pad20[0x14];
     int active;               // +34
     unsigned char pad38[0x18];
+};
+
+struct LinkCell {
+    unsigned char kind;       // +00
+    unsigned char value;      // +01
+    unsigned char pad2[2];
+    unsigned char state;      // +04
+    unsigned char pad5[3];
 };
 
 struct OfficerType {
@@ -174,7 +196,9 @@ struct UnitRoster {
     OfficerRecord officers[300]; // +15e60
     unsigned char pad95a20_gap[0x95a20 - 0x15e60 - 300 * 0x6d0];
     OfficerType* types;       // +95a20
-    unsigned char pad95a28[0xcee40 - 0x95a28];
+    unsigned char pad95a28[0xc6dc0 - 0x95a28];
+    LinkCell links[0x40][0x40]; // +c6dc0
+    unsigned char padcedc0[0x80];
     SpotRecord spots[0x18];   // +cee40
     CampRecord camps[10];     // +d37c0
     PointRecord points[0x40]; // +d39a0
@@ -182,6 +206,11 @@ struct UnitRoster {
     CampRecord* camp(unsigned int id) { return id < 10 ? &camps[id] : nullptr; }
     SpotRecord* spot(unsigned int id) { return id < 0x18 ? &spots[id] : nullptr; }
     PointRecord* point(unsigned int id) { return id < 0x40 ? &points[id] : nullptr; }
+    LinkCell* link(unsigned int from, unsigned int to) {
+        unsigned int column = to < 0x40 ? to : 0;
+        LinkCell* row = links[from < 0x40 ? from : 0];
+        return &row[column];
+    }
 
     UnitRecord* unit(unsigned int id) { return id < 0xf6 ? &units[id] : nullptr; }
     OfficerRecord* officer(unsigned int id) { return id < 300 ? &officers[id] : nullptr; }
@@ -730,7 +759,8 @@ void place_marker_1c3550(const UnitCommand* command) {
 }
 
 struct BattleSetup {
-    unsigned int flags;
+    unsigned int flags;       // +00
+    unsigned int options;     // +04
 };
 BattleSetup* get_battle_setup();                                            // 0x710016ef34
 void open_camp_16ee2c(unsigned int camp, unsigned int kind);                // 0x710016ee2c
@@ -872,9 +902,9 @@ void move_unit_16b1f8(int unit, const MarkerPosition* position, int flag, float 
 // 0x71001c019c
 void move_unit_1c019c(const UnitCommand* command) {
     int id = resolve_unit_first(command->unit);
-    float x = static_cast<unsigned int>(command->value * 1000 + 500);
-    float z = static_cast<unsigned int>(command->extra[0] * 1000 + 500);
-    MarkerPosition position = {x, 0.0f, z, 1.0f};
+    int cell_x = command->value, cell_z = command->extra[0];
+    MarkerPosition position = {static_cast<float>(static_cast<unsigned int>(cell_x * 1000 + 500)), 0.0f,
+                               static_cast<float>(static_cast<unsigned int>(cell_z * 1000 + 500)), 1.0f};
     UnitRecord* unit = gShop->unit(id);
     if (unit->state_kind & 4)
         move_unit_16af1c(id, &position, 1, 0.0f);
@@ -1111,4 +1141,170 @@ void play_music_part_1c1ff0(MusicCommand* command) {
         set_track_3f50d4(gMusic_c22d90, track);
     if (gGlobal_c22ca8->recording)
         record_track_1a7650(order_board_18d5d8(gShop), track);
+}
+// 0x71001b6968
+unsigned char link_value_1b6968(unsigned int from, unsigned int to, bool resolved) {
+    LinkCell* cell = gShop->link(from, to);
+    unsigned char value = cell->value;
+    if (resolved && cell->state == 5)
+        value = cell->kind;
+    return value;
+}
+void activate_point_1a9b5c(unsigned int point, int value);                  // 0x71001a9b5c
+
+// 0x71001c0c34
+void activate_spot_points_1c0c34(const UnitCommand* command) {
+    unsigned int id = resolve_spot_1b69cc(command->unit);
+    SpotRecord* spot = gShop->spot(id);
+    for (int i = 0; i < 4; ++i) {
+        unsigned int point = spot->points[i];
+        if (point < 0x40)
+            activate_point_1a9b5c(point, command->value);
+    }
+}
+void reset_focus_191928(FocusInfo* focus);                                  // 0x7100191928
+void set_setup_flags_16f618(BattleSetup* setup, unsigned long flags);       // 0x710016f618
+void set_setup_mode_16f6c0(BattleSetup* setup, int mode);                   // 0x710016f6c0
+
+// 0x71001ba2f0
+void set_battle_mode_1ba2f0(const UnitCommand* command) {
+    if ((get_battle_setup()->flags & 0x400) || (get_battle_setup()->options & 2)) {
+        if (command->unit == 2) {
+            reset_focus_191928(focus_info_18f0e0(gShop));
+            gGlobal_c22ca8->fade_mode = 1;
+            gGlobal_c22ca8->fade_rate = 1.0f;
+            return;
+        }
+    }
+    set_setup_flags_16f618(get_battle_setup(), 8);
+    set_setup_mode_16f6c0(get_battle_setup(), command->unit);
+}
+unsigned char music_mode_20d984(BattleMusic* music, int mode);              // 0x710020d984
+void set_time_limit_16f6b0(BattleSetup* setup, int seconds);                // 0x710016f6b0
+
+// 0x71001bd1c0
+void set_time_limit_1bd1c0(const UnitCommand* command) {
+    int minutes = command->unit;
+    if (current_music_6b40()) {
+        BattleMusic* music = current_music_6b40();
+        if (music_mode_20d984(music, 0x15) || music->level == 6) {
+            if (music_mode_20d984(current_music_6b40(), 9))
+                minutes = 20;
+            if (music_mode_20d984(current_music_6b40(), 10))
+                minutes = 20;
+        }
+    }
+    set_time_limit_16f6b0(get_battle_setup(), minutes ? minutes * 3600 : -1);
+}
+struct UnitSlot;
+UnitSlot* unit_slot_19bcfc(SpotSlots* slots, unsigned int unit);            // 0x710019bcfc
+void set_slot_range_19ba90(UnitSlot* slot, int near, int far);              // 0x710019ba90
+void set_slot_angle_19ba98(UnitSlot* slot, int angle);                      // 0x710019ba98
+
+struct RangeCommand {
+    int pad0;
+    int unit;                 // +04
+    int near;                 // +08
+    int far;                  // +0c
+    int angle;                // +10
+};
+
+// 0x71001ba5c8
+void set_unit_range_1ba5c8(const RangeCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    UnitSlot* slot = unit_slot_19bcfc(spot_slots_1898b8(gShop), id);
+    set_slot_range_19ba90(slot, command->near * 100, command->far * 100);
+    set_slot_angle_19ba98(slot, command->angle * 45);
+}
+
+// 0x71001ba8ac
+void stop_unit_1ba8ac(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    UnitRecord* unit = gShop->unit(id);
+    if (unit->team > 2)
+        return;
+    if (!(unit->state_kind & 5) && command->value)
+        return;
+    if (unit->state_kind & 4)
+        move_unit_16af1c(id, nullptr, 1, 0.0f);
+    else
+        move_unit_16ab4c(id, nullptr, 1, 0.0f);
+}
+
+// 0x71001bc9c4
+void set_unit_order_1bc9c4(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    UnitRecord* unit = gShop->unit(id);
+    if (unit->team > 2 || (unit->state_kind & 2) || (unit->flag_bits & 0x80))
+        return;
+    unit->order = 0;
+    switch (command->value) {
+    case 1:
+        unit->order = 1;
+        break;
+    case 2:
+        unit->order = 2;
+        break;
+    case 3:
+        unit->order = 4;
+        break;
+    }
+}
+void put_count_1ccd38(StepBits* bits, unsigned int index, int value);       // 0x71001ccd38
+
+static inline int resolve_count(int id) {
+    StepInfo* info = gGlobal_c22ca8->info;
+    if (info && info->step && (id & ~7) == 8)
+        id += info->step * 2 - 2;
+    return id;
+}
+
+// 0x71001c24f8
+void store_slot_total_1c24f8(const UnitCommand* command) {
+    int total = 0;
+    switch (command->value) {
+    case 1: {
+        RosterTable* table = gRecord_c21698;
+        for (unsigned int i = 0; i < table->slot_count; ++i)
+            total += table->slot(RosterTable::slot_index(i))->defeated;
+        break;
+    }
+    case 0: {
+        RosterTable* table = gRecord_c21698;
+        for (unsigned int i = 0; i < table->slot_count; ++i)
+            total += table->slot(RosterTable::slot_index(i))->captured;
+        break;
+    }
+    }
+    put_count_1ccd38(&gGlobal_c22ca8->bits, resolve_count(command->unit), total);
+}
+struct AreaCommand {
+    int pad0;
+    int kind;                 // +04
+    int from_x;               // +08
+    int from_z;               // +0c
+    int to_x;                 // +10
+    int to_z;                 // +14
+};
+void show_area_114f88(void* system, int kind, float x0, float z0, float x1, float z1); // 0x7100114f88
+void show_area_f2e8c(void* system, int kind, float x0, float z0, float x1, float z1);  // 0x71000f2e8c
+void hide_area_113a54(void* system);                                        // 0x7100113a54
+void hide_area_f2220(void* system);                                         // 0x71000f2220
+
+// 0x71001ba090
+void show_area_1ba090(const AreaCommand* command) {
+    int from_x = command->from_x, from_z = command->from_z;
+    MarkerPosition from = {static_cast<float>(static_cast<unsigned int>(from_x * 1000 + 500)), 0.0f,
+                           static_cast<float>(static_cast<unsigned int>(from_z * 1000 + 500)), 1.0f};
+    int to_x = command->to_x, to_z = command->to_z;
+    MarkerPosition to = {static_cast<float>(static_cast<unsigned int>(to_x * 1000 + 500)), 0.0f,
+                         static_cast<float>(static_cast<unsigned int>(to_z * 1000 + 500)), 1.0f};
+    if (static_cast<unsigned int>(command->kind) <= 1) {
+        queue_marker_19a914(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), &from, 8, &to, command->kind + 3);
+        show_area_114f88(gGlobal_c22a60, command->kind, from.x, from.z, to.x, to.z);
+        show_area_f2e8c(gGlobal_c22be8, command->kind, from.x, from.z, to.x, to.z);
+    } else {
+        hide_area_113a54(gGlobal_c22a60);
+        hide_area_f2220(gGlobal_c22be8);
+    }
 }

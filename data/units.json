@@ -2952,7 +2952,21 @@
     "_Z19record_track_1a7650P10OrderBoardi": "0x71001a7650",
     "_Z20current_track_3f50ccP11MusicPlayer": "0x71003f50cc",
     "_Z20prepare_track_3fa4a8i": "0x71003fa4a8",
-    "_Z22play_bgm_params_3f9b34iiiP9BgmParamsf": "0x71003f9b34"
+    "_Z22play_bgm_params_3f9b34iiiP9BgmParamsf": "0x71003f9b34",
+    "_Z17music_mode_20d984P11BattleMusici": "0x710020d984",
+    "_Z18reset_focus_191928P9FocusInfo": "0x7100191928",
+    "_Z21activate_point_1a9b5cji": "0x71001a9b5c",
+    "_Z21set_setup_mode_16f6c0P11BattleSetupi": "0x710016f6c0",
+    "_Z21set_time_limit_16f6b0P11BattleSetupi": "0x710016f6b0",
+    "_Z22set_setup_flags_16f618P11BattleSetupm": "0x710016f618",
+    "_Z16unit_slot_19bcfcP9SpotSlotsj": "0x710019bcfc",
+    "_Z21set_slot_angle_19ba98P8UnitSloti": "0x710019ba98",
+    "_Z21set_slot_range_19ba90P8UnitSlotii": "0x710019ba90",
+    "_Z15hide_area_f2220Pv": "0x71000f2220",
+    "_Z15show_area_f2e8cPviffff": "0x71000f2e8c",
+    "_Z16hide_area_113a54Pv": "0x7100113a54",
+    "_Z16put_count_1ccd38P8StepBitsji": "0x71001ccd38",
+    "_Z16show_area_114f88Pviffff": "0x7100114f88"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7972,7 +7986,16 @@
         "_Z22dismiss_spawned_1b981cPK11UnitCommand": "0x71001b981c",
         "_Z17play_music_1b9e14P12MusicCommand": "0x71001b9e14",
         "_Z15set_flag_1ba1b4PK11UnitCommand": "0x71001ba1b4",
-        "_Z22play_music_part_1c1ff0P12MusicCommand": "0x71001c1ff0"
+        "_Z22play_music_part_1c1ff0P12MusicCommand": "0x71001c1ff0",
+        "_Z17link_value_1b6968jjb": "0x71001b6968",
+        "_Z27activate_spot_points_1c0c34PK11UnitCommand": "0x71001c0c34",
+        "_Z22set_battle_mode_1ba2f0PK11UnitCommand": "0x71001ba2f0",
+        "_Z21set_time_limit_1bd1c0PK11UnitCommand": "0x71001bd1c0",
+        "_Z21set_unit_range_1ba5c8PK12RangeCommand": "0x71001ba5c8",
+        "_Z16stop_unit_1ba8acPK11UnitCommand": "0x71001ba8ac",
+        "_Z21set_unit_order_1bc9c4PK11UnitCommand": "0x71001bc9c4",
+        "_Z23store_slot_total_1c24f8PK11UnitCommand": "0x71001c24f8",
+        "_Z16show_area_1ba090PK11AreaCommand": "0x71001ba090"
       },
       "map": {
         "_ZZL12resolve_unitiE5local": "0x7100c44ce0",
@@ -8220,6 +8243,11 @@
     "misc/destructors6.cpp": {
       "functions": {
         "_ZN16Destructed33a338D2Ev": "0x710033a338"
+      }
+    },
+    "misc/stage_state.cpp": {
+      "functions": {
+        "_Z17stage_busy_1d740cP10StageState": "0x71001d740c"
       }
     }
   }
