@@ -79,6 +79,7 @@ real classes.
 | `misc/variant_functions51.cpp` | variant search, fifty-first run (unions, merged constant stores) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions52.cpp` | variant search, fifty-second run (fixed parallel runner) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions53.cpp` | `ef298` (member-array loop) | as `misc/variant_functions26.cpp` |
+| `misc/variant_functions54.cpp` | variant search, fifty-fourth run (byte offsets from loaded sizes) | as `misc/variant_functions26.cpp` |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/loop_functions2.cpp` | loops with if/else bodies and pointer induction variables | as `misc/loop_functions.cpp`, plus element structs `ElemFUNC_rN` sized to the stride |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |

@@ -13696,7 +13696,17 @@
     "_Z13callee_39dff0PvS_": "0x710039dff0",
     "_Z13callee_3d12b8Pv": "0x71003d12b8",
     "_Z13callee_5a42fcPviS_i": "0x71005a42fc",
-    "_Z13callee_208af0v": "0x7100208af0"
+    "_Z13callee_208af0v": "0x7100208af0",
+    "got:gGlobalc21e68_4adf8": "0x7100c21e68",
+    "got:gGlobalc21e70_4ae2c": "0x7100c21e70",
+    "got:gGlobalc21e78_4ae60": "0x7100c21e78",
+    "got:gGlobalc21e98_4af18": "0x7100c21e98",
+    "got:gGlobalc21ea0_4af48": "0x7100c21ea0",
+    "got:gGlobalc21ea8_4af78": "0x7100c21ea8",
+    "got:gGlobalc21eb0_4afb4": "0x7100c21eb0",
+    "got:gGlobalc21eb8_4aff4": "0x7100c21eb8",
+    "got:gGlobalc21ec0_4b034": "0x7100c21ec0",
+    "got:gGlobalc21ec8_4b068": "0x7100c21ec8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -21863,6 +21873,20 @@
     "misc/variant_functions53.cpp": {
       "functions": {
         "_Z10call_ef298P10Argef298_0": "0x71000ef298"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
+      }
+    },
+    "misc/variant_functions54.cpp": {
+      "functions": {
+        "_Z10call_4ae2cP10Arg4ae2c_0Pvf": "0x710004ae2c",
+        "_Z10call_4ae60P10Arg4ae60_0Pvf": "0x710004ae60",
+        "_Z10call_4af18P10Arg4af18_0Pv": "0x710004af18",
+        "_Z10call_4af48P10Arg4af48_0Pv": "0x710004af48",
+        "_Z10call_4afb4P10Arg4afb4_0iPvS1_ff": "0x710004afb4",
+        "_Z10call_4b034P10Arg4b034_0Pvi": "0x710004b034",
+        "_Z10call_4b068P10Arg4b068_0Pvi": "0x710004b068"
       },
       "map": {
         ".rodata.cst4": "0x710073b000"
