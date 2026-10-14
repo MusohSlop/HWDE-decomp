@@ -88,6 +88,7 @@ real classes.
 | `misc/s2_functions2.cpp` | second session, second run (float stack slots, `sqrtf`, float branches, indexed floats) | as `misc/s2_functions1.cpp` |
 | `misc/s2_functions3.cpp` | second session, third run (constant-store fields retyped, integer reads of two widths; only the newly generated functions) | as `misc/s2_functions1.cpp` |
 | `misc/s2_functions4.cpp` | second session, vector step 1 (vector arithmetic, fused multiply-adds by lane) | as `misc/s2_functions1.cpp`; `Vec4f` is an `ext_vector_type(4)` float, fused multiply-adds are `arm_neon.h` intrinsics on `float32x4_t` casts |
+| `misc/s2_functions5.cpp` | second session, vector steps 2-4 with the loop and call-register fixes of `master` (only the newly generated functions) | as `misc/s2_functions4.cpp` |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/loop_functions2.cpp` | loops with if/else bodies and pointer induction variables | as `misc/loop_functions.cpp`, plus element structs `ElemFUNC_rN` sized to the stride |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |
