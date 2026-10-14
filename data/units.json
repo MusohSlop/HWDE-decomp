@@ -2271,7 +2271,39 @@
     "_Z22bank_play_short_5a81c4P4BankjiPvS1_": "0x71005a81c4",
     "_Z16has_entry_1a78d4P9PostStateji": "0x71001a78d4",
     "_Z19post_message_1cea08iiiiiiiiiiP13OfficerRecordijll": "0x71001cea08",
-    "_Z17query_info_5790c4P9BlobQueryiP8BlobInfo": "0x71005790c4"
+    "_Z17query_info_5790c4P9BlobQueryiP8BlobInfo": "0x71005790c4",
+    "_Z16apply_value_e6a4if": "0x710000e6a4",
+    "_Z13member_18d5d8P15Container18d5d8": "0x710018d5d8",
+    "_Z17post_spawn_1a5e80P9PostStateP12SpawnMessage": "0x71001a5e80",
+    "_Z17post_spawn_1a61b4P9PostStateP12SpawnMessage": "0x71001a61b4",
+    "_Z17post_spawn_1a63fcP9PostStateP12SpawnMessage": "0x71001a63fc",
+    "_Z17post_spawn_1a65bcP9PostStateP12SpawnMessage": "0x71001a65bc",
+    "got:_ZGVZN6TypeOfI8ActorMidE3getEvE4node": "0x7100c22f98",
+    "got:_ZZN6TypeOfI8ActorMidE3getEvE4node": "0x7100c22fb0",
+    "got:_ZGVZN6TypeOfI8TaskRootE3getEvE4node": "0x7100c231f0",
+    "got:_ZZN6TypeOfI8TaskRootE3getEvE4node": "0x7100c231f8",
+    "got:_ZGVZN6TypeOfI12System5fcd4cE3getEvE4node": "0x7100c2de30",
+    "got:_ZZN6TypeOfI12System5fcd4cE3getEvE4node": "0x7100c2de58",
+    "got:_ZGVZN6TypeOfI11Actor1e47a4E3getEvE4node": "0x7100c22f90",
+    "got:_ZZN6TypeOfI11Actor1e47a4E3getEvE4node": "0x7100c22fb8",
+    "got:_ZGVZN6TypeOfI9ActorSideE3getEvE4node": "0x7100c22fc8",
+    "got:_ZZN6TypeOfI9ActorSideE3getEvE4node": "0x7100c22fd0",
+    "got:_ZGVZN6TypeOfI10SystemRootE3getEvE4node": "0x7100c2de40",
+    "got:_ZZN6TypeOfI10SystemRootE3getEvE4node": "0x7100c2de48",
+    "got:_ZGVZN6TypeOfI10Task5d08f8E3getEvE4node": "0x7100c231e0",
+    "got:_ZZN6TypeOfI10Task5d08f8E3getEvE4node": "0x7100c23208",
+    "got:_ZGVZN6TypeOfI9SystemMidE3getEvE4node": "0x7100c2de38",
+    "got:_ZZN6TypeOfI9SystemMidE3getEvE4node": "0x7100c2de50",
+    "got:_ZGVZN6TypeOfI7TaskMidE3getEvE4node": "0x7100c231e8",
+    "got:_ZZN6TypeOfI7TaskMidE3getEvE4node": "0x7100c23200",
+    "got:_ZGVZN6TypeOfI11Actor1e4a1cE3getEvE4node": "0x7100c22ff0",
+    "got:_ZZN6TypeOfI11Actor1e4a1cE3getEvE4node": "0x7100c22ff8",
+    "got:_ZGVZN6TypeOfI11Actor1e4874E3getEvE4node": "0x7100c22fc0",
+    "got:_ZZN6TypeOfI11Actor1e4874E3getEvE4node": "0x7100c22fd8",
+    "got:_ZGVZN6TypeOfI9ActorRootE3getEvE4node": "0x7100c22fa0",
+    "got:_ZZN6TypeOfI9ActorRootE3getEvE4node": "0x7100c22fa8",
+    "got:_ZGVZN6TypeOfI14ActorScaleStopE3getEvE4node": "0x7100c2dce0",
+    "got:_ZZN6TypeOfI14ActorScaleStopE3getEvE4node": "0x7100c2dce8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7206,6 +7238,45 @@
       "functions": {
         "_Z17write_blob_5710a8P9BlobTablePKhS2_j": "0x71005710a8",
         "_Z17write_blob_5711e0P9BlobTablePKhS2_j": "0x71005711e0"
+      }
+    },
+    "misc/arrival_tests.cpp": {
+      "functions": {
+        "_Z13arrived_24364P5Moverf": "0x7100024364",
+        "_Z13arrived_271e8P5Moverf": "0x71000271e8",
+        "_Z13arrived_290b8P5Moverf": "0x71000290b8",
+        "_Z13arrived_2a9f0P5Moverf": "0x710002a9f0",
+        "_Z13arrived_ca9e4P5Moverf": "0x71000ca9e4"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073baf8"
+      }
+    },
+    "misc/spawn_requests.cpp": {
+      "functions": {
+        "_Z20request_spawn_1bfdfcPK12SpawnRequest": "0x71001bfdfc",
+        "_Z20request_spawn_1bfee4PK12SpawnRequest": "0x71001bfee4",
+        "_Z20request_spawn_1bffccPK12SpawnRequest": "0x71001bffcc",
+        "_Z20request_spawn_1c00b4PK12SpawnRequest": "0x71001c00b4"
+      }
+    },
+    "misc/type_chains.cpp": {
+      "functions": {
+        "_ZN6TypeOfI11Actor1e47a4E3getEv": "0x71001e47a4",
+        "_ZN6TypeOfI11Actor1e4874E3getEv": "0x71001e4874",
+        "_ZN6TypeOfI11Actor1e4a1cE3getEv": "0x71001e4a1c",
+        "_ZN6TypeOfI10Task5d08f8E3getEv": "0x71005d08f8",
+        "_ZN6TypeOfI12System5fcd4cE3getEv": "0x71005fcd4c"
+      }
+    },
+    "misc/task_type_test.cpp": {
+      "functions": {
+        "_Z14as_task_1f7c94P10TaskObject": "0x71001f7c94"
+      }
+    },
+    "misc/scale_walk.cpp": {
+      "functions": {
+        "_Z20collect_scale_5d9d20PvP6Scale2P9ScaleNode": "0x71005d9d20"
       }
     }
   }
