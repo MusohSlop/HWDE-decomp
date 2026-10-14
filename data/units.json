@@ -2723,7 +2723,12 @@
     "_Z14support_506264P11Shape506264PK12SupportPointPv": "0x7100506264",
     "_Z14support_5065fcP11Shape5065fcPK12SupportPointPv": "0x71005065fc",
     "_Z14support_507140P11Shape507140PK12SupportPointPv": "0x7100507140",
-    "_Z14support_508314P11Shape508314PK12SupportPointPv": "0x7100508314"
+    "_Z14support_508314P11Shape508314PK12SupportPointPv": "0x7100508314",
+    "_Z15step_item_18fb0P9PhaseItem": "0x7100018fb0",
+    "_Z16begin_item_18a70P9PhaseItem": "0x7100018a70",
+    "_Z16reset_item_19368P9PhaseItem": "0x7100019368",
+    "_Z17finish_item_18ef0P9PhaseItem": "0x7100018ef0",
+    "_Z17release_item_ddb4P11PendingItem": "0x710000ddb4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7823,6 +7828,19 @@
         "_Z18below_plane_4fe9bcP11Shape508314PK5Plane": "0x71004fe9bc",
         "_Z18below_plane_4feb28P11Shape4ff0e8PK5Plane": "0x71004feb28",
         "_Z18below_plane_4fec94P11Shape4e5994PK5Plane": "0x71004fec94"
+      }
+    },
+    "misc/phase_lists.cpp": {
+      "functions": {
+        "_Z17begin_phase_1fa08P10PhaseListsj": "0x710001fa08",
+        "_Z16step_phase_1fab8P10PhaseListsj": "0x710001fab8",
+        "_Z18finish_phase_1fb68P10PhaseListsj": "0x710001fb68",
+        "_Z17reset_phase_1fcbcP10PhaseListsj": "0x710001fcbc",
+        "_Z19clear_pending_1fc50P12PendingLists": "0x710001fc50",
+        "_Z18sync_counter_1fd34P13FrameCounters": "0x710001fd34"
+      },
+      "map": {
+        ".rodata": "0x710073ea04"
       }
     }
   }
