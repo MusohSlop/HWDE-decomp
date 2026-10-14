@@ -2911,7 +2911,14 @@
     "_ZN15Member5eb124_10D2Ev": "0x71005eb124",
     "_ZN13SlotRootAde48D2Ev": "0x71000ade48",
     "got:_ZTV13SlotBankAf10c": "0x7100c224e8",
-    "got:_ZTV13SlotBankB63f4": "0x7100c22748"
+    "got:_ZTV13SlotBankB63f4": "0x7100c22748",
+    "_Z15focus_map_f25c0Pvff": "0x71000f25c0",
+    "_Z16open_camp_16ee2cj": "0x710016ee2c",
+    "_Z17raise_flag_168370jii": "0x7100168370",
+    "_Z17stage_mode_1d7364P9StepOwneri": "0x71001d7364",
+    "_Z19focus_camera_113df4Pvff": "0x7100113df4",
+    "_Z19queue_marker_19a914P11EffectQueuePK14MarkerPositioniPvi": "0x710019a914",
+    "_Z16open_camp_16ee2cjj": "0x710016ee2c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7915,7 +7922,9 @@
         "_Z25set_unit_condition_1c4888PK11UnitCommand": "0x71001c4888",
         "_Z20dismiss_group_1b91a0PK11UnitCommand": "0x71001b91a0",
         "_Z24dismiss_team_unit_1b9950PK15TeamUnitCommand": "0x71001b9950",
-        "_Z24post_unit_message_1b7b20PK11UnitCommand": "0x71001b7b20"
+        "_Z24post_unit_message_1b7b20PK11UnitCommand": "0x71001b7b20",
+        "_Z19place_marker_1c3550PK11UnitCommand": "0x71001c3550",
+        "_Z20activate_camp_1c7224PK11UnitCommand": "0x71001c7224"
       },
       "map": {
         "_ZZL12resolve_unitiE5local": "0x7100c44ce0",

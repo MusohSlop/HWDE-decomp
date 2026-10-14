@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-3.86% of bytes (216,052 of 5,603,025) and 23.79% of functions (4,111 of 17,282) match exactly; 186 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+3.86% of bytes (216,448 of 5,603,025) and 23.80% of functions (4,113 of 17,282) match exactly; 186 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-4,121 of 4,307 attempted functions match: 4,111 inventory functions (216,052 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 186 are near misses, all `m`.
+4,123 of 4,309 attempted functions match: 4,113 inventory functions (216,448 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 186 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -371,7 +371,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 7 of 7 in `misc/simple_ctors.cpp` | constructors found by a constructor-shape scan (base constructor, vtable, zeroed fields) | match |
 | 0 of 7 in `misc/plane_tests.cpp` | convex-shape plane tests (support point opposite the normal, signed distance); near misses by 3 words: the negated direction lands in another register and one add has its operands swapped. The negation has to go through a by-value `operator-` to get the original's packed integer form | near miss |
 | 0 of 1 in `misc/stack_layouts.cpp` | stacked layout (five fixed and five optional parts at running offsets); near miss by one word: the original branches on the negated dirty flag with `tbz w8, #0` where ours emits `cbz w8`. Tried: `&&`, `&`, `|`, a select into an `unchanged` flag (best), bool/int/unsigned char flags, `^ 1`, `== false`, if/else and preset assignments of `dirty`, inline helper vs written-out loops, member reloads. Five look-alike classes (`59b0a0`-`59bb80`) are left until this one matches | near miss |
-| 16 of 18 in `misc/unit_commands.cpp` | script commands on units: shared id resolution (local player through a guarded static, roster aliases, difficulty-stepped families) then field stores, timer clears, stance bitfields, alias updates, member orders, dismissals, player gauges, modes and conditions; near misses: `1c4c5c` loads the side bit as a byte where the original loads the word; `1b7b20` (unit message) has the opposite compare form for the text-id bound and one moved instruction | match |
+| 18 of 20 in `misc/unit_commands.cpp` | script commands on units: shared id resolution (local player through a guarded static, roster aliases, difficulty-stepped families) then field stores, timer clears, stance bitfields, alias updates, member orders, dismissals, player gauges, modes, conditions, map markers and camp activation; near misses: `1c4c5c` loads the side bit as a byte where the original loads the word; `1b7b20` (unit message) has the opposite compare form for the text-id bound and one moved instruction | match |
 | 5 of 9 in `misc/game_accessors3.cpp` | record transfer, save and restore loops, a capped value, a board shift; near misses: `2041d0` (return block placement), the three grid lookups `205420`/`205474`/`2054cc` (the original computes the row-or-flag test before the range checks) | match |
 | 13 of 15 in `misc/game_accessors2.cpp` | game-object and unit-record accessors (`2045f0`-`2062c0`): picks, flags, save backup and restore, levels, grades; `206040` (shared return block) and `20629c` (branches kept as branches) are near misses | match |
 | 22 in `misc/game_accessors.cpp` | game-object accessors after the item table (`201da0`-`2043f0`): bands, keys, ids, counts, stage, save-block selection, stock counts | match |

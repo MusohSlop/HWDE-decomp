@@ -111,6 +111,13 @@ struct OfficerRecord {
     unsigned char pad6d[0x663];
 };
 
+struct CampRecord {
+    unsigned char active;     // +00
+    unsigned char pad1[0xb];
+    unsigned int team;        // +0c
+    unsigned char pad10[0x20];
+};
+
 struct OfficerType {
     unsigned char pad[0x30];
     unsigned char flags;      // +30
@@ -130,6 +137,10 @@ struct UnitRoster {
     OfficerRecord officers[300]; // +15e60
     unsigned char pad95a20_gap[0x95a20 - 0x15e60 - 300 * 0x6d0];
     OfficerType* types;       // +95a20
+    unsigned char pad95a28[0xd37c0 - 0x95a28];
+    CampRecord camps[10];     // +d37c0
+
+    CampRecord* camp(unsigned int id) { return id < 10 ? &camps[id] : nullptr; }
 
     UnitRecord* unit(unsigned int id) { return id < 0xf6 ? &units[id] : nullptr; }
     OfficerRecord* officer(unsigned int id) { return id < 300 ? &officers[id] : nullptr; }
@@ -654,4 +665,54 @@ void post_unit_message_1b7b20(const UnitCommand* command) {
         }
     }
     flush_effects_19a7f4(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)));
+}
+struct MarkerPosition {
+    float x;                  // +00
+    float y;                  // +04
+    float z;                  // +08
+    float w;                  // +0c
+};
+void focus_camera_113df4(void* system, float x, float z);                   // 0x7100113df4
+void focus_map_f25c0(void* system, float x, float z);                       // 0x71000f25c0
+void queue_marker_19a914(EffectQueue* queue, const MarkerPosition* position, int a, void* b, int c); // 0x710019a914
+
+// 0x71001c3550
+void place_marker_1c3550(const UnitCommand* command) {
+    if (stage_busy_1d740c(gGlobal_c22ca8))
+        return;
+    float x = static_cast<unsigned int>(command->unit * 1000 + 500);
+    float z = static_cast<unsigned int>(command->value * 1000 + 500);
+    MarkerPosition position = {x, 0.0f, z, 1.0f};
+    focus_camera_113df4(gGlobal_c22a60, x, z);
+    focus_map_f25c0(gGlobal_c22be8, x, z);
+    queue_marker_19a914(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), &position, 2, nullptr, 5);
+}
+
+struct BattleSetup {
+    unsigned int flags;
+};
+BattleSetup* get_battle_setup();                                            // 0x710016ef34
+void open_camp_16ee2c(unsigned int camp, unsigned int kind);                // 0x710016ee2c
+unsigned char stage_mode_1d7364(StepOwner* owner, int mode);               // 0x71001d7364
+void raise_flag_168370(unsigned int flag, int a, int b);                    // 0x7100168370
+
+// 0x71001c7224
+void activate_camp_1c7224(const UnitCommand* command) {
+    unsigned int id = command->value;
+    CampRecord* camp = gShop->camp(id);
+    if (!camp->active)
+        return;
+    unsigned int kind = command->unit;
+    if (kind >= 3) {
+        if (camp->team > 2)
+            return;
+        open_camp_16ee2c(id, kind);
+        if (get_battle_setup()->flags & 0x4000) {
+            if (!stage_mode_1d7364(gGlobal_c22ca8, 3))
+                return;
+        }
+        raise_flag_168370(id + 0xec, 0, 1);
+        return;
+    }
+    open_camp_16ee2c(id, kind);
 }
