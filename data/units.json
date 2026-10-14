@@ -2981,7 +2981,20 @@
     "_Z18type_health_17097cj": "0x710017097c",
     "_Z21set_item_field_194778P10UnitRecordi": "0x7100194778",
     "_Z22set_type_health_170530jf": "0x7100170530",
-    "_Z22swap_field_rank_1f4b40ii": "0x71001f4b40"
+    "_Z22swap_field_rank_1f4b40ii": "0x71001f4b40",
+    "got:gManager_c22d68": "0x7100c22d68",
+    "_Z19post_request_252488P14Requests252488ii": "0x7100252488",
+    "got:gCallback_c22c30": "0x7100c22c30",
+    "_Z16set_focus_193184P11Focus172110ii": "0x7100193184",
+    "_Z17focus_info_18f0e0P12Roster254974": "0x710018f0e0",
+    "got:gOnce_c2ec00": "0x7100c2ec00",
+    "_Z14forward_427368P11Slots427368iPvS1_S1_S1_": "0x7100427368",
+    "_Z17open_board_1a8048P10Board40d18i": "0x71001a8048",
+    "_Z17stage_info_1d6ad0P11Stage1ccdf0": "0x71001d6ad0",
+    "_Z18order_board_18d5d8P12Roster254974": "0x710018d5d8",
+    "_Z18reset_queue_146f38P11Queue146f38": "0x7100146f38",
+    "_Z20ground_height_4534acPKf": "0x71004534ac",
+    "_Z22set_setup_flags_16f618P10Setup40d18m": "0x710016f618"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -8286,6 +8299,42 @@
       },
       "map": {
         ".rodata": "0x71007e6a2c"
+      }
+    },
+    "misc/command_helpers.cpp": {
+      "functions": {
+        "_Z15put_word_1ccc18P11Words1ccc18ji": "0x71001ccc18",
+        "_Z16top_clear_19b538P11Flags19b538": "0x710019b538",
+        "_Z15set_mode_1a76b0P10Mode1a76b0i": "0x71001a76b0",
+        "_Z18raise_stage_133d68P11Stage133d68": "0x7100133d68",
+        "_Z16row_value_1cbfdcP10Rows1cbfdcj": "0x71001cbfdc",
+        "_Z16set_count_19bb00P11Count19bb00i": "0x710019bb00",
+        "_Z16set_level_19bb1cP11Level19bb1ci": "0x710019bb1c",
+        "_Z16set_timer_1ccc20P12Timers1ccc20ji": "0x71001ccc20",
+        "_Z18add_counter_1ccd44P14Counters1ccd44ji": "0x71001ccd44",
+        "_Z19post_request_258150i": "0x7100258150",
+        "_Z16set_level_19b580P12Levels19b580ji": "0x710019b580",
+        "_Z19request_track_ffbb4P11Track0ffbb4j": "0x71000ffbb4",
+        "_Z16add_money_1a10e4P12Wallet1a10e4j": "0x71001a10e4",
+        "_Z18spend_money_1a111cP12Wallet1a10e4j": "0x71001a111c",
+        "_Z16pick_unit_254974P11Picks254974ji": "0x7100254974",
+        "_Z16set_focus_172110ii": "0x7100172110",
+        "_Z21set_stage_flag_1d738cP11Stage1d738cjh": "0x71001d738c",
+        "_Z17start_fade_3fa36cjffi": "0x71003fa36c",
+        "_Z19inside_field_195920PKf": "0x7100195920",
+        "_Z16find_kind_1a6f6cP13Entries1a6f6ci": "0x71001a6f6c",
+        "_Z14set_bit_1a7bd8P10Bits1a7bd8ih": "0x71001a7bd8",
+        "_Z16mark_unit_16a6acji": "0x710016a6ac",
+        "_Z16set_shown_1a48f4P10Seen1a48f4jh": "0x71001a48f4",
+        "_Z15set_seen_1a7b50P10Seen1a48f4jh": "0x71001a7b50",
+        "_Z14forward_453e4ciPvS_S_S_S_": "0x7100453e4c",
+        "_Z21open_board_once_40d18v": "0x7100040d18",
+        "_Z13ground_148d3cPKf": "0x7100148d3c",
+        "_Z16reset_log_165874P9Log165874": "0x7100165874",
+        "_Z15unlocked_1ccdf0P13Unlocks1ccdf0j": "0x71001ccdf0"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073bb78"
       }
     }
   }

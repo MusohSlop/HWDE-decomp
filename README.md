@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-4.00% of bytes (224,196 of 5,603,025) and 23.96% of functions (4,141 of 17,282) match exactly; 198 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+4.03% of bytes (225,536 of 5,603,025) and 24.11% of functions (4,167 of 17,282) match exactly; 201 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-4,151 of 4,349 attempted functions match: 4,141 inventory functions (224,196 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 198 are near misses, all `m`.
+4,177 of 4,378 attempted functions match: 4,167 inventory functions (225,536 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 201 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -341,6 +341,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 19 of 19 in `misc/destructors3.cpp` | complete-object destructors with a root base and an out-of-line second base at +8 or +10, own members with inner groups; seven deleting variants through the root's `operator delete` (default heap) | match |
 | 27 of 27 in `misc/destructors4.cpp` | complete-object destructors found by a shape scan (vtable store, member destructor calls, tail call): root base or own vtable, optional second base; five deleting variants | match |
 | 7 of 7 in `misc/destructors5.cpp` | destructors whose direct base is polymorphic with an inline destructor (its vtable is stored again partway through), one deleting variant | match |
+| 26 of 29 in `misc/command_helpers.cpp` | small helpers called by the script command dispatcher: table stores, clamped setters, saturating money updates, bit sets keyed by unit, fade starts, field bounds and a log reset (`.rodata.cst4` mapped at `73bb78`); near misses: `148d3c` (ground height) sets the zero result later than the original, `1ccdf0` (unlock test) computes the word index without the 32-bit wrap and swaps its saved registers, `40d18` (one-shot board open) loads the GOT address through another register | match |
 | 1 of 1 in `misc/slot_patterns.cpp` | a script command choosing one of five on/off patterns for three slots (jump table at `7e6a2c`, mapped as `.rodata`) | match |
 | 1 of 1 in `misc/stage_state.cpp` | the stage busy query, kept apart from its callers so it is not inlined into them | match |
 | 1 of 1 in `misc/destructors6.cpp` | a destructor with a member array, generated after the array lesson | match |
@@ -464,6 +465,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Guarded statics through the GOT.** Function-local statics whose guard and storage are reached through GOT slots belong to template instances (or other inline functions) rather than to plain functions. Explicitly instantiated `TypeOf<T>::get()` gives weak symbols and the GOT access; the same getter used in another unit is inlined there (`misc/type_chains.cpp`, `misc/task_type_test.cpp`).
 - **Bounds selected twice.** `sxtw; cmp #4; csinv x, x, xzr, lo` followed by a `csel` on the same flags comes from an index helper returning `-1` when out of range, fed into an accessor that falls back to element 0 (`misc/unit_commands.cpp`, `1c24f8`).
 - **Angle wraps.** A branch for `angle > pi` followed by `fadd` and `fcsel ... ls` for `angle <= -pi` is `if (a > pi) return a - 2pi; return a <= -pi ? a + 2pi : a;`; writing the second test as an `if` gives a second branch (`misc/unit_commands.cpp`, `1c02e4`).
+- **Byte flags, not bools.** A flag argument tested with `and w9, w2, #0xff; cbz w9` is an `unsigned char`; a `bool` parameter gives `tbz w2, #0`. Likewise a function returning `(byte >> 7) ^ 1` (`lsr; eor`) returns `unsigned char`, where `!bitfield` gives `ldrsb; cmp; cset` (`misc/command_helpers.cpp`).
 - **16-byte vectors.** A 16-byte copy done as two 64-bit loads where the last word is then overwritten (`ldr x10, [x9, #8]` followed by `str w9, [sp, #0xc]`) comes from a vector type declared `alignas(16)`; without the alignment Clang copies only the words it keeps (`misc/unit_commands.cpp`, `1c361c`).
 - **Range tests from switches.** `cmp w8, #2; b.hs` on `mode - 3` comes from `switch (mode) { case 3: case 4: ... }`. Both `(unsigned)(mode - 3) < 2` and `mode == 3 || mode == 4` give `cmp w8, #1; b.hi` (`misc/unit_commands.cpp`, `1c4478`). In the same unit, a select on `(health - 1) > 999` comes from `if (health < 1 || health > 1000) health = 1;` on an unsigned value.
 - **Flags accumulated in an unrolled loop.** `csel w8, w9, w8, eq` choosing between `m` and `m | x` (instead of `m | (c ? 0 : x)`) comes from a two-iteration loop that ORs into an `unsigned char` flag; written out as two `if`s, InstCombine folds the select into the OR (`1b9950`).
