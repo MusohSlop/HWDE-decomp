@@ -16991,6 +16991,17 @@
       "map": {
         ".rodata.cst4": "0x710073b000"
       }
+    },
+    "misc/variant_functions33.cpp": {
+      "functions": {
+        "_Z10call_18ef0P10Arg18ef0_0": "0x7100018ef0",
+        "_Z10call_245a8P10Arg245a8_0": "0x71000245a8",
+        "_Z10call_273e4P10Arg273e4_0": "0x71000273e4",
+        "_Z10call_cd024P10Argcd024_0": "0x71000cd024"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
+      }
     }
   }
 }

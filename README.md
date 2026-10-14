@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-6.60% of bytes (369,696 of 5,603,025) and 36.05% of functions (6,230 of 17,282) match exactly; 201 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+6.61% of bytes (370,120 of 5,603,025) and 36.07% of functions (6,234 of 17,282) match exactly; 201 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-6,240 of 6,441 attempted functions match: 6,230 inventory functions (369,696 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 201 are near misses, all `m`.
+6,244 of 6,445 attempted functions match: 6,234 inventory functions (370,120 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 201 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -357,6 +357,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 6 of 6 in `misc/variant_functions30.cpp` | the variant search with the highest stack object padded to the end of the local area (`sub sp, sp, #N`), for frames whose locals are larger than the fields used | match |
 | 23 of 23 in `misc/variant_functions31.cpp` | the variant search with both paths of a conditional branch joined at its immediate post-dominator (loop back edges left out) and their registers merged there; blocks the compiler shares between paths are written on each path and merged back by the compiler | match |
 | 3 of 3 in `misc/variant_functions32.cpp` | the variant search with `(id - c) & 0xffff` compared against a constant written as the two-sided test `id >= c && id <= c + n` on an `unsigned short` parameter (every one-sided form folds the mask to `0xfffc`); this resolves the range checks at `7428`, `7470` and `74bc` | match |
+| 4 of 4 in `misc/variant_functions33.cpp` | the variant search with single-use virtual call results passed straight into the call that uses them, so the other arguments are evaluated first as in the original | match |
 | 35 of 35 in `misc/variant_functions16.cpp` | the variant search with library calls named after their imports (stub addresses mapped through the PLT relocations to the dynamic symbol names): C functions with their prototypes and `nn::os`/`nn::oe`/`nn::util` functions declared in their namespaces | match |
 | 107 of 107 in `misc/variant_functions15.cpp` | the variant search with element arrays that start inside a struct (the element base shifted by whole strides) and unscaled indexes on wider accesses as byte offsets (`*reinterpret_cast<T*>(&field[i])`) | match |
 | 20 of 20 in `misc/variant_functions14.cpp` | the variant search with float register copies through the vector unit (`mov v8.16b, v0.16b`) and `ccmp` chains written as `&&`/`||` (the `nzcv` immediate decides which) | match |
