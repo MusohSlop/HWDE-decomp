@@ -521,6 +521,66 @@ def gen_function(a, ins):
             if a_[0] == b_[0]:
                 return a_[0], a_[1] + b_[1] if y_[1] == "+" else a_[1] - b_[1]
         return None
+    def i32_(v_):
+        """The 32-bit signed value v_ stands for (sign-extended operand of smull), or None."""
+        if v_[0] == "ext" and v_[1] == "int":
+            return v_[2]
+        return None
+    def smagic_ok_(M_, sh_):
+        """d when x * M >> sh (with the sign fix) is x / d for 32-bit signed x, else None."""
+        if M_ <= 0:
+            return None
+        d_ = round((1 << sh_) / M_)
+        if d_ < 2:
+            return None
+        import random as _r
+        rng_ = _r.Random(d_ * 7919 + sh_)
+        xs_ = [0, 1, -1, d_ - 1, d_, -d_, d_ + 1, -d_ - 1, (1 << 31) - 1, -(1 << 31), -(1 << 31) + 1] + \
+              [rng_.randrange(-(1 << 31), 1 << 31) for _ in range(2000)]
+        for x_ in xs_:
+            # both forms compute floor(x * M / 2**sh) plus one for a negative x
+            q_ = ((x_ * M_) >> sh_) + (1 if x_ < 0 else 0)
+            if q_ != abs(x_) // d_ * (1 if x_ >= 0 else -1):
+                return None
+        return d_
+    def sdivmagic_(v_):
+        """x / d and x % d for the signed multiply-high forms."""
+        if v_[0] != "bin" or v_[1] != "+" or v_[4] != "w":
+            return v_
+        for a_, b_ in ((v_[2], v_[3]), (v_[3], v_[2])):
+            # small magic: asr of the product, plus its sign bit
+            if a_[0] == "bin" and a_[1] == ">>" and a_[5] == "asr" and a_[4] == "x" and a_[3][0] == "const" and a_[3][1] >= 32 \
+                    and b_[0] == "bin" and b_[1] == ">>" and b_[5] == "lsr" and b_[3][0] == "const" and b_[3][1] == 63 \
+                    and a_[2] == b_[2] and a_[2][0] == "bin" and a_[2][1] == "*":
+                p_ = a_[2]
+                for x0_, m0_ in ((p_[2], p_[3]), (p_[3], p_[2])):
+                    x_ = i32_(x0_); mc_ = i32_(m0_) if m0_[0] == "ext" else m0_
+                    if x_ is None or mc_ is None or mc_[0] != "const":
+                        continue
+                    M_ = mc_[1] & 0xffffffff
+                    M_ = M_ - (1 << 32) if M_ >= 1 << 31 else M_
+                    d_ = smagic_ok_(M_, a_[3][1])
+                    if d_:
+                        return ("sdiv", x_, d_)
+            # large magic: ((hi(P) + x) >> s) + sign
+            if a_[0] == "bin" and a_[1] == ">>" and a_[5] == "asr" and a_[4] == "w" and a_[3][0] == "const" \
+                    and b_[0] == "bin" and b_[1] == ">>" and b_[5] == "lsr" and b_[3][0] == "const" and b_[3][1] == 31 \
+                    and a_[2] == b_[2] and a_[2][0] == "bin" and a_[2][1] == "+":
+                t_ = a_[2]
+                for h_, x0_ in ((t_[2], t_[3]), (t_[3], t_[2])):
+                    if not (h_[0] == "bin" and h_[1] == ">>" and h_[5] == "lsr" and h_[3][0] == "const" and h_[3][1] == 32
+                            and h_[2][0] == "bin" and h_[2][1] == "*"):
+                        continue
+                    p_ = h_[2]
+                    for xx_, m0_ in ((p_[2], p_[3]), (p_[3], p_[2])):
+                        x_ = i32_(xx_); mc_ = i32_(m0_) if m0_[0] == "ext" else m0_
+                        if x_ is None or mc_ is None or mc_[0] != "const" or x_ != x0_:
+                            continue
+                        M_ = mc_[1] & 0xffffffff  # x * (M - 2**32) + x * 2**32
+                        d_ = smagic_ok_(M_, 32 + a_[3][1])
+                        if d_:
+                            return ("sdiv", x_, d_)
+        return v_
     def divmagic_(v_):
         """x / d and x % d for the multiply-high forms of an unsigned 32-bit division by a constant."""
         if v_[0] != "bin":
@@ -544,6 +604,8 @@ def gen_function(a, ins):
             m_ = times_(v_[3])
             if m_ is not None and m_[0][0] == "udiv" and m_[0][2] == m_[1] and strip_u32_(m_[0][1]) == strip_u32_(v_[2]):
                 return ("urem", m_[0][1], m_[1])
+            if m_ is not None and m_[0][0] == "sdiv" and m_[0][2] == m_[1] and m_[0][1] == v_[2] and "nosdivmagic" not in knobs:
+                return ("srem", m_[0][1], m_[1])
         return v_
     def bf_lines_(sn_, off_, t_):
         W_ = BFW_[t_]
@@ -2498,6 +2560,8 @@ def gen_function(a, ins):
                 regs[dn] = ("bin", BIN[m], x, y, w, m)
                 if "nodivmagic" not in knobs:
                     regs[dn] = divmagic_(regs[dn])
+                if "nosdivmagic" not in knobs:
+                    regs[dn] = sdivmagic_(regs[dn])
                 if m == "and" and y[0] == "const" and y[1] in (0xff, 0xffff) and x[0] == "bin" and x[1] in ("-", "+") \
                         and x[2][0] == "param" and x[3][0] == "const" and pwidth.get(x[2][1]) in (None, "w") and "norange" not in knobs:
                     nty_ = "unsigned short" if y[1] == 0xffff else "unsigned char"
@@ -2662,7 +2726,7 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] == "copy":
             kids = [v[1]]
-        if v[0] in ("vlane", "vecu", "vpart", "udiv", "urem"):
+        if v[0] in ("vlane", "vecu", "vpart", "udiv", "urem", "sdiv", "srem"):
             kids = [v[1]]
         if v[0] == "vins":
             kids = [v[1], v[2]]
@@ -2766,7 +2830,7 @@ def gen_function(a, ins):
             return "Vec4f"
         if v[0] == "vecu":
             return "VecU"
-        if v[0] in ("udiv", "urem"):
+        if v[0] in ("udiv", "urem", "sdiv", "srem"):
             return "int"  # below 2**31: the divisor is at least 2
         if v[0] == "f2i":
             return "long" if v[3] == "x" else "int"
@@ -2937,6 +3001,11 @@ def gen_function(a, ins):
             return f"{expr(v[1], False)}[{v[2]}]"
         if v[0] == "vparam":
             return f"p{v[1]}.v"
+        if v[0] in ("sdiv", "srem"):
+            if vtype(v[1]).endswith("*"):
+                raise Fail("division of a pointer")
+            s_ = f"static_cast<int>({expr(v[1])}) {'/' if v[0] == 'sdiv' else '%'} {v[2]}"
+            return s_ if top else f"({s_})"
         if v[0] in ("udiv", "urem"):
             xs_ = expr(v[1])
             if vtype(v[1]).endswith("*"):

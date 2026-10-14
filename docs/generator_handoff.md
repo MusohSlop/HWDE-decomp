@@ -89,7 +89,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   anonymous struct of bitfields (Clang then computes the value before the load, as the original does);
 - unsigned division and modulo by a constant (knob `nodivmagic`): a multiply of a 32-bit unsigned value by a magic
   number shifted right by 32 or more, checked to be exact, is `x / d`, and `x - d * (x / d)` (msub, or shifted adds)
-  is `x % d`; `msub` is supported as `c - a*b`.
+  is `x % d`; `msub` is supported as `c - a*b`;
+- signed division and modulo by a constant (knob `nosdivmagic`): `smull` by a magic number with Clang's sign fix
+  (`asr` of the product plus its sign bit, or `asr` of high half plus x plus `lsr #31`), checked against truncating
+  division, is `x / d`, and `x - d * (x / d)` is `x % d`.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
