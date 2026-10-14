@@ -14712,7 +14712,30 @@
     "_Z12callee_4a660Pv": "0x710004a660",
     "_Z12callee_4b9a8Pv": "0x710004b9a8",
     "_Z13callee_1f18e8Pv": "0x71001f18e8",
-    "_Z13callee_33f620PvS_i": "0x710033f620"
+    "_Z13callee_33f620PvS_i": "0x710033f620",
+    "gLocal73e250_5bcd20": "0x710073e250",
+    "gLocal73e3d0_3e68c0": "0x710073e3d0",
+    "gLocal73e3e0_3e68c0": "0x710073e3e0",
+    "got:gGlobalc216f8_3e68c0": "0x7100c216f8",
+    "got:gGlobalc21880_3e51ec": "0x7100c21880",
+    "got:gGlobalc21dd0_3e51ec": "0x7100c21dd0",
+    "got:gGlobalc2cd68_4c1c50": "0x7100c2cd68",
+    "_Z13callee_3d4accPvS_ff": "0x71003d4acc",
+    "_Z13callee_3db908PvfffDv4_f": "0x71003db908",
+    "_Z13callee_455ebcPvffffffff": "0x7100455ebc",
+    "_Z13callee_4a9eecPvlS_": "0x71004a9eec",
+    "_Z13callee_4e046clf": "0x71004e046c",
+    "_Z13callee_4e05acl": "0x71004e05ac",
+    "_Z13callee_4e05aclPv": "0x71004e05ac",
+    "_Z13callee_4e2c68PvS_Dv4_f": "0x71004e2c68",
+    "_Z13callee_4e35d4PvS_S_S_S_": "0x71004e35d4",
+    "_Z13callee_4e37d4PvS_S_": "0x71004e37d4",
+    "_Z13callee_562bb8PvS_S_": "0x7100562bb8",
+    "_Z13callee_57cd8clffff": "0x710057cd8c",
+    "_Z13callee_57d274PvS_S_S_ffffff": "0x710057d274",
+    "_Z13callee_5ba38cPvS_Dv4_fS0_S0_S0_S0_S0_S0_S0_": "0x71005ba38c",
+    "_Z13callee_4c6cf4Pv": "0x71004c6cf4",
+    "_Z13callee_4e05acPvS_": "0x71004e05ac"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -22989,6 +23012,19 @@
       "functions": {
         "_Z10call_68674Pvii": "0x7100068674",
         "_Z10call_77620P10Arg77620_0": "0x7100077620"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s2_functions4.cpp": {
+      "functions": {
+        "_Z11call_3ddc78lif": "0x71003ddc78",
+        "_Z11call_3de328P11Arg3de328_0P11Arg3de328_1iif": "0x71003de328",
+        "_Z11call_4c1c50P11Arg4c1c50_0PvP11Arg4c1c50_2": "0x71004c1c50",
+        "_Z11call_4d7854P11Arg4d7854_0f": "0x71004d7854",
+        "_Z11call_5063ccP11Arg5063cc_0P11Arg5063cc_1P11Arg5063cc_2": "0x71005063cc"
       },
       "map": {
         ".rodata.cst4": "0x710073b000",
