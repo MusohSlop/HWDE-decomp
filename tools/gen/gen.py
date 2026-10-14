@@ -767,7 +767,42 @@ def gen_function(a, ins):
     def plain(kk):
         mk = ins[kk].mnemonic
         return not (mk.startswith("b.") or mk in ("cbz", "cbnz", "tbz", "tbnz", "b", "ret", "br", "blr"))
-    def live_at(kk):
+    LIVE_ = {}
+    def live_dataflow_():
+        n_ = len(ins)
+        ui_, di_, uf_, df_, succ_ = [], [], [], [], []
+        for kk_, ii in enumerate(ins):
+            r_, w_ = rw(ii); fr_, fw_ = frw(ii)
+            r_, w_, fr_, fw_ = set(r_), set(w_), set(fr_), set(fw_)
+            mk = ii.mnemonic
+            if mk in ("bl", "blr"):
+                r_ |= set(range(8)); fr_ |= set(range(8))
+                w_ |= set(range(19)); fw_ |= set(range(8)) | set(range(16, 32))
+            elif mk == "ret":
+                r_ |= {0}; fr_ |= {0}
+            elif mk == "br" or (mk == "b" and imm(ii.op_str) not in addr_index):
+                r_ |= set(range(8)); fr_ |= set(range(8))
+            ui_.append(r_); di_.append(w_); uf_.append(fr_); df_.append(fw_)
+            succ_.append(raw_succ_(kk_))
+        li_ = [set() for _ in range(n_)]; lf_ = [set() for _ in range(n_)]
+        changed_ = True
+        while changed_:
+            changed_ = False
+            for kk_ in range(n_ - 1, -1, -1):
+                oi_, of_ = set(), set()
+                for s_ in succ_[kk_]:
+                    oi_ |= li_[s_]; of_ |= lf_[s_]
+                ni_ = ui_[kk_] | (oi_ - di_[kk_]); nf_ = uf_[kk_] | (of_ - df_[kk_])
+                if ni_ != li_[kk_] or nf_ != lf_[kk_]:
+                    li_[kk_], lf_[kk_] = ni_, nf_; changed_ = True
+        LIVE_["i"], LIVE_["f"] = li_, lf_
+    def live_at(kk, inloop=True):
+        if "oldlive" not in knobs and inloop:
+            if not LIVE_:
+                live_dataflow_()
+            if kk >= len(ins):
+                return set(), set()
+            return set(LIVE_["i"][kk]), set(LIVE_["f"][kk])
         live, written_, flive, fwritten = set(), set(), set(), set()
         while kk < len(ins):
             ii = ins[kk]
@@ -861,7 +896,8 @@ def gen_function(a, ins):
                 latch["regs"] = regs; latch["flags"] = flags; latch["written"] = set(written)
                 return items
             if region and stop is not None and k > stop and k != alt:
-                raise Fail("escaped region")
+                if "noloopjoin" in knobs or not (ins[k].mnemonic == "ret" or returns_straight(k)):
+                    raise Fail("escaped region")
             if stop is not None and k == stop and not region:
                 if m.startswith("b."):
                     if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))):
@@ -1055,10 +1091,22 @@ def gen_function(a, ins):
                 dregion = None; alt_inner_ = None
                 if "forkjoin" not in knobs and tgt is not None and tgt > k:
                     J_ = ipdom_(k)
+                    lj_ = stop is not None and not region and "noloopjoin" not in knobs
+                    def block_start_(e_):
+                        def isbr_(mk_):
+                            return mk_ == "b" or mk_.startswith("b.") or mk_ in ("cbz", "cbnz", "tbz", "tbnz")
+                        targets_ = {addr_index.get(imm(x_.op_str.split(",")[-1])) for x_ in ins if isbr_(x_.mnemonic)}
+                        s_ = e_
+                        while s_ - 1 > k and s_ not in targets_:
+                            pm_ = ins[s_ - 1].mnemonic
+                            if isbr_(pm_) or pm_ in ("ret", "br"):
+                                break
+                            s_ -= 1
+                        return s_
                     if J_ == EXIT_ or J_ is None:
-                        J_ = stop if (stop is not None and region) else None
+                        J_ = (block_start_(stop) if lj_ else stop) if (stop is not None and (region or lj_)) else None
                     elif stop is not None and J_ > stop:
-                        J_ = None
+                        J_ = block_start_(stop) if lj_ else None
                     if J_ is not None and J_ > k + 1 and tgt <= J_:
                         dregion = ((k + 1, J_), (tgt, J_) if tgt < J_ else None, J_)
                 if dregion is None and region and alt is not None and tgt == alt and stop is not None and stop > k + 1 and region_ok(k + 1, stop, alt):
@@ -1101,7 +1149,8 @@ def gen_function(a, ins):
                         continue
                     merged = copyregs(regs)
                     assigns1, assigns2, decls_ = [], [], []
-                    live_i, live_f = live_at(alt_inner_ if alt_inner_ is not None else join)
+                    live_i, live_f = live_at(alt_inner_ if alt_inner_ is not None else join,
+                                             any(H_ <= k <= L_ for H_, L_ in loop_info))
                     keys = [(n, None) for n in set(r1) | set(r2) if isinstance(n, int)] + [(n, "f") for n in set(r1["f"]) | set(r2["f"])]
                     for n, kind in keys:
                         a_ = (r1["f"] if kind else r1).get(n)
@@ -2978,7 +3027,11 @@ def gen_function(a, ins):
             elif it[0] == "diamond":
                 _, cnd, decls_, taken_its, fall_its = it
                 for name, v in decls_:
-                    outl.append(f"{pad}{vtype(('var', name))} {name};")
+                    if hoist_stack:
+                        # declared in front of the enclosing loop, so the value is still in scope after it
+                        hoist_stack[-1].append((vtype(('var', name)), name))
+                    else:
+                        outl.append(f"{pad}{vtype(('var', name))} {name};")
                 f_, cc_ = cnd
                 if cc_ not in NEGCC:
                     raise Fail("negate")
