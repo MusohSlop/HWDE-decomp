@@ -7958,7 +7958,7 @@
         "_ZNK10TextChunks4flagEjj": "0x7100219048"
       },
       "map": {
-        ".rodata": "0x710073df50"
+        ".rodata.cst32": "0x710073df50"
       }
     }
   }
