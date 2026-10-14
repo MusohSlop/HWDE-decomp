@@ -1354,7 +1354,9 @@ extern Singleton232a8* gSingleton_c232a8;
 void* current_unit_table() {
     BattleSetupMode* setup = reinterpret_cast<BattleSetupMode*>(get_battle_setup());
     Singleton232a8* tables = gSingleton_c232a8;
-    return !(setup->mode4 & 4) ? tables->normal : tables->special;
+    if (setup->mode4 & 4)
+        return tables->special;
+    return tables->normal;
 }
 
 // 0x7100209d34; original file: game data tables, 0x7100209d34
