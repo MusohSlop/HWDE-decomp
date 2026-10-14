@@ -83,7 +83,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   `ldrsh` shows an int parameter;
 - argument counts from known callee names (knob `noknownarity`): a callee named with a real mangled name in the
   symbol table or a hand-written unit never gets more integer or float arguments than its parameter list (plus
-  `this` for a member) allows; a function that fails with a reduced call is generated again without it.
+  `this` for a member) allows; a function that fails with a reduced call is generated again without it;
+- bitfield writes (knob `nobitfield`): a store of `(load of the same field & mask) | x` that rewrites one run of bits
+  is a bitfield assignment `p->bfOFF_START = x;`, with the field declared as a union of the whole field and an
+  anonymous struct of bitfields (Clang then computes the value before the load, as the original does).
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,

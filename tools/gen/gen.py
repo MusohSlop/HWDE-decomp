@@ -457,6 +457,54 @@ def gen_function(a, ins):
     starts = sorted(starts)
     stackobjs = {}      # start -> {off: ctype}
     cstore_typed_ = set()   # (struct, off) typed only by constant stores so far
+    bitfields_ = {}         # (struct, off) -> {(first bit, width)} written as bitfields
+    BFW_ = {"unsigned char": 8, "signed char": 8, "unsigned short": 16, "short": 16, "int": 32, "unsigned int": 32}
+    def bitfield_of_(sn_, off_, val_):
+        """(first bit, width, inserted value) when val_ rewrites some bits of the field it was loaded from."""
+        W_ = BFW_.get(structs[sn_].get(off_, ("",))[0])
+        if W_ is None or val_[0] != "bin" or val_[1] != "|":
+            return None
+        for keep_, x_ in ((val_[2], val_[3]), (val_[3], val_[2])):
+            if not (keep_[0] == "bin" and keep_[1] == "&" and keep_[3][0] == "const"):
+                continue
+            l_ = keep_[2]
+            lt_ = vars_.get(l_[1]) if l_[0] == "var" else None
+            if not (isinstance(lt_, tuple) and lt_[0] == "load" and lt_[1] == sn_ and lt_[2] == off_):
+                continue
+            hole_ = ~keep_[3][1] & ((1 << W_) - 1)
+            if hole_ == 0:
+                continue
+            s_ = (hole_ & -hole_).bit_length() - 1
+            w_ = bin(hole_).count("1")
+            if hole_ != ((1 << w_) - 1) << s_ or w_ == W_:
+                continue
+            if x_[0] == "const":
+                continue  # setting constant bits compiles the same either way
+            if s_:
+                if not (x_[0] == "bin" and x_[1] == "<<" and x_[3][0] == "const" and x_[3][1] == s_):
+                    continue
+                x_ = x_[2]
+            if x_[0] == "bin" and x_[1] == "&" and x_[3][0] == "const" and x_[3][1] == (1 << w_) - 1:
+                x_ = x_[2]
+            if x_[0] == "bin" and (x_[1] == "|" or (x_[1] == "&" and x_[2][0] == "bin" and x_[2][1] == "&")):
+                return None  # several fields written at once: keep the explicit form
+            return s_, w_, x_
+        return None
+    def bf_lines_(sn_, off_, t_):
+        W_ = BFW_[t_]
+        out_ = ["    union {", f"        {t_} field_{off_:x};", "        struct {"]
+        pos_ = 0
+        for s_, w_ in sorted(bitfields_[(sn_, off_)]):
+            if s_ < pos_:
+                raise Fail("bitfield overlap")
+            if s_ > pos_:
+                out_.append(f"            {t_} bfpad{off_:x}_{pos_} : {s_ - pos_};")
+            out_.append(f"            {t_} bf{off_:x}_{s_} : {w_};")
+            pos_ = s_ + w_
+        if pos_ < W_:
+            out_.append(f"            {t_} bfpad{off_:x}_{pos_} : {W_ - pos_};")
+        out_ += ["        };", f"    }};{' ' * 16}// +{off_:x}"]
+        return out_
     confirmed_ = set()      # (struct, off) typed by a load or a value store
     def note_access_(sn_, off_, cstore):
         if cstore:
@@ -2267,6 +2315,11 @@ def gen_function(a, ins):
                                     pv_s_ = pv_ - (1 << 32) if pv_ >= 1 << 31 else pv_
                                     items.append(("store", sn, off2, base, ("const", pv_s_, "w")))
                             continue
+                        bf_ = bitfield_of_(sn, off2, val) if "nobitfield" not in knobs else None
+                        if bf_ is not None:
+                            bitfields_.setdefault((sn, off2), set()).add(bf_[:2])
+                            items.append(("bfstore", sn, off2, base, bf_[2], bf_[0], bf_[1]))
+                            continue
                         if structs[sn][off2][0] == ct and ct in ("unsigned char", "unsigned short") and not any(
                                 it_[0] in ("let", "leti") and it_[2] == sn and it_[3] == off2 for it_ in items):
                             store_typed.add((sn, off2))
@@ -2565,6 +2618,8 @@ def gen_function(a, ins):
             mark(x, True)
     def mark_items(its):
         for it in its:
+            if it[0] == "bfstore":
+                mark(it[3]); mark(it[4])
             if it[0] == "copy8":
                 mark(it[1]); mark(it[3])
             if it[0] == "store":
@@ -3127,6 +3182,8 @@ def gen_function(a, ins):
                 count(x)
     def count_items(its):
         for it in its:
+            if it[0] == "bfstore":
+                count(it[3]); count(it[4])
             if it[0] == "copy8":
                 count(it[1]); count(it[3])
             if it[0] in ("let",):
@@ -3414,6 +3471,13 @@ def gen_function(a, ins):
                     outl.append(declare_line(pad, t, name, f"{fit(acc(base, off), ftype(sn, off), t)}"))
                 else:
                     outl.append(declare_line(pad, t, name, f"{acc(base, off)}"))
+            elif it[0] == "bfstore":
+                _, sn, off, base, val, s_, w_ = it
+                a_ = acc(base, off)
+                nm_ = f"field_{off:x}"
+                if not a_.endswith(nm_):
+                    raise Fail("bitfield access")
+                outl.append(f"{pad}{a_[:-len(nm_)]}bf{off:x}_{s_} = {expr(val)};")
             elif it[0] == "copy8":
                 def byte_addr_(b_, o_):
                     if b_[0] == "stackobj":
@@ -3783,7 +3847,8 @@ def gen_function(a, ins):
                 if off > pos:
                     fl.append(f"    unsigned char pad{pos:x}[0x{off - pos:x}];")
                 tt_ = (f"{child}*" if child else ct[6:]) if ct.startswith("ARRAY:") else (f"{child}*" if child else ct)
-                fl.append(f"    {tt_} field_{off:x}{'[1]' if ct.startswith('ARRAY:') else ''};{' ' * max(1, 20 - len(tt_))}// +{off:x}")
+                fl.extend(bf_lines_(sn, off, tt_)) if (sn, off) in bitfields_ and tt_ in BFW_ and not ct.startswith("ARRAY:") else \
+                    fl.append(f"    {tt_} field_{off:x}{'[1]' if ct.startswith('ARRAY:') else ''};{' ' * max(1, 20 - len(tt_))}// +{off:x}")
                 pos = off + SIZE[ct[6:] if ct.startswith("ARRAY:") else ct]
             if pos > elemsizes[sn]:
                 raise Fail("element too small")
@@ -3817,7 +3882,8 @@ def gen_function(a, ins):
                     pos = off + SIZE[ct[6:]]
                     continue
                 t2 = f"{child}*" if child else ct
-                fl.append(f"    {t2} field_{off:x};{' ' * max(1, 20 - len(t2))}// +{off:x}")
+                fl.extend(bf_lines_(sn, off, t2)) if (sn, off) in bitfields_ and t2 in BFW_ else \
+                    fl.append(f"    {t2} field_{off:x};{' ' * max(1, 20 - len(t2))}// +{off:x}")
                 pos = off + SIZE[ct]
             sdefs.append(f"class {sn} {{\npublic:\n" + "\n".join(ml) + ("\n\n" + "\n".join(fl) if fl else "") + "\n};\n")
             continue
@@ -3833,7 +3899,8 @@ def gen_function(a, ins):
                 pos = off + SIZE[ct[6:]]
                 continue
             t = f"{child}*" if child else ct
-            fl.append(f"    {t} field_{off:x};{' ' * max(1, 20 - len(t))}// +{off:x}")
+            fl.extend(bf_lines_(sn, off, t)) if (sn, off) in bitfields_ and t in BFW_ else \
+                fl.append(f"    {t} field_{off:x};{' ' * max(1, 20 - len(t))}// +{off:x}")
             pos = off + SIZE[ct]
         if "stackpad" in knobs and stackobjs and sn == stackobjs[max(stackobjs)]:
             local_ = None
