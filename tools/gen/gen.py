@@ -2580,6 +2580,8 @@ def gen_function(a, ins):
                 return vtype(t[1])
             if isinstance(t, tuple) and t[0] == "merge" and v[1] in mergestructs:
                 return f"{mergestructs[v[1]]}*"
+            if isinstance(t, tuple) and t[0] == "merge" and v[1] in int_merges_:
+                return "int"
             if isinstance(t, tuple) and t[0] == "merge":
                 ta, tb = vtype(t[1]), vtype(t[2])
                 if ta == tb:
@@ -2878,6 +2880,8 @@ def gen_function(a, ins):
         ptr = lambda t: t.endswith("*")
         if e == "0" and ptr(want):
             return "nullptr"
+        if ptr(have) and want in ("int", "unsigned int", "short", "unsigned short", "signed char", "unsigned char", "bool"):
+            return f"static_cast<{want}>(reinterpret_cast<long>({e}))"
         if ptr(want) != ptr(have) or (ptr(want) and want != have):
             if ptr(want) and ptr(have) and have == "void*":
                 return f"static_cast<{want}>({e})"
@@ -2912,6 +2916,7 @@ def gen_function(a, ins):
         returns[:] = [r if r is not None else ("param", 0) for r in returns]
         rk = list(returns)
     NARROW_ = {"unsigned char", "signed char", "short", "unsigned short", "bool", "char"}
+    int_merges_ = set()   # merged values typed int because the return is (see noretint below)
     rtypes = {vtype(r) for r in rk}
     if len(rtypes) > 1:
         rtypes = {("int" if x in NARROW_ else x) for x in rtypes}
@@ -2965,6 +2970,33 @@ def gen_function(a, ins):
         rtype = rtypes.pop() if rtypes and rtypes != {"void"} else "void"
     if rtype in ("short", "signed char"):
         rtype = "int"
+    if rtype == "long" and "noretint" not in knobs:
+        def int_parts_(v, seen_, merges_):
+            """True when v, or a part of a merged v, is a 32-bit int; collects the merges on the way."""
+            if v is None or not isinstance(v, tuple):
+                return False
+            if v[0] == "var":
+                if v[1] in seen_:
+                    return False
+                seen_.add(v[1])
+                tv_ = vars_.get(v[1])
+                if isinstance(tv_, tuple) and tv_[0] == "merge":
+                    found_ = [int_parts_(x_, seen_, merges_) for x_ in tv_[1:] if isinstance(x_, tuple)]
+                    if any(found_):
+                        merges_.add(v[1])
+                        return True
+                    return False
+                if tv_ == "w":
+                    return True
+            try:
+                return vtype(v) in ("int", "unsigned int", "bool")
+            except Fail:
+                return False
+        merges_ = set()
+        if any([int_parts_(r, set(), merges_) for r in rk]) and not any(
+                i_.mnemonic == "sxtw" and i_.op_str.startswith("x0,") for i_ in ins):
+            rtype = "int"
+            int_merges_.update(merges_)
     # callee signatures
     for t, (args, _) in callees.items():
         pass

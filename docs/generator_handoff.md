@@ -71,7 +71,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - vector lane inserts `mov vD.s[i], vS.s[j]` (knob `novecins`), written with the unit helpers `vins(v, s, i)` and
   `vundef()` (a vector built lane by lane starts undefined, with lane 0 the scalar already in `sD`);
 - vector addressing (knob `novecaddr`): `[xB, xI, lsl #4]` is a Vec4f array element, `[xB, xI]` a Vec4f through a
-  byte offset, `[xB, #off]!` and `[xB], #off` step the base; every vector value can be stored.
+  byte offset, `[xB, #off]!` and `[xB], #off` step the base; every vector value can be stored;
+- an int return where the original never sign-extends into x0 (knob `noretint`): a return merged from a 32-bit int
+  and a 64-bit value (often a pointer known to be null on that path) is int, and so are the merged values on the way,
+  instead of long (which added `sxtw x0, w0`); a pointer converted to a narrower integer goes through long.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
