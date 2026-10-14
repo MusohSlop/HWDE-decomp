@@ -2742,7 +2742,10 @@
     "_ZN10TextChunks7releaseEh": "0x7100218c68",
     "_ZN10TextChunksC1Ev": "0x7100218c18",
     "_ZN10TextChunksC2Ev": "0x7100218c18",
-    "_ZN11DefaultHeap8allocateEmmhh": "0x710045c458"
+    "_ZN11DefaultHeap8allocateEmmhh": "0x710045c458",
+    "_ZN10TextChunks3setEPKv": "0x7100218c34",
+    "_Z16init_item_2108f0P12ItemDefStoreiPv": "0x71002108f0",
+    "_Z16init_item_2108f0P13ItemDefFieldsiPv": "0x71002108f0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -5033,7 +5036,14 @@
         "_Z17item_field_2114e0i": "0x71002114e0",
         "_Z17item_field_21150ci": "0x710021150c",
         "_Z17item_field_211554i": "0x7100211554",
-        "_Z17item_field_211578i": "0x7100211578"
+        "_Z17item_field_211578i": "0x7100211578",
+        "_Z17item_ready_211248i": "0x7100211248",
+        "_Z16item_flag_211294i": "0x7100211294",
+        "_Z22ticket_has_room_2112bci": "0x71002112bc",
+        "_Z20item_unlinked_211320i": "0x7100211320",
+        "_Z18item_is_key_211360i": "0x7100211360",
+        "_Z17init_items_211118P12ItemDefStorePv": "0x7100211118",
+        "_Z20restore_items_211188P12ItemDefStore": "0x7100211188"
       }
     },
     "misc/checked_ids.cpp": {
@@ -7888,7 +7898,8 @@
         "_ZN15TextTable212a086unloadEv": "0x7100212a9c",
         "_Z19create_table_2116bcv": "0x71002116bc",
         "_Z19create_table_211be8v": "0x7100211be8",
-        "_Z19create_table_21297cv": "0x710021297c"
+        "_Z19create_table_21297cv": "0x710021297c",
+        "_ZN15TextTable2117444loadEv": "0x7100211948"
       }
     }
   }

@@ -9,6 +9,13 @@ public:
 };
 DefaultHeap* get_default_heap();                                            // 0x710045c96c
 
+unsigned int resource_size(unsigned int id);                                // 0x710025a178
+void resource_read(unsigned int id, void* dest, unsigned int a, unsigned int b, void* c, unsigned int d); // 0x710025a1ac
+
+static inline void* allocate_default(unsigned long size) {
+    return get_default_heap()->allocate(0x10, size, 1, 0);
+}
+
 static inline void free_default(void* ptr) {
     get_default_heap()->release(ptr, 1, 0);
 }
@@ -17,10 +24,12 @@ struct TextChunks {
     TextChunks();                                                           // 0x7100218c18
     ~TextChunks();                                                          // 0x7100218c2c
     void release(unsigned char keep);                                       // 0x7100218c68
+    void set(const void* data);                                             // 0x7100218c34
 
     unsigned char data[0x10];
 };
 struct TextTable211744 {
+    void load();
     TextTable211744() {
         loaded[0] = 0;
         loaded[1] = 0;
@@ -193,4 +202,27 @@ void create_table_211be8() {
 void create_table_21297c() {
     if (!gTable_c23350)
         gTable_c23350 = new TextTable212a08;
+}
+// 0x7100211948
+void TextTable211744::load() {
+    for (int i = 0; i < 2; ++i) {
+        switch (i) {
+        case 0:
+            storage[i] = allocate_default(resource_size(4));
+            resource_read(4, storage[i], 0, 0, nullptr, 0);
+            if (storage[i]) {
+                banks[i].set(storage[i]);
+                loaded[i] = 1;
+            }
+            break;
+        case 1:
+            storage[i] = allocate_default(0x420);
+            loaded[i] = 0;
+            for (int k = 0; k < 5; ++k) {
+                extra_storage[k] = allocate_default(0x420);
+                extra[k].release(0);
+            }
+            break;
+        }
+    }
 }

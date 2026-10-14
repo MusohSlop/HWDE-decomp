@@ -130,3 +130,67 @@ int item_field_211554(int item) {
 int item_field_211578(int item) {
     return gItemDefs->find(item)->bytes[0x37];
 }
+
+// Item predicates on the same records.
+
+// 0x7100211248
+unsigned char item_ready_211248(int item) {
+    ItemDefFields* def = gItemDefs->find(item);
+    if ((def->bytes[0x3c] & 4) && !def->bytes[0x40])
+        return 1;
+    return 0;
+}
+
+// 0x7100211294
+int item_flag_211294(int item) {
+    return gItemDefs->find(item)->unsigned_values[0x1f] & 1;
+}
+
+static inline bool is_ticket(int kind) {
+    return static_cast<unsigned int>(kind - 0x31e) <= 3;
+}
+
+// 0x71002112bc
+unsigned char ticket_has_room_2112bc(int item) {
+    ItemDefFields* def = gItemDefs->find(item);
+    int kind = def->words[0];
+    if (kind == 0x31e && is_ticket(kind) && def->unsigned_values[0x19] < 100)
+        return 1;
+    if (kind == 0x31f && is_ticket(kind))
+        return def->unsigned_values[0x19] < 100;
+    return 0;
+}
+
+// 0x7100211320
+unsigned char item_unlinked_211320(int item) {
+    short link = gItemDefs->find(item)->values[4];
+    return link >= 0 ? link > 0x44b : 1;
+}
+
+// 0x7100211360
+unsigned char item_is_key_211360(int item) {
+    int kind = gItemDefs->find(item)->words[0];
+    return kind == 0x447 ? 1 : (kind & ~3) == 0x448;
+}
+
+extern "C" void* memcpy(void* dest, const void* source, unsigned long size);
+
+struct ItemDefStore {
+    ItemDefFields defs[0x44c];   // +00
+    ItemDefFields saved[0x44c];  // +157c0
+};
+void init_item_2108f0(ItemDefFields* def, int item, void* source);          // 0x71002108f0
+
+// 0x7100211118
+void init_items_211118(ItemDefStore* store, void* source) {
+    for (int i = 0; i < 0x44c; ++i) {
+        init_item_2108f0(&store->defs[i], i, source);
+        memcpy(&store->saved[i], &store->defs[i], sizeof(ItemDefFields));
+    }
+}
+
+// 0x7100211188
+void restore_items_211188(ItemDefStore* store) {
+    for (int i = 0; i < 0x44c; ++i)
+        memcpy(&store->defs[i], &store->saved[i], sizeof(ItemDefFields));
+}
