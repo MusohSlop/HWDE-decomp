@@ -8159,6 +8159,11 @@
         "_ZN13Members217608D2Ev": "0x7100217608",
         "_ZN13Members5d383cD2Ev": "0x71005d383c"
       }
+    },
+    "misc/destructors6.cpp": {
+      "functions": {
+        "_ZN16Destructed33a338D2Ev": "0x710033a338"
+      }
     }
   }
 }
