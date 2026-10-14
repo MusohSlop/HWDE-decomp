@@ -41,11 +41,22 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - `do`/`while` loops written as index loops over element arrays, including sequential and nested loops;
 - one- and two-level element access, byte-offset and selected bases, and pointers chosen by a branch;
 - floats, two-float returns, 16-byte vector copies, range tests on narrow ids, and the common AArch64
-  arithmetic and bit-field instructions.
+  arithmetic and bit-field instructions;
+- float constants from the whole 4-byte literal pool (`0x710073b000`-`0x710073ca00`) and 16-byte vector
+  constants from the 16-byte pool (from `0x710073dff0`), written as `(Vec4f){...}` literals; generated units map
+  `.rodata.cst4` and `.rodata.cst16` to the two pool starts, and `check_obj.py` searches 0x2000 bytes from a
+  mapped pool start for a merged constant;
+- float and vector stack slots: fields of an address-taken stack object, or spill slots whose value comes back on
+  reload;
+- `sqrtf` with errno kept (`fsqrt`, `fcmp sD, sD`, `b.vc` over a `bl sqrtf`, or `b.vs` to a tail call), written
+  as one `sqrtf` call;
+- branches on float compares with `mi`/`pl`, and register-indexed and pre-indexed float loads and stores;
+- with the `copy64` knob, an `ldr x` whose value is only stored again is an 8-byte copy, written as
+  `__builtin_memcpy` on byte addresses so the fields on both sides keep their own types.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
-`inlmask_N`, `memberaddr`, `sortstores` and `vptrlast`. Functions whose generated source would exceed 2 MB
+`inlmask_N`, `memberaddr`, `sortstores`, `vptrlast` and `copy64`. Functions whose generated source would exceed 2 MB
 are skipped (forking at every branch can grow a function's source exponentially).
 
 ## Queued next

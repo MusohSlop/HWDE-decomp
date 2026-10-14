@@ -100,6 +100,7 @@ def apply_symbols(results):
     for un in perunit:
         if un in u["units"]:
             u["units"][un].setdefault("map", {})[".rodata.cst4"] = "0x710073b000"
+            u["units"][un]["map"][".rodata.cst16"] = "0x710073dff0"
     open(M + r"\data\units.json", "w", encoding="utf-8", newline="\n").write(json.dumps(u, indent=2) + "\n")
     return set(perunit)
 
@@ -265,7 +266,7 @@ def final_unit(best):
             if slow:
                 log("final unit syntax timeout"); return {}
             continue
-        subprocess.run([py, "-B", "-I", "tools/add_symbols.py", "--map", unit, ".rodata.cst4=0x710073b000"], cwd=M, capture_output=True)
+        subprocess.run([py, "-B", "-I", "tools/add_symbols.py", "--map", unit, ".rodata.cst4=0x710073b000", ".rodata.cst16=0x710073dff0"], cwd=M, capture_output=True)
         check(unit)
         subprocess.run([py, "-B", "-I", os.path.join(S, "batch_fix.py"), unit], cwd=M, capture_output=True)
         r = check(unit)

@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-8.28% of bytes (464,012 of 5,603,025) and 37.88% of functions (6,547 of 17,282) match exactly; 197 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+8.30% of bytes (464,884 of 5,603,025) and 37.98% of functions (6,564 of 17,282) match exactly; 190 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-6,557 of 6,754 attempted functions match: 6,547 inventory functions (464,012 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 197 are near misses, all `m`.
+6,574 of 6,764 attempted functions match: 6,564 inventory functions (464,884 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 190 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -334,7 +334,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 3 in `misc/worker_barriers.cpp`, 3 in `misc/mirror_flags.cpp`, 3 in `misc/keyed_values.cpp`, 4 in `misc/node_releases.cpp` | worker barriers (volatile arrival count); flags mirrored into the live game object; values by lazy id; effect-node releases | match |
 | 5 in `misc/command_posts.cpp`, 3 in `misc/singleton_creates2.cpp`, 5 in `misc/item_states.cpp`, 1 in `misc/ref_releases.cpp`, 2 more in `misc/animation_stops.cpp` | seed-family members: command posts to other queues, large singletons, item state tests, a reference-slot reset (last slot first), animation-set stops | match |
 | 39 in `misc/table_reads.cpp`, 5 in `misc/global_parts.cpp` | range-checked byte and 16-bit reads, signed id fields with limits, row ids, handle-record bytes (table pointer read before the index); calls on parts of a large global | match |
-| 6 in `misc/seven_bytes.cpp` | seven-entry byte settings with a fallback to the last entry | near miss |
+| 6 in `misc/seven_bytes.cpp` | seven-entry byte settings with a fallback to the last entry (the index is tested twice: the unsigned range, then the sign) | match |
 | 6 of 9 in `misc/banked_tables.cpp` | banked table lookups (bank 1 continues past id 1000 in extension chunks); the three that keep a stack frame and widen the result (`2131f8`, `213284`, `213310`) are near misses (block layout) | match |
 | 6 of 6 in `misc/destructors.cpp` | complete-object destructors: own members (one an inner group with a base and a member), then a second base built from two bases and three members, then the primary base | match |
 | 5 of 5 in `misc/destructors2.cpp` | more complete-object destructors sharing one second base (a base, members and a polymorphic handle group destroyed in place); own members include inner groups with bases | match |
@@ -380,6 +380,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 1 of 1 in `misc/variant_functions52.cpp` | the full-band rerun with the fixed parallel runner (matches in a chunk with an unresolved relocation are kept when they are clean on their own) | match |
 | 1 of 1 in `misc/variant_functions53.cpp` | `ef298`, a loop Clang unrolled by two, written as a single-element loop over a member array (`arrmember`) | match |
 | 7 of 7 in `misc/variant_functions54.cpp` | the parallel variant search below `0x7100380000` with a loaded size added to a loaded pointer read as a byte offset (buffer appends, `p->buf + p->used`) | match |
+| 10 of 10 in `misc/s2_functions1.cpp` | the second session's first run over addresses from `0x7100380000` up: float constants from the whole 4-byte pool (to `0x710073ca00`) and 16-byte vector constants from the 16-byte pool (`0x710073dff0`, written as `(Vec4f){...}`) | match |
 | 35 of 35 in `misc/variant_functions16.cpp` | the variant search with library calls named after their imports (stub addresses mapped through the PLT relocations to the dynamic symbol names): C functions with their prototypes and `nn::os`/`nn::oe`/`nn::util` functions declared in their namespaces | match |
 | 107 of 107 in `misc/variant_functions15.cpp` | the variant search with element arrays that start inside a struct (the element base shifted by whole strides) and unscaled indexes on wider accesses as byte offsets (`*reinterpret_cast<T*>(&field[i])`) | match |
 | 20 of 20 in `misc/variant_functions14.cpp` | the variant search with float register copies through the vector unit (`mov v8.16b, v0.16b`) and `ccmp` chains written as `&&`/`||` (the `nzcv` immediate decides which) | match |
@@ -493,7 +494,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | weapon-slot and mixed-table resets, a stage layout load, a chunk-pair assign, mirrored-table save, entry-array clear, a constructor | match |
 | `20ac40` | `current_unit_table` | near miss |
 | 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | locked record reads, indexed and eight-slot constructors, a two-resource scene attach, a held-light release, a flag-table reset | match |
-| `3de474` | `TimedTable::reset` | near miss |
+| `3de474` | `TimedTable::reset` (the cleared block is 8-byte aligned) | match |
 | 6 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`) | a locked shared-resource read, a global matrix copy, a material apply, a stage-layout state reset, a guarded forwarder, a singleton record creation | match |
 | `25796c`, `2578dc` | `guarded_float_248ca0_b`, `_d` (two argument moves in the other order) | near miss |
 | 7 more (`misc/helpers.cpp`, `misc/ranked_small.cpp`, `misc/static_objects/shared_plain16b.cpp`) | a seed-family guarded static, a guarded forwarder, a battle loader wait, two constructors, a buffered heap release, a locked take | match |
@@ -769,7 +770,6 @@ Near-miss families, ranked by members × the fraction of words that match (one f
 | `misc/packed_fetch.cpp` (`5968d0`-`596d6c`) | 6 | 2 of 58 | 5.8 |
 | `misc/tree_walks.cpp` (`4ea47c`-`4ee9d4`) | 6 | 7 of 75 | 5.4 |
 | `misc/part_binders.cpp` (`59c560`-`59ca10`) | 6 | 27 of 60 | 3.3 |
-| `misc/seven_bytes.cpp` (`205670` and five more) | 6 | 6 of 9 | 2.0 |
 
 All other near misses are single functions. The focused passes so far: `model_updates` was fixed (all 22 now match, see the lesson on reference clamps). `tree_walks` got three more (target stored first, a result variable, the hit set through the target) with no change. `packed_fetch` got four more probe variants (field order, byte pointer, struct copy, reading at each use) and none changed the pairing.
 
@@ -777,7 +777,7 @@ All other near misses are single functions. The focused passes so far: `model_up
 
 `4ea47c`-`4ee9d4` (`misc/tree_walks.cpp`): seven words, all scheduling in the leaf test. The original stores the visitor into its stack slot before it loads the context's set and mode, and it sets the hit flag before materializing the result. Passing the visitor as a `const&` made it worse.
 
-`205670` and five more (`misc/seven_bytes.cpp`): the original tests `index < 7` unsigned first and then `index > -1` (`ccmp`, `csel gt`) before it selects between the entry and the last one. Ten variants made no difference: both tests in either order, pointer and reference selects, a -1 sentinel, nested ifs and resetting the index.
+`205670` and five more (`misc/seven_bytes.cpp`) now match: the original tests the index twice, first as an unsigned range (`index < 7`) and then for its sign, before it selects between the entry and the last one.
 
 `59c560`-`59ca10` (`misc/part_binders.cpp`): the structure matches. The original hoists the item table's base (`part + 0x70`) into a register and lets `part` die. Ours indexes from `part` itself and keeps it live, which shifts every register and moves the `return false` block after the epilogue. Hoisting the base into a local and indexing through an accessor made no difference.
 
@@ -829,7 +829,7 @@ All other near misses are single functions. The focused passes so far: `model_up
 
 `20ac40`: `current_unit_table`, the select between the two tables comes out with the opposite condition (`csel ..., ne` instead of `eq`) and the two address adds in the other order, whichever way the condition is written.
 
-`3de474`: `TimedTable::reset` clears the whole 0xc0-byte object and then stores four fields, one of them zero. With a loop or an explicit `memset` ours shrinks the clear to 0xbc bytes and drops the zero store. Clearing it as a value-initialized `ByteBlock` (overlaid on the fields with a union) keeps all the stores and brings it to one word: depending on the store order, either the clear is shortened to 0xbc or the stores come out in another order; four orders tried.
+`3de474`: `TimedTable::reset` now matches: it keeps its full 0xc0-byte clear once the cleared block is 8-byte aligned (`WordBlock`).
 
 `14935c`: `battle_unit_flag` tests bit 13 of the battle setup's flag word with a full 64-bit load and `tbz #13`; ours narrows the load to the byte (`ldrb`, `tbnz #5`), with a mask and with a bitfield, and lays out the early returns differently.
 
