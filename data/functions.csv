@@ -7081,7 +7081,7 @@ Address,Quality,Size,Name
 0x7100218bcc,O,76,_Z11call_218bccPvi
 0x7100218c18,O,20,_ZN10Link218c18C2Ev
 0x7100218c2c,O,4,_Z12empty_218c2cv
-0x7100218c34,m,52,_ZN9DataChunk3setEPKv
+0x7100218c34,O,52,_ZN9DataChunk3setEPKv
 0x7100218c68,O,68,_ZN11ChunkHolder7releaseEh
 0x7100218cac,U,108,FUN_7100218cac
 0x7100218d18,m,136,_ZNK10TextChunks4textEjj
@@ -8150,7 +8150,7 @@ Address,Quality,Size,Name
 0x710026bd64,m,952,_Z18start_board_battlev
 0x710026c11c,O,56,_Z13stage_messagev
 0x710026c154,m,1212,_Z10load_boardj
-0x710026c610,m,68,_Z13is_plain_cellP8BoardRow
+0x710026c610,O,68,_Z13is_plain_cellP8BoardRow
 0x710026c654,m,220,_Z18unit_override_kindii
 0x710026c730,m,340,_Z10unit_frameii
 0x710026c884,m,160,_Z19unit_override_frameii

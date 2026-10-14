@@ -175,7 +175,7 @@ unsigned char DataChunk::set(const void* source) {
         return 0;
     data = static_cast<const unsigned int*>(source);
     unsigned int magic = *data;
-    return (magic & 0xffff0000) == 0x130000 && (magic & 0xffff) == 0x4c58;
+    return (magic & 0xffff) == 0x4c58 ? (magic & 0xffff0000) == 0x130000 : false;
 }
 
 // Vtable through the GOT slot at 0x7100c2d288.
