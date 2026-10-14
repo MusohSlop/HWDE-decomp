@@ -2758,7 +2758,24 @@
     "_ZN14LightAllocator5clearEv": "0x71005c2e54",
     "_Z17stop_sound_2563c0P11SoundHandle": "0x71002563c0",
     "_Z18stop_stream_256418P11SoundHandle": "0x7100256418",
-    "_Z20attach_object_247168P11ObjectEntry": "0x7100247168"
+    "_Z20attach_object_247168P11ObjectEntry": "0x7100247168",
+    "_ZN9PanelBaseC2Ev": "0x71000ba7f0",
+    "got:_ZTV10PanelB8a6c": "0x7100c22798",
+    "got:_ZTV10PanelC3184": "0x7100c22828",
+    "got:_ZTV10Built9b0a8": "0x7100c22350",
+    "got:_ZTV10Built9bf18": "0x7100c22368",
+    "got:_ZTV10Builtb8894": "0x7100c22790",
+    "got:_ZTV11Built316a64": "0x7100c2ada8",
+    "got:_ZTV11Built33840c": "0x7100c2aea8",
+    "got:_ZTV11Built591ff0": "0x7100c2d768",
+    "got:_ZTV11Built5d026c": "0x7100c2dc20",
+    "_ZN13Base7b5b0_550C2Ev": "0x710007b5b0",
+    "_ZN13Base9c438_1b8C2Ev": "0x710009c438",
+    "_ZN12Baseb71f4_40C2Ev": "0x71000b71f4",
+    "_ZN13Base3c7188_28C2Ev": "0x71003c7188",
+    "_ZN13Base1f69c8_20C2Ev": "0x71001f69c8",
+    "_ZN15Base5a9f14_1350C2Ev": "0x71005a9f14",
+    "_ZN13Base5ce1bc_3cC2Ev": "0x71005ce1bc"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7959,6 +7976,23 @@
       },
       "map": {
         ".rodata.cst32": "0x710073df50"
+      }
+    },
+    "misc/panel_ctors.cpp": {
+      "functions": {
+        "_ZN10PanelB8a6cC2Ev": "0x71000b8a6c",
+        "_ZN10PanelC3184C2Ev": "0x71000c3184"
+      }
+    },
+    "misc/simple_ctors.cpp": {
+      "functions": {
+        "_ZN10Built9b0a8C2Ev": "0x710009b0a8",
+        "_ZN10Built9bf18C2Ev": "0x710009bf18",
+        "_ZN10Builtb8894C2Ev": "0x71000b8894",
+        "_ZN11Built316a64C2Ev": "0x7100316a64",
+        "_ZN11Built33840cC2Ev": "0x710033840c",
+        "_ZN11Built591ff0C2Ev": "0x7100591ff0",
+        "_ZN11Built5d026cC2Ev": "0x71005d026c"
       }
     }
   }
