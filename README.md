@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-3.58% of bytes (200,804 of 5,603,025) and 23.05% of functions (3,983 of 17,282) match exactly; 166 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+3.60% of bytes (201,836 of 5,603,025) and 23.08% of functions (3,989 of 17,282) match exactly; 160 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-3,993 of 4,159 attempted functions match: 3,983 inventory functions (200,804 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 166 are near misses, all `m`.
+3,999 of 4,159 attempted functions match: 3,989 inventory functions (201,836 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 160 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -336,7 +336,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 39 in `misc/table_reads.cpp`, 5 in `misc/global_parts.cpp` | range-checked byte and 16-bit reads, signed id fields with limits, row ids, handle-record bytes (table pointer read before the index); calls on parts of a large global | match |
 | 6 in `misc/seven_bytes.cpp` | seven-entry byte settings with a fallback to the last entry | near miss |
 | 6 of 9 in `misc/banked_tables.cpp` | banked table lookups (bank 1 continues past id 1000 in extension chunks); the three that keep a stack frame and widen the result (`2131f8`, `213284`, `213310`) are near misses (block layout) | match |
-| 0 of 6 in `misc/destructors.cpp` | complete-object destructors (vtable store, eleven member parts, three bases); near misses: the original computes two subobject addresses into a callee-saved register one call early | near miss |
+| 6 of 6 in `misc/destructors.cpp` | complete-object destructors: own members (one an inner group with a base and a member), then a second base built from two bases and three members, then the primary base | match |
 | 4 of 4 in `misc/channel_sets.cpp` | float setters: through the global stage when it is ready, otherwise to every channel of the object's list | match |
 | 3 of 3 in `misc/listener_detach.cpp` | listener detach under the registry mutex (handler or own id list) | match |
 | 3 of 5 in `misc/bank_triggers.cpp` | sound or effect triggers routed to the global player or the object's bank; near misses: the two float-argument variants (`21c974`, `21ca54`), where the original hoists the result and kind moves above the bank branch | match |
@@ -445,6 +445,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Range tests from switches.** `cmp w8, #2; b.hs` on `mode - 3` comes from `switch (mode) { case 3: case 4: ... }`. Both `(unsigned)(mode - 3) < 2` and `mode == 3 || mode == 4` give `cmp w8, #1; b.hi` (`misc/unit_commands.cpp`, `1c4478`). In the same unit, a select on `(health - 1) > 999` comes from `if (health < 1 || health > 1000) health = 1;` on an unsigned value.
 - **Flags accumulated in an unrolled loop.** `csel w8, w9, w8, eq` choosing between `m` and `m | x` (instead of `m | (c ? 0 : x)`) comes from a two-iteration loop that ORs into an `unsigned char` flag; written out as two `if`s, InstCombine folds the select into the OR (`1b9950`).
 - **Shared tail stores come from separate returns.** When several branches end in `mov w8, #N` followed by one shared `str w8, [x19]` and the same epilogue, each branch stores its own value and returns (`state = 3; pending = 0; return;`). A single store after the `if` makes SimplifyCFG sink it into a phi, which lands in a callee-saved register before the last call (`misc/tutorial_panels.cpp`).
+- **Subobject addresses computed early in destructors.** When a destructor computes `this + N` into a callee-saved register one call before it is needed (or folds it into the vtable store as a post-index), the subobject at `N` belongs to a nested class whose destructor is inlined there: a member group with a base of its own, or a base class built from two bases. Writing the parts as flat members and bases moves those additions next to their calls (`misc/destructors.cpp`).
 - **Translation units and globals.**
   - `DemoSequenceItem` (`2173c4`, `2174d0`) is a separate unit after the sequence unit. If it is in the same file, `release` gets inlined into `clear`.
   - The queue registry (`c8af40`), the worker controls (`c8aef8`) and the high-worker enable byte (`c8af38`) are external hidden globals. As file-static globals in one unit, LLVM's GlobalMerge combines them and addresses one relative to another.

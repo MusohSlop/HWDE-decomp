@@ -2348,7 +2348,13 @@
     "_Z17init_panel_39863cP19TutorialPanel3989b0": "0x710039863c",
     "_Z19update_panel_32f19cPv": "0x710032f19c",
     "_Z19update_panel_398bd0Pv": "0x7100398bd0",
-    "_Z17core_index_3cc9c0v": "0x71003cc9c0"
+    "_Z17core_index_3cc9c0v": "0x71003cc9c0",
+    "_ZN13Part_cdf04_e8D1Ev": "0x71000cdf04",
+    "_ZN13Part_cdf04_e8D2Ev": "0x71000cdf04",
+    "_ZN13Part_cf58c_18D1Ev": "0x71000cf58c",
+    "_ZN13Part_cf58c_18D2Ev": "0x71000cf58c",
+    "_ZN13Part_cf5bc_28D1Ev": "0x71000cf5bc",
+    "_ZN13Part_cf5bc_28D2Ev": "0x71000cf5bc"
   },
   "units": {
     "event/resource_queue_controls.cpp": {

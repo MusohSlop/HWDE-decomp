@@ -561,7 +561,7 @@ Address,Quality,Size,Name
 0x71000283dc,U,36,FUN_71000283dc
 0x71000284b0,U,180,FUN_71000284b0
 0x7100028660,U,60,FUN_7100028660
-0x710002891c,m,172,_ZN15Destructed2891cD2Ev
+0x710002891c,O,172,_ZN15Destructed2891cD2Ev
 0x7100028ae8,O,56,_Z18command_post_28ae8P13CommandTarget
 0x7100028b20,O,56,_Z18command_post_28b20P13CommandTarget
 0x7100028b58,O,32,_Z18command_ret0_28b58P13CommandTarget
@@ -599,9 +599,9 @@ Address,Quality,Size,Name
 0x7100029b2c,O,88,_Z22delete_from_base_29b2cPh
 0x7100029bd8,O,64,_Z23destroy_from_base_29bd8Ph
 0x7100029c18,O,84,_Z22delete_from_base_29c18Ph
-0x7100029d2c,m,172,_ZN15Destructed29d2cD2Ev
-0x7100029e48,m,172,_ZN15Destructed29e48D2Ev
-0x710002a26c,m,172,_ZN15Destructed2a26cD2Ev
+0x7100029d2c,O,172,_ZN15Destructed29d2cD2Ev
+0x7100029e48,O,172,_ZN15Destructed29e48D2Ev
+0x710002a26c,O,172,_ZN15Destructed2a26cD2Ev
 0x710002a434,O,56,_Z18command_post_2a434P13CommandTarget
 0x710002a46c,O,56,_Z18command_post_2a46cP13CommandTarget
 0x710002a4a4,O,32,_Z18command_ret0_2a4a4P13CommandTarget
@@ -643,8 +643,8 @@ Address,Quality,Size,Name
 0x710002b430,O,88,_Z22delete_from_base_2b430Ph
 0x710002b4dc,O,64,_Z23destroy_from_base_2b4dcPh
 0x710002b51c,O,84,_Z22delete_from_base_2b51cPh
-0x710002b5d4,m,172,_ZN15Destructed2b5d4D2Ev
-0x710002b6f0,m,172,_ZN15Destructed2b6f0D2Ev
+0x710002b5d4,O,172,_ZN15Destructed2b5d4D2Ev
+0x710002b6f0,O,172,_ZN15Destructed2b6f0D2Ev
 0x710002b80c,U,208,FUN_710002b80c
 0x710002b94c,U,216,FUN_710002b94c
 0x710002bd5c,U,168,FUN_710002bd5c
