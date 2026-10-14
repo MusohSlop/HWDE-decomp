@@ -5809,7 +5809,34 @@
     "_Z13callee_5cfbccPv": "0x71005cfbcc",
     "_Z13callee_5cfbe4Pv": "0x71005cfbe4",
     "_Z13callee_5d42a8Pvl": "0x71005d42a8",
-    "_Z13callee_5f4d10i": "0x71005f4d10"
+    "_Z13callee_5f4d10i": "0x71005f4d10",
+    "gLocala98b4c_5aebb4": "0x7100a98b4c",
+    "gLocala98b51_5aebb4": "0x7100a98b51",
+    "gLocala98b58_5aebb4": "0x7100a98b58",
+    "got:gGlobalc2b710_3fe5c8": "0x7100c2b710",
+    "got:gGlobalc2d860_5aebb4": "0x7100c2d860",
+    "got:gGlobalc2d868_5aebb4": "0x7100c2d868",
+    "got:gGlobalc2d870_5aebb4": "0x7100c2d870",
+    "got:gGlobalc2d878_5aebb4": "0x7100c2d878",
+    "got:gGlobalc2d880_5aebb4": "0x7100c2d880",
+    "got:gGlobalc2d888_5aebb4": "0x7100c2d888",
+    "got:gGlobalc2d890_5aebb4": "0x7100c2d890",
+    "got:gGlobalc2d898_5aebb4": "0x7100c2d898",
+    "got:gGlobalc2d8a0_5aebb4": "0x7100c2d8a0",
+    "got:gGlobalc2d8a8_5aebb4": "0x7100c2d8a8",
+    "got:gGlobalc2d8b0_5aebb4": "0x7100c2d8b0",
+    "_Z10callee_1b8Pvi": "0x71000001b8",
+    "_Z10callee_208Pvi": "0x7100000208",
+    "_Z10callee_2c0Pvi": "0x71000002c0",
+    "_Z10callee_354Pvi": "0x7100000354",
+    "_Z10callee_4a0Pvi": "0x71000004a0",
+    "_Z10callee_53cPvi": "0x710000053c",
+    "_Z10callee_614Pvi": "0x7100000614",
+    "_Z10callee_6b4Pvi": "0x71000006b4",
+    "_Z11callee_a130i": "0x710000a130",
+    "_Z13callee_20bd74l": "0x710020bd74",
+    "_Z13callee_20c22cPv": "0x710020c22c",
+    "_Z13callee_5c8944Pv": "0x71005c8944"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -12478,6 +12505,22 @@
         "_Z11call_4e07fcP11Arg4e07fc_0iP11Arg4e07fc_2": "0x71004e07fc",
         "_Z11call_5e0a74P11Arg5e0a74_0i": "0x71005e0a74",
         "_Z11call_5fad74P11Arg5fad74_0PvP11Arg5fad74_2": "0x71005fad74"
+      }
+    },
+    "misc/switches/switch_f08.cpp": {
+      "functions": {
+        "_Z8call_f08P8Argf08_0i": "0x7100000f08"
+      },
+      "map": {
+        ".rodata": "0x710073ba90"
+      }
+    },
+    "misc/switches/switch_197ac4.cpp": {
+      "functions": {
+        "_Z11call_197ac4li": "0x7100197ac4"
+      },
+      "map": {
+        ".rodata": "0x71007e584c"
       }
     }
   }
