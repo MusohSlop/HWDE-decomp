@@ -3245,6 +3245,8 @@ def gen_function(a, ins):
                     else:
                         rts = {"w": "int", "x": "void*", "?": "int", "f": "float"}.get(rt, rt)
                 atypes = ["void*" if x.endswith("*") else x for x in atypes]
+                if "nosextarg" not in knobs:
+                    atypes = ["int" if x_ in ("short", "signed char") else x_ for x_ in atypes]
                 local_rts = rts
                 rts = "void*" if rts.endswith("*") else rts
                 if objsn is None:
@@ -3338,6 +3340,8 @@ def gen_function(a, ins):
                     else:
                         rts = {"w": "int", "x": "void*", "?": "int", "f": "float"}.get(rt, rt)
                 atypes = ["void*" if x.endswith("*") else x for x in atypes]
+                if "nosextarg" not in knobs:
+                    atypes = ["int" if x_ in ("short", "signed char") else x_ for x_ in atypes]
                 local_rts = rts
                 rts = "void*" if rts.endswith("*") else rts
                 ov_ = over_.setdefault(target, {})

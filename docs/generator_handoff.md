@@ -77,7 +77,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   instead of long (which added `sxtw x0, w0`); a pointer converted to a narrower integer goes through long;
 - compile fixes: stack objects at negative frame offsets are named `local_mNN`, a pointer compared as a 32-bit
   unsigned value goes through `unsigned long`, and a struct pointer passed to a differently typed import parameter
-  is reinterpret_cast.
+  is reinterpret_cast;
+- a short or signed char passed to a call is an int argument (knob `nosextarg`): the calling convention leaves a
+  narrow argument's upper bits unspecified, so a short parameter would be loaded with `ldrh` where the original's
+  `ldrsh` shows an int parameter.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
