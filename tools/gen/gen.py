@@ -94,6 +94,109 @@ def hx_(n):
     """Hex for a name: a negative offset becomes mNN."""
     return f"{n:x}" if n >= 0 else f"m{-n:x}"
 
+def mangled_arity(name):
+    """(integer args, float args) of an Itanium-mangled function name, `this` included for a member; None if unsure."""
+    if not name.startswith("_Z") or any(x_ in name for x_ in ("St", "Sa", "Sb", "Ss", "Si", "So", "Sd", "Dp", "z")):
+        return None
+    s, pos = name[2:], 0
+    member = False
+    def ident(p):
+        q = p
+        while q < len(s) and s[q].isdigit():
+            q += 1
+        if q == p:
+            return None
+        n = int(s[p:q])
+        return q + n
+    def skip_template(p):
+        depth = 0
+        while p < len(s):
+            if s[p] == "I":
+                depth += 1
+            elif s[p] == "E":
+                depth -= 1
+                if depth == 0:
+                    return p + 1
+            p += 1
+        return None
+    try:
+        if s[pos] == "N":
+            member = True
+            pos += 1
+            while s[pos] in "KVr":
+                pos += 1
+            while s[pos] != "E":
+                if s[pos].isdigit():
+                    pos = ident(pos)
+                elif s[pos] in "CD" and pos + 1 < len(s) and s[pos + 1].isdigit():
+                    pos += 2
+                elif s[pos] == "S":
+                    pos = s.index("_", pos) + 1
+                elif s[pos] == "I":
+                    pos = skip_template(pos)
+                else:
+                    return None
+                if pos is None:
+                    return None
+            pos += 1
+        elif s[pos].isdigit():
+            pos = ident(pos)
+            if pos < len(s) and s[pos] == "I":
+                pos = skip_template(pos)
+        else:
+            return None
+        rest = s[pos:]
+        if rest == "v":
+            return (1 if member else 0, 0)
+        ni, nf = (1 if member else 0), 0
+        p = pos
+        while p < len(s):
+            ptr = False
+            while p < len(s) and s[p] in "PRKVO":
+                ptr = ptr or s[p] in "PRO"
+                p += 1
+            c = s[p]
+            if c in "bcahstijlmxynow" or (c == "v" and ptr):
+                p += 1; kind = "i"
+            elif c in "fd":
+                p += 1; kind = "f"
+            elif c.isdigit():
+                p = ident(p); kind = "i" if ptr else None
+                if p < len(s) and s[p] == "I":
+                    p = skip_template(p)
+            elif c == "S":
+                p = s.index("_", p) + 1; kind = "i" if ptr else None
+            elif c == "N":
+                p = s.index("E", p) + 1; kind = "i" if ptr else None
+            elif c == "D" and p + 1 < len(s) and s[p + 1] == "n":
+                p += 2; kind = "i"
+            else:
+                return None
+            if ptr:
+                kind = "i"
+            if kind is None:
+                return None  # a class passed by value
+            if kind == "i":
+                ni += 1
+            else:
+                nf += 1
+        return (ni, nf)
+    except (IndexError, ValueError, TypeError):
+        return None
+
+KNOWN_ARITY = {}
+ARITY_USED = [False]
+for _n, _a in list(units["symbols"].items()) + [(_n2, _a2) for _u in units["units"].values() for _n2, _a2 in _u.get("functions", {}).items()]:
+    if _n.startswith("got:") or re.search(r"(callee\d?|call|placeholder)_[0-9a-f]+", _n):
+        continue
+    _ar = mangled_arity(_n)
+    if _ar is not None:
+        _t = int(_a, 16) - 0x7100000000
+        if KNOWN_ARITY.get(_t, _ar) != _ar:
+            KNOWN_ARITY[_t] = None  # two names disagree
+        else:
+            KNOWN_ARITY[_t] = _ar
+
 def regname(r):
     if r in ("wzr", "xzr"):
         return None, r[0]
@@ -797,6 +900,10 @@ def gen_function(a, ins):
         fw = regs.get("fw", set())
         nf = max(fw) + 1 if fw else 0
         n = max(written) + 1 if written else (1 if regs.get(0) is not None else 0)
+        ka_ = KNOWN_ARITY.get(target) if "noknownarity" not in knobs else None
+        if ka_ is not None and (ka_[0] < n or ka_[1] < nf):
+            n, nf = min(n, ka_[0]), min(nf, ka_[1])
+            ARITY_USED[0] = True
         args = []
         for k in range(n):
             v = regs.get(k)
@@ -3775,7 +3882,15 @@ for size, a in sorted(U, key=lambda x: x[1]):
             raise Fail("decode")
         if False:
             raise Fail("no call")
-        text, sigs, gsyms = gen_function(a, ins)
+        ARITY_USED[0] = False
+        try:
+            text, sigs, gsyms = gen_function(a, ins)
+        except Fail:
+            if not ARITY_USED[0]:
+                raise
+            # known argument counts made this function fail: generate it as before
+            KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | {"noknownarity"}
+            text, sigs, gsyms = gen_function(a, ins)
         if len(text) > 2000000:
             raise Fail("output too large")
         # jump tables share the unit's .rodata, so one anchor maps them only while they follow each other as
