@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-3.80% of bytes (212,864 of 5,603,025) and 23.56% of functions (4,071 of 17,282) match exactly; 178 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+3.81% of bytes (213,612 of 5,603,025) and 23.61% of functions (4,080 of 17,282) match exactly; 178 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-4,081 of 4,259 attempted functions match: 4,071 inventory functions (212,864 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 178 are near misses, all `m`.
+4,090 of 4,268 attempted functions match: 4,080 inventory functions (213,612 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 178 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -360,6 +360,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 3 of 3 in `misc/slot_pools.cpp` | slot pool resets: a 32-iteration loop that Clang unrolls into 32 calls | match |
 | 7 of 11 in `misc/table_teardowns.cpp` | banked text tables: teardown (unload, delete on the default heap, clear the global), unload of both banks and the extra chunks, a per-slot load from a resource frame; near misses: the three creators, where the two zeroing stores after the chunk constructors come out in the other order, and the first table's loader (one register more live in ours) | match |
 | 5 of 5 in `misc/text_table_api.cpp` | text table setup and shutdown entry points (a separate unit, so the table functions stay calls) | match |
+| 9 of 9 in `misc/object_tables.cpp` | object tables (head block, frame allocator, slot area): creators, init and reset as instances of one class template; the second table's reset takes its allocator reference before the `memset` | match |
 | 0 of 7 in `misc/plane_tests.cpp` | convex-shape plane tests (support point opposite the normal, signed distance); near misses by 3 words: the negated direction lands in another register and one add has its operands swapped. The negation has to go through a by-value `operator-` to get the original's packed integer form | near miss |
 | 0 of 1 in `misc/stack_layouts.cpp` | stacked layout (five fixed and five optional parts at running offsets); near miss by one word: the original branches on the negated dirty flag with `tbz w8, #0` where ours emits `cbz w8`. Tried: `&&`, `&`, `|`, a select into an `unchanged` flag (best), bool/int/unsigned char flags, `^ 1`, `== false`, if/else and preset assignments of `dirty`, inline helper vs written-out loops, member reloads. Five look-alike classes (`59b0a0`-`59bb80`) are left until this one matches | near miss |
 | 16 of 18 in `misc/unit_commands.cpp` | script commands on units: shared id resolution (local player through a guarded static, roster aliases, difficulty-stepped families) then field stores, timer clears, stance bitfields, alias updates, member orders, dismissals, player gauges, modes and conditions; near misses: `1c4c5c` loads the side bit as a byte where the original loads the word; `1b7b20` (unit message) has the opposite compare form for the text-id bound and one moved instruction | match |
@@ -457,6 +458,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Subobject addresses computed early in destructors.** When a destructor computes `this + N` into a callee-saved register one call before it is needed (or folds it into the vtable store as a post-index), the subobject at `N` belongs to a nested class whose destructor is inlined there: a member group with a base of its own, or a base class built from two bases. Writing the parts as flat members and bases moves those additions next to their calls (`misc/destructors.cpp`).
 - **Deleting destructors.** A destructor body followed by `get_default_heap()` and a tail call of `DefaultHeap::release(this, 1, 0)` is the deleting variant (D0) of the same class. An inline `static void operator delete(void*)` on the root class that calls the default heap makes Clang emit it next to the complete-object destructor (`misc/destructors3.cpp`, `misc/destructors4.cpp`).
 - **Long call lists are often loops.** Thirty-two calls on consecutive 0x88-byte slots come from `for (int i = 0; i < 32; ++i) slots[i].reset();`, which Clang unrolls completely (`misc/slot_pools.cpp`). Repeated free-and-clear sequences on arrays come from small loops too (`TextTable::unload` in `misc/table_teardowns.cpp`).
+- **Addresses taken before a call.** When the original computes a member's address into a callee-saved register before an unrelated call (`add x20, x19, #8` before a `memset`), the source binds a reference or pointer to that member first; Clang keeps the GEP where it is written (`misc/object_tables.cpp`).
 - **Translation units and globals.**
   - `DemoSequenceItem` (`2173c4`, `2174d0`) is a separate unit after the sequence unit. If it is in the same file, `release` gets inlined into `clear`.
   - The queue registry (`c8af40`), the worker controls (`c8aef8`) and the high-worker enable byte (`c8af38`) are external hidden globals. As file-static globals in one unit, LLVM's GlobalMerge combines them and addresses one relative to another.

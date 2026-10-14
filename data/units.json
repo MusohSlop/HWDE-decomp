@@ -2747,7 +2747,15 @@
     "_Z16init_item_2108f0P12ItemDefStoreiPv": "0x71002108f0",
     "_Z16init_item_2108f0P13ItemDefFieldsiPv": "0x71002108f0",
     "_ZN15TextTable211c744loadEv": "0x7100211edc",
-    "_ZN15TextTable212a084loadEv": "0x7100212c0c"
+    "_ZN15TextTable212a084loadEv": "0x7100212c0c",
+    "got:gObjects_c2a518": "0x7100c2a518",
+    "got:gObjects_c2a520": "0x7100c2a520",
+    "got:gObjects_c2a530": "0x7100c2a530",
+    "_ZN14LightAllocatorC2Ev": "0x71005c2d24",
+    "_Z21allocate_block_255decj": "0x7100255dec",
+    "_Z17free_block_255e40Pv": "0x7100255e40",
+    "_ZN14LightAllocator5setupEPvjiii": "0x71005c2d40",
+    "_ZN14LightAllocator5clearEv": "0x71005c2e54"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7912,6 +7920,19 @@
         "_Z24ensure_stage_text_213988v": "0x7100213988",
         "_Z25release_stage_text_2139b0v": "0x71002139b0",
         "_Z22load_stage_text_2139f4v": "0x71002139f4"
+      }
+    },
+    "misc/object_tables.cpp": {
+      "functions": {
+        "_Z21create_objects_247364v": "0x7100247364",
+        "_Z21create_objects_24869cv": "0x710024869c",
+        "_Z21create_objects_24c82cv": "0x710024c82c",
+        "_ZN11ObjectTableILj16384ELm808ELm808EE4initEv": "0x710024741c",
+        "_ZN11ObjectTableILj16384ELm808ELm808EE5resetEv": "0x7100247460",
+        "_ZN11ObjectTableILj32768ELm2048ELm6168EE4initEv": "0x7100248754",
+        "_ZN11ObjectTableILj32768ELm2048ELm6168EE5resetEv": "0x7100248798",
+        "_ZN11ObjectTableILj16384ELm2400ELm2408EE4initEv": "0x710024c8e4",
+        "_ZN11ObjectTableILj16384ELm2400ELm2408EE5resetEv": "0x710024c928"
       }
     }
   }
