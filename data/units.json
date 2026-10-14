@@ -10707,7 +10707,29 @@
     "_Z13callee_588e38PvS_S_": "0x7100588e38",
     "_Z13callee_5c3a58Pv": "0x71005c3a58",
     "_Z14callee2_218904i": "0x7100218904",
-    "_Z14callee2_466124Pv": "0x7100466124"
+    "_Z14callee2_466124Pv": "0x7100466124",
+    "got:gGlobalc216a0_3dbd0": "0x7100c216a0",
+    "got:gGlobalc22100_44cc88": "0x7100c22100",
+    "got:gGlobalc22100_44cd20": "0x7100c22100",
+    "got:gGlobalc22a40_3c7a18": "0x7100c22a40",
+    "got:gGlobalc2d290_5327bc": "0x7100c2d290",
+    "_Z12callee_3676cPv": "0x710003676c",
+    "_Z12callee_3c5b8i": "0x710003c5b8",
+    "_Z12callee_4ae2cPvS_": "0x710004ae2c",
+    "_Z12callee_4ae60PvS_": "0x710004ae60",
+    "_Z12callee_4ae94Pv": "0x710004ae94",
+    "_Z12callee_4aec0Pv": "0x710004aec0",
+    "_Z12callee_5237ci": "0x710005237c",
+    "_Z12callee_6e3ecii": "0x710006e3ec",
+    "_Z13callee_21cd44Pv": "0x710021cd44",
+    "_Z13callee_3c781cPv": "0x71003c781c",
+    "_Z13callee_469bd4PvS_iS_": "0x7100469bd4",
+    "_Z13callee_46fd24Pv": "0x710046fd24",
+    "_Z13callee_470000Pvf": "0x7100470000",
+    "_Z13callee_470da8PvS_": "0x7100470da8",
+    "_Z13callee_54b684PvS_": "0x710054b684",
+    "_Z13callee_54b8a4Pvf": "0x710054b8a4",
+    "_Z13callee_55479cPvS_S_": "0x710055479c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -18509,6 +18531,20 @@
         "_Z11call_4348a4P11Arg4348a4_0iP11Arg4348a4_2Pv": "0x71004348a4",
         "_Z11call_434a24P11Arg434a24_0i": "0x7100434a24",
         "_Z11call_45d650lii": "0x710045d650"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
+      }
+    },
+    "misc/variant_functions37.cpp": {
+      "functions": {
+        "_Z10call_46410P10Arg46410_0f": "0x7100046410",
+        "_Z10call_4644cP10Arg4644c_0f": "0x710004644c",
+        "_Z10call_86ae8P10Arg86ae8_0f": "0x7100086ae8",
+        "_Z10call_bbc04P10Argbbc04_0P10Argbbc04_1Pv": "0x71000bbc04",
+        "_Z11call_1bde4cP11Arg1bde4c_0iiiiiiiiii": "0x71001bde4c",
+        "_Z11call_1be744P11Arg1be744_0iiiiiiiiii": "0x71001be744",
+        "_Z11call_419134P11Arg419134_0i": "0x7100419134"
       },
       "map": {
         ".rodata.cst4": "0x710073b000"
