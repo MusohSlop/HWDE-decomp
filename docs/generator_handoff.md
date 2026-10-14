@@ -95,7 +95,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   division, is `x / d`, and `x - d * (x / d)` is `x % d`;
 - 64-bit unsigned division and modulo by a constant (knob `noudiv64`): `umulh` by a magic number and a shift (after a
   shift of x for an even divisor), checked on extreme and random values, is `x / d`, and `x - d * (x / d)` is
-  `x % d`.
+  `x % d`;
+- two int fields read by one 64-bit load (knob `nopair32`): an `ldr xN` whose value is only used as `wN` and as its
+  high word (`lsr`/`asr #32`, `ubfx #32, #32`) is two int field loads; a function where the split fails is
+  generated again without it.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,

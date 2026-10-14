@@ -186,6 +186,7 @@ def mangled_arity(name):
 
 KNOWN_ARITY = {}
 ARITY_USED = [False]
+PAIR_USED = [False]
 for _n, _a in list(units["symbols"].items()) + [(_n2, _a2) for _u in units["units"].values() for _n2, _a2 in _u.get("functions", {}).items()]:
     if _n.startswith("got:") or re.search(r"(callee\d?|call|placeholder)_[0-9a-f]+", _n):
         continue
@@ -260,6 +261,41 @@ def gen_function(a, ins):
     callees = {}        # target -> [arg types, ret type]
     counter = [0]
     addr_index = {i.address: k for k, i in enumerate(ins)}
+    pair_loads_ = set()
+    for k_, i_ in enumerate(ins):
+        mm_ = re.fullmatch(r"x(\d+), \[(x\d+)(?:, #(0x[0-9a-f]+|\d+))?\]", i_.op_str) if i_.mnemonic in ("ldr", "ldur") else None
+        if not mm_ or mm_.group(1) in ("29", "30") or mm_.group(2) in ("x29", "x" + mm_.group(1)):
+            continue
+        rn_ = mm_.group(1)
+        xp_ = re.compile(r"\bx%s\b" % rn_)
+        wp_ = re.compile(r"\bw%s\b" % rn_)
+        hi_ = False
+        ok_ = True
+        for j_ in range(k_ + 1, min(len(ins), k_ + 40)):
+            ij_ = ins[j_]
+            ops_j_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", ij_.op_str)]
+            if ij_.mnemonic in ("lsr", "asr") and len(ops_j_) == 3 and xp_.fullmatch(ops_j_[1]) and ops_j_[2] in ("#0x20", "#32"):
+                hi_ = True
+                if xp_.fullmatch(ops_j_[0]):
+                    break
+                continue
+            if ij_.mnemonic == "ubfx" and len(ops_j_) == 4 and xp_.fullmatch(ops_j_[1]) and ops_j_[2] in ("#0x20", "#32") \
+                    and ops_j_[3] in ("#0x20", "#32"):
+                hi_ = True
+                if xp_.fullmatch(ops_j_[0]):
+                    break
+                continue
+            reads_ = ops_j_[1:] if ops_j_ and not ij_.mnemonic.startswith(("st", "cb", "tb", "cmp", "cmn", "tst")) else ops_j_
+            if any(xp_.search(o_) for o_ in reads_):
+                ok_ = False
+                break
+            if ops_j_ and (xp_.fullmatch(ops_j_[0]) or wp_.fullmatch(ops_j_[0])) \
+                    and not ij_.mnemonic.startswith(("st", "cb", "tb", "cmp", "cmn", "tst")):
+                break  # redefined
+            if ij_.mnemonic in ("ret", "b", "br", "bl", "blr"):
+                break
+        if ok_ and hi_:
+            pair_loads_.add(k_)
     jump_targets_ = set()
     for i_ in ins:
         if (i_.mnemonic in ("b", "cbz", "cbnz", "tbz", "tbnz") or i_.mnemonic.startswith("b.")) and "#" in i_.op_str:
@@ -808,6 +844,10 @@ def gen_function(a, ins):
         v = regs.get(n)
         if v is None:
             raise Fail("undefined x%d" % n)
+        if v[0] == "pair32":
+            if w == "w":
+                return v[1]
+            raise Fail("paired load as 64 bits")
         if v[0] == "param":
             cur = pwidth.get(v[1])
             if cur is None:
@@ -2233,6 +2273,28 @@ def gen_function(a, ins):
                     vars_[name] = ("load", sn, 0)
                     items.append(("let", name, sn, 0, tmp))
                     regs[dn] = ("var", name)
+                if dn < 8: written.add(dn)
+            elif "nopair32" not in knobs and k in pair_loads_:
+                # two neighbouring int fields read by one 64-bit load
+                mm_ = re.fullmatch(r"x(\d+), \[(x\d+)(?:, #(0x[0-9a-f]+|\d+))?\]", i.op_str)
+                dn = int(mm_.group(1))
+                off_ = int(mm_.group(3), 0) if mm_.group(3) else 0
+                basev_ = regs.get(regname(mm_.group(2))[0])
+                halves_ = []
+                for o_ in (off_, off_ + 4):
+                    sn, base, off2 = field(regs, None, o_, "int", base=basev_)
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off2, "int")
+                    items.append(("let", name, sn, off2, base))
+                    letbase[name] = base
+                    halves_.append(("var", name))
+                regs[dn] = ("pair32", halves_[0], halves_[1])
+                PAIR_USED[0] = True
+                if dn < 8: written.add(dn)
+            elif "nopair32" not in knobs and m in ("lsr", "asr", "ubfx") and len(ops) >= 3 and re.fullmatch(r"x\d+", ops[1]) \
+                    and (regs.get(int(ops[1][1:])) or ("",))[0] == "pair32" and ops[2] in ("#0x20", "#32"):
+                dn, w = regname(ops[0])
+                regs[dn] = regs[int(ops[1][1:])][2]
                 if dn < 8: written.add(dn)
             elif m in LOAD or m == "ldp":
                 pair = m == "ldp"
@@ -4138,13 +4200,15 @@ for size, a in sorted(U, key=lambda x: x[1]):
         if False:
             raise Fail("no call")
         ARITY_USED[0] = False
+        PAIR_USED[0] = False
         try:
             text, sigs, gsyms = gen_function(a, ins)
         except Fail:
-            if not ARITY_USED[0]:
+            if not (ARITY_USED[0] or PAIR_USED[0]):
                 raise
-            # known argument counts made this function fail: generate it as before
-            KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | {"noknownarity"}
+            # known argument counts or a split 64-bit load made this function fail: generate it as before
+            KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | ({"noknownarity"} if ARITY_USED[0] else set()) \
+                | ({"nopair32"} if PAIR_USED[0] else set())
             text, sigs, gsyms = gen_function(a, ins)
         if len(text) > 2000000:
             raise Fail("output too large")
