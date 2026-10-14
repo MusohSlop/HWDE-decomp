@@ -13304,6 +13304,14 @@
       "map": {
         ".rodata.cst4": "0x710073b000"
       }
+    },
+    "misc/variant_functions13.cpp": {
+      "functions": {
+        "_Z11call_184d98P11Arg184d98_0": "0x7100184d98"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
+      }
     }
   }
 }
