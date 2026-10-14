@@ -2196,7 +2196,10 @@
     "_Z15transfer_1fbf44P12Stream1fbf44Pvi": "0x71001fbf44",
     "_Z12limit_20b184P12Limits20b184i": "0x710020b184",
     "_Z18chunk_short_218eb0P10ChunkTableji": "0x7100218eb0",
-    "_Z17chunk_byte_218fc0P10ChunkTableji": "0x7100218fc0"
+    "_Z17chunk_byte_218fc0P10ChunkTableji": "0x7100218fc0",
+    "_Z18chunk_value_218da0P10ChunkTableji": "0x7100218da0",
+    "_Z17chunk_text_218d18P10ChunkTableji": "0x7100218d18",
+    "got:gBankedTable_c23340": "0x7100c23340"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7062,7 +7065,9 @@
         "_Z18banked_byte_21339cP11BankedTableij": "0x710021339c",
         "_Z18banked_byte_213414P11BankedTableij": "0x7100213414",
         "_Z19banked_short_21348cP11BankedTableij": "0x710021348c",
-        "_Z19banked_short_213504P11BankedTableij": "0x7100213504"
+        "_Z19banked_short_213504P11BankedTableij": "0x7100213504",
+        "_Z19banked_value_21357cP11BankedTableij": "0x710021357c",
+        "_Z18banked_text_2135f0P11BankedTableij": "0x71002135f0"
       }
     }
   }

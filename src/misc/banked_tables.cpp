@@ -131,3 +131,35 @@ short banked_short_213504(BankedTable* table, int bank, unsigned int id) {
         return -1;
     return chunk_short_218eb0(&table->banks[index], id, 2);
 }
+
+int chunk_value_218da0(ChunkTable* chunk, unsigned int id, int column);         // 0x7100218da0
+const char* chunk_text_218d18(ChunkTable* chunk, unsigned int id, int variant);  // 0x7100218d18
+extern const char kEmptyText[] __attribute__((visibility("hidden")));           // 0x7100740512
+
+// 0x710021357c: column 0
+int banked_value_21357c(BankedTable* table, int bank, unsigned int id) {
+    if (bank == 1) {
+        if (id >= 1000 && table->loaded[1])
+            return chunk_value_218da0(&table->extra[id / 1000 - 1], id % 1000, 0);
+    } else if (bank > 1) {
+        return -1;
+    }
+    unsigned int index = bank;
+    if (!table->loaded[index])
+        return -1;
+    return chunk_value_218da0(&table->banks[index], id, 0);
+}
+
+// 0x71002135f0: text variant 8
+const char* banked_text_2135f0(BankedTable* table, int bank, unsigned int id) {
+    if (bank == 1) {
+        if (id >= 1000 && table->loaded[1])
+            return chunk_text_218d18(&table->extra[id / 1000 - 1], id % 1000, 8);
+    } else if (bank > 1) {
+        return kEmptyText;
+    }
+    unsigned int index = bank;
+    if (!table->loaded[index])
+        return kEmptyText;
+    return chunk_text_218d18(&table->banks[index], id, 8);
+}

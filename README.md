@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-3.32% of bytes (186,244 of 5,603,025) and 22.76% of functions (3,933 of 17,282) match exactly; 142 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+3.33% of bytes (186,484 of 5,603,025) and 22.77% of functions (3,935 of 17,282) match exactly; 142 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-3,943 of 4,085 attempted functions match: 3,933 inventory functions (186,244 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 142 are near misses, all `m`.
+3,945 of 4,087 attempted functions match: 3,935 inventory functions (186,484 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 142 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -335,7 +335,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 5 in `misc/command_posts.cpp`, 3 in `misc/singleton_creates2.cpp`, 5 in `misc/item_states.cpp`, 1 in `misc/ref_releases.cpp`, 2 more in `misc/animation_stops.cpp` | seed-family members: command posts to other queues, large singletons, item state tests, a reference-slot reset (last slot first), animation-set stops | match |
 | 39 in `misc/table_reads.cpp`, 5 in `misc/global_parts.cpp` | range-checked byte and 16-bit reads, signed id fields with limits, row ids, handle-record bytes (table pointer read before the index); calls on parts of a large global | match |
 | 6 in `misc/seven_bytes.cpp` | seven-entry byte settings with a fallback to the last entry | near miss |
-| 4 of 7 in `misc/banked_tables.cpp` | banked table lookups (bank 1 continues past id 1000 in extension chunks); the three that keep a stack frame and widen the result (`2131f8`, `213284`, `213310`) are near misses (block layout) | match |
+| 6 of 9 in `misc/banked_tables.cpp` | banked table lookups (bank 1 continues past id 1000 in extension chunks); the three that keep a stack frame and widen the result (`2131f8`, `213284`, `213310`) are near misses (block layout) | match |
 | 5 of 9 in `misc/game_accessors3.cpp` | record transfer, save and restore loops, a capped value, a board shift; near misses: `2041d0` (return block placement), the three grid lookups `205420`/`205474`/`2054cc` (the original computes the row-or-flag test before the range checks) | match |
 | 13 of 15 in `misc/game_accessors2.cpp` | game-object and unit-record accessors (`2045f0`-`2062c0`): picks, flags, save backup and restore, levels, grades; `206040` (shared return block) and `20629c` (branches kept as branches) are near misses | match |
 | 22 in `misc/game_accessors.cpp` | game-object accessors after the item table (`201da0`-`2043f0`): bands, keys, ids, counts, stage, save-block selection, stock counts | match |
