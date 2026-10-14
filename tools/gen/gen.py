@@ -94,6 +94,109 @@ def hx_(n):
     """Hex for a name: a negative offset becomes mNN."""
     return f"{n:x}" if n >= 0 else f"m{-n:x}"
 
+def mangled_arity(name):
+    """(integer args, float args) of an Itanium-mangled function name, `this` included for a member; None if unsure."""
+    if not name.startswith("_Z") or any(x_ in name for x_ in ("St", "Sa", "Sb", "Ss", "Si", "So", "Sd", "Dp", "z")):
+        return None
+    s, pos = name[2:], 0
+    member = False
+    def ident(p):
+        q = p
+        while q < len(s) and s[q].isdigit():
+            q += 1
+        if q == p:
+            return None
+        n = int(s[p:q])
+        return q + n
+    def skip_template(p):
+        depth = 0
+        while p < len(s):
+            if s[p] == "I":
+                depth += 1
+            elif s[p] == "E":
+                depth -= 1
+                if depth == 0:
+                    return p + 1
+            p += 1
+        return None
+    try:
+        if s[pos] == "N":
+            member = True
+            pos += 1
+            while s[pos] in "KVr":
+                pos += 1
+            while s[pos] != "E":
+                if s[pos].isdigit():
+                    pos = ident(pos)
+                elif s[pos] in "CD" and pos + 1 < len(s) and s[pos + 1].isdigit():
+                    pos += 2
+                elif s[pos] == "S":
+                    pos = s.index("_", pos) + 1
+                elif s[pos] == "I":
+                    pos = skip_template(pos)
+                else:
+                    return None
+                if pos is None:
+                    return None
+            pos += 1
+        elif s[pos].isdigit():
+            pos = ident(pos)
+            if pos < len(s) and s[pos] == "I":
+                pos = skip_template(pos)
+        else:
+            return None
+        rest = s[pos:]
+        if rest == "v":
+            return (1 if member else 0, 0)
+        ni, nf = (1 if member else 0), 0
+        p = pos
+        while p < len(s):
+            ptr = False
+            while p < len(s) and s[p] in "PRKVO":
+                ptr = ptr or s[p] in "PRO"
+                p += 1
+            c = s[p]
+            if c in "bcahstijlmxynow" or (c == "v" and ptr):
+                p += 1; kind = "i"
+            elif c in "fd":
+                p += 1; kind = "f"
+            elif c.isdigit():
+                p = ident(p); kind = "i" if ptr else None
+                if p < len(s) and s[p] == "I":
+                    p = skip_template(p)
+            elif c == "S":
+                p = s.index("_", p) + 1; kind = "i" if ptr else None
+            elif c == "N":
+                p = s.index("E", p) + 1; kind = "i" if ptr else None
+            elif c == "D" and p + 1 < len(s) and s[p + 1] == "n":
+                p += 2; kind = "i"
+            else:
+                return None
+            if ptr:
+                kind = "i"
+            if kind is None:
+                return None  # a class passed by value
+            if kind == "i":
+                ni += 1
+            else:
+                nf += 1
+        return (ni, nf)
+    except (IndexError, ValueError, TypeError):
+        return None
+
+KNOWN_ARITY = {}
+ARITY_USED = [False]
+for _n, _a in list(units["symbols"].items()) + [(_n2, _a2) for _u in units["units"].values() for _n2, _a2 in _u.get("functions", {}).items()]:
+    if _n.startswith("got:") or re.search(r"(callee\d?|call|placeholder)_[0-9a-f]+", _n):
+        continue
+    _ar = mangled_arity(_n)
+    if _ar is not None:
+        _t = int(_a, 16) - 0x7100000000
+        if KNOWN_ARITY.get(_t, _ar) != _ar:
+            KNOWN_ARITY[_t] = None  # two names disagree
+        else:
+            KNOWN_ARITY[_t] = _ar
+
 def regname(r):
     if r in ("wzr", "xzr"):
         return None, r[0]
@@ -354,6 +457,54 @@ def gen_function(a, ins):
     starts = sorted(starts)
     stackobjs = {}      # start -> {off: ctype}
     cstore_typed_ = set()   # (struct, off) typed only by constant stores so far
+    bitfields_ = {}         # (struct, off) -> {(first bit, width)} written as bitfields
+    BFW_ = {"unsigned char": 8, "signed char": 8, "unsigned short": 16, "short": 16, "int": 32, "unsigned int": 32}
+    def bitfield_of_(sn_, off_, val_):
+        """(first bit, width, inserted value) when val_ rewrites some bits of the field it was loaded from."""
+        W_ = BFW_.get(structs[sn_].get(off_, ("",))[0])
+        if W_ is None or val_[0] != "bin" or val_[1] != "|":
+            return None
+        for keep_, x_ in ((val_[2], val_[3]), (val_[3], val_[2])):
+            if not (keep_[0] == "bin" and keep_[1] == "&" and keep_[3][0] == "const"):
+                continue
+            l_ = keep_[2]
+            lt_ = vars_.get(l_[1]) if l_[0] == "var" else None
+            if not (isinstance(lt_, tuple) and lt_[0] == "load" and lt_[1] == sn_ and lt_[2] == off_):
+                continue
+            hole_ = ~keep_[3][1] & ((1 << W_) - 1)
+            if hole_ == 0:
+                continue
+            s_ = (hole_ & -hole_).bit_length() - 1
+            w_ = bin(hole_).count("1")
+            if hole_ != ((1 << w_) - 1) << s_ or w_ == W_:
+                continue
+            if x_[0] == "const":
+                continue  # setting constant bits compiles the same either way
+            if s_:
+                if not (x_[0] == "bin" and x_[1] == "<<" and x_[3][0] == "const" and x_[3][1] == s_):
+                    continue
+                x_ = x_[2]
+            if x_[0] == "bin" and x_[1] == "&" and x_[3][0] == "const" and x_[3][1] == (1 << w_) - 1:
+                x_ = x_[2]
+            if x_[0] == "bin" and (x_[1] == "|" or (x_[1] == "&" and x_[2][0] == "bin" and x_[2][1] == "&")):
+                return None  # several fields written at once: keep the explicit form
+            return s_, w_, x_
+        return None
+    def bf_lines_(sn_, off_, t_):
+        W_ = BFW_[t_]
+        out_ = ["    union {", f"        {t_} field_{off_:x};", "        struct {"]
+        pos_ = 0
+        for s_, w_ in sorted(bitfields_[(sn_, off_)]):
+            if s_ < pos_:
+                raise Fail("bitfield overlap")
+            if s_ > pos_:
+                out_.append(f"            {t_} bfpad{off_:x}_{pos_} : {s_ - pos_};")
+            out_.append(f"            {t_} bf{off_:x}_{s_} : {w_};")
+            pos_ = s_ + w_
+        if pos_ < W_:
+            out_.append(f"            {t_} bfpad{off_:x}_{pos_} : {W_ - pos_};")
+        out_ += ["        };", f"    }};{' ' * 16}// +{off_:x}"]
+        return out_
     confirmed_ = set()      # (struct, off) typed by a load or a value store
     def note_access_(sn_, off_, cstore):
         if cstore:
@@ -797,6 +948,10 @@ def gen_function(a, ins):
         fw = regs.get("fw", set())
         nf = max(fw) + 1 if fw else 0
         n = max(written) + 1 if written else (1 if regs.get(0) is not None else 0)
+        ka_ = KNOWN_ARITY.get(target) if "noknownarity" not in knobs else None
+        if ka_ is not None and (ka_[0] < n or ka_[1] < nf):
+            n, nf = min(n, ka_[0]), min(nf, ka_[1])
+            ARITY_USED[0] = True
         args = []
         for k in range(n):
             v = regs.get(k)
@@ -2160,6 +2315,11 @@ def gen_function(a, ins):
                                     pv_s_ = pv_ - (1 << 32) if pv_ >= 1 << 31 else pv_
                                     items.append(("store", sn, off2, base, ("const", pv_s_, "w")))
                             continue
+                        bf_ = bitfield_of_(sn, off2, val) if "nobitfield" not in knobs else None
+                        if bf_ is not None:
+                            bitfields_.setdefault((sn, off2), set()).add(bf_[:2])
+                            items.append(("bfstore", sn, off2, base, bf_[2], bf_[0], bf_[1]))
+                            continue
                         if structs[sn][off2][0] == ct and ct in ("unsigned char", "unsigned short") and not any(
                                 it_[0] in ("let", "leti") and it_[2] == sn and it_[3] == off2 for it_ in items):
                             store_typed.add((sn, off2))
@@ -2458,6 +2618,8 @@ def gen_function(a, ins):
             mark(x, True)
     def mark_items(its):
         for it in its:
+            if it[0] == "bfstore":
+                mark(it[3]); mark(it[4])
             if it[0] == "copy8":
                 mark(it[1]); mark(it[3])
             if it[0] == "store":
@@ -3020,6 +3182,8 @@ def gen_function(a, ins):
                 count(x)
     def count_items(its):
         for it in its:
+            if it[0] == "bfstore":
+                count(it[3]); count(it[4])
             if it[0] == "copy8":
                 count(it[1]); count(it[3])
             if it[0] in ("let",):
@@ -3307,6 +3471,13 @@ def gen_function(a, ins):
                     outl.append(declare_line(pad, t, name, f"{fit(acc(base, off), ftype(sn, off), t)}"))
                 else:
                     outl.append(declare_line(pad, t, name, f"{acc(base, off)}"))
+            elif it[0] == "bfstore":
+                _, sn, off, base, val, s_, w_ = it
+                a_ = acc(base, off)
+                nm_ = f"field_{off:x}"
+                if not a_.endswith(nm_):
+                    raise Fail("bitfield access")
+                outl.append(f"{pad}{a_[:-len(nm_)]}bf{off:x}_{s_} = {expr(val)};")
             elif it[0] == "copy8":
                 def byte_addr_(b_, o_):
                     if b_[0] == "stackobj":
@@ -3676,7 +3847,8 @@ def gen_function(a, ins):
                 if off > pos:
                     fl.append(f"    unsigned char pad{pos:x}[0x{off - pos:x}];")
                 tt_ = (f"{child}*" if child else ct[6:]) if ct.startswith("ARRAY:") else (f"{child}*" if child else ct)
-                fl.append(f"    {tt_} field_{off:x}{'[1]' if ct.startswith('ARRAY:') else ''};{' ' * max(1, 20 - len(tt_))}// +{off:x}")
+                fl.extend(bf_lines_(sn, off, tt_)) if (sn, off) in bitfields_ and tt_ in BFW_ and not ct.startswith("ARRAY:") else \
+                    fl.append(f"    {tt_} field_{off:x}{'[1]' if ct.startswith('ARRAY:') else ''};{' ' * max(1, 20 - len(tt_))}// +{off:x}")
                 pos = off + SIZE[ct[6:] if ct.startswith("ARRAY:") else ct]
             if pos > elemsizes[sn]:
                 raise Fail("element too small")
@@ -3710,7 +3882,8 @@ def gen_function(a, ins):
                     pos = off + SIZE[ct[6:]]
                     continue
                 t2 = f"{child}*" if child else ct
-                fl.append(f"    {t2} field_{off:x};{' ' * max(1, 20 - len(t2))}// +{off:x}")
+                fl.extend(bf_lines_(sn, off, t2)) if (sn, off) in bitfields_ and t2 in BFW_ else \
+                    fl.append(f"    {t2} field_{off:x};{' ' * max(1, 20 - len(t2))}// +{off:x}")
                 pos = off + SIZE[ct]
             sdefs.append(f"class {sn} {{\npublic:\n" + "\n".join(ml) + ("\n\n" + "\n".join(fl) if fl else "") + "\n};\n")
             continue
@@ -3726,7 +3899,8 @@ def gen_function(a, ins):
                 pos = off + SIZE[ct[6:]]
                 continue
             t = f"{child}*" if child else ct
-            fl.append(f"    {t} field_{off:x};{' ' * max(1, 20 - len(t))}// +{off:x}")
+            fl.extend(bf_lines_(sn, off, t)) if (sn, off) in bitfields_ and t in BFW_ else \
+                fl.append(f"    {t} field_{off:x};{' ' * max(1, 20 - len(t))}// +{off:x}")
             pos = off + SIZE[ct]
         if "stackpad" in knobs and stackobjs and sn == stackobjs[max(stackobjs)]:
             local_ = None
@@ -3775,7 +3949,15 @@ for size, a in sorted(U, key=lambda x: x[1]):
             raise Fail("decode")
         if False:
             raise Fail("no call")
-        text, sigs, gsyms = gen_function(a, ins)
+        ARITY_USED[0] = False
+        try:
+            text, sigs, gsyms = gen_function(a, ins)
+        except Fail:
+            if not ARITY_USED[0]:
+                raise
+            # known argument counts made this function fail: generate it as before
+            KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | {"noknownarity"}
+            text, sigs, gsyms = gen_function(a, ins)
         if len(text) > 2000000:
             raise Fail("output too large")
         # jump tables share the unit's .rodata, so one anchor maps them only while they follow each other as
