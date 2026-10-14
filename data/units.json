@@ -6028,7 +6028,18 @@
     "_Z13callee_5b0214Pv": "0x71005b0214",
     "_Z13callee_5b49a4i": "0x71005b49a4",
     "_Z13callee_5c1a30PvS_lliS_lS_": "0x71005c1a30",
-    "_Z13callee_5ef3d4l": "0x71005ef3d4"
+    "_Z13callee_5ef3d4l": "0x71005ef3d4",
+    "got:gGlobalc2ad38_30f5ac": "0x7100c2ad38",
+    "got:gGlobalc2ad40_30f5ac": "0x7100c2ad40",
+    "got:gGlobalc2b3e8_3b2260": "0x7100c2b3e8",
+    "got:gGlobalc2b740_40a68c": "0x7100c2b740",
+    "_Z13callee_25b3acl": "0x710025b3ac",
+    "_Z13callee_337b34l": "0x7100337b34",
+    "_Z13callee_44d658l": "0x710044d658",
+    "_Z13callee_241b90i": "0x7100241b90",
+    "_Z13callee_241ba8i": "0x7100241ba8",
+    "_Z13callee_2248a0i": "0x71002248a0",
+    "_Z13callee_224990ii": "0x7100224990"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -12762,6 +12773,14 @@
         "_Z11call_5aff98P11Arg5aff98_0": "0x71005aff98",
         "_Z11call_5c1a04PvS_lS_S_": "0x71005c1a04",
         "_Z11call_5f373cP11Arg5f373c_0": "0x71005f373c"
+      }
+    },
+    "misc/switches/switch_28874c.cpp": {
+      "functions": {
+        "_Z11call_28874cli": "0x710028874c"
+      },
+      "map": {
+        ".rodata": "0x71007f7b7c"
       }
     }
   }
