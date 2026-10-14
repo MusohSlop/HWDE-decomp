@@ -52,3 +52,4 @@ arrmember+ptrloop
 nounroll
 nopun
 nosplitstores
+copy64

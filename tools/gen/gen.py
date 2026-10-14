@@ -145,6 +145,40 @@ def gen_function(a, ins):
     callees = {}        # target -> [arg types, ret type]
     counter = [0]
     addr_index = {i.address: k for k, i in enumerate(ins)}
+    jump_targets_ = set()
+    for i_ in ins:
+        if (i_.mnemonic in ("b", "cbz", "cbnz", "tbz", "tbnz") or i_.mnemonic.startswith("b.")) and "#" in i_.op_str:
+            jump_targets_.add(imm(i_.op_str.split(", ")[-1]))
+    copy_loads_ = set()
+    for k_, i_ in enumerate(ins):
+        mm_ = re.fullmatch(r"x(\d+), \[(x\d+|sp)(?:, #(-?0x[0-9a-f]+|-?\d+))?\]", i_.op_str) if i_.mnemonic in ("ldr", "ldur") else None
+        if not mm_ or mm_.group(1) in ("29", "30") or mm_.group(2) == "x" + mm_.group(1):
+            continue
+        rn_ = mm_.group(1)
+        pat_ = re.compile(r"\b[xw]%s\b" % rn_)
+        stores_ = 0
+        for j_ in range(k_ + 1, len(ins)):
+            ij_ = ins[j_]
+            ops_j_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", ij_.op_str)]
+            if ij_.mnemonic in ("str", "stur") and ops_j_[0] == "x" + rn_ and not pat_.search(ops_j_[1]) and re.fullmatch(r"\[(x\d+|sp)(, #-?(0x[0-9a-f]+|\d+))?\]", ops_j_[1]):
+                stores_ += 1
+                continue
+            if pat_.search(ij_.op_str):
+                if ij_.mnemonic.startswith("ld") and ops_j_ and pat_.fullmatch(ops_j_[0]) and not pat_.search(ops_j_[-1]):
+                    break  # redefined
+                if ij_.mnemonic in ("mov", "add", "sub", "and", "orr", "lsr", "lsl", "asr", "ubfx", "sbfx", "movz", "movk", "mov") \
+                        and pat_.fullmatch(ops_j_[0]) and not any(pat_.search(o_) for o_ in ops_j_[1:]):
+                    break  # redefined
+                stores_ = -1
+                break
+            if ij_.mnemonic in ("bl", "blr", "ret", "br", "b") or ij_.mnemonic.startswith("b.") or ij_.mnemonic in ("cbz", "cbnz", "tbz", "tbnz"):
+                stores_ = -1
+                break
+            if ij_.address in jump_targets_:
+                stores_ = -1
+                break
+        if stores_ > 0:
+            copy_loads_.add(k_)
     loop_info = []
     epi_ = set()
     for i in ins:
@@ -362,6 +396,8 @@ def gen_function(a, ins):
             fparams.add(v[1])
         if v[0] == "vconst":
             raise Fail("vector constant lane")
+        if v[0] == "fsqrtp":
+            raise Fail("fsqrt")
         if v[0] == "var" and vars_.get(v[1]) == "?":
             vars_[v[1]] = "f"
         return v
@@ -712,7 +748,7 @@ def gen_function(a, ins):
                 raise Fail("escaped region")
             if stop is not None and k == stop and not region:
                 if m.startswith("b."):
-                    if flags is None or m[2:] not in CC:
+                    if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))):
                         raise Fail("latch flags")
                     cnd = (flags, m[2:])
                 elif m in ("cbz", "cbnz"):
@@ -919,7 +955,7 @@ def gen_function(a, ins):
                 if dregion is not None:
                     then_rng, else_rng, join = dregion
                     if m.startswith("b."):
-                        if flags is None or m[2:] not in CC:
+                        if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))):
                             raise Fail("flags")
                         cnd = (flags, m[2:])
                     elif m in ("cbz", "cbnz"):
@@ -976,7 +1012,7 @@ def gen_function(a, ins):
             if m.startswith("b.") or m in ("cbz", "cbnz", "tbz", "tbnz"):
                 t = addr_index[imm(ops[-1])]
                 if m.startswith("b."):
-                    if flags is None or m[2:] not in CC:
+                    if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))):
                         raise Fail("flags")
                     cnd = (flags, m[2:])
                 elif m in ("cbz", "cbnz"):
@@ -1029,6 +1065,10 @@ def gen_function(a, ins):
                 regs["f"][fd] = ("fbin", {"fadd": "+", "fsub": "-", "fmul": "*", "fdiv": "/"}[m], fuse(regs["f"], ops[1]), fuse(regs["f"], ops[2]))
                 if fd < 8: regs.setdefault("fw", set()).add(fd)
                 k += 1; continue
+            if fdst and m == "fsqrt" and len(ops) == 2:
+                # the result may only be read by the NaN check of sqrtf (see the fcmp below)
+                regs["f"][fregname(fdst)] = ("fsqrtp", fuse(regs["f"], ops[1]))
+                k += 1; continue
             if fdst and m in ("fneg", "fabs") and len(ops) == 2:
                 fd = fregname(fdst)
                 regs["f"][fd] = ("funary", m, fuse(regs["f"], ops[1]))
@@ -1045,6 +1085,50 @@ def gen_function(a, ins):
                 regs[dn] = ("f2i", m == "fcvtzu", fuse(regs["f"], ops[1]), w)
                 if dn < 8: written.add(dn)
                 k += 1; continue
+            if m == "fcmp" and len(ops) == 2 and ops[0] == ops[1] and re.fullmatch(r"s\d+", ops[0]) \
+                    and (regs["f"].get(fregname(ops[0])) or ("",))[0] == "fsqrtp":
+                # sqrtf(x) with errno: the inline square root, and the library call when it gives NaN
+                fd = fregname(ops[0])
+                x_ = regs["f"][fd][1]
+                br_ = ins[k + 1] if k + 1 < len(ins) else None
+                if br_ is None or br_.mnemonic not in ("b.vc", "b.vs") or imm(br_.op_str) not in addr_index:
+                    raise Fail("fsqrt")
+                tgt_ = imm(br_.op_str)
+                def skip_moves_(jj_, end_=None):
+                    while jj_ < len(ins) and ins[jj_].mnemonic in ("mov", "fmov") and (end_ is None or ins[jj_].address < end_):
+                        jj_ += 1
+                    return jj_
+                def is_sqrtf_(i_, mn_):
+                    if i_.mnemonic != mn_ or not i_.op_str.startswith("#"):
+                        return None
+                    t_ = imm(i_.op_str)
+                    imp_ = import_of(t_)
+                    return t_ if imp_ and imp_[1] == "sqrtf" else None
+                if br_.mnemonic == "b.vc":
+                    jj_ = skip_moves_(k + 2, tgt_)
+                    sq_ = is_sqrtf_(ins[jj_], "bl") if jj_ < len(ins) else None
+                    jj_ = skip_moves_(jj_ + 1, tgt_)
+                    if sq_ is None or jj_ >= len(ins) or ins[jj_].address != tgt_:
+                        raise Fail("fsqrt")
+                    r_ = call({"f": {0: x_}, "fw": {0}}, set(), sq_, items, False)
+                    for n2 in list(regs):
+                        if isinstance(n2, int) and n2 < 19:
+                            regs[n2] = None
+                    regs["f"] = {n3: v3 for n3, v3 in regs["f"].items() if 8 <= n3 <= 15}
+                    regs["f"][fd] = r_
+                    regs["fw"] = {fd} if fd < 8 else set()
+                    written = set()
+                    flags = None
+                    k = addr_index[tgt_]; continue
+                jj_ = skip_moves_(k + 2)
+                ss_ = skip_moves_(addr_index[tgt_])
+                sq_ = is_sqrtf_(ins[ss_], "b") if ss_ < len(ins) else None
+                if sq_ is None or jj_ >= len(ins) or ins[jj_].mnemonic != "ret":
+                    raise Fail("fsqrt")
+                r_ = call({"f": {0: x_}, "fw": {0}}, set(), sq_, items, True)
+                items.append(("return", r_))
+                returns.append(r_)
+                return items
             if m == "fcmp" and len(ops) == 2:
                 x = fuse(regs["f"], ops[0])
                 y = ("fconst", 0.0) if ops[1].startswith("#") else fuse(regs["f"], ops[1])
@@ -1068,8 +1152,23 @@ def gen_function(a, ins):
             if fdst and m in ("ldr", "ldur") and len(ops) == 2 and not (ops[1].startswith("[sp") or ops[1].startswith("[x29")):
                 fd = fregname(fdst)
                 b, off, idx, sh, ext, pre, post = memop2(ops[1], None)
-                if idx is not None or pre:
-                    raise Fail("float addressing")
+                if idx is not None:
+                    # a float read through a byte offset, or a float array element
+                    if sh not in (0, 2):
+                        raise Fail("float addressing")
+                    basev_ = regs.get(regname(b)[0])
+                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:float", base=basev_)
+                    iv = index_value(regs, idx, ext)
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off2, "float")
+                    items.append(("leti", name, sn, off2, base, iv, "float") if sh == 0 else ("leti", name, sn, off2, base, iv))
+                    regs["f"][fd] = ("var", name)
+                    if fd < 8: regs.setdefault("fw", set()).add(fd)
+                    k += 1; continue
+                if pre:
+                    bn_ = regname(b)[0]
+                    regs[bn_] = ("bin", "+", regs.get(bn_), ("const", off, "x"), "x", "add")
+                    off = 0
                 sn, base, off2 = field(regs, b, off, "float")
                 name = f"v{counter[0]}"; counter[0] += 1
                 vars_[name] = ("load", sn, off2, "float")
@@ -1132,10 +1231,101 @@ def gen_function(a, ins):
             if ops and re.fullmatch(r"s\d+", ops[0]) and m in ("str", "stur") and len(ops) == 2 and not (ops[1].startswith("[sp") or ops[1].startswith("[x29")):
                 val = fuse(regs["f"], ops[0])
                 b, off, idx, sh, ext, pre, post = memop2(ops[1], None)
-                if idx is not None or pre:
-                    raise Fail("float addressing")
+                if idx is not None:
+                    if sh not in (0, 2):
+                        raise Fail("float addressing")
+                    basev_ = regs.get(regname(b)[0])
+                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:float", base=basev_)
+                    iv = index_value(regs, idx, ext)
+                    items.append(("storei", sn, off2, base, iv, val, "float") if sh == 0 else ("storei", sn, off2, base, iv, val))
+                    k += 1; continue
+                if pre:
+                    bn_ = regname(b)[0]
+                    regs[bn_] = ("bin", "+", regs.get(bn_), ("const", off, "x"), "x", "add")
+                    off = 0
                 sn, base, off2 = field(regs, b, off, "float")
                 items.append(("store", sn, off2, base, val))
+                k += 1; continue
+            fregs_ = [o_ for o_ in ops[:-1] if re.fullmatch(r"[sq]\d+", o_)] if sbase is not None else []
+            if fregs_ and len(fregs_) == len(ops) - 1 and m in ("ldr", "str", "ldur", "stur", "ldp", "stp"):
+                # float and vector stack slots: fields of an address-taken stack object, or spill slots
+                if any(r_[0] != fregs_[0][0] for r_ in fregs_):
+                    raise Fail("mixed float pair")
+                vec_ = fregs_[0][0] == "q"
+                width_ = 16 if vec_ else 4
+                ct_ = "Vec4f" if vec_ else "float"
+                load_ = m in ("ldr", "ldur", "ldp")
+                for j_, r_ in enumerate(fregs_):
+                    off_ = sbase + width_ * j_
+                    rn_ = int(r_[1:])
+                    if not any(s0 <= off_ for s0 in starts):
+                        if load_:
+                            if ("fspill", off_) not in regs:
+                                raise Fail("float reload")
+                            regs["f"][rn_] = regs[("fspill", off_)]
+                            if rn_ < 8: regs.setdefault("fw", set()).add(rn_)
+                        else:
+                            v_ = regs["f"].get(rn_)
+                            if v_ is None:
+                                raise Fail("undefined float spill")
+                            regs[("fspill", off_)] = v_
+                        continue
+                    st = stack_obj(off_)
+                    sv = ("stackobj", st)
+                    sn = struct_for(sv)
+                    prev = structs[sn].get(off_ - st)
+                    if prev and prev[0] != ct_:
+                        raise Fail("stack field clash")
+                    structs[sn].setdefault(off_ - st, (ct_, None))
+                    if load_:
+                        name = f"v{counter[0]}"; counter[0] += 1
+                        vars_[name] = ("load", sn, off_ - st) if vec_ else ("load", sn, off_ - st, "float")
+                        items.append(("let", name, sn, off_ - st, sv))
+                        letbase[name] = sv
+                        regs["f"][rn_] = ("var", name)
+                        if rn_ < 8: regs.setdefault("fw", set()).add(rn_)
+                    else:
+                        if vec_:
+                            v_ = regs["f"].get(rn_)
+                            if v_ is None or not (v_[0] == "vconst" or (v_[0] == "var" and isinstance(vars_.get(v_[1]), tuple)
+                                                                         and vars_[v_[1]][0] == "load" and structs[vars_[v_[1]][1]][vars_[v_[1]][2]][0] == "Vec4f")):
+                                raise Fail("vector store source")
+                        else:
+                            v_ = fuse(regs["f"], "s%d" % rn_)
+                        items.append(("store", sn, off_ - st, sv, v_))
+                k += 1; continue
+            if "copy64" in knobs and k in copy_loads_:
+                b_, off_ = ops[1].strip("[]").split(", #") if ", #" in ops[1] else (ops[1].strip("[]"), "0")
+                off_ = imm("#" + off_) if not off_.startswith("#") else imm(off_)
+                if b_ == "sp":
+                    if not any(s0 <= off_ for s0 in starts):
+                        raise Fail("copy from spill")
+                    st_ = stack_obj(off_)
+                    struct_for(("stackobj", st_))
+                    src_ = (("stackobj", st_), off_ - st_)
+                else:
+                    src_ = (regs.get(regname(b_)[0]), off_)
+                    if src_[0] is None:
+                        raise Fail("undefined base")
+                regs[int(ops[0][1:])] = ("copy", src_[0], src_[1])
+                k += 1; continue
+            if m in ("str", "stur") and len(ops) == 2 and re.fullmatch(r"x\d+", ops[0]) and (regs.get(int(ops[0][1:])) or ("",))[0] == "copy":
+                cv_ = regs[int(ops[0][1:])]
+                b_, off_ = ops[1].strip("[]").split(", #") if ", #" in ops[1] else (ops[1].strip("[]"), "0")
+                off_ = imm("#" + off_) if not off_.startswith("#") else imm(off_)
+                if b_ in ("sp", "x29"):
+                    if b_ == "x29":
+                        off_ += fp_off
+                    if not any(s0 <= off_ for s0 in starts):
+                        raise Fail("copy to spill")
+                    st_ = stack_obj(off_)
+                    struct_for(("stackobj", st_))
+                    dst_ = (("stackobj", st_), off_ - st_)
+                else:
+                    dst_ = (regs.get(regname(b_)[0]), off_)
+                    if dst_[0] is None:
+                        raise Fail("undefined base")
+                items.append(("copy8", dst_[0], dst_[1], cv_[1], cv_[2]))
                 k += 1; continue
             if m == "mov" and len(ops) == 2 and ops[1] == "sp":
                 dn, _ = regname(ops[0]); regs[dn] = ("stackaddr", 0)
@@ -1729,6 +1919,8 @@ def gen_function(a, ins):
             kids = [v[1], v[2]]
         if v[0] == "range":
             kids = [v[1]]
+        if v[0] == "copy":
+            kids = [v[1]]
         if v[0] == "bin":
             kids = [v[2], v[3]]
         elif v[0] in ("cond", "select"):
@@ -1737,6 +1929,8 @@ def gen_function(a, ins):
             mark(x, True)
     def mark_items(its):
         for it in its:
+            if it[0] == "copy8":
+                mark(it[1]); mark(it[3])
             if it[0] == "store":
                 mark(it[3]); mark(it[4])
             elif it[0] == "let":
@@ -2232,6 +2426,8 @@ def gen_function(a, ins):
                 count(x)
     def count_items(its):
         for it in its:
+            if it[0] == "copy8":
+                count(it[1]); count(it[3])
             if it[0] in ("let",):
                 count(it[4])
             elif it[0] == "leti":
@@ -2515,6 +2711,16 @@ def gen_function(a, ins):
                     outl.append(declare_line(pad, t, name, f"{fit(acc(base, off), ftype(sn, off), t)}"))
                 else:
                     outl.append(declare_line(pad, t, name, f"{acc(base, off)}"))
+            elif it[0] == "copy8":
+                def byte_addr_(b_, o_):
+                    if b_[0] == "stackobj":
+                        bs_ = f"&local_{b_[1]:x}"
+                    elif b_[0] in ("param", "var", "gotaddr", "local"):
+                        bs_ = expr(b_)
+                    else:
+                        raise Fail("copy base")
+                    return f"reinterpret_cast<unsigned char*>({bs_}) + {o_:#x}" if o_ else f"reinterpret_cast<unsigned char*>({bs_})"
+                outl.append(f"{pad}__builtin_memcpy({byte_addr_(it[1], it[2])}, {byte_addr_(it[3], it[4])}, 8);")
             elif it[0] == "store":
                 _, sn, off, base, val = it
                 vt_, ft_ = vtype(val), ftype(sn, off)
