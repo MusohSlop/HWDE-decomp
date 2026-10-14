@@ -814,10 +814,10 @@ Address,Quality,Size,Name
 0x710003d888,O,36,_Z17global_part_3d888i
 0x710003d8ac,O,36,_Z17global_part_3d8aci
 0x710003d8d0,O,36,_Z17global_part_3d8d0i
-0x710003d8f4,U,88,FUN_710003d8f4
-0x710003d94c,U,88,FUN_710003d94c
-0x710003d9a4,U,88,FUN_710003d9a4
-0x710003d9fc,U,88,FUN_710003d9fc
+0x710003d8f4,O,88,_Z10call_3d8f4i
+0x710003d94c,O,88,_Z10call_3d94ci
+0x710003d9a4,O,88,_Z10call_3d9a4i
+0x710003d9fc,O,88,_Z10call_3d9fci
 0x710003da54,O,40,_Z10call_3da54v
 0x710003da7c,O,4,_Z13forward_3da7cv
 0x710003da80,O,4,_Z13forward_3da80v

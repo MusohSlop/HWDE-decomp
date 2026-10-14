@@ -19575,6 +19575,17 @@
       "map": {
         ".rodata.cst4": "0x710073b000"
       }
+    },
+    "misc/variant_functions44.cpp": {
+      "functions": {
+        "_Z10call_3d8f4i": "0x710003d8f4",
+        "_Z10call_3d94ci": "0x710003d94c",
+        "_Z10call_3d9a4i": "0x710003d9a4",
+        "_Z10call_3d9fci": "0x710003d9fc"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
+      }
     }
   }
 }
