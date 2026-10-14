@@ -447,6 +447,14 @@ def gen_function(a, ins):
                     base = ("bytes", lhs, rhs)
                 elif base[0] == "bin" and pointerish(rhs) and not pointerish(lhs):
                     base = ("bytes", rhs, lhs)
+                elif base[0] == "bin" and base[1] == "+" and pointerish(lhs) and pointerish(rhs) and rhs[0] == "var":
+                    # two loaded 64-bit values added: the second is a byte offset (a used size), not a pointer
+                    tv_ = vars_.get(rhs[1])
+                    if isinstance(tv_, tuple) and tv_[0] == "load" and structs[tv_[1]][tv_[2]] == ("void*", None):
+                        structs[tv_[1]][tv_[2]] = ("long", None)
+                        if len(tv_) > 3:
+                            vars_[rhs[1]] = ("load", tv_[1], tv_[2], "long")
+                        base = ("bytes", lhs, rhs)
         return base, off
     def field(regs, base_reg, off, ct, base=None):
         if base is None and base_reg is not None:
