@@ -7017,6 +7017,25 @@
         "_Z20stocked_kinds_2043f0P9Stock2043": "0x71002043f0",
         "_Z18row_in_band_201da0P9Row201da0i": "0x7100201da0"
       }
+    },
+    "misc/game_accessors2.cpp": {
+      "functions": {
+        "_Z19set_choice_a_2045f0P9Picks2045h": "0x71002045f0",
+        "_Z19set_choice_b_204608P9Picks2045h": "0x7100204608",
+        "_Z15add_pick_2046a8P9Picks2045i": "0x71002046a8",
+        "_Z11pick_2046e4P9Picks2045i": "0x71002046e4",
+        "_Z11flag_2046fcP9Picks2045h": "0x71002046fc",
+        "_Z22save_block_size_204aa0v": "0x7100204aa0",
+        "_Z12value_2057b0P11Words2057b0j": "0x71002057b0",
+        "_Z10row_206034P9Row206034i": "0x7100206034",
+        "_Z15has_slot_206040P8Unit2060h": "0x7100206040",
+        "_Z15set_slot_2060c0P8Unit2060hi": "0x71002060c0",
+        "_Z16add_level_206190P8Unit2060i": "0x7100206190",
+        "_Z19update_grade_20626cP8Unit2060": "0x710020626c",
+        "_Z22grade_for_level_20629cP8Unit2060h": "0x710020629c",
+        "_Z18backup_save_204c5cP13SaveBlock204c": "0x7100204c5c",
+        "_Z19restore_save_204c80P13SaveBlock204c": "0x7100204c80"
+      }
     }
   }
 }
