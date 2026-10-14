@@ -144,6 +144,29 @@ def gen_function(a, ins):
     addr_index = {i.address: k for k, i in enumerate(ins)}
     loop_info = []
     epi_ = set()
+    fwdjump_ = set()
+    def raw_succ_(kk):
+        i_ = ins[kk]; mk = i_.mnemonic
+        if mk in ("ret", "br"):
+            return []
+        if mk == "b":
+            tv_ = imm(i_.op_str)
+            return [addr_index[tv_]] if tv_ in addr_index else []
+        if mk.startswith("b.") or mk in ("cbz", "cbnz", "tbz", "tbnz"):
+            t2_ = addr_index.get(imm(i_.op_str.split(",")[-1]))
+            return [x_ for x_ in (kk + 1, t2_) if x_ is not None and x_ < len(ins)]
+        return [kk + 1] if kk + 1 < len(ins) else []
+    def reaches_(src_, dst_):
+        seen_, todo_ = set(), [src_]
+        while todo_:
+            n_ = todo_.pop()
+            if n_ == dst_:
+                return True
+            if n_ in seen_:
+                continue
+            seen_.add(n_)
+            todo_.extend(raw_succ_(n_))
+        return False
     for i in ins:
         m = i.mnemonic
         if (m.startswith("b.") or m in ("cbz", "cbnz", "tbz", "tbnz") or (m == "b" and imm(i.op_str) in addr_index)):
@@ -161,6 +184,9 @@ def gen_function(a, ins):
                     k2 += 1
                 if straight_:
                     epi_.add(addr_index[t])
+                if not straight_ and "nofwdjump" not in knobs and not reaches_(addr_index[t], addr_index[i.address]):
+                    fwdjump_.add(addr_index[i.address])
+                    continue
                 if not straight_:
                     if m == "b" or "noloop" in knobs:
                         raise Fail("loop shape")
@@ -183,20 +209,29 @@ def gen_function(a, ins):
             if tv_ not in addr_index:
                 return [EXIT_]
             t2_ = addr_index[tv_]
-            return [t2_] if t2_ > kk else [EXIT_]
+            return [t2_] if (t2_ > kk or kk in fwdjump_) else [EXIT_]
         if mk.startswith("b.") or mk in ("cbz", "cbnz", "tbz", "tbnz"):
             t2_ = addr_index.get(imm(i_.op_str.split(",")[-1]))
-            if kk in latches_ or t2_ is None or t2_ <= kk:
+            if kk in latches_ or t2_ is None or (t2_ <= kk and kk not in fwdjump_):
                 return [kk + 1] if kk + 1 < len(ins) else [EXIT_]
             return [kk + 1, t2_]
         return [kk + 1] if kk + 1 < len(ins) else [EXIT_]
-    pdom_ = {EXIT_: {EXIT_}}
-    for kk in range(len(ins) - 1, -1, -1):
-        ss_ = succs_(kk)
-        if all(s_ in pdom_ for s_ in ss_):
-            sets_ = [pdom_[s_] for s_ in ss_]
-            pdom_[kk] = {kk} | set.intersection(*sets_)
-        else:
+    # post-dominators to a fixpoint (jumps back to earlier blocks make the order not topological)
+    ALL_ = frozenset(range(len(ins) + 1))
+    pdom_ = {EXIT_: frozenset({EXIT_})}
+    for kk in range(len(ins)):
+        pdom_[kk] = ALL_
+    succ_cache_ = {kk: succs_(kk) for kk in range(len(ins))}
+    for _ in range(len(ins) + 2):
+        changed_ = False
+        for kk in range(len(ins) - 1, -1, -1):
+            new_ = frozenset({kk}) | frozenset.intersection(*[pdom_[s_] for s_ in succ_cache_[kk]])
+            if new_ != pdom_[kk]:
+                pdom_[kk] = new_; changed_ = True
+        if not changed_:
+            break
+    for kk in range(len(ins)):
+        if pdom_[kk] == ALL_:
             pdom_[kk] = None
     def ipdom_(kk):
         p_ = pdom_.get(kk)
@@ -980,7 +1015,7 @@ def gen_function(a, ins):
                 else:
                     x = use(regs, ops[0]); bit = imm(ops[1])
                     cnd = (("tst", x, ("const", 1 << bit, regname(ops[0])[1]), regname(ops[0])[1]), "eq" if m == "tbz" else "ne")
-                if t <= k and t not in epi_:
+                if t <= k and t not in epi_ and k not in fwdjump_:
                     raise Fail("backward branch in loop")
                 body = walk(t, copyregs(regs), flags, set(written), depth + 1)
                 items.append(("if", cnd, body))
@@ -1201,6 +1236,9 @@ def gen_function(a, ins):
                     regs[dn] = ("ext", ty_, src_)
                 elif m in ("uxtb", "uxth"):
                     regs[dn] = ("bin", "&", src_, ("const", 0xff if m == "uxtb" else 0xffff, "w"), "w", "and")
+                elif "nonarrowsext" not in knobs:
+                    # a 32-bit sign extension of a byte or halfword: the value through the narrow signed type
+                    regs[dn] = ("ext", ty_, src_)
                 else:
                     raise Fail("narrow sign extend")
                 if dn < 8: written.add(dn)
@@ -1482,6 +1520,28 @@ def gen_function(a, ins):
                     regs[bn_] = basev
                 if post is not None:
                     regs[bn_] = ("bin", "+", regs.get(bn_), ("const", post, "x"), "x", "add")
+            elif m in ("neg", "mvn") and len(ops) == 2 and not ops[1].startswith("#"):
+                dn, w = regname(ops[0])
+                x = use(regs, ops[1])
+                regs[dn] = ("bin", "-", ("const", 0, w), x, w, "sub") if m == "neg" else ("bin", "^", x, ("const", -1, w), w, "eor")
+                if dn < 8: written.add(dn)
+            elif m in ("cmp", "cmn") and len(ops) == 3:
+                # compares with a shifted immediate or an extended register operand
+                x = use(regs, ops[0])
+                kind3_ = ops[2].split()
+                if ops[1].startswith("#") and kind3_[0] == "lsl":
+                    y = ("const", (imm(ops[1]) << imm(kind3_[1])) * (-1 if m == "cmn" else 1), regname(ops[0])[1])
+                elif not ops[1].startswith("#") and m == "cmp" and kind3_[0] in ("uxtb", "uxth", "sxtb", "sxth", "uxtw", "sxtw"):
+                    y = ("ext", {"uxtb": "unsigned char", "uxth": "unsigned short", "sxtb": "signed char", "sxth": "short",
+                                 "uxtw": "unsigned int", "sxtw": "int"}[kind3_[0]], use(regs, ops[1]))
+                    if len(kind3_) > 1 and imm(kind3_[1]):
+                        raise Fail("cmp form")
+                elif not ops[1].startswith("#") and m == "cmp" and kind3_[0] in ("lsl", "lsr", "asr") and len(kind3_) > 1:
+                    y = ("bin", "<<" if kind3_[0] == "lsl" else ">>", use(regs, ops[1]), ("const", imm(kind3_[1]), regname(ops[0])[1]),
+                         regname(ops[0])[1], kind3_[0])
+                else:
+                    raise Fail("cmp form")
+                flags = ("cmp", x, y, regname(ops[0])[1])
             elif m in ("cmp", "cmn", "tst") and len(ops) == 2:
                 x = use(regs, ops[0])
                 if ops[1].startswith("#"):
