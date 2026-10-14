@@ -229,11 +229,7 @@ struct UnitRoster {
     CampRecord* camp(unsigned int id) { return id < 10 ? &camps[id] : nullptr; }
     SpotRecord* spot(unsigned int id) { return id < 0x18 ? &spots[id] : nullptr; }
     PointRecord* point(unsigned int id) { return id < 0x40 ? &points[id] : nullptr; }
-    LinkCell* link(unsigned int from, unsigned int to) {
-        unsigned int column = to < 0x40 ? to : 0;
-        LinkCell* row = links[from < 0x40 ? from : 0];
-        return &row[column];
-    }
+    LinkCell* link(unsigned int from, unsigned int to) { return &links[from < 0x40 ? from : 0][to < 0x40 ? to : 0]; }
 
     UnitRecord* unit(unsigned int id) { return id < 0xf6 ? &units[id] : nullptr; }
     RosterTeam* team(unsigned int id) { return id < 3 ? &teams[id] : nullptr; }
@@ -1175,7 +1171,7 @@ void play_music_part_1c1ff0(MusicCommand* command) {
         record_track_1a7650(order_board_18d5d8(gShop), track);
 }
 // 0x71001b6968
-unsigned char link_value_1b6968(unsigned int from, unsigned int to, bool resolved) {
+unsigned char link_value_1b6968(unsigned int from, unsigned int to, unsigned char resolved) {
     LinkCell* cell = gShop->link(from, to);
     unsigned char value = cell->value;
     if (resolved && cell->state == 5)
