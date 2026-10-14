@@ -1,5 +1,11 @@
 # Matching decompilation
 
+<!-- progress -->
+![Progress map](docs/progress.png)
+
+3.30% of bytes (185,044 of 5,603,025) and 22.63% of functions (3,911 of 17,282) match exactly; 82 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+<!-- /progress -->
+
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
 
 ## Layout
