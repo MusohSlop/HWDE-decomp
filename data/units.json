@@ -2775,7 +2775,32 @@
     "_ZN13Base3c7188_28C2Ev": "0x71003c7188",
     "_ZN13Base1f69c8_20C2Ev": "0x71001f69c8",
     "_ZN15Base5a9f14_1350C2Ev": "0x71005a9f14",
-    "_ZN13Base5ce1bc_3cC2Ev": "0x71005ce1bc"
+    "_ZN13Base5ce1bc_3cC2Ev": "0x71005ce1bc",
+    "_ZN14Part5d27b4_120D1Ev": "0x71005d27b4",
+    "_ZN14Part5d27b4_120D2Ev": "0x71005d27b4",
+    "_ZN15Part5d27b4_110bD1Ev": "0x71005d27b4",
+    "_ZN15Part5d27b4_110bD2Ev": "0x71005d27b4",
+    "_ZN14Part379f30_10bD1Ev": "0x7100379f30",
+    "_ZN14Part379f30_10bD2Ev": "0x7100379f30",
+    "_ZN15Part5d27b4_110cD1Ev": "0x71005d27b4",
+    "_ZN15Part5d27b4_110cD2Ev": "0x71005d27b4",
+    "_ZN14RootNode3ccc84D2Ev": "0x71003ccc84",
+    "got:_ZTV12TwoPanelBase": "0x7100c2abb0",
+    "got:_ZTV11Panel2e8e64": "0x7100c2abe0",
+    "got:_ZTV11Panel2eef80": "0x7100c2ac00",
+    "got:_ZTV11Panel2f1ab4": "0x7100c2ac08",
+    "got:_ZTV10HandleCell": "0x7100c22978",
+    "got:_ZTV10HandlePair": "0x7100c22988",
+    "_ZN13Part4c084_220D1Ev": "0x710004c084",
+    "_ZN13Part4c084_220D2Ev": "0x710004c084",
+    "_ZN12Part3ce10_18D1Ev": "0x710003ce10",
+    "_ZN12Part3ce10_18D2Ev": "0x710003ce10",
+    "_ZN12Part464fc_68D1Ev": "0x71000464fc",
+    "_ZN12Part464fc_68D2Ev": "0x71000464fc",
+    "got:_ZTV10FrameOwner": "0x7100c21ee0",
+    "got:_ZTV9FramePair": "0x7100c21ed0",
+    "got:_ZTV9CellOwner": "0x7100c21fa0",
+    "got:_ZTV8CellGrid": "0x7100c21f98"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7993,6 +8018,17 @@
         "_ZN11Built33840cC2Ev": "0x710033840c",
         "_ZN11Built591ff0C2Ev": "0x7100591ff0",
         "_ZN11Built5d026cC2Ev": "0x71005d026c"
+      }
+    },
+    "misc/destructors5.cpp": {
+      "functions": {
+        "_ZN11Panel2e8e64D2Ev": "0x71002e8e64",
+        "_ZN11Panel2eef80D2Ev": "0x71002eef80",
+        "_ZN11Panel2f1ab4D2Ev": "0x71002f1ab4",
+        "_ZN10HandlePairD2Ev": "0x71000cffb8",
+        "_ZN9FramePairD2Ev": "0x710004b108",
+        "_ZN9FramePairD0Ev": "0x710004b158",
+        "_ZN8CellGridD2Ev": "0x71000511c4"
       }
     }
   }

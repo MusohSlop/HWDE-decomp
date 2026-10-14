@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-3.83% of bytes (214,432 of 5,603,025) and 23.68% of functions (4,093 of 17,282) match exactly; 186 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+3.84% of bytes (215,232 of 5,603,025) and 23.72% of functions (4,100 of 17,282) match exactly; 186 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-4,103 of 4,289 attempted functions match: 4,093 inventory functions (214,432 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 186 are near misses, all `m`.
+4,110 of 4,296 attempted functions match: 4,100 inventory functions (215,232 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 186 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -340,6 +340,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 5 of 5 in `misc/destructors2.cpp` | more complete-object destructors sharing one second base (a base, members and a polymorphic handle group destroyed in place); own members include inner groups with bases | match |
 | 19 of 19 in `misc/destructors3.cpp` | complete-object destructors with a root base and an out-of-line second base at +8 or +10, own members with inner groups; seven deleting variants through the root's `operator delete` (default heap) | match |
 | 27 of 27 in `misc/destructors4.cpp` | complete-object destructors found by a shape scan (vtable store, member destructor calls, tail call): root base or own vtable, optional second base; five deleting variants | match |
+| 7 of 7 in `misc/destructors5.cpp` | destructors whose direct base is polymorphic with an inline destructor (its vtable is stored again partway through), one deleting variant | match |
 | 4 of 4 in `misc/channel_sets.cpp` | float setters: through the global stage when it is ready, otherwise to every channel of the object's list | match |
 | 3 of 3 in `misc/listener_detach.cpp` | listener detach under the registry mutex (handler or own id list) | match |
 | 3 of 5 in `misc/bank_triggers.cpp` | sound or effect triggers routed to the global player or the object's bank; near misses: the two float-argument variants (`21c974`, `21ca54`), where the original hoists the result and kind moves above the bank branch | match |
@@ -464,6 +465,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 - **Long call lists are often loops.** Thirty-two calls on consecutive 0x88-byte slots come from `for (int i = 0; i < 32; ++i) slots[i].reset();`, which Clang unrolls completely (`misc/slot_pools.cpp`). Repeated free-and-clear sequences on arrays come from small loops too (`TextTable::unload` in `misc/table_teardowns.cpp`).
 - **Addresses taken before a call.** When the original computes a member's address into a callee-saved register before an unrelated call (`add x20, x19, #8` before a `memset`), the source binds a reference or pointer to that member first; Clang keeps the GEP where it is written (`misc/object_tables.cpp`).
 - **Unsigned loop bounds.** A search loop over an array whose compare is `b.lo` on a 64-bit counter while the found index is used sign-extended compares an `int` index with an unsigned bound (`i < kSlots` with `const unsigned int kSlots`) (`misc/object_tables.cpp`).
+- **Base vtable stores in destructors.** When a destructor ends by storing the base class's vtable and returning, the base has an inline virtual destructor whose body is not empty. With an empty body (`{}`) and nothing to destroy, Clang skips the vtable store; a call to an empty inline function in the body keeps it (`misc/destructors5.cpp`).
 - **Translation units and globals.**
   - `DemoSequenceItem` (`2173c4`, `2174d0`) is a separate unit after the sequence unit. If it is in the same file, `release` gets inlined into `clear`.
   - The queue registry (`c8af40`), the worker controls (`c8aef8`) and the high-worker enable byte (`c8af38`) are external hidden globals. As file-static globals in one unit, LLVM's GlobalMerge combines them and addresses one relative to another.
