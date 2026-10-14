@@ -20,6 +20,7 @@ real classes.
 | `misc/branch_functions2.cpp` | leaves with forward branches, 120-256 bytes | as `misc/branch_functions.cpp` |
 | `misc/call_functions4.cpp` | functions with calls, 256-480 bytes | as `misc/call_functions3.cpp` |
 | `misc/stack_functions.cpp` | functions with stack locals | as `misc/virtual_calls.cpp`; address-taken stack regions are ordinary locals `local_OFF` (struct type `StackOFF_FUNC` when they have several fields), no frame structs |
+| `misc/general_functions.cpp` | combined generator (calls, virtual calls, stack locals, guards, jumps back to shared return blocks) | as `misc/stack_functions.cpp` and `misc/virtual_calls.cpp` |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |
 
 `NNN` is the function's address without the `0x7100` prefix, `OFF` a byte offset, `ADDR` a data
