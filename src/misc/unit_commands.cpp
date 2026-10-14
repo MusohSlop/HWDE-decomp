@@ -36,8 +36,19 @@ struct StepInfo {
     int step;                 // +04
 };
 
+struct MessageEntry {
+    unsigned char data[0x24c];
+};
+
+struct MessageQueue {
+    unsigned int index;       // +00
+    MessageEntry entries[1];  // +04
+};
+
 struct StepOwner {
-    unsigned char pad[0x139948];
+    unsigned char pad[0x139338];
+    MessageQueue messages;    // +139338
+    unsigned char pad13958c[0x3bc];
     StepInfo* info;           // +139948
 };
 
@@ -54,9 +65,12 @@ struct UnitRecord {
     float position[9];        // +20
 
     unsigned int team;        // +44
-    unsigned char pad48[0x14];
+    unsigned char pad48[0x10];
+    int item;                 // +58
     int leader;               // +5c
-    unsigned char pad60[0x48];
+    unsigned char pad60[4];
+    int rank;                 // +64
+    unsigned char pad68[0x40];
     int values[3];            // +a8
     unsigned char padb4[0x40];
     unsigned int damage;      // +f4
@@ -103,8 +117,15 @@ struct OfficerType {
     unsigned char pad31[0xb];
 };
 
+struct RosterTeam {
+    unsigned char pad[4];
+    int score;                // +04
+    unsigned char pad8[0x330];
+};
+
 struct UnitRoster {
-    unsigned char pad[0xc20];
+    unsigned char pad[0x278];
+    RosterTeam teams[3];      // +278
     UnitRecord units[0xf6];   // +c20
     OfficerRecord officers[300]; // +15e60
     unsigned char pad95a20_gap[0x95a20 - 0x15e60 - 300 * 0x6d0];
@@ -587,4 +608,50 @@ void dismiss_team_unit_1b9950(const TeamUnitCommand* command) {
     release_unit_113c40(gGlobal_c22a60, id, 1);
     release_unit_f2404(gGlobal_c22be8, id, 1);
     queue_unit_effect_19a858(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), position, 1, nullptr, 5);
+}
+int item_field_21139c(int item);                                            // 0x710021139c
+int item_field_2113c0(int item);                                            // 0x71002113c0
+int text_base_213d38(int value);                                            // 0x7100213d38
+int text_id_213a8c(int text);                                               // 0x7100213a8c
+const char* text_213b30(int text);                                          // 0x7100213b30
+int fill_message_1b7dc4(int a, int value, int kind, int b, int* unit, int* item, int* score, int* field,
+                        int* rank, int* text_id, const char** text, int none); // 0x71001b7dc4
+void guarded_forward_40b0dc(int text);                                      // 0x710040b0dc
+void post_message_1d7444(MessageEntry* entry, int item, int rank, int score, int field, int text_id,
+                         const char* text, int value, int result);         // 0x71001d7444
+void flush_effects_19a7f4(EffectQueue* queue);                              // 0x710019a7f4
+
+// 0x71001b7b20
+void post_unit_message_1b7b20(const UnitCommand* command) {
+    int id = command->unit;
+    id = resolve_unit(id);
+    UnitRecord* unit = gShop->unit(id);
+    if (unit->team > 2)
+        return;
+    int item = unit->item;
+    int score = gShop->teams[unit->team].score;
+    int field = static_cast<unsigned int>(item) <= 0x44b ? item_field_21139c(item) : -1;
+    int rank = unit->rank;
+    int requested = command->value;
+    StepInfo* info = gGlobal_c22ca8->info;
+    int step = info ? info->step * 1000 : 0;
+    int value = text_base_213d38(requested) + step;
+    int text_id = -1;
+    const char* text = "";
+    if (static_cast<unsigned int>(value) < 0x47d8 || (gGlobal_c22ca8->info && gGlobal_c22ca8->info->step)) {
+        text_id = text_id_213a8c(value);
+        text = text_213b30(value);
+    }
+    int result = fill_message_1b7dc4(1, command->value, item_field_2113c0(unit->item), 1, &id, &item, &score,
+                                     &field, &rank, &text_id, &text, -1);
+    int shown = text_id;
+    if (static_cast<unsigned int>(shown) < 0x1d1a) {
+        guarded_forward_40b0dc(shown);
+        if (!stage_busy_1d740c(gGlobal_c22ca8)) {
+            MessageQueue* messages = &gGlobal_c22ca8->messages;
+            post_message_1d7444(&messages->entries[messages->index], item, rank, score, field, shown, text,
+                                value, result);
+        }
+    }
+    flush_effects_19a7f4(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)));
 }

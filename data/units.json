@@ -2334,7 +2334,13 @@
     "_Z17start_type_170530j": "0x7100170530",
     "_Z18release_unit_f2404Pvii": "0x71000f2404",
     "_Z19release_unit_113c40Pvii": "0x7100113c40",
-    "_Z24queue_unit_effect_19a858P11EffectQueuePKfiPvi": "0x710019a858"
+    "_Z24queue_unit_effect_19a858P11EffectQueuePKfiPvi": "0x710019a858",
+    "_Z11text_213b30i": "0x7100213b30",
+    "_Z14text_id_213a8ci": "0x7100213a8c",
+    "_Z16text_base_213d38i": "0x7100213d38",
+    "_Z19fill_message_1b7dc4iiiiPiS_S_S_S_S_PPKci": "0x71001b7dc4",
+    "_Z19post_message_1d7444P12MessageEntryiiiiiPKcii": "0x71001d7444",
+    "_Z20flush_effects_19a7f4P11EffectQueue": "0x710019a7f4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7328,13 +7334,15 @@
         "_Z20set_unit_mode_1c4478PK11UnitCommand": "0x71001c4478",
         "_Z25set_unit_condition_1c4888PK11UnitCommand": "0x71001c4888",
         "_Z20dismiss_group_1b91a0PK11UnitCommand": "0x71001b91a0",
-        "_Z24dismiss_team_unit_1b9950PK15TeamUnitCommand": "0x71001b9950"
+        "_Z24dismiss_team_unit_1b9950PK15TeamUnitCommand": "0x71001b9950",
+        "_Z24post_unit_message_1b7b20PK11UnitCommand": "0x71001b7b20"
       },
       "map": {
         "_ZZL12resolve_unitiE5local": "0x7100c44ce0",
         "_ZGVZL12resolve_unitiE5local": "0x7100c44ce8",
         ".rodata": "0x71007e6ca8",
-        ".rodata.cst4": "0x710073bbd4"
+        ".rodata.cst4": "0x710073bbd4",
+        ".rodata.str1.1": "0x7100740512"
       }
     }
   }
