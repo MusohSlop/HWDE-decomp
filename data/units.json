@@ -7946,6 +7946,20 @@
         "_Z18alloc_block_247200P10BlockOwnerj": "0x7100247200",
         "_Z16stop_slot_248638P9SoundSlot": "0x7100248638"
       }
+    },
+    "misc/text_chunks.cpp": {
+      "functions": {
+        "_ZNK10TextChunks4textEjj": "0x7100218d18",
+        "_ZNK10TextChunks5valueEjj": "0x7100218da0",
+        "_ZNK10TextChunks6numberEjj": "0x7100218e28",
+        "_ZNK10TextChunks4halfEjj": "0x7100218eb0",
+        "_ZNK10TextChunks5countEjj": "0x7100218f38",
+        "_ZNK10TextChunks4byteEjj": "0x7100218fc0",
+        "_ZNK10TextChunks4flagEjj": "0x7100219048"
+      },
+      "map": {
+        ".rodata": "0x710073df50"
+      }
     }
   }
 }

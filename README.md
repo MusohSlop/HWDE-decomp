@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-3.82% of bytes (213,896 of 5,603,025) and 23.63% of functions (4,084 of 17,282) match exactly; 179 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+3.82% of bytes (213,896 of 5,603,025) and 23.63% of functions (4,084 of 17,282) match exactly; 186 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-4,094 of 4,273 attempted functions match: 4,084 inventory functions (213,896 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 179 are near misses, all `m`.
+4,094 of 4,280 attempted functions match: 4,084 inventory functions (213,896 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 186 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -362,6 +362,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 5 of 5 in `misc/text_table_api.cpp` | text table setup and shutdown entry points (a separate unit, so the table functions stay calls) | match |
 | 10 of 11 in `misc/object_tables.cpp` | object tables (head block, frame allocator, slot area): creators, init and reset as instances of one class template, the second table's add; the second table's reset takes its allocator reference before the `memset`; near miss: the first table's enroll keeps a redundant ticket range test, like `2112bc` | match |
 | 3 of 3 in `misc/table_helpers.cpp` | a four-column row append, a tagged allocation (size widened to `unsigned long`) and a mode-dependent stop written as a `switch` so the handle is loaded in each case | match |
+| 0 of 7 in `misc/text_chunks.cpp` | packed text-table cell accessors (type check, column offset from a size table at `73df50`); near misses by 16 words: the original keeps the type-array pointer in a register for both the check and the offset loop, where ours folds its +0x10 into the check's address | near miss |
 | 0 of 7 in `misc/plane_tests.cpp` | convex-shape plane tests (support point opposite the normal, signed distance); near misses by 3 words: the negated direction lands in another register and one add has its operands swapped. The negation has to go through a by-value `operator-` to get the original's packed integer form | near miss |
 | 0 of 1 in `misc/stack_layouts.cpp` | stacked layout (five fixed and five optional parts at running offsets); near miss by one word: the original branches on the negated dirty flag with `tbz w8, #0` where ours emits `cbz w8`. Tried: `&&`, `&`, `|`, a select into an `unchanged` flag (best), bool/int/unsigned char flags, `^ 1`, `== false`, if/else and preset assignments of `dirty`, inline helper vs written-out loops, member reloads. Five look-alike classes (`59b0a0`-`59bb80`) are left until this one matches | near miss |
 | 16 of 18 in `misc/unit_commands.cpp` | script commands on units: shared id resolution (local player through a guarded static, roster aliases, difficulty-stepped families) then field stores, timer clears, stance bitfields, alias updates, member orders, dismissals, player gauges, modes and conditions; near misses: `1c4c5c` loads the side bit as a byte where the original loads the word; `1b7b20` (unit message) has the opposite compare form for the text-id bound and one moved instruction | match |
