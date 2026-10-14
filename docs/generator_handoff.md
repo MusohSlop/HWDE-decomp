@@ -58,7 +58,11 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - fields typed only by 8-byte constant stores (`str xzr`, `stp xzr, xzr` on stack objects) take the type of a
   later narrower access, and the constant store is split over the fields it covers;
 - integer reads of different widths at one offset (Clang narrows a load whose value is only truncated) are one
-  field of the wider type, read back with each load's own type (knob `nowiden` turns this off).
+  field of the wider type, read back with each load's own type (knob `nowiden` turns this off);
+- 128-bit float vector arithmetic (knob `novec` turns it off): `Vec4f` is `float __attribute__((ext_vector_type(4)))`
+  (earlier units keep their `vector_size(16)` typedef, which compiles the same), vector `+ - *`, multiply by a lane,
+  `fmla`/`fmls` as `vfmaq_laneq_f32`/`vfmsq_laneq_f32`/`vfmaq_f32`/`vfmsq_f32` from `arm_neon.h`, `dup`, zero `movi`,
+  negation, lane reads `v[i]`, and stores of vector values.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,

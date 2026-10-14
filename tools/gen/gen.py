@@ -497,13 +497,43 @@ def gen_function(a, ins):
         if not m_:
             raise Fail("freg " + r)
         return int(m_.group(1))
+    def is_vecval_(v):
+        """A 128-bit float vector value (Vec4f)."""
+        if v is None:
+            return False
+        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg"):
+            return True
+        if v[0] == "var":
+            tv_ = vars_.get(v[1])
+            return tv_ == "Vec4f" or (isinstance(tv_, tuple) and tv_[0] == "load" and len(tv_) == 3
+                                      and structs[tv_[1]].get(tv_[2], ("",))[0] == "Vec4f")
+        return False
+    def lane_(fregs, n, i):
+        """Lane i of register n: a lane of a vector, or the scalar itself for lane 0 of a scalar register."""
+        v = fregs.get(n)
+        if v is None:
+            raise Fail("undefined v%d" % n)
+        if is_vecval_(v):
+            if "novec" in knobs:
+                raise Fail("vector arithmetic")
+            return ("vlane", v, i)
+        if i == 0 and v[0] not in ("fsqrtp",):
+            if v[0] == "fparam":
+                fparams.add(v[1])
+            return v
+        raise Fail("lane of scalar")
     def fuse(fregs, r):
+        ml_ = re.fullmatch(r"v(\d+)\.s\[(\d)\]", r)
+        if ml_:
+            return lane_(fregs, int(ml_.group(1)), int(ml_.group(2)))
         n = fregname(r)
         v = fregs.get(n)
         if v is None:
             raise Fail("undefined s%d" % n)
         if v[0] == "fparam":
             fparams.add(v[1])
+        if is_vecval_(v):
+            return lane_(fregs, n, 0)
         if v[0] == "vconst":
             raise Fail("vector constant lane")
         if v[0] == "fsqrtp":
@@ -981,7 +1011,7 @@ def gen_function(a, ins):
                 def computed_float(x):
                     if x is None or x == ("fparam", 0):
                         return False
-                    if x[0] in ("fbin", "fconst", "i2f", "funary", "fselect"):
+                    if x[0] in ("fbin", "fconst", "i2f", "funary", "fselect", "vlane"):
                         return True
                     if x[0] == "var":
                         tv = vars_.get(x[1])
@@ -1163,6 +1193,57 @@ def gen_function(a, ins):
                 regs["f"][fd_] = v_
                 if fd_ < 8: regs.setdefault("fw", set()).add(fd_)
                 k += 1; continue
+            vd_ = re.fullmatch(r"v(\d+)\.(4s|2d|16b)", ops[0]) if ops else None
+            if vd_ and m in ("fadd", "fsub", "fmul", "fmla", "fmls", "fneg", "dup", "movi") and "novec" not in knobs:
+                dn_ = int(vd_.group(1))
+                def vec_(o_):
+                    mv_ = re.fullmatch(r"v(\d+)\.4s", o_)
+                    if not mv_:
+                        raise Fail("vector operand " + o_)
+                    v_ = regs["f"].get(int(mv_.group(1)))
+                    if not is_vecval_(v_):
+                        raise Fail("scalar as vector")
+                    return v_
+                def lane_op_(o_):
+                    ml2_ = re.fullmatch(r"v(\d+)\.s\[(\d)\]", o_)
+                    return lane_(regs["f"], int(ml2_.group(1)), int(ml2_.group(2))) if ml2_ else None
+                if m in ("fadd", "fsub", "fmul") and len(ops) == 3 and vd_.group(2) == "4s":
+                    b_ = lane_op_(ops[2]) if m == "fmul" else None
+                    regs["f"][dn_] = ("vbin", {"fadd": "+", "fsub": "-", "fmul": "*"}[m], vec_(ops[1]), b_ if b_ is not None else vec_(ops[2]))
+                elif m in ("fmla", "fmls") and len(ops) == 3 and vd_.group(2) == "4s":
+                    ml3_ = re.fullmatch(r"v(\d+)\.s\[(\d)\]", ops[2])
+                    if ml3_:
+                        lv_ = regs["f"].get(int(ml3_.group(1)))
+                        if not is_vecval_(lv_):
+                            raise Fail("lane of scalar")
+                        regs["f"][dn_] = ("vfma", m == "fmls", vec_(ops[0]), vec_(ops[1]), lv_, int(ml3_.group(2)))
+                    else:
+                        regs["f"][dn_] = ("vfma", m == "fmls", vec_(ops[0]), vec_(ops[1]), vec_(ops[2]), None)
+                elif m == "fneg" and len(ops) == 2 and vd_.group(2) == "4s":
+                    regs["f"][dn_] = ("vneg", vec_(ops[1]))
+                elif m == "dup" and len(ops) == 2 and vd_.group(2) == "4s":
+                    if re.fullmatch(r"w\d+", ops[1]):
+                        iv_ = use(regs, ops[1])
+                        if iv_[0] != "const":
+                            raise Fail("dup of a variable")
+                        import struct as _st
+                        regs["f"][dn_] = ("vsplat", ("fconst", _st.unpack("<f", _st.pack("<I", iv_[1] & 0xffffffff))[0]))
+                    else:
+                        lo_ = lane_op_(ops[1])
+                        if lo_ is None:
+                            raise Fail("dup form")
+                        regs["f"][dn_] = ("vsplat", lo_)
+                elif m == "movi" and len(ops) == 2 and re.fullmatch(r"#0+|#0x0+", ops[1]):
+                    regs["f"][dn_] = ("vsplat", ("fconst", 0.0))
+                else:
+                    raise Fail("vector form " + m)
+                if dn_ < 8: regs.setdefault("fw", set()).add(dn_)
+                k += 1; continue
+            if m == "mov" and len(ops) == 2 and re.fullmatch(r"s\d+", ops[0]) and re.fullmatch(r"v\d+\.s\[\d\]", ops[1]):
+                fd = fregname(ops[0])
+                regs["f"][fd] = fuse(regs["f"], ops[1])
+                if fd < 8: regs.setdefault("fw", set()).add(fd)
+                k += 1; continue
             fdst = ops[0] if ops and re.fullmatch(r"s\d+", ops[0]) else None
             if fdst and m in ("fmov",) and len(ops) == 2:
                 fd = fregname(fdst)
@@ -1319,7 +1400,7 @@ def gen_function(a, ins):
                         regs["f"][qn_] = ("var", name)
                     else:
                         val_ = regs["f"].get(qn_)
-                        if val_ is not None and val_[0] == "vconst":
+                        if val_ is not None and (val_[0] == "vconst" or (val_[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg") and "novec" not in knobs)):
                             items.append(("store", sn, off2, base, val_))
                             continue
                         if val_ is None or val_[0] != "var" or not (isinstance(vars_.get(val_[1]), tuple) and vars_[val_[1]][0] == "load" and structs[vars_[val_[1]][1]][vars_[val_[1]][2]][0] == "Vec4f"):
@@ -1407,7 +1488,7 @@ def gen_function(a, ins):
                     else:
                         if vec_:
                             v_ = regs["f"].get(rn_)
-                            if v_ is None or not (v_[0] == "vconst" or (v_[0] == "var" and isinstance(vars_.get(v_[1]), tuple)
+                            if v_ is None or not (v_[0] == "vconst" or (v_[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg") and "novec" not in knobs) or (v_[0] == "var" and isinstance(vars_.get(v_[1]), tuple)
                                                                          and vars_[v_[1]][0] == "load" and structs[vars_[v_[1]][1]][vars_[v_[1]][2]][0] == "Vec4f")):
                                 raise Fail("vector store source")
                         else:
@@ -2094,6 +2175,14 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] == "copy":
             kids = [v[1]]
+        if v[0] == "vlane":
+            kids = [v[1]]
+        if v[0] == "vbin":
+            kids = [v[2], v[3]]
+        if v[0] in ("vneg", "vsplat"):
+            kids = [v[1]]
+        if v[0] == "vfma":
+            kids = [x_ for x_ in v[2:5]]
         if v[0] == "bin":
             kids = [v[2], v[3]]
         elif v[0] in ("cond", "select"):
@@ -2178,8 +2267,10 @@ def gen_function(a, ins):
             return "long" if n in arith else "void*"
         return f"{p}*"
     def vtype(v):
-        if v[0] in ("fparam", "fconst", "fbin", "funary", "i2f", "fselect"):
+        if v[0] in ("fparam", "fconst", "fbin", "funary", "i2f", "fselect", "vlane"):
             return "float"
+        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg"):
+            return "Vec4f"
         if v[0] == "f2i":
             return "long" if v[3] == "x" else "int"
         if v[0] == "stackaddr":
@@ -2343,6 +2434,21 @@ def gen_function(a, ins):
             return f"f{v[1]}"
         if v[0] == "vconst":
             return "(Vec4f){" + ", ".join(expr(("fconst", x_)) for x_ in v[1]) + "}"
+        if v[0] == "vlane":
+            return f"{expr(v[1], False)}[{v[2]}]"
+        if v[0] == "vbin":
+            s_ = f"{expr(v[2], False)} {v[1]} {expr(v[3], False)}"
+            return s_ if top else f"({s_})"
+        if v[0] == "vneg":
+            return f"-{expr(v[1], False)}"
+        if v[0] == "vsplat":
+            return f"(Vec4f)({expr(v[1])})"
+        if v[0] == "vfma":
+            _, sub_, acc_, a_, b_, lane_i = v
+            q_ = lambda x_: f"(float32x4_t)({expr(x_)})"
+            if lane_i is None:
+                return f"(Vec4f)vf{'ms' if sub_ else 'ma'}q_f32({q_(acc_)}, {q_(a_)}, {q_(b_)})"
+            return f"(Vec4f)vf{'ms' if sub_ else 'ma'}q_laneq_f32({q_(acc_)}, {q_(a_)}, {q_(b_)}, {lane_i})"
         if v[0] == "fconst":
             import struct as _st
             val_ = float(v[1])
@@ -3372,7 +3478,7 @@ for size, a in sorted(U, key=lambda x: x[1]):
         else:
             k = f"{type(e).__name__}: {str(e)[:40]}"
             internal[k] = internal.get(k, 0) + 1
-VEC4_DECL = "typedef float Vec4f __attribute__((vector_size(16)));\n\n"
+VEC4_DECL = "typedef float Vec4f __attribute__((ext_vector_type(4)));\n\n"
 FLOAT2_DECL = "struct Float2 {\n    float x;\n    float y;\n};\n\n"
 head = ("// Small functions generated by symbolic execution (calls, virtual calls, stack locals, guards, arrays, floats): loads and call results are named\n"
         "// locals in their original order. Struct, field and callee names are placeholders after the\n"
@@ -3391,7 +3497,7 @@ for mn in sorted(IMPORTS_USED):
         imp_lines.append(f'extern "C" {r_} {mn}({", ".join(ps_)});')
 cdecl_text = "\n".join(imp_lines) + "\n\n" + "\n".join(f"{rts} {nm}_{t:x}({', '.join(atypes)});{' ' * 8}// 0x71{t:08x}" for (t, atypes, nm), rts in sorted(CALLEES.items())
                        if not any(x.endswith("*") and x != "void*" for x in list(atypes) + [rts]))
-open(out, "w", encoding="utf-8", newline="\n").write(head + (VEC4_DECL if any("Vec4f" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))
+open(out, "w", encoding="utf-8", newline="\n").write(head + ("#include <arm_neon.h>\n\n" if any("float32x4_t" in d_ for d_ in defs) else "") + (VEC4_DECL if any("Vec4f" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))
 m = MATCHDIR
 if os.environ.get("SYMOUT"):
     json.dump({"unit": unit, "gsyms": sorted(GSYMS),
