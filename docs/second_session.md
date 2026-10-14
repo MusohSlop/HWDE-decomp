@@ -15,9 +15,11 @@ session merges and commits to `master`.
   Nothing else is linked or copied; key material is never read, linked or copied.
 - `tools/check.py` and the other repository tools find everything relative to the worktree, so they work there
   unchanged. Run every command from `worktrees\s2\matching` or with absolute paths inside it.
-- Generator scripts for the second session are copies in `F:\Claude Decomps\project1\worktrees\s2_tools`, with
-  their paths pointing at the worktree. The second session edits only those copies; the main session keeps its own
-  copies in its scratchpad. See `docs/generator_handoff.md` for what each script does.
+- Generator scripts: the second session started with copies in `F:\Claude Decomps\project1\worktrees\s2_tools`.
+  The generator and its drivers are now also committed in `matching/tools/gen/` and find their checkout from their
+  own location, so in the worktree they work on the worktree's tree unchanged. Each session edits generator code
+  only on its own branch; a fix one session wants to share is merged like any other change. See
+  `docs/generator_handoff.md` for what each script does.
 
 ## Split of the work
 
@@ -46,7 +48,7 @@ rerun at a time; say so in the report before starting one.
    relocations, author `Claude <claude@local.invalid>`, only files under `matching/`), and reports the commit.
 2. In the main folder: `git merge --no-commit matching-s2`.
 3. Conflicts in `data/units.json` are resolved with `merge_units.py` (in the main session's scratchpad tools, a
-   copy is in `worktrees\s2_tools`): it starts from `master`'s version, adds every unit and symbol from the branch,
+   copy is in `matching/tools/gen/merge_units.py`): it starts from `master`'s version, adds every unit and symbol from the branch,
    and stops on any name defined with two different values. Conflicts in `README.md` and
    `docs/generated_units.md` keep the rows of both sides. `data/functions.csv` and `docs/progress.png` are
    regenerated, not merged: take `master`'s version, then run `tools/check.py --update` and

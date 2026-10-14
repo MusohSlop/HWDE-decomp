@@ -4,24 +4,31 @@ State of the generated-unit work at commit time, for a session picking it up.
 
 ## Where the tools are
 
-The generator and its drivers are local scratch scripts, not part of this repository. They live in the
-session scratchpad under `%TEMP%\claude\F--Claude-Decomps-project1\a4886e8e-540c-4eed-9f51-3566a18d420d\scratchpad\tools`.
+The generator and its drivers are in `tools/gen/`. Every script finds the checkout from its own location
+(`tools/gen` -> `matching` -> project root), so the same files run unchanged in another worktree against that
+worktree's `data/units.json` and `build/`. They need the project's `.tools/` (compiler and capstone) and the
+decompressed game image under `analysis/extracted/update/decompressed/` next to `matching/`.
 
-- `gen_allNN.py` is the generator, one file per step (`gen_all47.py` is the latest). Each `patch_allNN.py`
-  derives `gen_allNN.py` from the previous one and documents the change in its first lines.
-- `rv_par.py GEN UNIT LO HI [KNOBFILE]` runs the generator over unmatched functions of LO to HI bytes. It splits
-  the candidates into units of about 25 functions, compiles them in parallel with a timeout per compile, tries
-  each knob set in turn, and writes every exact match into UNIT under its winning knobs. Mismatches are not kept.
-  Chunks that time out are logged to `rvpar_slow.txt` next to the tools directory. `run_variants8.py` is the older
-  single-unit version.
-- `mm_probe.py GEN LO HI` classifies the first differing instruction pair of every mismatch.
-- `probe_one.py GEN ADDR` generates one function into a scratch unit, prints its diff and source, and removes the
+- `gen.py OUT.cpp UNIT LO HI` is the generator: symbolic execution of every unmatched function of LO to HI bytes,
+  written out as C++ into OUT. Environment switches: `ONLY`, `EXCLUDE`, `VARIANT`, `VARIANT_MAP`, `DRYRUN` (no
+  symbol writes), `FAILDUMP` (one line per skipped function with its reason), `TRACE` (re-raise internal errors),
+  `NEARMISS` (also take near misses), `SYMOUT` (write the symbols to register to a file instead of `units.json`).
+- `run_bands.py gen.py UNIT LO HI [KNOBFILE]` runs the generator over a size band in chunks of about 25 functions,
+  generating and compiling them in parallel with a timeout per compile, tries each knob set in turn (`knobs.txt`
+  lists the current sets), and writes every exact match into UNIT under its winning knobs. A chunk keeps the matches
+  that are clean on their own even when another function in it has an unresolved relocation; a chunk that times out
+  or fails to compile is split until only the offending function is lost, and the log counts those losses.
+  `RV_JOBS` sets the number of parallel jobs, `RV_TIMEOUT` the timeout, and `RV_ADDR_LO` and `RV_ADDR_HI` (hex
+  image offsets) restrict the address range. Timed-out chunks are logged to `build/rvpar_slow.txt`.
+- `mm_probe.py gen.py LO HI` classifies the first differing instruction pair of every mismatch.
+- `probe_one.py gen.py ADDR` generates one function into a scratch unit, prints its diff and source, and removes the
   scratch unit again.
-- `nm_probe.py GEN FILE` does the same for the logged near misses (`NEARMISS=1`) under several knob sets, so a
-  generated match can guide a fix of the hand-written version.
-- Environment switches of the generator: `ONLY`, `EXCLUDE`, `VARIANT`, `VARIANT_MAP`, `DRYRUN` (no symbol
-  writes), `FAILDUMP` (one line per skipped function with its reason), `TRACE` (re-raise internal errors),
-  `NEARMISS`.
+- `nm_probe.py gen.py FILE` does the same for the logged near misses under each knob set, so a generated match can
+  guide a fix of the hand-written version.
+- `batch_fix.py`, `fixnames.py`, `autosym.py`, `rm_unit_names.py` and `clean_matches.py` are the runner's helpers
+  (rename placeholder symbols, add callee symbols, remove a unit's names, list the clean matches of a built unit).
+- `merge_units.py OURS THEIRS OUT` merges two versions of `data/units.json` (see `docs/second_session.md`).
+- `dis.py ADDR...` disassembles functions of the image by address.
 
 ## What the generator covers
 
