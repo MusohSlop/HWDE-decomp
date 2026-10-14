@@ -19,7 +19,7 @@ BASE = 0x7100000000
 BLOCK = 0x10000
 WIDTH, HEIGHT, HEADER = 1600, 900, 44
 BACKGROUND = (22, 24, 28)
-COLOURS = {"match": (46, 160, 67), "near": (56, 120, 200), "open": (58, 62, 70)}
+COLOURS = {"match": (24, 200, 24), "near": (30, 120, 190), "open": (52, 52, 54)}
 BORDER = (22, 24, 28)
 
 
@@ -110,7 +110,10 @@ def draw(blocks, totals, path):
             x1, y1 = int(round(fx + fw)) - 1, int(round(fy + fh)) - 1
             if x1 < x0 or y1 < y0:
                 continue
-            pen.rectangle([x0, y0, x1, y1], fill=COLOURS[status])
+            if x1 - x0 >= 2 and y1 - y0 >= 2:
+                pen.rectangle([x0, y0, x1, y1], fill=COLOURS[status], outline=(30, 30, 32))
+            else:
+                pen.rectangle([x0, y0, x1, y1], fill=COLOURS[status])
         if bw >= 2 and bh >= 2:
             pen.rectangle([int(bx), int(by), int(bx + bw) - 1, int(by + bh) - 1], outline=BORDER, width=2)
     image = image.convert("P", palette=Image.ADAPTIVE, colors=16)
