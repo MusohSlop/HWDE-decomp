@@ -750,6 +750,7 @@ def gen_function(a, ins):
             return v
         raise Fail("index ext")
     returns = []
+    calls_by_target_ = {}
     def call(regs, written, target, items, tail):
         fw = regs.get("fw", set())
         nf = max(fw) + 1 if fw else 0
@@ -785,9 +786,28 @@ def gen_function(a, ins):
             elif ir_ == "float":
                 vars_[name] = "f"
         prev = callees.get(target)
+        snap_ = {k_: regs.get(k_) for k_ in range(8)}
         if prev and len(prev[0]) != len(args):
-            raise Fail("callee arity")
+            def extend_(alist_, snap0_, nf0_, want_):
+                if nf0_ or nf:
+                    raise Fail("callee arity")
+                for k_ in range(len(alist_), want_):
+                    v_ = snap0_.get(k_)
+                    if v_ is None:
+                        raise Fail("callee arity")
+                    if v_[0] == "param" and pwidth.get(v_[1]) is None:
+                        pwidth[v_[1]] = "x"
+                    alist_.append(v_)
+            if "noarity" in knobs:
+                raise Fail("callee arity")
+            if len(args) > len(prev[0]):
+                for alist_, snap0_, nf0_ in calls_by_target_.get(target, []):
+                    extend_(alist_, snap0_, nf0_, len(args))
+                callees[target][0] = args
+            else:
+                extend_(args, snap_, nf, len(prev[0]))
         callees.setdefault(target, [args, None])
+        calls_by_target_.setdefault(target, []).append((args, snap_, nf))
         items.append(("call", name, target, args, tail))
         return ("var", name)
     def copyregs(r):
