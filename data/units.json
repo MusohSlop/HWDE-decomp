@@ -2199,7 +2199,76 @@
     "_Z17chunk_byte_218fc0P10ChunkTableji": "0x7100218fc0",
     "_Z18chunk_value_218da0P10ChunkTableji": "0x7100218da0",
     "_Z17chunk_text_218d18P10ChunkTableji": "0x7100218d18",
-    "got:gBankedTable_c23340": "0x7100c23340"
+    "got:gBankedTable_c23340": "0x7100c23340",
+    "_ZN13DestructBase0D2Ev": "0x7100018580",
+    "_ZN13DestructBase1D2Ev": "0x71000cdf04",
+    "_ZN13Part_aab24_18D1Ev": "0x71000aab24",
+    "_ZN13Part_aab24_18D2Ev": "0x71000aab24",
+    "_ZN13Part_aadec_a0D1Ev": "0x71000aadec",
+    "_ZN13Part_aadec_a0D2Ev": "0x71000aadec",
+    "_ZN13Part_ade48_10D1Ev": "0x71000ade48",
+    "_ZN13Part_ade48_10D2Ev": "0x71000ade48",
+    "_ZN13Part_af10c_10D1Ev": "0x71000af10c",
+    "_ZN13Part_af10c_10D2Ev": "0x71000af10c",
+    "_ZN13Part_b7240_40D1Ev": "0x71000b7240",
+    "_ZN13Part_b7240_40D2Ev": "0x71000b7240",
+    "_ZN13Part_b7240_48D1Ev": "0x71000b7240",
+    "_ZN13Part_b7240_48D2Ev": "0x71000b7240",
+    "_ZN13Part_ba0b4_40D1Ev": "0x71000ba0b4",
+    "_ZN13Part_ba0b4_40D2Ev": "0x71000ba0b4",
+    "_ZN13Part_c47bc_70D1Ev": "0x71000c47bc",
+    "_ZN13Part_c47bc_70D2Ev": "0x71000c47bc",
+    "_ZN13Part_c615c_a0D1Ev": "0x71000c615c",
+    "_ZN13Part_c615c_a0D2Ev": "0x71000c615c",
+    "_ZN13Part_c7dc4_40D1Ev": "0x71000c7dc4",
+    "_ZN13Part_c7dc4_40D2Ev": "0x71000c7dc4",
+    "_ZN13Part_cfe84_30D1Ev": "0x71000cfe84",
+    "_ZN13Part_cfe84_30D2Ev": "0x71000cfe84",
+    "_ZN13Part_d2534_10D1Ev": "0x71000d2534",
+    "_ZN13Part_d2534_10D2Ev": "0x71000d2534",
+    "_ZN13Part_d3428_30D1Ev": "0x71000d3428",
+    "_ZN13Part_d3428_30D2Ev": "0x71000d3428",
+    "_ZN14Part_7b8d4_550D1Ev": "0x710007b8d4",
+    "_ZN14Part_7b8d4_550D2Ev": "0x710007b8d4",
+    "_ZN14Part_9b288_160D1Ev": "0x710009b288",
+    "_ZN14Part_9b288_160D2Ev": "0x710009b288",
+    "_ZN14Part_9b8bc_160D1Ev": "0x710009b8bc",
+    "_ZN14Part_9b8bc_160D2Ev": "0x710009b8bc",
+    "_ZN14Part_b8ab0_260D1Ev": "0x71000b8ab0",
+    "_ZN14Part_b8ab0_260D2Ev": "0x71000b8ab0",
+    "_ZN14Part_be4c8_260D1Ev": "0x71000be4c8",
+    "_ZN14Part_be4c8_260D2Ev": "0x71000be4c8",
+    "_ZN14Part_bec1c_270D1Ev": "0x71000bec1c",
+    "_ZN14Part_bec1c_270D2Ev": "0x71000bec1c",
+    "_ZN14Part_c31d0_270D1Ev": "0x71000c31d0",
+    "_ZN14Part_c31d0_270D2Ev": "0x71000c31d0",
+    "_ZN14Part_c4e54_170D1Ev": "0x71000c4e54",
+    "_ZN14Part_c4e54_170D2Ev": "0x71000c4e54",
+    "_ZN14Part_c7d20_100D1Ev": "0x71000c7d20",
+    "_ZN14Part_c7d20_100D2Ev": "0x71000c7d20",
+    "_ZN14Part_c800c_150D1Ev": "0x71000c800c",
+    "_ZN14Part_c800c_150D2Ev": "0x71000c800c",
+    "_ZN23DestructBase2_cf58c_110D1Ev": "0x71000cf58c",
+    "_ZN23DestructBase2_cf58c_110D2Ev": "0x71000cf58c",
+    "_ZN23DestructBase2_cf5bc_120D1Ev": "0x71000cf5bc",
+    "_ZN23DestructBase2_cf5bc_120D2Ev": "0x71000cf5bc",
+    "got:_ZTV15Destructed2891c": "0x7100c21ca0",
+    "got:_ZTV15Destructed29d2c": "0x7100c21cc8",
+    "got:_ZTV15Destructed29e48": "0x7100c21cd0",
+    "got:_ZTV15Destructed2a26c": "0x7100c21ce0",
+    "got:_ZTV15Destructed2b5d4": "0x7100c21cf0",
+    "got:_ZTV15Destructed2b6f0": "0x7100c21cf8",
+    "_Z18stage_ready_23b9a4P9Stage23b9": "0x710023b9a4",
+    "_ZN11Channel4a2e3setEif": "0x71004a2e00",
+    "_Z16stage_set_2409e0PvP12ChannelOwnerf": "0x71002409e0",
+    "_Z16stage_set_240cc0PvP12ChannelOwnerf": "0x7100240cc0",
+    "_Z16stage_set_240d78PvP12ChannelOwnerf": "0x7100240d78",
+    "_Z16stage_set_240e30PvP12ChannelOwnerf": "0x7100240e30",
+    "_Z18remove_node_520ac0P6IdListP6IdNode": "0x7100520ac0",
+    "got:gHub_c2d010": "0x7100c2d010",
+    "_Z11play_594144P12TriggerOwnerjiiPvS1_": "0x7100594144",
+    "_Z16bank_play_5a7d6cP4BankjiiPvS1_": "0x71005a7d6c",
+    "_Z22bank_play_short_5a81c4P4BankjiPvS1_": "0x71005a81c4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7068,6 +7137,46 @@
         "_Z19banked_short_213504P11BankedTableij": "0x7100213504",
         "_Z19banked_value_21357cP11BankedTableij": "0x710021357c",
         "_Z18banked_text_2135f0P11BankedTableij": "0x71002135f0"
+      }
+    },
+    "misc/destructors.cpp": {
+      "functions": {
+        "_ZN15Destructed2891cD2Ev": "0x710002891c",
+        "_ZN15Destructed29d2cD2Ev": "0x7100029d2c",
+        "_ZN15Destructed29e48D2Ev": "0x7100029e48",
+        "_ZN15Destructed2a26cD2Ev": "0x710002a26c",
+        "_ZN15Destructed2b5d4D2Ev": "0x710002b5d4",
+        "_ZN15Destructed2b6f0D2Ev": "0x710002b6f0"
+      }
+    },
+    "misc/channel_sets.cpp": {
+      "functions": {
+        "_Z19set_channels_243fe0P12ChannelOwnerf": "0x7100243fe0",
+        "_Z19set_channels_2442a4P12ChannelOwnerf": "0x71002442a4",
+        "_Z19set_channels_244358P12ChannelOwnerf": "0x7100244358",
+        "_Z19set_channels_24440cP12ChannelOwnerf": "0x710024440c"
+      }
+    },
+    "misc/listener_detach.cpp": {
+      "functions": {
+        "_Z13detach_522a18P14Listener522a18": "0x7100522a18",
+        "_Z13detach_522ac8P14Listener522ac8": "0x7100522ac8",
+        "_Z13detach_52374cP14Listener52374c": "0x710052374c"
+      }
+    },
+    "misc/bank_triggers.cpp": {
+      "functions": {
+        "_Z14trigger_21c5d4P13Trigger21c5d4Pv": "0x710021c5d4",
+        "_Z14trigger_21c6c0P13Trigger21c6c0Pv": "0x710021c6c0",
+        "_Z14trigger_21cf88P13Trigger21cf88Pv": "0x710021cf88"
+      }
+    },
+    "misc/team_removals.cpp": {
+      "functions": {
+        "_Z23remove_from_team_167cacj": "0x7100167cac",
+        "_Z23remove_from_team_167da4j": "0x7100167da4",
+        "_Z23remove_from_team_168054j": "0x7100168054",
+        "_Z23remove_from_team_16814cj": "0x710016814c"
       }
     }
   }
