@@ -12155,6 +12155,28 @@
         "_Z11call_5c22c8P11Arg5c22c8_0": "0x71005c22c8",
         "_Z11call_5e4e60P11Arg5e4e60_0P11Arg5e4e60_1": "0x71005e4e60"
       }
+    },
+    "misc/variant_functions.cpp": {
+      "functions": {
+        "_Z10call_6eadcv": "0x710006eadc",
+        "_Z10call_6eb10v": "0x710006eb10",
+        "_Z10call_aab0cP10Argaab0c_0": "0x71000aab0c",
+        "_Z10call_b775cP10Argb775c_0": "0x71000b775c",
+        "_Z10call_c452cl": "0x71000c452c",
+        "_Z10call_cf5a0P10Argcf5a0_0": "0x71000cf5a0",
+        "_Z10call_cfe68P10Argcfe68_0": "0x71000cfe68",
+        "_Z10call_cff64P10Argcff64_0": "0x71000cff64",
+        "_Z10call_f3458l": "0x71000f3458",
+        "_Z11call_12cfa4P11Arg12cfa4_0": "0x710012cfa4",
+        "_Z11call_1e2fbcP11Arg1e2fbc_0P11Arg1e2fbc_1": "0x71001e2fbc",
+        "_Z11call_2060a0P11Arg2060a0_0": "0x71002060a0",
+        "_Z11call_333468lii": "0x7100333468",
+        "_Z11call_33e464P11Arg33e464_0ii": "0x710033e464",
+        "_Z11call_3c7674P11Arg3c7674_0": "0x71003c7674",
+        "_Z11call_4e1604P11Arg4e1604_0": "0x71004e1604",
+        "_Z11call_5217c8P11Arg5217c8_0": "0x71005217c8",
+        "_Z11call_521accP11Arg521acc_0": "0x7100521acc"
+      }
     }
   }
 }
