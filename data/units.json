@@ -23131,6 +23131,17 @@
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
       }
+    },
+    "misc/variant_functions59.cpp": {
+      "functions": {
+        "_Z11call_175d28z": "0x7100175d28",
+        "_Z11call_17644cz": "0x710017644c",
+        "_Z11call_35b4b8z": "0x710035b4b8"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      }
     }
   }
 }
