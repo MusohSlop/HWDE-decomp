@@ -129,8 +129,16 @@ skipped = 0
 reasons = {}
 internal = {}
 
+VA_SAVES = {"q6, q7, [sp, #0x60]", "x6, x7, [sp, #0xb0]", "x4, x5, [sp, #0xa0]", "x2, x3, [sp, #0x90]",
+            "x0, x1, [sp, #0x80]", "q4, q5, [sp, #0x40]", "q2, q3, [sp, #0x20]", "q0, q1, [sp]"}
 def gen_function(a, ins):
     knobs = KNOB_MAP.get(a, DEFAULT_KNOBS)
+    if ("novastub" not in knobs and len(ins) == 11 and (ins[0].mnemonic, ins[0].op_str) == ("sub", "sp, sp, #0xc0")
+            and all(i_.mnemonic == "stp" for i_ in ins[1:9]) and {i_.op_str for i_ in ins[1:9]} == VA_SAVES
+            and (ins[9].mnemonic, ins[9].op_str) == ("add", "sp, sp, #0xc0") and ins[10].mnemonic == "ret"):
+        body_ = (f"\n\n// 0x71{a:08x}\nvoid call_{a:x}(...) {{\n    __builtin_va_list args;\n"
+                 "    __builtin_va_start(args, 0);\n    __builtin_va_end(args);\n}\n")
+        return body_, {}, []
     structs, pwidth, arith = {}, {}, set()
     gobjs = {}
     letbase, vtables, vslots, skip_lets = {}, {}, {}, set()
@@ -1218,20 +1226,24 @@ def gen_function(a, ins):
                     live_i, live_f = live_at(alt_inner_ if alt_inner_ is not None else join,
                                              any(H_ <= k <= L_ for H_, L_ in loop_info))
                     keys = [(n, None) for n in set(r1) | set(r2) if isinstance(n, int)] + [(n, "f") for n in set(r1["f"]) | set(r2["f"])]
+                    # spill slots are carried across the join like registers (a value saved before the branch and
+                    # reloaded after it); they are memory, so no liveness test applies
+                    if "nospillmerge" not in knobs:
+                        keys += [(n, "s") for n in set(r1) | set(r2) if isinstance(n, tuple) and n[0] == "spill"]
                     for n, kind in keys:
-                        a_ = (r1["f"] if kind else r1).get(n)
-                        b_ = (r2["f"] if kind else r2).get(n)
+                        a_ = (r1["f"] if kind == "f" else r1).get(n)
+                        b_ = (r2["f"] if kind == "f" else r2).get(n)
                         if a_ == b_:
-                            (merged["f"] if kind else merged)[n] = a_
+                            (merged["f"] if kind == "f" else merged)[n] = a_
                             continue
-                        if a_ is None or b_ is None or n not in (live_f if kind else live_i):
-                            (merged["f"] if kind else merged)[n] = None
+                        if a_ is None or b_ is None or (kind != "s" and n not in (live_f if kind else live_i)):
+                            (merged["f"] if kind == "f" else merged)[n] = None
                             continue
                         name = f"m{counter[0]}"; counter[0] += 1
                         vars_[name] = ("merge", a_, b_)
                         decls_.append((name, a_))
                         assigns1.append((name, a_)); assigns2.append((name, b_))
-                        (merged["f"] if kind else merged)[n] = ("var", name)
+                        (merged["f"] if kind == "f" else merged)[n] = ("var", name)
                     items.append(("diamond", cnd, decls_, its2 + [("assign", n_, v_) for n_, v_ in assigns2],
                                   its1 + [("assign", n_, v_) for n_, v_ in assigns1]))
                     regs = merged
