@@ -67,7 +67,20 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   that the AAPCS passes in two general registers, written as `union VecU { Vec4f v; long l[2]; }`, a parameter
   `VecU pN` (registers N and N+1) read as `pN.v`, and `vecu(v)` for a vector returned or passed on;
 - `fmov vD.4s, #imm` as a vector of one constant, `(Vec4f)(c)` (knob `novecsplat`);
-- the `sqrtf` slow path may spill and reload float registers around its call (knob `nosqrtspill`).
+- the `sqrtf` slow path may spill and reload float registers around its call (knob `nosqrtspill`);
+- vector lane inserts `mov vD.s[i], vS.s[j]` (knob `novecins`), written with the unit helpers `vins(v, s, i)` and
+  `vundef()` (a vector built lane by lane starts undefined, with lane 0 the scalar already in `sD`);
+- vector addressing (knob `novecaddr`): `[xB, xI, lsl #4]` is a Vec4f array element, `[xB, xI]` a Vec4f through a
+  byte offset, `[xB, #off]!` and `[xB], #off` step the base; every vector value can be stored;
+- an int return where the original never sign-extends into x0 (knob `noretint`): a return merged from a 32-bit int
+  and a 64-bit value (often a pointer known to be null on that path) is int, and so are the merged values on the way,
+  instead of long (which added `sxtw x0, w0`); a pointer converted to a narrower integer goes through long;
+- compile fixes: stack objects at negative frame offsets are named `local_mNN`, a pointer compared as a 32-bit
+  unsigned value goes through `unsigned long`, and a struct pointer passed to a differently typed import parameter
+  is reinterpret_cast;
+- a short or signed char passed to a call is an int argument (knob `nosextarg`): the calling convention leaves a
+  narrow argument's upper bits unspecified, so a short parameter would be loaded with `ldrh` where the original's
+  `ldrsh` shows an int parameter.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
