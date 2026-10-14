@@ -2745,7 +2745,9 @@
     "_ZN11DefaultHeap8allocateEmmhh": "0x710045c458",
     "_ZN10TextChunks3setEPKv": "0x7100218c34",
     "_Z16init_item_2108f0P12ItemDefStoreiPv": "0x71002108f0",
-    "_Z16init_item_2108f0P13ItemDefFieldsiPv": "0x71002108f0"
+    "_Z16init_item_2108f0P13ItemDefFieldsiPv": "0x71002108f0",
+    "_ZN15TextTable211c744loadEv": "0x7100211edc",
+    "_ZN15TextTable212a084loadEv": "0x7100212c0c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7899,7 +7901,17 @@
         "_Z19create_table_2116bcv": "0x71002116bc",
         "_Z19create_table_211be8v": "0x7100211be8",
         "_Z19create_table_21297cv": "0x710021297c",
-        "_ZN15TextTable2117444loadEv": "0x7100211948"
+        "_ZN15TextTable2117444loadEv": "0x7100211948",
+        "_ZN15TextTable21174410load_entryEP13ResourceFrameji": "0x7100211b18"
+      }
+    },
+    "misc/text_table_api.cpp": {
+      "functions": {
+        "_Z25ensure_system_text_21366cv": "0x710021366c",
+        "_Z26release_system_text_213684v": "0x7100213684",
+        "_Z24ensure_stage_text_213988v": "0x7100213988",
+        "_Z25release_stage_text_2139b0v": "0x71002139b0",
+        "_Z22load_stage_text_2139f4v": "0x71002139f4"
       }
     }
   }

@@ -2,6 +2,8 @@
 // table, delete it on the default heap and clear the global. Three tables with their own unload
 // functions. Names are descriptive placeholders. Status: matching/README.md.
 
+#include "resource/resource_frame.h"
+
 class DefaultHeap {
 public:
     void* allocate(unsigned long alignment, unsigned long size, unsigned char a, unsigned char b); // 0x710045c458
@@ -30,6 +32,7 @@ struct TextChunks {
 };
 struct TextTable211744 {
     void load();
+    void load_entry(ResourceFrame* frame, unsigned int entry, int slot);
     TextTable211744() {
         loaded[0] = 0;
         loaded[1] = 0;
@@ -225,4 +228,20 @@ void TextTable211744::load() {
             break;
         }
     }
+}
+// 0x7100211b18
+void TextTable211744::load_entry(ResourceFrame* frame, unsigned int entry, int slot) {
+    if (slot == 5) {
+        void* dest = storage[1];
+        frame->load(entry, dest, frame->entry_size(entry));
+        if (storage[1]) {
+            banks[1].set(storage[1]);
+            loaded[1] = 1;
+        }
+        return;
+    }
+    void* dest = extra_storage[slot];
+    frame->load(entry, dest, frame->entry_size(entry));
+    if (extra_storage[slot])
+        extra[slot].set(extra_storage[slot]);
 }
