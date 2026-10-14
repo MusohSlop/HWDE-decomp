@@ -101,6 +101,9 @@ def regname(r):
 LOAD = {"ldr": None, "ldrb": "unsigned char", "ldrh": "unsigned short", "ldrsb": "signed char", "ldrsh": "short", "ldrsw": "int"}
 STORE = {"str": None, "strb": "unsigned char", "strh": "unsigned short"}
 BIN = {"add": "+", "sub": "-", "and": "&", "orr": "|", "eor": "^", "lsl": "<<", "lsr": ">>", "asr": ">>", "mul": "*"}
+# literal pools: 4-byte floats and 16-byte vectors (merged .rodata.cst4 / .rodata.cst16)
+POOL4 = (0x73b000, 0x73ca00)
+POOL16 = (0x73dff0, 0x73e7a0)
 SIZE = {"Vec4f": 16, "int": 4, "long": 8, "void*": 8, "unsigned char": 1, "signed char": 1, "unsigned short": 2, "short": 2, "float": 4}
 CC = {"eq": "==", "ne": "!=", "lt": "<", "le": "<=", "gt": ">", "ge": ">=", "lo": "<", "ls": "<=", "hi": ">", "hs": ">="}
 SAVED = {"x19", "x20", "x21", "x22", "x23", "x24", "x25", "x26", "x27", "x28", "x29", "x30",
@@ -357,6 +360,8 @@ def gen_function(a, ins):
             raise Fail("undefined s%d" % n)
         if v[0] == "fparam":
             fparams.add(v[1])
+        if v[0] == "vconst":
+            raise Fail("vector constant lane")
         if v[0] == "var" and vars_.get(v[1]) == "?":
             vars_[v[1]] = "f"
         return v
@@ -1046,7 +1051,7 @@ def gen_function(a, ins):
                 fd = fregname(fdst)
                 b, off, idx, sh, ext, pre, post = memop2(ops[1], None)
                 addr_ = regs[regname(b)[0]][1] + off
-                if not (0x73b000 <= addr_ < 0x73c000):
+                if not (POOL4[0] <= addr_ < POOL4[1]):
                     raise Fail("constant outside pool")
                 import struct as _st
                 regs["f"][fd] = ("fconst", _st.unpack("<f", d[addr_:addr_ + 4])[0])
@@ -1068,6 +1073,14 @@ def gen_function(a, ins):
             qregs_ = [o_ for o_ in ops if re.fullmatch(r"q\d+", o_)]
             if qregs_ and m in ("ldr", "str", "ldp", "stp") and len(ops) == len(qregs_) + 1 and not (ops[-1].startswith("[sp") or ops[-1].startswith("[x29")):
                 b, off, idx, sh, ext, pre, post = memop2(ops[-1], None)
+                if m == "ldr" and len(qregs_) == 1 and idx is None and not pre and page_base(regs, ops[-1]):
+                    # a 16-byte constant from the literal pool
+                    addr_ = regs[regname(b)[0]][1] + off
+                    if not (POOL16[0] <= addr_ < POOL16[1]) or addr_ % 16:
+                        raise Fail("vector constant outside pool")
+                    import struct as _st
+                    regs["f"][int(qregs_[0][1:])] = ("vconst", _st.unpack("<4f", d[addr_:addr_ + 16]))
+                    k += 1; continue
                 if idx is not None or pre or page_base(regs, ops[-1]):
                     raise Fail("vector addressing")
                 for j_, qr_ in enumerate(qregs_):
@@ -1083,6 +1096,9 @@ def gen_function(a, ins):
                         regs["f"][qn_] = ("var", name)
                     else:
                         val_ = regs["f"].get(qn_)
+                        if val_ is not None and val_[0] == "vconst":
+                            items.append(("store", sn, off2, base, val_))
+                            continue
                         if val_ is None or val_[0] != "var" or not (isinstance(vars_.get(val_[1]), tuple) and vars_[val_[1]][0] == "load" and structs[vars_[val_[1]][1]][vars_[val_[1]][2]][0] == "Vec4f"):
                             raise Fail("vector store source")
                         items.append(("store", sn, off2, base, val_))
@@ -1874,6 +1890,8 @@ def gen_function(a, ins):
             return "int" if v[3] else "bool"
         if v[0] == "select":
             return "long" if v[4] == "x" else "int"
+        if v[0] == "vconst":
+            return "Vec4f"
         raise Fail("vtype")
     # loaded pointers used as bases got their own struct in struct_for via vars_ -> name
     structs_of_vars = {}
@@ -1948,6 +1966,8 @@ def gen_function(a, ins):
             return s_ if top else f"({s_})"
         if v[0] == "fparam":
             return f"f{v[1]}"
+        if v[0] == "vconst":
+            return "(Vec4f){" + ", ".join(expr(("fconst", x_)) for x_ in v[1]) + "}"
         if v[0] == "fconst":
             import struct as _st
             val_ = float(v[1])
