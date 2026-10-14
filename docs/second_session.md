@@ -47,9 +47,11 @@ rerun at a time; say so in the report before starting one.
 1. The second session commits on `matching-s2` with the usual rules (full check before every commit, zero masked
    relocations, author `Claude <claude@local.invalid>`, only files under `matching/`), and reports the commit.
 2. In the main folder: `git merge --no-commit matching-s2`.
-3. Conflicts in `data/units.json` are resolved with `merge_units.py` (in the main session's scratchpad tools, a
-   copy is in `matching/tools/gen/merge_units.py`): it starts from `master`'s version, adds every unit and symbol from the branch,
-   and stops on any name defined with two different values. Conflicts in `README.md` and
+3. Conflicts in `data/units.json` are resolved with `tools/gen/merge_units.py OURS THEIRS OUT BASE`, where BASE
+   is the file at `git merge-base master matching-s2`: it starts from `master`'s version, adds every unit and symbol
+   from the branch, drops entries the branch deleted and `master` left unchanged (so a function the branch moved to
+   another unit, for example to give a lookup table its own `.rodata` map, ends up only in the new unit), and stops
+   on any name defined with two different values or any function listed in two units. Conflicts in `README.md` and
    `docs/generated_units.md` keep the rows of both sides. `data/functions.csv` and `docs/progress.png` are
    regenerated, not merged: take `master`'s version, then run `tools/check.py --update` and
    `tools/progress_map.py --readme` and the README score script.
