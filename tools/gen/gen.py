@@ -490,6 +490,61 @@ def gen_function(a, ins):
                 return None  # several fields written at once: keep the explicit form
             return s_, w_, x_
         return None
+    def u32_(v_):
+        """The 32-bit unsigned value v_ stands for, or None."""
+        if v_[0] == "ext" and v_[1] == "unsigned int":
+            return v_[2]
+        if v_[0] == "bin" and v_[4] == "w":
+            return v_
+        if v_[0] == "var":
+            tv_ = vars_.get(v_[1])
+            if tv_ == "w" or (isinstance(tv_, tuple) and tv_[0] == "load" and len(tv_) > 3 and tv_[3] in ("int", "unsigned int")):
+                return v_
+            if isinstance(tv_, tuple) and tv_[0] == "load" and len(tv_) == 3 and structs[tv_[1]].get(tv_[2], ("",))[0] in ("int", "unsigned int"):
+                return v_
+        if v_[0] == "param" and pwidth.get(v_[1]) == "w":
+            return v_
+        return None
+    def strip_u32_(v_):
+        return v_[2] if v_[0] == "ext" and v_[1] == "unsigned int" else v_
+    def times_(y_):
+        """(value, factor) when y_ is value * factor written with mul, shifts and adds."""
+        if y_[0] == "bin" and y_[1] == "*" and y_[3][0] == "const":
+            return y_[2], y_[3][1]
+        if y_[0] == "bin" and y_[1] == "*" and y_[2][0] == "const":
+            return y_[3], y_[2][1]
+        if y_[0] == "bin" and y_[1] == "<<" and y_[3][0] == "const":
+            return y_[2], 1 << y_[3][1]
+        if y_[0] == "bin" and y_[1] in ("+", "-"):
+            a_ = times_(y_[2]) or (y_[2], 1)
+            b_ = times_(y_[3]) or (y_[3], 1)
+            if a_[0] == b_[0]:
+                return a_[0], a_[1] + b_[1] if y_[1] == "+" else a_[1] - b_[1]
+        return None
+    def divmagic_(v_):
+        """x / d and x % d for the multiply-high forms of an unsigned 32-bit division by a constant."""
+        if v_[0] != "bin":
+            return v_
+        if v_[1] == ">>" and v_[5] == "lsr" and v_[4] == "x" and v_[3][0] == "const" and v_[3][1] >= 32 \
+                and v_[2][0] == "bin" and v_[2][1] == "*":
+            sh_ = v_[3][1]
+            for a_, b_ in ((v_[2][2], v_[2][3]), (v_[2][3], v_[2][2])):
+                bm_ = strip_u32_(b_)
+                if bm_[0] != "const" or (bm_[1] & 0xffffffff) == 0:
+                    continue
+                x_ = u32_(a_)
+                if x_ is None:
+                    continue
+                M_ = bm_[1] & 0xffffffff
+                d_ = round((1 << sh_) / M_)
+                if d_ >= 2 and M_ == -(-(1 << sh_) // d_) and 0 <= M_ * d_ - (1 << sh_) <= 1 << (sh_ - 32):
+                    return ("udiv", x_, d_)
+            return v_
+        if v_[1] == "-" and v_[4] == "w":
+            m_ = times_(v_[3])
+            if m_ is not None and m_[0][0] == "udiv" and m_[0][2] == m_[1] and strip_u32_(m_[0][1]) == strip_u32_(v_[2]):
+                return ("urem", m_[0][1], m_[1])
+        return v_
     def bf_lines_(sn_, off_, t_):
         W_ = BFW_[t_]
         out_ = ["    union {", f"        {t_} field_{off_:x};", "        struct {"]
@@ -2395,6 +2450,11 @@ def gen_function(a, ins):
                 y = ("ext", "unsigned int" if m == "umull" else "int", use(regs, ops[2]))
                 regs[dn] = ("bin", "*", x, y, "x", "mul")
                 if dn < 8: written.add(dn)
+            elif m == "msub" and len(ops) == 4 and "nodivmagic" not in knobs:
+                dn, w = regname(ops[0])
+                x_ = use(regs, ops[1]); y_ = use(regs, ops[2]); z_ = use(regs, ops[3])
+                regs[dn] = divmagic_(("bin", "-", z_, ("bin", "*", x_, y_, w, "mul"), w, "sub"))
+                if dn < 8: written.add(dn)
             elif m == "bfi" and len(ops) == 4:
                 dn, w = regname(ops[0])
                 old_ = use(regs, ops[0]); src_ = use(regs, ops[1]); lsb_, wd_ = imm(ops[2]), imm(ops[3])
@@ -2436,6 +2496,8 @@ def gen_function(a, ins):
                     if sh:
                         y = ("bin", "<<", y, ("const", sh, w), w, "lsl")
                 regs[dn] = ("bin", BIN[m], x, y, w, m)
+                if "nodivmagic" not in knobs:
+                    regs[dn] = divmagic_(regs[dn])
                 if m == "and" and y[0] == "const" and y[1] in (0xff, 0xffff) and x[0] == "bin" and x[1] in ("-", "+") \
                         and x[2][0] == "param" and x[3][0] == "const" and pwidth.get(x[2][1]) in (None, "w") and "norange" not in knobs:
                     nty_ = "unsigned short" if y[1] == 0xffff else "unsigned char"
@@ -2600,7 +2662,7 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] == "copy":
             kids = [v[1]]
-        if v[0] in ("vlane", "vecu", "vpart"):
+        if v[0] in ("vlane", "vecu", "vpart", "udiv", "urem"):
             kids = [v[1]]
         if v[0] == "vins":
             kids = [v[1], v[2]]
@@ -2704,6 +2766,8 @@ def gen_function(a, ins):
             return "Vec4f"
         if v[0] == "vecu":
             return "VecU"
+        if v[0] in ("udiv", "urem"):
+            return "int"  # below 2**31: the divisor is at least 2
         if v[0] == "f2i":
             return "long" if v[3] == "x" else "int"
         if v[0] == "stackaddr":
@@ -2873,6 +2937,12 @@ def gen_function(a, ins):
             return f"{expr(v[1], False)}[{v[2]}]"
         if v[0] == "vparam":
             return f"p{v[1]}.v"
+        if v[0] in ("udiv", "urem"):
+            xs_ = expr(v[1])
+            if vtype(v[1]).endswith("*"):
+                raise Fail("division of a pointer")
+            s_ = f"static_cast<unsigned int>({xs_}) {'/' if v[0] == 'udiv' else '%'} {v[2]}u"
+            return s_ if top else f"({s_})"
         if v[0] == "vins":
             return f"vins({expr(v[1])}, {expr(v[2])}, {v[3]})"
         if v[0] == "vundef":

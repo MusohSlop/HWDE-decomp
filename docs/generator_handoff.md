@@ -86,7 +86,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   `this` for a member) allows; a function that fails with a reduced call is generated again without it;
 - bitfield writes (knob `nobitfield`): a store of `(load of the same field & mask) | x` that rewrites one run of bits
   is a bitfield assignment `p->bfOFF_START = x;`, with the field declared as a union of the whole field and an
-  anonymous struct of bitfields (Clang then computes the value before the load, as the original does).
+  anonymous struct of bitfields (Clang then computes the value before the load, as the original does);
+- unsigned division and modulo by a constant (knob `nodivmagic`): a multiply of a 32-bit unsigned value by a magic
+  number shifted right by 32 or more, checked to be exact, is `x / d`, and `x - d * (x / d)` (msub, or shifted adds)
+  is `x % d`; `msub` is supported as `c - a*b`.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
