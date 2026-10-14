@@ -9274,7 +9274,10 @@
     "_Z13callee_5e3f48Pviii": "0x71005e3f48",
     "_Z13callee_5efb10l": "0x71005efb10",
     "_Z14callee2_222b20iiPv": "0x7100222b20",
-    "_Z14callee2_426ab4ii": "0x7100426ab4"
+    "_Z14callee2_426ab4ii": "0x7100426ab4",
+    "_Z12callee_5d8a4llt": "0x710005d8a4",
+    "_Z12callee_5d954llti": "0x710005d954",
+    "_Z12callee_5da10llt": "0x710005da10"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -16949,9 +16952,6 @@
         ".rodata.cst4": "0x710073b000"
       }
     },
-    "misc/mm_probe.cpp": {
-      "functions": {}
-    },
     "misc/variant_functions31.cpp": {
       "functions": {
         "_Z9call_c990iPvf": "0x710000c990",
@@ -16977,6 +16977,16 @@
         "_Z11call_5393e0P11Arg5393e0_0ll": "0x71005393e0",
         "_Z11call_553c48P11Arg553c48_0": "0x7100553c48",
         "_Z11call_56a980P11Arg56a980_0": "0x710056a980"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
+      }
+    },
+    "misc/variant_functions32.cpp": {
+      "functions": {
+        "_Z9call_7428lt": "0x7100007428",
+        "_Z9call_7470lti": "0x7100007470",
+        "_Z9call_74bclt": "0x71000074bc"
       },
       "map": {
         ".rodata.cst4": "0x710073b000"
