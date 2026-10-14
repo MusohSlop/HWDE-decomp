@@ -14,8 +14,7 @@ public:
     long value18;             // +18
     float scale_x;            // +20
     float scale_y;            // +24
-    int index;                // +28
-    int value2c;              // +2c
+    unsigned long index;      // +28 (low half -1, high half 0)
     long value30;             // +30
     long value38;             // +38
     long value40;             // +40
@@ -24,7 +23,7 @@ static_assert(sizeof(LayoutSprite) == 0x48, "layout sprite size");
 
 LayoutSprite::LayoutSprite()
     : flags(static_cast<int>(0xa0300000)), value10(0), value18(0), scale_x(1.0f), scale_y(1.0f),
-      index(-1), value2c(0), value30(0), value38(0), value40(0) {}
+      index(0xffffffffUL), value30(0), value38(0), value40(0) {}
 
 // 0x71001f1cd8; original file: layout elements, 0x71001ef52c-0x71001f1e0c
 class LayoutRect {

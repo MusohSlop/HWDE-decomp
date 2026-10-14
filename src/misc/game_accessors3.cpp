@@ -89,9 +89,9 @@ void shift_board_once_2041d0(Board2041* board) {
         if (static_cast<unsigned int>(old_row + 2) <= 0xf) {
             *column = new_column;
             *row = static_cast<unsigned char>(old_row) + 2;
-            *shifted = 1;
         }
     }
+    *shifted = 1;
 }
 
 struct Grid205420 {
