@@ -71,6 +71,8 @@ real classes.
 | `misc/variant_functions44.cpp` | variant search, forty-fourth run (address arguments taken early) | as `misc/variant_functions26.cpp` |
 | `misc/large_functions.cpp` | two of the largest functions (`3b8504`, `462678`) | as `misc/variant_functions26.cpp`; the name strings of `462678` are `gLocalADDR_462678` data placeholders mapped to their original addresses |
 | `misc/variant_functions45.cpp` | variant search, forty-fifth run (member addresses, 1,501 to 6,000 bytes) | as `misc/variant_functions26.cpp` |
+| `misc/variant_functions46.cpp` | variant search, forty-sixth run (test of the parallel search) | as `misc/variant_functions26.cpp` |
+| `misc/variant_functions47.cpp` | variant search, forty-seventh run (the whole 8 to 1,500 byte band) | as `misc/variant_functions26.cpp` |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/loop_functions2.cpp` | loops with if/else bodies and pointer induction variables | as `misc/loop_functions.cpp`, plus element structs `ElemFUNC_rN` sized to the stride |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |
