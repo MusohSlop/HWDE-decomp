@@ -5109,9 +5109,9 @@ Address,Quality,Size,Name
 0x71001ba5c8,O,224,_Z21set_unit_range_1ba5c8PK12RangeCommand
 0x71001ba6a8,U,516,FUN_71001ba6a8
 0x71001ba8ac,O,244,_Z16stop_unit_1ba8acPK11UnitCommand
-0x71001ba9a0,U,320,FUN_71001ba9a0
+0x71001ba9a0,m,320,_Z19move_unit_to_1ba9a0PK11UnitCommand
 0x71001baae0,U,448,FUN_71001baae0
-0x71001baca0,U,308,FUN_71001baca0
+0x71001baca0,m,308,_Z19walk_unit_to_1baca0PK11UnitCommand
 0x71001badd4,U,528,FUN_71001badd4
 0x71001bafe4,U,428,FUN_71001bafe4
 0x71001bb190,U,584,FUN_71001bb190
@@ -5122,9 +5122,9 @@ Address,Quality,Size,Name
 0x71001bc274,U,1352,FUN_71001bc274
 0x71001bc7bc,U,520,FUN_71001bc7bc
 0x71001bc9c4,O,256,_Z21set_unit_order_1bc9c4PK11UnitCommand
-0x71001bcac4,U,256,FUN_71001bcac4
+0x71001bcac4,O,256,_Z23load_leader_type_1bcac4PK11UnitCommand
 0x71001bcbc4,U,588,FUN_71001bcbc4
-0x71001bce10,U,328,FUN_71001bce10
+0x71001bce10,O,328,_Z23set_slot_pattern_1bce10PK11SlotCommand
 0x71001bcf58,U,616,FUN_71001bcf58
 0x71001bd1c0,m,152,_Z21set_time_limit_1bd1c0PK11UnitCommand
 0x71001bd3c0,U,444,FUN_71001bd3c0
@@ -5185,7 +5185,7 @@ Address,Quality,Size,Name
 0x71001c3550,O,204,_Z19place_marker_1c3550PK11UnitCommand
 0x71001c361c,O,212,_Z19release_spot_1c361cPK11UnitCommand
 0x71001c36f0,O,260,_Z18notify_unit_1c36f0PK11UnitCommand
-0x71001c37f4,U,344,FUN_71001c37f4
+0x71001c37f4,m,344,_Z20set_team_flag_1c37f4PK11UnitCommand
 0x71001c394c,U,1004,FUN_71001c394c
 0x71001c3d38,U,392,FUN_71001c3d38
 0x71001c3ec0,U,480,FUN_71001c3ec0

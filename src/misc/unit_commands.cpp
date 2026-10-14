@@ -78,7 +78,8 @@ struct MemberList {
 
 struct UnitRecord {
     unsigned char pad[0x20];
-    float position[9];        // +20
+    float position[8];        // +20
+    float speed;              // +40
 
     unsigned int team;        // +44
     unsigned char pad48[4];
@@ -186,7 +187,17 @@ struct OfficerType {
 struct RosterTeam {
     unsigned char pad[4];
     int score;                // +04
-    unsigned char pad8[0x330];
+    unsigned char pad8[0x7f];
+    unsigned char : 1;        // +87
+    unsigned char hold : 1;
+    unsigned char : 2;
+    unsigned char guard : 1;
+    unsigned char rally : 1;
+    unsigned char pad88[0x250];
+    MemberList commanders;    // +2d8
+    unsigned char pad2e8[0x38];
+    MemberList guards;        // +320
+    unsigned char pad330[8];
 };
 
 struct UnitRoster {
@@ -213,6 +224,7 @@ struct UnitRoster {
     }
 
     UnitRecord* unit(unsigned int id) { return id < 0xf6 ? &units[id] : nullptr; }
+    RosterTeam* team(unsigned int id) { return id < 3 ? &teams[id] : nullptr; }
     OfficerRecord* officer(unsigned int id) { return id < 300 ? &officers[id] : nullptr; }
 };
 
@@ -902,9 +914,12 @@ void move_unit_16b1f8(int unit, const MarkerPosition* position, int flag, float 
 // 0x71001c019c
 void move_unit_1c019c(const UnitCommand* command) {
     int id = resolve_unit_first(command->unit);
+    MarkerPosition position;
     int cell_x = command->value, cell_z = command->extra[0];
-    MarkerPosition position = {static_cast<float>(static_cast<unsigned int>(cell_x * 1000 + 500)), 0.0f,
-                               static_cast<float>(static_cast<unsigned int>(cell_z * 1000 + 500)), 1.0f};
+    position.x = static_cast<unsigned int>(cell_x * 1000 + 500);
+    position.y = 0.0f;
+    position.z = static_cast<unsigned int>(cell_z * 1000 + 500);
+    position.w = 1.0f;
     UnitRecord* unit = gShop->unit(id);
     if (unit->state_kind & 4)
         move_unit_16af1c(id, &position, 1, 0.0f);
@@ -1293,12 +1308,18 @@ void hide_area_f2220(void* system);                                         // 0
 
 // 0x71001ba090
 void show_area_1ba090(const AreaCommand* command) {
+    MarkerPosition from;
     int from_x = command->from_x, from_z = command->from_z;
-    MarkerPosition from = {static_cast<float>(static_cast<unsigned int>(from_x * 1000 + 500)), 0.0f,
-                           static_cast<float>(static_cast<unsigned int>(from_z * 1000 + 500)), 1.0f};
+    from.x = static_cast<unsigned int>(from_x * 1000 + 500);
+    from.y = 0.0f;
+    from.z = static_cast<unsigned int>(from_z * 1000 + 500);
+    from.w = 1.0f;
+    MarkerPosition to;
     int to_x = command->to_x, to_z = command->to_z;
-    MarkerPosition to = {static_cast<float>(static_cast<unsigned int>(to_x * 1000 + 500)), 0.0f,
-                         static_cast<float>(static_cast<unsigned int>(to_z * 1000 + 500)), 1.0f};
+    to.x = static_cast<unsigned int>(to_x * 1000 + 500);
+    to.y = 0.0f;
+    to.z = static_cast<unsigned int>(to_z * 1000 + 500);
+    to.w = 1.0f;
     if (static_cast<unsigned int>(command->kind) <= 1) {
         queue_marker_19a914(member_18f12c(reinterpret_cast<Container18f12c*>(gShop)), &from, 8, &to, command->kind + 3);
         show_area_114f88(gGlobal_c22a60, command->kind, from.x, from.z, to.x, to.z);
@@ -1306,5 +1327,93 @@ void show_area_1ba090(const AreaCommand* command) {
     } else {
         hide_area_113a54(gGlobal_c22a60);
         hide_area_f2220(gGlobal_c22be8);
+    }
+}
+
+// 0x71001bcac4
+void load_leader_type_1bcac4(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    UnitRoster* roster = gShop;
+    UnitRecord* unit = roster->unit(id);
+    if (unit->team > 2 || (unit->flag_bits & 0x80))
+        return;
+    type_loaded_172174(roster->officer(unit->members.get(unit->leader))->type);
+}
+
+// 0x71001ba9a0
+void move_unit_to_1ba9a0(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    MarkerPosition position;
+    int cell_x = command->value, cell_z = command->extra[0];
+    position.x = static_cast<unsigned int>(cell_x * 1000 + 500);
+    position.y = 0.0f;
+    position.z = static_cast<unsigned int>(cell_z * 1000 + 500);
+    position.w = 1.0f;
+    UnitRecord* unit = gShop->unit(id);
+    if (unit->team > 2)
+        return;
+    if (!(unit->state_kind & 5) && command->extra[1])
+        return;
+    if (unit->state_kind & 4)
+        move_unit_16af1c(id, &position, 1, 0.0f);
+    else
+        move_unit_16ab4c(id, &position, 1, 0.0f);
+}
+
+// 0x71001baca0
+void walk_unit_to_1baca0(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    MarkerPosition position;
+    int cell_x = command->value, cell_z = command->extra[0];
+    position.x = static_cast<unsigned int>(cell_x * 1000 + 500);
+    position.y = 0.0f;
+    position.z = static_cast<unsigned int>(cell_z * 1000 + 500);
+    position.w = 1.0f;
+    UnitRecord* unit = gShop->unit(id);
+    if (unit->team > 2)
+        return;
+    if (!(unit->state_kind & 5) && command->extra[1])
+        return;
+    if (unit->state_kind & 4)
+        move_unit_16af1c(id, &position, 0, unit->speed);
+    else
+        move_unit_16ab4c(id, &position, 0, unit->speed);
+}
+
+// 0x71001c37f4
+void set_team_flag_1c37f4(const UnitCommand* command) {
+    UnitRoster* roster = gShop;
+    RosterTeam* team = roster->team(command->unit);
+    switch (command->value) {
+    case 0:
+        if (command->extra[0])
+            team->guard = 1;
+        else
+            team->guard = 0;
+        break;
+    case 1:
+        if (command->extra[0])
+            team->hold = 1;
+        else
+            team->hold = 0;
+        break;
+    case 2:
+        if (command->extra[0])
+            team->rally = 1;
+        else
+            team->rally = 0;
+        for (int i = 0; i < team->commanders.count; ++i) {
+            UnitRecord* unit = roster->unit(team->commanders.data[i]);
+            unit->order = 0;
+            if (command->extra[0])
+                unit->order = 2;
+        }
+        for (int i = 0; i < team->guards.count; ++i) {
+            UnitRecord* unit = roster->unit(team->guards.data[i]);
+            unit->order = 0;
+            if (command->extra[0])
+                unit->order = 2;
+        }
+        break;
     }
 }

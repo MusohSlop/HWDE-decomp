@@ -2966,7 +2966,11 @@
     "_Z15show_area_f2e8cPviffff": "0x71000f2e8c",
     "_Z16hide_area_113a54Pv": "0x7100113a54",
     "_Z16put_count_1ccd38P8StepBitsji": "0x71001ccd38",
-    "_Z16show_area_114f88Pviffff": "0x7100114f88"
+    "_Z16show_area_114f88Pviffff": "0x7100114f88",
+    "_Z15set_slot_1968f8P10SlotConfigii": "0x71001968f8",
+    "_Z16set_count_196930P10SlotConfigi": "0x7100196930",
+    "_Z16set_timer_196940P10SlotConfigi": "0x7100196940",
+    "_Z18slot_config_18f104P9SlotOwneri": "0x710018f104"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -7995,7 +7999,11 @@
         "_Z16stop_unit_1ba8acPK11UnitCommand": "0x71001ba8ac",
         "_Z21set_unit_order_1bc9c4PK11UnitCommand": "0x71001bc9c4",
         "_Z23store_slot_total_1c24f8PK11UnitCommand": "0x71001c24f8",
-        "_Z16show_area_1ba090PK11AreaCommand": "0x71001ba090"
+        "_Z16show_area_1ba090PK11AreaCommand": "0x71001ba090",
+        "_Z23load_leader_type_1bcac4PK11UnitCommand": "0x71001bcac4",
+        "_Z19move_unit_to_1ba9a0PK11UnitCommand": "0x71001ba9a0",
+        "_Z19walk_unit_to_1baca0PK11UnitCommand": "0x71001baca0",
+        "_Z20set_team_flag_1c37f4PK11UnitCommand": "0x71001c37f4"
       },
       "map": {
         "_ZZL12resolve_unitiE5local": "0x7100c44ce0",
@@ -8248,6 +8256,14 @@
     "misc/stage_state.cpp": {
       "functions": {
         "_Z17stage_busy_1d740cP10StageState": "0x71001d740c"
+      }
+    },
+    "misc/slot_patterns.cpp": {
+      "functions": {
+        "_Z23set_slot_pattern_1bce10PK11SlotCommand": "0x71001bce10"
+      },
+      "map": {
+        ".rodata": "0x71007e6a2c"
       }
     }
   }
