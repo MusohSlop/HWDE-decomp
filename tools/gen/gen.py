@@ -6,7 +6,7 @@ import os
 """Generate small functions with calls (and forward branches) by forking symbolic execution.
 Loads and used call results become named locals in their original order; x19-x28 survive calls.
 usage: gen_calls.py OUT.cpp UNIT LO HI   (EXCLUDE env: comma-separated hex addresses)"""
-import csv, sys, re, subprocess, json, os
+import csv, sys, re, subprocess, json, os, struct
 sys.path.insert(0, (ROOTDIR + r"\.tools\python"))
 import capstone
 out, unit, lo, hi = sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
@@ -157,6 +157,35 @@ def gen_function(a, ins):
     for i_ in ins:
         if (i_.mnemonic in ("b", "cbz", "cbnz", "tbz", "tbnz") or i_.mnemonic.startswith("b.")) and "#" in i_.op_str:
             jump_targets_.add(imm(i_.op_str.split(", ")[-1]))
+    jt_, jt_skip_, jt_idx_ = {}, {}, {}
+    jtabs_ = []         # (address, size) of each jump table, in emission order
+    for kb_, ib_ in enumerate(ins):
+        if "noswitch" in knobs or ib_.mnemonic != "br" or kb_ < 1:
+            continue
+        rn_ = ib_.op_str
+        mA_ = re.fullmatch(r"(x\d+), (x\d+), (x\d+)", ins[kb_ - 1].op_str) if ins[kb_ - 1].mnemonic == "add" else None
+        if not mA_ or mA_.group(1) != rn_ or mA_.group(2) != rn_:
+            continue
+        rt_ = mA_.group(3)
+        kl_ = ri_ = ka_ = None
+        for j_ in range(kb_ - 2, max(-1, kb_ - 8), -1):
+            ml_ = re.fullmatch(r"(x\d+), \[(x\d+), (x\d+), lsl #2\]", ins[j_].op_str) if ins[j_].mnemonic == "ldrsw" else None
+            if ml_ and ml_.group(1) == rn_ and ml_.group(2) == rt_:
+                kl_, ri_ = j_, ml_.group(3)
+                break
+        if kl_ is None:
+            continue
+        for j_ in range(kl_ - 1, max(0, kl_ - 8), -1):
+            if (ins[j_].mnemonic == "add" and re.fullmatch(r"%s, %s, #(0x[0-9a-f]+|\d+)" % (rt_, rt_), ins[j_].op_str)
+                    and ins[j_ - 1].mnemonic == "adrp" and ins[j_ - 1].op_str.startswith(rt_ + ",")):
+                ka_ = j_
+                break
+        if ka_ is None:
+            continue
+        T_ = imm(ins[ka_ - 1].op_str.split(", ")[1]) + imm(ins[ka_].op_str.split(", ")[2])
+        jt_[kb_] = (T_, regname(ri_)[0])
+        for j_ in (ka_ - 1, ka_, kl_, kb_ - 1):
+            jt_skip_[j_] = kb_
     copy_loads_ = set()
     for k_, i_ in enumerate(ins):
         mm_ = re.fullmatch(r"x(\d+), \[(x\d+|sp)(?:, #(-?0x[0-9a-f]+|-?\d+))?\]", i_.op_str) if i_.mnemonic in ("ldr", "ldur") else None
@@ -1081,6 +1110,48 @@ def gen_function(a, ins):
                 continue
             if is_frame(i):
                 k += 1; continue
+            if k in jt_skip_:
+                if i.mnemonic == "ldrsw":
+                    jt_idx_[jt_skip_[k]] = regs.get(jt_[jt_skip_[k]][1])
+                k += 1; continue
+            if m == "br" and k in jt_:
+                # a switch: the bound check in front is its default; each table entry is a case
+                T_ = jt_[k][0]
+                idx_ = jt_idx_.get(k)
+                if stop is not None or idx_ is None or not items or items[-1][0] != "if":
+                    raise Fail("switch shape")
+                f_, cc_ = items[-1][1]
+                if f_ is None or f_[0] != "cmp" or cc_ != "hi" or f_[2][0] != "const" or f_[1] != idx_:
+                    raise Fail("switch bound")
+                kh_ = next((kk for kk in range(k - 1, -1, -1) if ins[kk].mnemonic == "b.hi"), None)
+                if kh_ is None:
+                    raise Fail("switch bound")
+                D_ = addr_index[imm(ins[kh_].op_str)]
+                n_ = f_[2][1] + 1
+                if idx_[0] == "bin" and idx_[1] in ("-", "+") and cval_(idx_[3]) is not None:
+                    sv_ = idx_[2]; lo_ = cval_(idx_[3]) if idx_[1] == "-" else -cval_(idx_[3])
+                elif idx_[0] == "range":
+                    sv_, lo_ = idx_[1], idx_[2]
+                else:
+                    sv_, lo_ = idx_, 0
+                if sv_[0] == "param" and pwidth.get(sv_[1]) is None:
+                    pwidth[sv_[1]] = f_[3]
+                default_ = items.pop()[2]
+                groups_ = {}
+                for j_ in range(n_):
+                    tv_ = T_ + struct.unpack_from("<i", d, T_ + 4 * j_)[0]
+                    if tv_ not in addr_index:
+                        raise Fail("switch target outside")
+                    if addr_index[tv_] != D_:
+                        groups_.setdefault(addr_index[tv_], []).append(j_ + lo_)
+                body_ = []
+                # a case landing on a bare ret (its value set before the jump) comes first, then the rest in layout order
+                for t_ in sorted(set(groups_) | {D_}, key=lambda t2_: (ins[t2_].mnemonic != "ret" or t2_ == D_, t2_)):
+                    body_.append(("case", groups_.get(t_)))
+                    body_.extend(default_ if t_ == D_ else walk(t_, copyregs(regs), flags, set(written), depth + 1))
+                jtabs_.append((T_, 4 * n_))
+                items.append(("if", (("switch", sv_, ("const", 0, f_[3])), "switch"), body_))
+                return items
             if m == "ret" and "novecu" not in knobs and (regs.get(0) or ("",))[0] == "vpart" and (regs.get(1) or ("",))[0] == "vpart" \
                     and regs[0][1] == regs[1][1] and regs[0][2] == 0 and regs[1][2] == 1:
                 items.append(("return", ("vecu", regs[0][1])))
@@ -3283,6 +3354,22 @@ def gen_function(a, ins):
                     outl.append(f"{pad}{pre}callee_{call_it[2]:x}({argtext});")
                 else:
                     outl.append(f"{pad}return {fit(expr(v), vtype(v), rtype)};")
+            elif it[0] == "if" and it[1][1] == "switch":
+                outl.append(f"{pad}switch ({expr(it[1][0][1], False)}) {{")
+                segs_ = []
+                for x_ in it[2]:
+                    if x_[0] == "case":
+                        segs_.append((x_[1], []))
+                    else:
+                        segs_[-1][1].append(x_)
+                for labels_, its_ in segs_:
+                    heads_ = [f"case {v_}:" for v_ in labels_] if labels_ is not None else ["default:"]
+                    for h_ in heads_[:-1]:
+                        outl.append(f"{pad}{h_}")
+                    outl.append(f"{pad}{heads_[-1]} {{")
+                    outl.extend(render(its_, indent + 1))
+                    outl.append(f"{pad}}}")
+                outl.append(f"{pad}}}")
             elif it[0] == "if":
                 outl.append(f"{pad}if ({cond(*it[1])}) {{")
                 outl.extend(render(it[2], indent + 1))
@@ -3631,11 +3718,13 @@ def gen_function(a, ins):
     nparams = (max(pwidth) + 1) if pwidth else 0
     params = ", ".join([f"{ptype(n)} p{n}" for n in range(nparams) if pwidth.get(n) != "VecU_hi"] + [f"float f{n}" for n in range(max(fparams) + 1 if fparams else 0)])
     body = "\n".join(sdefs) + "\n".join(gdecls) + f"\n\n// 0x71{a:08x}\n{rtype} call_{a:x}({params}) {{\n" + "\n".join(lines) + "\n}\n"
-    return body, sigs, gsyms + ["IMPORT=%s=%x" % (import_of(tt)[1], tt) for tt in callees if import_of(tt)]
+    return body, sigs, gsyms + ["IMPORT=%s=%x" % (import_of(tt)[1], tt) for tt in callees if import_of(tt)] \
+        + ["JTAB=%x=%x" % jt for jt in jtabs_]
 
 CALLEES = {}
 IMPORTS_USED = {}
 GSYMS = set()
+JT = [None, None]   # first jump table address, end of the last
 for size, a in sorted(U, key=lambda x: x[1]):
     ins = list(md.disasm(d[a:a + size], a))
     try:
@@ -3646,6 +3735,15 @@ for size, a in sorted(U, key=lambda x: x[1]):
         text, sigs, gsyms = gen_function(a, ins)
         if len(text) > 2000000:
             raise Fail("output too large")
+        # jump tables share the unit's .rodata, so one anchor maps them only while they follow each other as
+        # in the original
+        jt_end_ = JT[1]
+        for x in gsyms:
+            if x.startswith("JTAB="):
+                _, ta_, ts_ = x.split("=")
+                if jt_end_ is not None and int(ta_, 16) != jt_end_:
+                    raise Fail("switch table apart")
+                jt_end_ = int(ta_, 16) + int(ts_, 16)
         upd_ = {}
         for (t_, _ak), sig_ in sigs.items():
             # a return type that clashes with an earlier declaration gets another name for the same address
@@ -3670,7 +3768,12 @@ for size, a in sorted(U, key=lambda x: x[1]):
             if x.startswith("IMPORT="):
                 _, mn_, ad_ = x.split("=")
                 IMPORTS_USED[mn_] = int(ad_, 16)
-        gsyms = [x for x in gsyms if not x.startswith("IMPORT=")]
+        for x in gsyms:
+            if x.startswith("JTAB="):
+                if JT[0] is None:
+                    JT[0] = int(x.split("=")[1], 16)
+                JT[1] = jt_end_
+        gsyms = [x for x in gsyms if not x.startswith("IMPORT=") and not x.startswith("JTAB=")]
         CALLEES.update(upd_)
         GSYMS.update(gsyms)
         defs.append(text)
@@ -3716,7 +3819,8 @@ m = MATCHDIR
 if os.environ.get("SYMOUT"):
     json.dump({"unit": unit, "gsyms": sorted(GSYMS),
                "imports": ["%s=0x71%08x" % (mn, ad) for mn, ad in sorted(IMPORTS_USED.items())],
-               "funcs": funcs}, open(os.environ["SYMOUT"], "w", encoding="utf-8"))
+               "funcs": funcs, "rodata": "0x71%08x" % JT[0] if JT[0] is not None else None},
+              open(os.environ["SYMOUT"], "w", encoding="utf-8"))
     print("generated", len(funcs), "skipped", skipped)
     print(sorted(reasons.items(), key=lambda x: -x[1])[:16])
     print("internal errors:", sum(internal.values()), sorted(internal.items(), key=lambda x: -x[1])[:8])
@@ -3731,6 +3835,8 @@ if IMPORTS_USED:
     subprocess.run([sys.executable, "-B", "-I", m + r"\tools\add_symbols.py", *["%s=0x71%08x" % (mn, ad) for mn, ad in sorted(IMPORTS_USED.items())]], cwd=m, capture_output=True)
 for i_ in range(0, len(funcs), 200):
     subprocess.run([sys.executable, "-B", "-I", m + r"\tools\add_symbols.py", "--unit", unit, *funcs[i_:i_ + 200]], cwd=m, capture_output=True)
+if funcs and JT[0] is not None:
+    subprocess.run([sys.executable, "-B", "-I", m + r"\tools\add_symbols.py", "--map", unit, ".rodata=0x71%08x" % JT[0]], cwd=m, capture_output=True)
 print("generated", len(funcs), "skipped", skipped)
 print(sorted(reasons.items(), key=lambda x: -x[1])[:16])
 print("internal errors:", sum(internal.values()), sorted(internal.items(), key=lambda x: -x[1])[:8])

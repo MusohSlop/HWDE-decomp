@@ -82,11 +82,13 @@ def gen_one(job):
     return un, json.load(open(symf, encoding="utf-8")), out
 
 def apply_symbols(results):
-    gs, imps, perunit = set(), set(), {}
+    gs, imps, perunit, jtab = set(), set(), {}, {}
     for un, sy in results:
         if sy is None or not sy["funcs"]:
             continue
         gs |= set(sy["gsyms"]); imps |= set(sy["imports"]); perunit[un] = sy["funcs"]
+        if sy.get("rodata"):
+            jtab[un] = sy["rodata"]
     gl = sorted(gs)
     for i_ in range(0, len(gl), 200):
         subprocess.run([py, "-B", "-I", M + r"\tools\add_symbols.py", *gl[i_:i_ + 200]], cwd=M, capture_output=True)
@@ -101,6 +103,8 @@ def apply_symbols(results):
         if un in u["units"]:
             u["units"][un].setdefault("map", {})[".rodata.cst4"] = "0x710073b000"
             u["units"][un]["map"][".rodata.cst16"] = "0x710073dff0"
+            if un in jtab:
+                u["units"][un]["map"][".rodata"] = jtab[un]   # the unit's jump tables
     open(M + r"\data\units.json", "w", encoding="utf-8", newline="\n").write(json.dumps(u, indent=2) + "\n")
     return set(perunit)
 
