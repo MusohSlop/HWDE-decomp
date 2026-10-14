@@ -54,7 +54,11 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   as one `sqrtf` call;
 - branches on float compares with `mi`/`pl`, and register-indexed and pre-indexed float loads and stores;
 - with the `copy64` knob, an `ldr x` whose value is only stored again is an 8-byte copy, written as
-  `__builtin_memcpy` on byte addresses so the fields on both sides keep their own types.
+  `__builtin_memcpy` on byte addresses so the fields on both sides keep their own types;
+- fields typed only by 8-byte constant stores (`str xzr`, `stp xzr, xzr` on stack objects) take the type of a
+  later narrower access, and the constant store is split over the fields it covers;
+- integer reads of different widths at one offset (Clang narrows a load whose value is only truncated) are one
+  field of the wider type, read back with each load's own type (knob `nowiden` turns this off).
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,

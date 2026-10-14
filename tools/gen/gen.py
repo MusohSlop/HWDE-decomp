@@ -312,6 +312,81 @@ def gen_function(a, ins):
             raise Fail("stack form")
     starts = sorted(starts)
     stackobjs = {}      # start -> {off: ctype}
+    cstore_typed_ = set()   # (struct, off) typed only by constant stores so far
+    confirmed_ = set()      # (struct, off) typed by a load or a value store
+    def note_access_(sn_, off_, cstore):
+        if cstore:
+            if (sn_, off_) not in confirmed_:
+                cstore_typed_.add((sn_, off_))
+        else:
+            confirmed_.add((sn_, off_))
+            cstore_typed_.discard((sn_, off_))
+    INTS_ = ("long", "void*", "int", "unsigned int", "short", "unsigned short", "signed char", "unsigned char")
+    def widen_(sn_, off_, prev_, ct_):
+        """Type for one field read at off_ as prev_ and as ct_ (integers of two widths), or None."""
+        if prev_[0] not in INTS_ or ct_ not in INTS_ or "nowiden" in knobs:
+            return None
+        wide_ = prev_[0] if SIZE[prev_[0]] >= SIZE[ct_] else ct_
+        if wide_ == "void*":
+            if prev_[0] == "void*" and prev_[1]:
+                return None  # a pointer to a known struct
+            wide_ = "long"
+        if any(off_ < o2_ < off_ + SIZE[wide_] for o2_ in structs[sn_]):
+            return None
+        return wide_
+    def widen_field_(sn_, off_, prev_, ct_):
+        wide_ = widen_(sn_, off_, prev_, ct_)
+        if wide_ is None:
+            return False
+        if wide_ != prev_[0]:
+            for vn_, vt_ in list(vars_.items()):
+                if isinstance(vt_, tuple) and vt_[0] == "load" and vt_[1] == sn_ and vt_[2] == off_ and len(vt_) == 3:
+                    vars_[vn_] = vt_ + (prev_[0],)
+            structs[sn_][off_] = (wide_, None)
+        return True
+    def retype_ok_(sn_, off_, prev_t, ct_):
+        """A field typed only by 8-byte constant stores may become a narrower scalar."""
+        return ((sn_, off_) in cstore_typed_ and prev_t in ("void*", "long") and not ct_.startswith("ARRAY:")
+                and ct_ in SIZE and SIZE[ct_] < 8)
+    def const_pieces_(sn_, off_, width_, value_, base_):
+        """Store items for an aligned constant of width_ bytes at off_, cut at the struct's field bounds."""
+        WT_ = {1: "unsigned char", 2: "unsigned short", 4: "int", 8: "long"}
+        fl_ = structs[sn_]
+        cuts_ = {off_, off_ + width_}
+        for o2_, (ct2_, _) in fl_.items():
+            if ct2_.startswith("ARRAY:") or ct2_ not in SIZE:
+                if off_ <= o2_ < off_ + width_:
+                    raise Fail("constant over array")
+                continue
+            e2_ = o2_ + SIZE[ct2_]
+            if o2_ < off_ < e2_ or o2_ < off_ + width_ < e2_:
+                raise Fail("constant across field")
+            if off_ <= o2_ < off_ + width_:
+                cuts_ |= {o2_, e2_}
+        out_ = []
+        cuts_ = sorted(c_ for c_ in cuts_ if off_ <= c_ <= off_ + width_)
+        val_ = value_ & ((1 << (8 * width_)) - 1)
+        for lo_, hi_ in zip(cuts_, cuts_[1:]):
+            pos_ = lo_
+            while pos_ < hi_:
+                for w_ in (8, 4, 2, 1):
+                    if pos_ % w_ == 0 and pos_ + w_ <= hi_:
+                        break
+                ft_ = fl_.get(pos_, (WT_[w_], None))[0]
+                if SIZE.get(ft_) != w_:
+                    ft_ = WT_[w_]
+                fl_.setdefault(pos_, (ft_, None))
+                pv_ = (val_ >> (8 * (pos_ - off_))) & ((1 << (8 * w_)) - 1)
+                if ft_ == "float":
+                    if pv_:
+                        raise Fail("constant over float")
+                    out_.append(("store", sn_, pos_, base_, ("fconst", 0.0)))
+                else:
+                    if w_ <= 4 and pv_ >= 1 << (8 * w_ - 1) and ft_ in ("int", "short", "signed char"):
+                        pv_ -= 1 << (8 * w_)
+                    out_.append(("store", sn_, pos_, base_, ("const", pv_, "x" if w_ == 8 else "w")))
+                pos_ += w_
+        return out_
     def stack_obj(off):
         cands = [s0 for s0 in starts if s0 <= off]
         if not cands:
@@ -527,7 +602,7 @@ def gen_function(a, ins):
                             vars_[rhs[1]] = ("load", tv_[1], tv_[2], "long")
                         base = ("bytes", lhs, rhs)
         return base, off
-    def field(regs, base_reg, off, ct, base=None):
+    def field(regs, base_reg, off, ct, base=None, cstore=False):
         if base is None and base_reg is not None:
             bn, _ = regname(base_reg)
             base = regs.get(bn)
@@ -580,17 +655,23 @@ def gen_function(a, ins):
             return sn_, base, base[2]
         sn = struct_for(base)
         prev = structs[sn].get(off)
+        if prev and prev[0] != ct and not cstore and retype_ok_(sn, off, prev[0], ct):
+            structs[sn][off] = (ct, None)
+            prev = structs[sn][off]
         if prev and prev[0] != ct:
             groups = [{"long", "void*"}, {"unsigned char", "signed char"}, {"unsigned short", "short"}]
             pun_ = prev[0] in ("int", "unsigned int", "float") and ct in ("int", "unsigned int", "float") and "float" in (prev[0], ct) and "nopun" not in knobs
             if not pun_ and not any(prev[0] in g and ct in g for g in groups):
-                raise Fail("field clash")
+                if not widen_field_(sn, off, prev, ct):
+                    raise Fail("field clash")
+                prev = structs[sn][off]
             if ct in ("short", "signed char") and (sn, off) in store_typed:
                 structs[sn][off] = (ct, prev[1])
                 store_typed.discard((sn, off))
                 prev = structs[sn][off]
         if not prev:
             structs[sn][off] = (ct, None)
+        note_access_(sn, off, cstore)
         return sn, base, off
     def page_base(regs, op):
         """True when op is [xN, #off] on a register holding an adrp page."""
@@ -1309,8 +1390,12 @@ def gen_function(a, ins):
                     sv = ("stackobj", st)
                     sn = struct_for(sv)
                     prev = structs[sn].get(off_ - st)
+                    if prev and prev[0] != ct_ and retype_ok_(sn, off_ - st, prev[0], ct_):
+                        structs[sn][off_ - st] = (ct_, None)
+                        prev = structs[sn][off_ - st]
                     if prev and prev[0] != ct_:
                         raise Fail("stack field clash")
+                    note_access_(sn, off_ - st, False)
                     structs[sn].setdefault(off_ - st, (ct_, None))
                     if load_:
                         name = f"v{counter[0]}"; counter[0] += 1
@@ -1393,11 +1478,15 @@ def gen_function(a, ins):
                 sv = ("stackobj", st)
                 sn = struct_for(sv)
                 prev = structs[sn].get(sbase - st)
-                if prev and prev[0] != ct:
+                if prev and prev[0] != ct and retype_ok_(sn, sbase - st, prev[0], ct):
+                    structs[sn][sbase - st] = (ct, None)
+                    prev = structs[sn][sbase - st]
+                if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not widen_field_(sn, sbase - st, prev, ct):
                     raise Fail("stack field clash")
+                note_access_(sn, sbase - st, False)
                 structs[sn].setdefault(sbase - st, (ct, None))
                 name = f"v{counter[0]}"; counter[0] += 1
-                vars_[name] = ("load", sn, sbase - st)
+                vars_[name] = ("load", sn, sbase - st) if structs[sn][sbase - st][0] == ct else ("load", sn, sbase - st, ct)
                 items.append(("let", name, sn, sbase - st, sv))
                 letbase[name] = sv
                 regs[dn] = ("var", name)
@@ -1426,9 +1515,16 @@ def gen_function(a, ins):
                     sv = ("stackobj", st)
                     sn = struct_for(sv)
                     prev = structs[sn].get(off_ - st)
-                    if prev and prev[0] != ct:
+                    if prev and prev[0] != ct and val[0] == "const" and w == "x" and SIZE.get(prev[0], 8) < 8:
+                        items.extend(const_pieces_(sn, off_ - st, 8, val[1], sv))
+                        continue
+                    if prev and prev[0] != ct and val[0] != "const" and retype_ok_(sn, off_ - st, prev[0], ct):
+                        structs[sn][off_ - st] = (ct, None)
+                        prev = structs[sn][off_ - st]
+                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}):
                         raise Fail("stack field clash")
                     structs[sn].setdefault(off_ - st, (ct, None))
+                    note_access_(sn, off_ - st, val[0] == "const")
                     items.append(("store", sn, off_ - st, sv, val))
             elif m == "mov":
                 dn, w = regname(ops[0])
@@ -1688,7 +1784,7 @@ def gen_function(a, ins):
                     else:
                         existed = None
                         try:
-                            sn, base, off2 = field(regs, None, off + step, ct, base=basev)
+                            sn, base, off2 = field(regs, None, off + step, ct, base=basev, cstore=val[0] == "const")
                         except Fail as e_:
                             if str(e_) != "field clash" or val[0] != "const":
                                 raise
@@ -1941,6 +2037,23 @@ def gen_function(a, ins):
         for (sn_, o_) in plan_:
             structs[sn_].pop(o_, None)
         items[:] = rewrite(items)
+    def split_wide_const_stores(its):
+        out_ = []
+        for it in its:
+            if it[0] == "store" and len(it) == 5 and it[4][0] == "const" and it[4][2] == "x":
+                ft_ = structs[it[1]].get(it[2], ("long", None))[0]
+                if SIZE.get(ft_, 8) < 8:
+                    out_.extend(const_pieces_(it[1], it[2], 8, it[4][1], it[3]))
+                    continue
+            if it[0] == "if":
+                it = ("if", it[1], split_wide_const_stores(it[2]))
+            elif it[0] == "diamond":
+                it = (it[0], it[1], it[2], split_wide_const_stores(it[3]), split_wide_const_stores(it[4]))
+            elif it[0] == "loop":
+                it = (it[0], it[1], split_wide_const_stores(it[2])) + tuple(it[3:])
+            out_.append(it)
+        return out_
+    items[:] = split_wide_const_stores(items)
     if "nosplitstores" not in knobs:
         split_merged_stores()
     # usage of call results and variable widths
