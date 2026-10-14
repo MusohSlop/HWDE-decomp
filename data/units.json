@@ -2191,7 +2191,8 @@
     "_Z17reset_part_46653cPvS_": "0x710046653c",
     "_Z17reset_part_4668d8PvS_": "0x71004668d8",
     "_Z17reset_part_4668f4PvS_": "0x71004668f4",
-    "_Z9load_posePviiiiiii": "0x710059685c"
+    "_Z9load_posePviiiiiii": "0x710059685c",
+    "_Z17set_volume_52a984P12RenderTargetii": "0x710052a984"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -6945,6 +6946,18 @@
         "_Z14release_461538P11Owner461538": "0x7100461538",
         "_Z12close_4623d4P11Owner4623d4": "0x71004623d4",
         "_Z20reset_section_5f8f78P13Section5f8f78Pv": "0x71005f8f78"
+      }
+    },
+    "misc/sequence_slots2.cpp": {
+      "functions": {
+        "_Z22play_voice_slot_3d74d0P10VoiceSlotsj": "0x71003d74d0",
+        "_Z22play_voice_slot_3d7cd0P10VoiceSlotsj": "0x71003d7cd0",
+        "_Z22play_voice_slot_3d8e44P10VoiceSlotsj": "0x71003d8e44",
+        "_Z22play_voice_slot_3d9ec0P10VoiceSlotsj": "0x71003d9ec0",
+        "_Z21play_loop_slot_3d7570P9LoopSlotsj": "0x71003d7570",
+        "_Z21play_loop_slot_3d7d70P9LoopSlotsj": "0x71003d7d70",
+        "_Z21play_loop_slot_3d8ee4P9LoopSlotsj": "0x71003d8ee4",
+        "_Z21play_loop_slot_3d9f60P9LoopSlotsj": "0x71003d9f60"
       }
     }
   }

@@ -39,7 +39,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-3,863 of 3,996 attempted functions match: 3,853 inventory functions (182,100 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 133 are near misses, all `m`.
+3,871 of 4,004 attempted functions match: 3,861 inventory functions (183,364 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 133 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -329,6 +329,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 5 in `misc/command_posts.cpp`, 3 in `misc/singleton_creates2.cpp`, 5 in `misc/item_states.cpp`, 1 in `misc/ref_releases.cpp`, 2 more in `misc/animation_stops.cpp` | seed-family members: command posts to other queues, large singletons, item state tests, a reference-slot reset (last slot first), animation-set stops | match |
 | 39 in `misc/table_reads.cpp`, 5 in `misc/global_parts.cpp` | range-checked byte and 16-bit reads, signed id fields with limits, row ids, handle-record bytes (table pointer read before the index); calls on parts of a large global | match |
 | 6 in `misc/seven_bytes.cpp` | seven-entry byte settings with a fallback to the last entry | near miss |
+| 8 in `misc/sequence_slots2.cpp` | more sequenced slot plays: with a channel volume set first, and looping on layer 1 | match |
 | 4 of 8 in `misc/ranked_singles3.cpp` | `random_below` (linear congruential generator), a target refresh, a mapped-buffer release, a section reset; near misses: `3fa4c8` (branch layout), `6e070`/`6e0b0` (index extension order), `4623d4` (switch order) | match |
 | 18 of 20 in `misc/ranked_singles2.cpp` | more single ranked leaves: default-argument forwards, cursor rewinds, clears, counters, flag updates, constructors (fields in a non-virtual base), a hooked notify; `DataChunk::set` (`218c34`, compare order) and `5325e4` (constructor store scheduling) are near misses | match |
 | 14 of 16 in `misc/ranked_singles.cpp` | single ranked leaves: slot items, pair ids, a handle constructor, option calls, spans, choices, unit releases, rows, modes, block tests, stage pairs; `387784` (1 word, select operand order) and `446054` (early-out layout) are near misses | match |
@@ -624,7 +625,7 @@ Near-miss families, ranked by members × the fraction of words that match (one f
 | `misc/part_binders.cpp` (`59c560`-`59ca10`) | 6 | 27 of 60 | 3.3 |
 | `misc/seven_bytes.cpp` (`205670` and five more) | 6 | 6 of 9 | 2.0 |
 
-All other near misses are single functions. The focused passes so far: `model_updates` was fixed (all 22 now match, see the lesson on reference clamps). `packed_fetch` got four more probe variants (field order, byte pointer, struct copy, reading at each use) and none changed the pairing.
+All other near misses are single functions. The focused passes so far: `model_updates` was fixed (all 22 now match, see the lesson on reference clamps). `tree_walks` got three more (target stored first, a result variable, the hit set through the target) with no change. `packed_fetch` got four more probe variants (field order, byte pointer, struct copy, reading at each use) and none changed the pairing.
 
 `5968d0`-`596d6c` (`misc/packed_fetch.cpp`): two words. The original loads an entry's offset with a pre-indexed `ldr` and its size from the updated base, so the two loads never pair. Ours folds both addresses and pairs them into one `ldp`. Reading the size through a field pointer made no difference.
 
