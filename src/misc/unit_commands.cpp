@@ -12,7 +12,10 @@ struct RosterSlot {
     int unit;                 // +1c
     unsigned char pad20[4];
     unsigned int officer_type; // +24
-    unsigned char pad28[0x28];
+    unsigned char pad28[5];
+    unsigned char started;    // +2d
+    unsigned char active;     // +2e
+    unsigned char pad2f[0x21];
     Gauge19d2 gauge;          // +50
     unsigned char pad51[0x147];
     int defeated;             // +198
@@ -89,9 +92,13 @@ struct UnitRecord {
     int leader;               // +5c
     unsigned char pad60[4];
     int rank;                 // +64
-    unsigned char pad68[0x40];
+    unsigned char pad68[0xc];
+    int group_value;          // +74
+    unsigned char pad78[0x30];
     int values[3];            // +a8
-    unsigned char padb4[0x40];
+    unsigned char padb4[0x18];
+    unsigned int limits[2];   // +cc
+    unsigned char padd4[0x20];
     unsigned int damage;      // +f4
     unsigned char padf8[0x18];
     int ai_mode;              // +110
@@ -124,7 +131,8 @@ struct OfficerRecord {
     unsigned char pad2c[8];
     int max_level;            // +34
     int level;                // +38
-    unsigned char pad3c[8];
+    unsigned char pad3c[4];
+    int item;                 // +40
     unsigned int type;        // +44
     unsigned int health;      // +48
     unsigned char pad4c[0x20];
@@ -167,7 +175,9 @@ struct PointRecord {
     PointPosition position;   // +10
     unsigned char pad20[0x14];
     int active;               // +34
-    unsigned char pad38[0x18];
+    unsigned char pad38[8];
+    unsigned char enabled : 1; // +40
+    unsigned char pad41[0xf];
 };
 
 struct LinkCell {
@@ -771,8 +781,13 @@ void place_marker_1c3550(const UnitCommand* command) {
 }
 
 struct BattleSetup {
-    unsigned int flags;       // +00
-    unsigned int options;     // +04
+    union {
+        struct {
+            unsigned int flags;   // +00
+            unsigned int options; // +04
+        };
+        unsigned long wide_flags;
+    };
 };
 BattleSetup* get_battle_setup();                                            // 0x710016ef34
 void open_camp_16ee2c(unsigned int camp, unsigned int kind);                // 0x710016ee2c
@@ -1380,6 +1395,15 @@ void walk_unit_to_1baca0(const UnitCommand* command) {
         move_unit_16ab4c(id, &position, 0, unit->speed);
 }
 
+static inline void set_list_order(UnitRoster* roster, MemberList* list, const UnitCommand* command) {
+    for (int i = 0; i < list->count; ++i) {
+        UnitRecord* unit = roster->unit(list->data[i]);
+        unit->order = 0;
+        if (command->extra[0])
+            unit->order = 2;
+    }
+}
+
 // 0x71001c37f4
 void set_team_flag_1c37f4(const UnitCommand* command) {
     UnitRoster* roster = gShop;
@@ -1402,18 +1426,140 @@ void set_team_flag_1c37f4(const UnitCommand* command) {
             team->rally = 1;
         else
             team->rally = 0;
-        for (int i = 0; i < team->commanders.count; ++i) {
-            UnitRecord* unit = roster->unit(team->commanders.data[i]);
-            unit->order = 0;
-            if (command->extra[0])
-                unit->order = 2;
-        }
-        for (int i = 0; i < team->guards.count; ++i) {
-            UnitRecord* unit = roster->unit(team->guards.data[i]);
-            unit->order = 0;
-            if (command->extra[0])
-                unit->order = 2;
+        set_list_order(roster, &team->commanders, command);
+        set_list_order(roster, &team->guards, command);
+        break;
+    }
+}
+
+struct OrderCommand {
+    int pad0;
+    int kind;                 // +04
+    int value;                // +08
+    int target;               // +0c
+    int mode;                 // +10
+};
+
+// 0x71001b9f28
+void post_orders_1b9f28(const OrderCommand* command) {
+    OrderBoard* board = order_board_18d5d8(gShop);
+    int kind = command->kind;
+    switch (command->mode) {
+    case 0:
+        for (int i = 0; i < 0x76; ++i)
+            post_order_1a791c(board, i, command->value, kind);
+        break;
+    case 1:
+        post_order_1a791c(board, resolve_unit_first(command->target), command->value, kind);
+        break;
+    case 2:
+        for (int i = 0; i < 0x76; ++i) {
+            if (gShop->units[i].item == command->target)
+                post_order_1a791c(board, i, command->value, kind);
         }
         break;
+    }
+}
+unsigned char slot_locked_1a3240(RosterTable* table, int slot);             // 0x71001a3240
+
+struct SlotFlagsCommand {
+    int pad0;
+    int values[4];            // +04
+};
+
+// 0x71001c8524
+void set_slot_flags_1c8524(const SlotFlagsCommand* command) {
+    int values[4] = {command->values[0], command->values[1], command->values[2], command->values[3]};
+    bool enabled[4] = {values[0] != 0, values[1] != 0, values[2] != 0, values[3] != 0};
+    for (int i = 0; i < 4; ++i) {
+        RosterTable* table = gRecord_c21698;
+        unsigned long flags = get_battle_setup()->wide_flags;
+        if (slot_locked_1a3240(table, i))
+            continue;
+        RosterSlot* slot = table->slots[i];
+        slot->active = enabled[i];
+        if ((flags & 0x4000) && values[i] && !slot->started)
+            slot->started = enabled[i];
+    }
+}
+
+// 0x71001c5a9c
+void set_unit_limits_1c5a9c(const UnitCommand* command) {
+    int id = resolve_unit_first(command->unit);
+    UnitRecord* unit = gShop->unit(id);
+    text_base_213d38(command->value);
+    if (text_ready(command->value)) {
+        unsigned int limit = command->value;
+        unit->limits[0] = limit > 0x100 ? 0x100 : limit;
+    }
+    if (text_ready(command->extra[0])) {
+        unsigned int limit = command->extra[0];
+        unit->limits[1] = limit > 0x100 ? 0x100 : limit;
+    }
+}
+MemberList* team_group_197ac4(RosterTeam* team, int group);                 // 0x7100197ac4
+int item_field_211554(int item);                                            // 0x7100211554
+
+struct GroupCommand {
+    int pad0;
+    int team;                 // +04
+    int value;                // +08
+    int filter;               // +0c
+};
+
+// 0x71001c3d38
+void set_group_value_1c3d38(const GroupCommand* command) {
+    UnitRoster* roster = gShop;
+    RosterTeam* team = roster->team(command->team);
+    for (int group = 0; group < 8; ++group) {
+        MemberList* list = team_group_197ac4(team, group);
+        unsigned int count = list->count;
+        for (unsigned int i = 0; i < count; ++i) {
+            unsigned short id = list->get(i);
+            UnitRecord* unit = roster->unit(id);
+            if (unit->team > 2 || unit->state_kind || (unit->flag_bits & 0x80))
+                continue;
+            UnitRoster* now = gShop;
+            UnitRecord* current = now->unit(id);
+            switch (command->filter) {
+            case 1: {
+                OfficerRecord* leader = now->officer(current->members.get(current->leader));
+                if (static_cast<unsigned int>(item_field_211554(leader->item) - 2) >= 4)
+                    continue;
+                break;
+            }
+            case 2:
+                if (static_cast<unsigned int>(id - 0x84) > 0x17)
+                    continue;
+                break;
+            }
+            unit->group_value = command->value;
+        }
+    }
+}
+void open_point_1a99c8(unsigned int point, bool flag);                      // 0x71001a99c8
+void close_point_1a9ac4(unsigned int point, bool flag);                     // 0x71001a9ac4
+
+// 0x71001c08fc
+void open_spot_points_1c08fc(const UnitCommand* command) {
+    unsigned int id = resolve_spot_1b69cc(command->unit);
+    UnitRoster* roster = gShop;
+    SpotRecord* spot = roster->spot(id);
+    for (int i = 0; i < 4; ++i) {
+        unsigned int point = spot->points[i];
+        if (point < 0x40 && roster->points[point].active && roster->points[point].enabled)
+            open_point_1a99c8(point, get_battle_setup()->flags & 0x4000);
+    }
+}
+
+// 0x71001c0a98
+void close_spot_points_1c0a98(const UnitCommand* command) {
+    unsigned int id = resolve_spot_1b69cc(command->unit);
+    UnitRoster* roster = gShop;
+    SpotRecord* spot = roster->spot(id);
+    for (int i = 0; i < 4; ++i) {
+        unsigned int point = spot->points[i];
+        if (point < 0x40 && roster->points[point].active && roster->points[point].enabled)
+            close_point_1a9ac4(point, get_battle_setup()->flags & 0x4000);
     }
 }

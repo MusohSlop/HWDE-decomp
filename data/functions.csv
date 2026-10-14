@@ -5097,7 +5097,7 @@ Address,Quality,Size,Name
 0x71001b9c88,O,208,_Z19release_spot_1b9c88PK11UnitCommand
 0x71001b9d58,O,188,_Z17show_point_1b9d58PK11UnitCommand
 0x71001b9e14,O,276,_Z17play_music_1b9e14P12MusicCommand
-0x71001b9f28,U,360,FUN_71001b9f28
+0x71001b9f28,O,360,_Z18post_orders_1b9f28PK12OrderCommand
 0x71001ba090,m,292,_Z16show_area_1ba090PK11AreaCommand
 0x71001ba1b4,O,272,_Z15set_flag_1ba1b4PK11UnitCommand
 0x71001ba2c4,O,12,_Z19set_constant_1ba2c4P11Field1ba2c4
@@ -5161,8 +5161,8 @@ Address,Quality,Size,Name
 0x71001c02e4,U,424,FUN_71001c02e4
 0x71001c048c,U,612,FUN_71001c048c
 0x71001c06f0,U,524,FUN_71001c06f0
-0x71001c08fc,U,412,FUN_71001c08fc
-0x71001c0a98,U,412,FUN_71001c0a98
+0x71001c08fc,O,412,_Z23open_spot_points_1c08fcPK11UnitCommand
+0x71001c0a98,O,412,_Z24close_spot_points_1c0a98PK11UnitCommand
 0x71001c0c34,O,164,_Z27activate_spot_points_1c0c34PK11UnitCommand
 0x71001c0cd8,O,12,_Z19set_constant_1c0cd8P11Field1c0cd8
 0x71001c0ce4,U,8,FUN_71001c0ce4
@@ -5187,7 +5187,7 @@ Address,Quality,Size,Name
 0x71001c36f0,O,260,_Z18notify_unit_1c36f0PK11UnitCommand
 0x71001c37f4,m,344,_Z20set_team_flag_1c37f4PK11UnitCommand
 0x71001c394c,U,1004,FUN_71001c394c
-0x71001c3d38,U,392,FUN_71001c3d38
+0x71001c3d38,m,392,_Z22set_group_value_1c3d38PK12GroupCommand
 0x71001c3ec0,U,480,FUN_71001c3ec0
 0x71001c40a0,U,984,FUN_71001c40a0
 0x71001c4478,O,636,_Z20set_unit_mode_1c4478PK11UnitCommand
@@ -5198,7 +5198,7 @@ Address,Quality,Size,Name
 0x71001c4e2c,U,2436,FUN_71001c4e2c
 0x71001c57b0,O,292,_Z21set_item_field_1c57b0PK11UnitCommand
 0x71001c58d4,U,456,FUN_71001c58d4
-0x71001c5a9c,U,408,FUN_71001c5a9c
+0x71001c5a9c,O,408,_Z22set_unit_limits_1c5a9cPK11UnitCommand
 0x71001c5c34,O,300,_Z22set_spot_limits_1c5c34PK11UnitCommand
 0x71001c5d60,U,468,FUN_71001c5d60
 0x71001c5f34,U,700,FUN_71001c5f34
@@ -5218,7 +5218,7 @@ Address,Quality,Size,Name
 0x71001c7ebc,m,332,_Z16set_focus_1c7ebcPK11UnitCommand
 0x71001c8008,U,972,FUN_71001c8008
 0x71001c83d4,O,336,_Z18set_aliases_1c83d4PK11UnitCommand
-0x71001c8524,U,364,FUN_71001c8524
+0x71001c8524,m,364,_Z21set_slot_flags_1c8524PK16SlotFlagsCommand
 0x71001c8690,O,68,_Z13shared_plain8v
 0x71001c86d4,U,13236,FUN_71001c86d4
 0x71001cba88,O,36,_ZN10InnerTable5clearEv

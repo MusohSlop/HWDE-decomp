@@ -2970,7 +2970,11 @@
     "_Z15set_slot_1968f8P10SlotConfigii": "0x71001968f8",
     "_Z16set_count_196930P10SlotConfigi": "0x7100196930",
     "_Z16set_timer_196940P10SlotConfigi": "0x7100196940",
-    "_Z18slot_config_18f104P9SlotOwneri": "0x710018f104"
+    "_Z18slot_config_18f104P9SlotOwneri": "0x710018f104",
+    "_Z18slot_locked_1a3240P11RosterTablei": "0x71001a3240",
+    "_Z17team_group_197ac4P10RosterTeami": "0x7100197ac4",
+    "_Z17open_point_1a99c8jb": "0x71001a99c8",
+    "_Z18close_point_1a9ac4jb": "0x71001a9ac4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -8003,7 +8007,13 @@
         "_Z23load_leader_type_1bcac4PK11UnitCommand": "0x71001bcac4",
         "_Z19move_unit_to_1ba9a0PK11UnitCommand": "0x71001ba9a0",
         "_Z19walk_unit_to_1baca0PK11UnitCommand": "0x71001baca0",
-        "_Z20set_team_flag_1c37f4PK11UnitCommand": "0x71001c37f4"
+        "_Z20set_team_flag_1c37f4PK11UnitCommand": "0x71001c37f4",
+        "_Z18post_orders_1b9f28PK12OrderCommand": "0x71001b9f28",
+        "_Z21set_slot_flags_1c8524PK16SlotFlagsCommand": "0x71001c8524",
+        "_Z22set_unit_limits_1c5a9cPK11UnitCommand": "0x71001c5a9c",
+        "_Z22set_group_value_1c3d38PK12GroupCommand": "0x71001c3d38",
+        "_Z23open_spot_points_1c08fcPK11UnitCommand": "0x71001c08fc",
+        "_Z24close_spot_points_1c0a98PK11UnitCommand": "0x71001c0a98"
       },
       "map": {
         "_ZZL12resolve_unitiE5local": "0x7100c44ce0",
