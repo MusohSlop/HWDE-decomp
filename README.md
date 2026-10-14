@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-3.84% of bytes (215,232 of 5,603,025) and 23.72% of functions (4,100 of 17,282) match exactly; 186 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+3.85% of bytes (215,764 of 5,603,025) and 23.77% of functions (4,108 of 17,282) match exactly; 186 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-4,110 of 4,296 attempted functions match: 4,100 inventory functions (215,232 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 186 are near misses, all `m`.
+4,118 of 4,304 attempted functions match: 4,108 inventory functions (215,764 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 186 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -341,6 +341,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 19 of 19 in `misc/destructors3.cpp` | complete-object destructors with a root base and an out-of-line second base at +8 or +10, own members with inner groups; seven deleting variants through the root's `operator delete` (default heap) | match |
 | 27 of 27 in `misc/destructors4.cpp` | complete-object destructors found by a shape scan (vtable store, member destructor calls, tail call): root base or own vtable, optional second base; five deleting variants | match |
 | 7 of 7 in `misc/destructors5.cpp` | destructors whose direct base is polymorphic with an inline destructor (its vtable is stored again partway through), one deleting variant | match |
+| 8 of 8 in `misc/member_dtors.cpp` | destructors of plain classes that only destroy their members | match |
 | 4 of 4 in `misc/channel_sets.cpp` | float setters: through the global stage when it is ready, otherwise to every channel of the object's list | match |
 | 3 of 3 in `misc/listener_detach.cpp` | listener detach under the registry mutex (handler or own id list) | match |
 | 3 of 5 in `misc/bank_triggers.cpp` | sound or effect triggers routed to the global player or the object's bank; near misses: the two float-argument variants (`21c974`, `21ca54`), where the original hoists the result and kind moves above the bank branch | match |
