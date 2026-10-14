@@ -22,7 +22,7 @@ decompressed game image under `analysis/extracted/update/decompressed/` next to 
   image offsets) restrict the address range; `RV_ONLY` names a file of hex image offsets to restrict the run to
   (for a rerun of only the functions a generator change newly covers). Timed-out chunks are logged to
   `build/rvpar_slow.txt`.
-- `mm_probe.py gen.py LO HI` classifies the first differing instruction pair of every mismatch.
+- `mm_probe.py gen.py LO HI` classifies the first differing instruction pair of every mismatch. With `--classes` (and `--addr LO-HI`, `--only FILE`, `--knobs K`, `--jobs N`, `--tsv FILE`) it runs `mm_tally.py` instead: scratch units under `build/mmtally` (`data/units.json` is not touched), compiled in parallel, every function sorted into match / size / regalloc / schedule / other, with the size and other classes split by word difference and first differing pair.
 - `probe_one.py gen.py ADDR` generates one function into a scratch unit, prints its diff and source, and removes the
   scratch unit again.
 - `nm_probe.py gen.py FILE` does the same for the logged near misses under each knob set, so a generated match can
