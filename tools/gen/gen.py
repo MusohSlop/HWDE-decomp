@@ -513,8 +513,9 @@ def gen_function(a, ins):
             return True
         if v[0] == "var":
             tv_ = vars_.get(v[1])
-            return tv_ == "Vec4f" or (isinstance(tv_, tuple) and tv_[0] == "load" and len(tv_) == 3
-                                      and structs[tv_[1]].get(tv_[2], ("",))[0] == "Vec4f")
+            return tv_ == "Vec4f" or (isinstance(tv_, tuple) and tv_[0] == "load" and (
+                (len(tv_) == 3 and structs[tv_[1]].get(tv_[2], ("",))[0] in ("Vec4f", "ARRAY:Vec4f"))
+                or (len(tv_) > 3 and tv_[3] == "Vec4f")))
         return False
     def lane_(fregs, n, i):
         """Lane i of register n: a lane of a vector, or the scalar itself for lane 0 of a scalar register."""
@@ -1536,8 +1537,33 @@ def gen_function(a, ins):
                 if fd < 8: regs.setdefault("fw", set()).add(fd)
                 k += 1; continue
             qregs_ = [o_ for o_ in ops if re.fullmatch(r"q\d+", o_)]
+            qpost_ = None
+            if qregs_ and m in ("ldr", "str") and len(ops) == 3 and ops[2].startswith("#") and ops[1].startswith("[") \
+                    and "novecaddr" not in knobs:
+                qpost_ = imm(ops[2]); ops = ops[:2]
             if qregs_ and m in ("ldr", "str", "ldp", "stp") and len(ops) == len(qregs_) + 1 and not (ops[-1].startswith("[sp") or ops[-1].startswith("[x29")):
                 b, off, idx, sh, ext, pre, post = memop2(ops[-1], None)
+                if "novecaddr" not in knobs and len(qregs_) == 1 and idx is not None and sh in (0, 4) and not pre:
+                    # a Vec4f array element, or a Vec4f through a byte offset
+                    qn_ = int(qregs_[0][1:])
+                    basev_ = regs.get(regname(b)[0])
+                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:Vec4f", base=basev_)
+                    iv = index_value(regs, idx, ext)
+                    if m == "ldr":
+                        name = f"v{counter[0]}"; counter[0] += 1
+                        vars_[name] = ("load", sn, off2, "Vec4f")
+                        items.append(("leti", name, sn, off2, base, iv, "Vec4f") if sh == 0 else ("leti", name, sn, off2, base, iv))
+                        regs["f"][qn_] = ("var", name)
+                    else:
+                        val_ = regs["f"].get(qn_)
+                        if not is_vecval_(val_):
+                            raise Fail("vector store source")
+                        items.append(("storei", sn, off2, base, iv, val_, "Vec4f") if sh == 0 else ("storei", sn, off2, base, iv, val_))
+                    k += 1; continue
+                if "novecaddr" not in knobs and pre and idx is None:
+                    bn_ = regname(b)[0]
+                    regs[bn_] = ("bin", "+", regs.get(bn_), ("const", off, "x"), "x", "add")
+                    off = 0; pre = False
                 if m == "ldr" and len(qregs_) == 1 and idx is None and not pre and page_base(regs, ops[-1]):
                     # a 16-byte constant from the literal pool
                     addr_ = regs[regname(b)[0]][1] + off
@@ -1561,12 +1587,15 @@ def gen_function(a, ins):
                         regs["f"][qn_] = ("var", name)
                     else:
                         val_ = regs["f"].get(qn_)
-                        if val_ is not None and (val_[0] == "vconst" or (val_[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg") and "novec" not in knobs)):
+                        if val_ is not None and (val_[0] == "vconst" or (is_vecval_(val_) and val_[0] != "var" and "novec" not in knobs)):
                             items.append(("store", sn, off2, base, val_))
                             continue
                         if val_ is None or val_[0] != "var" or not (isinstance(vars_.get(val_[1]), tuple) and vars_[val_[1]][0] == "load" and structs[vars_[val_[1]][1]][vars_[val_[1]][2]][0] == "Vec4f"):
                             raise Fail("vector store source")
                         items.append(("store", sn, off2, base, val_))
+                if qpost_ is not None:
+                    bn_ = regname(b)[0]
+                    regs[bn_] = ("bin", "+", regs.get(bn_), ("const", qpost_, "x"), "x", "add")
                 k += 1; continue
             if m in ("ldp", "stp") and len(ops) == 3 and re.fullmatch(r"s\d+", ops[0]) and re.fullmatch(r"s\d+", ops[1]) and not (ops[2].startswith("[sp") or ops[2].startswith("[x29")):
                 # float pairs are two neighbouring float fields
@@ -1649,7 +1678,7 @@ def gen_function(a, ins):
                     else:
                         if vec_:
                             v_ = regs["f"].get(rn_)
-                            if v_ is None or not (v_[0] == "vconst" or (v_[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg") and "novec" not in knobs) or (v_[0] == "var" and isinstance(vars_.get(v_[1]), tuple)
+                            if v_ is None or not (v_[0] == "vconst" or (is_vecval_(v_) and v_[0] != "var" and "novec" not in knobs) or (v_[0] == "var" and isinstance(vars_.get(v_[1]), tuple)
                                                                          and vars_[v_[1]][0] == "load" and structs[vars_[v_[1]][1]][vars_[v_[1]][2]][0] == "Vec4f")):
                                 raise Fail("vector store source")
                         else:
