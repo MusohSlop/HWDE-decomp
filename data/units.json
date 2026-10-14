@@ -6350,7 +6350,33 @@
     "_Z13callee_5d4380i": "0x71005d4380",
     "_Z13callee_5d43a0Pv": "0x71005d43a0",
     "_Z13callee_5da17cPvS_": "0x71005da17c",
-    "_Z13callee_5dc664Pv": "0x71005dc664"
+    "_Z13callee_5dc664Pv": "0x71005dc664",
+    "got:gGlobalc2dcf8_5db674": "0x7100c2dcf8",
+    "_Z13callee_5d2204l": "0x71005d2204",
+    "_Z13callee_5d2240li": "0x71005d2240",
+    "_Z13callee_5d229cli": "0x71005d229c",
+    "_Z13callee_5d2398lil": "0x71005d2398",
+    "_Z13callee_5d77f4PvS_S_": "0x71005d77f4",
+    "_Z13callee_5d9e04Pv": "0x71005d9e04",
+    "_Z13callee_5db790PvS_": "0x71005db790",
+    "gLocal7e9334_1dea58": "0x71007e9334",
+    "got:gGlobalc21db0_38eec4": "0x7100c21db0",
+    "got:gGlobalc22a00_38eec4": "0x7100c22a00",
+    "got:gGlobalc22c00_335b30": "0x7100c22c00",
+    "got:gGlobalc2a9c8_37ac30": "0x7100c2a9c8",
+    "got:gGlobalc2ae78_335b30": "0x7100c2ae78",
+    "got:gGlobalc2b170_38eec4": "0x7100c2b170",
+    "_Z13callee_1ec94ci": "0x71001ec94c",
+    "_Z13callee_217d64i": "0x7100217d64",
+    "_Z13callee_33e464lii": "0x710033e464",
+    "_Z13callee_33e490lii": "0x710033e490",
+    "_Z13callee_387ad8Pv": "0x7100387ad8",
+    "_Z13callee_391aa4i": "0x7100391aa4",
+    "_Z13callee_391aacPv": "0x7100391aac",
+    "_Z13callee_3c730cPvS_iiili": "0x71003c730c",
+    "_Z13callee_3c7408PvS_S_l": "0x71003c7408",
+    "_Z13callee_446a70ii": "0x7100446a70",
+    "_Z13callee_46133cllPv": "0x710046133c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -13155,6 +13181,35 @@
         "_Z11call_5c1484PvP11Arg5c1484_1": "0x71005c1484",
         "_Z11call_5c19a4PvP11Arg5c19a4_1": "0x71005c19a4",
         "_Z11call_5c1cd0PvP11Arg5c1cd0_1": "0x71005c1cd0"
+      }
+    },
+    "misc/variant_functions9.cpp": {
+      "functions": {
+        "_Z10call_4ca20P10Arg4ca20_0": "0x710004ca20",
+        "_Z10call_4ca5cP10Arg4ca5c_0": "0x710004ca5c",
+        "_Z10call_b7614P10Argb7614_0": "0x71000b7614",
+        "_Z10call_b7654P10Argb7654_0": "0x71000b7654",
+        "_Z10call_ceff4P10Argceff4_0": "0x71000ceff4",
+        "_Z11call_14a648P11Arg14a648_0f": "0x710014a648",
+        "_Z11call_1a1454P11Arg1a1454_0f": "0x71001a1454",
+        "_Z11call_1acafcPvif": "0x71001acafc",
+        "_Z11call_297ce0P11Arg297ce0_0": "0x7100297ce0",
+        "_Z11call_297cfcP11Arg297cfc_0": "0x7100297cfc",
+        "_Z11call_310114P11Arg310114_0f": "0x7100310114",
+        "_Z11call_33aec4v": "0x710033aec4",
+        "_Z11call_3d12c0v": "0x71003d12c0",
+        "_Z11call_3dd5d8P11Arg3dd5d8_0": "0x71003dd5d8",
+        "_Z11call_3de4b4P11Arg3de4b4_0": "0x71003de4b4",
+        "_Z11call_3de544P11Arg3de544_0": "0x71003de544",
+        "_Z11call_3debd0P11Arg3debd0_0": "0x71003debd0",
+        "_Z11call_3e9618P11Arg3e9618_0": "0x71003e9618",
+        "_Z11call_41ad74P11Arg41ad74_0": "0x710041ad74",
+        "_Z11call_4522b8i": "0x71004522b8",
+        "_Z11call_45598ciff": "0x710045598c",
+        "_Z11call_505124P11Arg505124_0": "0x7100505124"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
       }
     }
   }
