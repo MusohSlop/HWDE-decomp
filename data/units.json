@@ -6959,6 +6959,38 @@
         "_Z21play_loop_slot_3d8ee4P9LoopSlotsj": "0x71003d8ee4",
         "_Z21play_loop_slot_3d9f60P9LoopSlotsj": "0x71003d9f60"
       }
+    },
+    "misc/item_accessors.cpp": {
+      "functions": {
+        "_Z17item_level_1ff170P10ItemLevelsi": "0x71001ff170",
+        "_Z17item_level_1ff18cP10ItemLevelsi": "0x71001ff18c",
+        "_Z17item_level_1ff1a8P10ItemLevelsi": "0x71001ff1a8",
+        "_Z17item_level_1ff1e0P10ItemLevelsi": "0x71001ff1e0",
+        "_Z17item_level_1ff218P10ItemLevelsi": "0x71001ff218",
+        "_Z16item_rank_1ff1fcP10ItemLevelsi": "0x71001ff1fc",
+        "_Z17item_short_1ff234P10ItemLevelsi": "0x71001ff234",
+        "_Z14pair_id_1fe6b0P13PairIds1fe6b0j": "0x71001fe6b0",
+        "_Z14grid_id_1fe724P10Grid1fe724ij": "0x71001fe724",
+        "_Z17grid_value_1fe75cP10Grid1fe75cij": "0x71001fe75c",
+        "_Z20counted_value_1feaf0P13Counted1feaf0j": "0x71001feaf0",
+        "_Z11byte_1ff90cP11Bytes1ff90ci": "0x71001ff90c",
+        "_Z15flag_low_1ff9e8P11Flags1ff9e8": "0x71001ff9e8",
+        "_Z17flag_mixed_1ff9f4P11Flags1ff9e8": "0x71001ff9f4",
+        "_Z16flag_bit2_1ffa0cP11Flags1ff9e8": "0x71001ffa0c",
+        "_Z14has_bit_1ffae4P10Bits1ffae4j": "0x71001ffae4",
+        "_Z14set_bit_1ffb30P14ByteBits1ffb30jh": "0x71001ffb30",
+        "_Z11half_200a7cP12Halves200a7ch": "0x7100200a7c",
+        "_Z11kind_2005bcP10Kind2005bc": "0x71002005bc",
+        "_Z17cell_empty_200e38P11Board200e38ii": "0x7100200e38",
+        "_Z17cell_known_200e68P11Board200e38ii": "0x7100200e68",
+        "_Z16slot_flag_1ff974P10Slot1ff974": "0x71001ff974",
+        "_Z14has_bit_1ffb78P10Bits1ffb78j": "0x71001ffb78",
+        "_Z17set_capped_20023cP12Capped20023cj": "0x710020023c",
+        "_Z19clamped_byte_200294P10Byte200294": "0x7100200294",
+        "_Z15first_id_2003a4P9Ids2003a4i": "0x71002003a4",
+        "_Z19set_first_id_2003c4P9Ids2003a4ji": "0x71002003c4",
+        "_Z18first_value_2003fcP9Ids2003a4i": "0x71002003fc"
+      }
     }
   }
 }
