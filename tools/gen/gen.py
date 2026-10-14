@@ -90,6 +90,10 @@ class Fail(Exception):
 def imm(s):
     return int(s.strip().lstrip("#"), 0)
 
+def hx_(n):
+    """Hex for a name: a negative offset becomes mNN."""
+    return f"{n:x}" if n >= 0 else f"m{-n:x}"
+
 def regname(r):
     if r in ("wzr", "xzr"):
         return None, r[0]
@@ -454,7 +458,7 @@ def gen_function(a, ins):
                 elemsizes[elemkinds[key]] = v[3]
             return elemkinds[key]
         if v[0] == "stackobj":
-            name = f"Stack{v[1]:x}_{a:x}"
+            name = f"Stack{hx_(v[1])}_{a:x}"
             structs.setdefault(name, {})
             stackobjs[v[1]] = name
             return name
@@ -2686,8 +2690,8 @@ def gen_function(a, ins):
         if base[0] == "stackobj":
             sn = stackobjs[base[1]]
             if set(structs[sn]) == {0}:
-                return f"local_{base[1]:x}"
-            return f"local_{base[1]:x}.field_{off:x}"
+                return f"local_{hx_(base[1])}"
+            return f"local_{hx_(base[1])}.field_{off:x}"
         if base[0] in ("gotaddr", "local"):
             sn = f"{'Global' if base[0] == 'gotaddr' else 'Local'}{base[1]:x}_{a:x}"
             if set(structs[sn]) == {0}:
@@ -2774,8 +2778,8 @@ def gen_function(a, ins):
             if sn is None:
                 raise Fail("unused stack object")
             if v[1] == st:
-                return f"&local_{st:x}"
-            return f"&local_{st:x}.field_{v[1] - st:x}"
+                return f"&local_{hx_(st)}"
+            return f"&local_{hx_(st)}.field_{v[1] - st:x}"
         if v[0] in ("gotaddr", "local"):
             sn = f"{'Global' if v[0] == 'gotaddr' else 'Local'}{v[1]:x}_{a:x}"
             if sn not in structs:
@@ -2867,9 +2871,11 @@ def gen_function(a, ins):
         px_, py_ = vtype(x).endswith("*"), vtype(y).endswith("*")
         if cc in ("lo", "ls", "hi", "hs"):
             ut = "unsigned long" if w == "x" else "unsigned int"
-            xs = f"{'reinterpret' if px_ else 'static'}_cast<{ut}>({expr(x)})"
+            xs = (f"static_cast<{ut}>(reinterpret_cast<unsigned long>({expr(x)}))" if px_ and ut == "unsigned int"
+                  else f"{'reinterpret' if px_ else 'static'}_cast<{ut}>({expr(x)})")
             if y[0] != "const":
-                ys = f"{'reinterpret' if py_ else 'static'}_cast<{ut}>({expr(y)})"
+                ys = (f"static_cast<{ut}>(reinterpret_cast<unsigned long>({expr(y)}))" if py_ and ut == "unsigned int"
+                      else f"{'reinterpret' if py_ else 'static'}_cast<{ut}>({expr(y)})")
         elif px_ != py_ and not (y[0] == "const" and y[1] == 0) and not (x[0] == "const" and x[1] == 0):
             if px_:
                 xs = f"reinterpret_cast<long>({expr(x)})"
@@ -3302,7 +3308,7 @@ def gen_function(a, ins):
             elif it[0] == "copy8":
                 def byte_addr_(b_, o_):
                     if b_[0] == "stackobj":
-                        bs_ = f"&local_{b_[1]:x}"
+                        bs_ = f"&local_{hx_(b_[1])}"
                     elif b_[0] in ("param", "var", "gotaddr", "local"):
                         bs_ = expr(b_)
                     else:
@@ -3355,7 +3361,7 @@ def gen_function(a, ins):
                                         else expr(x) for x, pt in zip(args, iparams_))
                     argtext = ", ".join(
                         (f"reinterpret_cast<{pt}>({expr(x)})" if pt.endswith("*") and vtype(x) in ("long",) else
-                         (f"static_cast<{pt}>({expr(x)})" if pt.endswith("*") and vtype(x).endswith("*") and pt != vtype(x) and "const" not in pt else
+                         (f"{'static' if vtype(x) == 'void*' else 'reinterpret'}_cast<{pt}>({expr(x)})" if pt.endswith("*") and vtype(x).endswith("*") and pt != vtype(x) and "const" not in pt else
                           (expr(x) if pt.endswith("*") else fit(expr(x), vtype(x), pt))))
                         for x, pt in zip(args, iparams_))
                     used_imports.add(mangled_)
@@ -3619,9 +3625,9 @@ def gen_function(a, ins):
     for st in sorted(stackobjs):
         sn = stackobjs[st]
         if set(structs[sn]) == {0}:
-            decl_lines.append(f"    {structs[sn][0][0]} local_{st:x};")
+            decl_lines.append(f"    {structs[sn][0][0]} local_{hx_(st)};")
         else:
-            decl_lines.append(f"    {sn} local_{st:x};")
+            decl_lines.append(f"    {sn} local_{hx_(st)};")
     lines = decl_lines + lines
     if rtype == "void" and lines and lines[-1].strip() == "return;":
         lines.pop()
