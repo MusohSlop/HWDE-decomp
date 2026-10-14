@@ -184,7 +184,9 @@ struct Halves200a7c {
 
 // 0x7100200a7c
 void* half_200a7c(Halves200a7c* object, unsigned char second) {
-    return !second ? object->first : object->second;
+    if (second)
+        return object->second;
+    return object->first;
 }
 
 struct Kind2005bc {

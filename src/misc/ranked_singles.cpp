@@ -23,7 +23,7 @@ void set_flags_387784(FlagWord387784* object, unsigned int bits, unsigned char o
     unsigned int flags = object->flags;
     unsigned int cleared = flags & ~bits;
     unsigned int raised = flags | bits;
-    object->flags = on ? raised : cleared;
+    object->flags = on == 0 ? cleared : raised;
 }
 
 struct PairIds215150 {

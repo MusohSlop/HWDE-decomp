@@ -6991,6 +6991,32 @@
         "_Z19set_first_id_2003c4P9Ids2003a4ji": "0x71002003c4",
         "_Z18first_value_2003fcP9Ids2003a4i": "0x71002003fc"
       }
+    },
+    "misc/game_accessors.cpp": {
+      "functions": {
+        "_Z17band_index_201e4ci": "0x7100201e4c",
+        "_Z16clear_key_2020d4P9Key2020d4": "0x71002020d4",
+        "_Z15same_key_2020e0PK9Key2020d4S1_": "0x71002020e0",
+        "_Z16set_value_202128P11Short202128iiit": "0x7100202128",
+        "_Z20reset_pending_2026b8P13Pending2026b8": "0x71002026b8",
+        "_Z15set_time_2026e4P10Time2026e4j": "0x71002026e4",
+        "_Z11item_2028b4P10Ptrs2028b4j": "0x71002028b4",
+        "_Z11flag_202e74P11Flags202e74i": "0x7100202e74",
+        "_Z15set_flag_202e9cP11Flags202e74jh": "0x7100202e9c",
+        "_Z15first_id_203504P9Ids203504i": "0x7100203504",
+        "_Z16second_id_2035acP9Ids203504i": "0x71002035ac",
+        "_Z17set_far_id_203580P12FarIds203580ii": "0x7100203580",
+        "_Z12count_203b10P12Counts203b10i": "0x7100203b10",
+        "_Z16set_count_203b2cP12Counts203b10it": "0x7100203b2c",
+        "_Z16set_stage_203c80P11Stage203c80i": "0x7100203c80",
+        "_Z17save_block_203de4P10Save203de4h": "0x7100203de4",
+        "_Z21set_difficulty_204150P9Bytes2041h": "0x7100204150",
+        "_Z20set_byte_flag_2042a8P9Bytes2041hh": "0x71002042a8",
+        "_Z12stock_2043a8P9Stock2043i": "0x71002043a8",
+        "_Z16use_stock_2043c4P9Stock2043ih": "0x71002043c4",
+        "_Z20stocked_kinds_2043f0P9Stock2043": "0x71002043f0",
+        "_Z18row_in_band_201da0P9Row201da0i": "0x7100201da0"
+      }
     }
   }
 }
