@@ -10,7 +10,7 @@ a = int(args[0], 16) & 0xffffffff
 path = os.path.join(ROOT, "decompiled", rev, "main", "main.c")
 text = open(path, encoding="utf-8", errors="replace").read()
 name = "FUN_71%08x" % a
-m = re.search(r"^[^\n;]*\b%s\(" % name, text, re.M)
+m = re.search(r"^\S[^\n;]*\b%s\([^\n;]*$" % name, text, re.M)
 if not m:
     m = re.search(r"^// .*\b71%08x\b.*\n(?:[^\n]*\n){0,3}?([^\n;]*\()" % a, text, re.M)
 if not m:

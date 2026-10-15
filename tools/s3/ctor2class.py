@@ -1,9 +1,10 @@
 """Turn the generator's source of a constructor-like function into a class with members.
 
-usage: ctor2class.py GEN.cpp ADDR OUT.cpp [--name CLASS] [--single-arrays]
-Prints the --map arguments for try.py. Members: one-argument calls on this+off are member objects (consecutive
-equal-stride calls become single members, loops become arrays), stores are initialised fields, a LayoutHandle
-is recognised from its vtable/-1/0 stores.
+usage: ctor2class.py GEN.cpp ADDR OUT.cpp [--name CLASS] [--prefix] [--handle-got GOT] [--no-post-arrays]
+On success writes OUT.cpp, exits 0 and prints `name SYMBOL` (the constructor's mangled name) and
+`maps --map NAME=ADDR ...` (for try.py); on failure exits 1 without writing OUT.cpp. Members: one-argument calls
+on this+off are member objects (consecutive equal-stride calls become single members, loops become arrays),
+stores are initialised fields, a LayoutHandle is recognised from its vtable/-1/0 stores.
 """
 import os as _os
 M = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))  # the matching/ folder
@@ -15,6 +16,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument("gen"); ap.add_argument("addr"); ap.add_argument("out")
 ap.add_argument("--name"); ap.add_argument("--handle-got", default="c22f00")
 ap.add_argument("--prefix", action="store_true", help="members from the leading statements, the rest is the ctor body")
+ap.add_argument("--no-post-arrays", dest="post_arrays", action="store_false",
+                help="keep single members even where the original's post-indexed vtable store points to an array")
 a = ap.parse_args()
 addr = int(a.addr, 16)
 src = open(a.gen, encoding="utf-8").read()
@@ -53,7 +56,7 @@ for sm in re.finditer(r"struct (\w+) \{\n(.*?)\n\};", src, re.S):
         pm = re.search(r"pad0\[0x([0-9a-f]+)\]", body)
         elems[sm.group(1)] = int(pm.group(1), 16) if pm else None
     if argstruct and sm.group(1) == argstruct.group(1):
-        for fm in re.finditer(r"^\s+([\w\s\*]+?) field_([0-9a-f]+);", body, re.M):
+        for fm in re.finditer(r"^\s+([\w\s\*]+?) field_([0-9a-f]+)(?: __attribute__\(\(packed\)\))?;", body, re.M):
             fields[int(fm.group(2), 16)] = fm.group(1).strip()
 
 body = fn.group(3).split("\n")
@@ -168,6 +171,44 @@ for e in ev:
             members[e[1]] = ["field", t, None, v]
 for h in handles:
     members[h] = ["handle"]
+
+
+def post_index_offset():
+    """The immediate of a post-indexed store (str xA, [xB], #K) among the original's first instructions."""
+    sys.path.insert(0, os.path.join(M, "tools"))
+    sys.path.insert(0, os.path.join(os.path.dirname(M), ".tools", "python"))
+    import capstone, check_obj
+    md = capstone.Cs(capstone.CS_ARCH_ARM64, capstone.CS_MODE_ARM)
+    code = check_obj.IMAGE.read_bytes()[addr & 0xffffffff:(addr & 0xffffffff) + 64]
+    for ins in md.disasm(code, 0):
+        pm = re.fullmatch(r"x\d+, \[x\d+\], #(0x[0-9a-f]+|\d+)", ins.op_str)
+        if ins.mnemonic == "str" and pm:
+            return int(pm.group(1), 0)
+    return None
+
+
+# Clang folds into a post-indexed vtable store the newest this+K address with K < 256. Single members are
+# addressed in order, so that is the last one under 256; in a member array the elements after the first are
+# re-derived from the array's base later, so it is the second element. When the original's K is the second
+# member of a run of equal no-argument members, the run is an array.
+if a.post_arrays:
+    K = post_index_offset()
+    offs0 = sorted(members)
+    for k0, o in enumerate(offs0):
+        mbr = members[o]
+        if K is None or mbr[0] != "obj" or mbr[4] or k0 + 1 >= len(offs0) or offs0[k0 + 1] != K:
+            continue
+        stride = K - o
+        run = [o]
+        while run[-1] + stride in members and members[run[-1] + stride][0] == "obj" and \
+                members[run[-1] + stride][3] == mbr[3] and not members[run[-1] + stride][4]:
+            run.append(run[-1] + stride)
+        if members[K][3] == mbr[3] and len(run) >= 2 and (mbr[2] in (None, stride)):
+            for x in run:
+                del members[x]
+            members[o] = ["arr", mbr[1], stride, mbr[3], len(run)]
+            print(f"post-index +{K:#x}: {len(run)} members from +{o:#x} as an array")
+        break
 if order_calls != sorted(order_calls):
     print("WARNING: member calls are not in address order")
 # sizes of unknown classes from spacing
@@ -260,7 +301,9 @@ while idx < len(offs_list):
             body_stmts.append(f"__builtin_memset(z{o:x}, {mbr[2]}, sizeof(z{o:x}));")
     else:
         t = mbr[1]
-        out.append(f"    {t} f{o:x};" if not t.endswith("*") else f"    {t[:-1].strip()}* f{o:x};")
+        # a field at an offset its type would not get (an int pair stored as one long at +...4) stays there packed
+        pk = " __attribute__((packed))" if msize(mbr) in (2, 4, 8) and o % msize(mbr) else ""
+        out.append(f"    {t} f{o:x}{pk};" if not t.endswith("*") else f"    {t[:-1].strip()}* f{o:x}{pk};")
         inits.append(f"f{o:x}({mbr[3]})")
     pos = o + msize(mbr)
     idx += 1
