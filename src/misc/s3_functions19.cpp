@@ -260,14 +260,14 @@ public:
 // 0x710039ef38 and 0x71003a164c (D2): a page with a light effect node (vtables GOT 0x7100c2b2c8 and
 // 0x7100c2b2c0); with page ids the node is unregistered and leaves the manager's children, otherwise its nodes.
 // Each path reads the manager first, so the node test is not hoisted out of them.
-#define NODE_PAGE(NAME)                                                                                       \
+#define NODE_PAGE(NAME, SIZE)                                                                                     \
     class NAME : public Base3aab84 {                                                                          \
     public:                                                                                                   \
         void v10();                                                                                           \
         ~NAME();                                                                                              \
                                                                                                               \
         LightEffectNode* node;                                                                                \
-        unsigned char pad2328[0x58];                                                                          \
+        unsigned char pad2328[SIZE - 0x2328];                                                                 \
     };                                                                                                        \
                                                                                                               \
     NAME::~NAME() {                                                                                           \
@@ -292,13 +292,13 @@ public:
         }                                                                                                     \
     }
 
-NODE_PAGE(Page39ef38)
-NODE_PAGE(Page3a164c)
+NODE_PAGE(Page39ef38, 0x2380)
+NODE_PAGE(Page3a164c, 0xabf0)
 
 struct Player37cd6c {
     ~Player37cd6c();             // 0x710037f568
     void stop();                 // 0x710037cd6c
-    unsigned char data[0x40];
+    unsigned char data[0x30];
 };
 
 // The screen base (vtable GOT 0x7100c2b2d0): stops its player.
@@ -309,6 +309,7 @@ public:
 
     unsigned char pad8[0x78];
     Player37cd6c player;         // +80
+    unsigned char padb0[0x10];
 };
 
 // 0x71003ab2bc (D2): vtable GOT 0x7100c2b318; two node pages (their destructors called) and two plain pages
@@ -325,3 +326,174 @@ public:
 };
 
 Screen3ab2bc::~Screen3ab2bc() {}
+
+// 0x71003a149c (D2): vtable GOT 0x7100c2b2e0; five node pages (their destructors called) and two plain pages
+// (inline).
+class Screen3a149c : public ScreenBase3ab2bc {
+public:
+    void anchor();
+    ~Screen3a149c();
+
+    void* pc0;                   // +c0
+    Page3a164c page_c8;          // +c8
+    Page3a164c page_acb8;        // +acb8
+    Page3a164c page_158a8;       // +158a8
+    Page3a164c page_20498;       // +20498
+    Page3a164c page_2b088;       // +2b088
+    Base3aab84 page_35c78;       // +35c78
+    Base3aab84 page_37f98;       // +37f98
+};
+
+Screen3a149c::~Screen3a149c() {}
+// 0x71003ab044 (D2): vtable GOT 0x7100c2b310; four node pages and three plain pages.
+class Screen3ab044 : public ScreenBase3ab2bc {
+public:
+    void anchor();
+    ~Screen3ab044();
+
+    Page3a164c page_c0;          // +c0
+    Page3a164c page_acb0;        // +acb0
+    Page3a164c page_158a0;       // +158a0
+    Page3a164c page_20490;       // +20490
+    Base3aab84 page_2b080;       // +2b080
+    Base3aab84 page_2d3a0;       // +2d3a0
+    Base3aab84 page_2f6c0;       // +2f6c0
+};
+
+Screen3ab044::~Screen3ab044() {}
+
+// 0x71003ab454 (D2): vtable GOT 0x7100c2b320; three node pages and three plain pages.
+class Screen3ab454 : public ScreenBase3ab2bc {
+public:
+    void anchor();
+    ~Screen3ab454();
+
+    Page3a164c page_c0;          // +c0
+    Page3a164c page_acb0;        // +acb0
+    Page3a164c page_158a0;       // +158a0
+    Base3aab84 page_20490;       // +20490
+    Base3aab84 page_227b0;       // +227b0
+    Base3aab84 page_24ad0;       // +24ad0
+};
+
+Screen3ab454::~Screen3ab454() {}
+// One slot: a light effect node unregistered and released through the effect manager (read before the test).
+struct Slot365dc4 {
+    ~Slot365dc4() {
+        EffectManager* manager = gEffectManager;
+        if (node) {
+            void* root = gResourceLoader->layout->root;
+            manager->unregister(manager->registry, 0x4203);
+            node->detach(root);
+            node->release();
+            manager->children.remove(node);
+            node = nullptr;
+        }
+    }
+
+    unsigned char pad0[0x18];
+    LightEffectNode* node;       // +18
+    unsigned char pad20[0x2230];
+};
+
+// 0x7100365dc4 (D2): vtable GOT 0x7100c2b008; stops its player, then eleven slots go.
+class Menu365dc4 {
+public:
+    virtual void anchor();
+    virtual ~Menu365dc4();
+
+    Slot365dc4 slots[11];        // +8
+    unsigned char pad17978[0x118];
+    Player37cd6c player;         // +17a90
+};
+
+Menu365dc4::~Menu365dc4() { player.stop(); }
+
+static inline void release_node(LightEffectNode*& node) {
+    if (node) {
+        EffectManager* manager = gEffectManager;
+        void* root = gResourceLoader->layout->root;
+        node->detach(root);
+        node->release();
+        manager->nodes.remove(node);
+        node = nullptr;
+    }
+}
+
+// One slot: a light effect node, released again when the slot goes.
+struct Slot34dd88 {
+    ~Slot34dd88() { release_node(node); }
+
+    LightEffectNode* node;       // +00
+    unsigned char pad8[0x2250];
+};
+
+// 0x710034dd88 (D2): 36 slots, their nodes released first; then the player is stopped.
+class Board34dd88 {
+public:
+    ~Board34dd88();
+
+    Slot34dd88 slots[36];        // +0
+    Player37cd6c player;         // +4d460
+};
+
+Board34dd88::~Board34dd88() {
+    for (long i = 0; i < 36; i++)
+        release_node(slots[i].node);
+    player.stop();
+}
+
+// The layout handle (vtable GOT 0x7100c22f00): its destructor releases it through the context.
+struct LayoutContext;
+inline LayoutContext* layout_context() {
+    return gResourceLoader ? reinterpret_cast<LayoutContext*>(gResourceLoader->layout->root) : nullptr;
+}
+
+class HandleBody {
+public:
+    virtual void anchor();
+    virtual ~HandleBody() { release(layout_context()); }
+    virtual void release(LayoutContext* context);
+
+    long id;                     // +08
+};
+
+// One slot of the menu: a light effect node released through the effect manager, and a layout handle.
+struct Elem367498 {
+    ~Elem367498() {
+        EffectManager* manager = gEffectManager;
+        if (node) {
+            void* root = gResourceLoader->layout->root;
+            manager->unregister(manager->registry, 0x4203);
+            node->detach(root);
+            node->release();
+            manager->children.remove(node);
+            node = nullptr;
+        }
+    }
+
+    unsigned char pad0[0x10];
+    LightEffectNode* node;       // +10
+    unsigned char pad18[0x2690];
+    HandleBody handle;           // +26a8
+};
+
+struct Part367498 {
+    ~Part367498();               // 0x710036b06c
+    unsigned char data[0x10];
+};
+
+// 0x7100367498 (D2): vtable GOT 0x7100c2b010; 13 slots, a player and a part.
+class Menu367498 {
+public:
+    virtual void anchor();
+    virtual ~Menu367498();
+
+    void* p8;                    // +08
+    Elem367498 elems[13];        // +10
+    unsigned char pad1f768[0x190];
+    Player37cd6c player;         // +1f8f8
+    Part367498 part;             // +1f928
+};
+
+Menu367498::~Menu367498() { player.stop(); }

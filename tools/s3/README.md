@@ -38,7 +38,7 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
 - `topotry.py SPEC.json [--work DIR]` tries every order of a set of statements (with dependencies and chains that
   keep a relative order) in a template's `{REGION}`; for load and store order problems. The spec format is in the
   script's docstring; a match goes to `DIR/topo_match.cpp` (exit code 0).
-- `irsbatch.py LIST [--iters N] [--loads-free] --work DIR` runs the fifth session's `tools/s5/irsearch.py --groups` (used as is; `--loads-free` is passed on)
+- `irsbatch.py LIST [--iters N] [--loads-free] [--plain] --work DIR` runs the fifth session's `tools/s5/irsearch.py --groups` (used as is; `--loads-free` is passed on, `--plain` runs its plain mode instead of `--groups`)
   over the lines `ADDR CPP [SYMS] [FUNC] [NAME=ADDR ...]` of LIST, one after another; each source goes to irsearch
   as a .cpp, so its IR is emitted with -g and use-list orders like the unit compile. A match is copied to
   `DIR/irs_match_ADDR.ll`. Some functions' -g IR does not compile back (clang 3.9.1 crashes, `761d8`); irsearch

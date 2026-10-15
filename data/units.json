@@ -19396,7 +19396,33 @@
     "_ZN8AdvBoard13update_platesEv": "0x710029ecf8",
     "_ZN8AdvBoard11update_viewEv": "0x710029f47c",
     "_Z10apply_iconP11EffectGroupP12LayoutHandlePvPK8IconRect": "0x71001f7fe4",
-    "_ZN13EffectManager11create_nodeEP8NodeSlotiPKc": "0x71001e2360"
+    "_ZN13EffectManager11create_nodeEP8NodeSlotiPKc": "0x71001e2360",
+    "got:gGlobalc21d78_d04c4": "0x7100c21d78",
+    "got:gGlobalc22748_b60f0": "0x7100c22748",
+    "got:gGlobalc2ae00_31d204": "0x7100c2ae00",
+    "got:gGlobalc2d4d8_564a00": "0x7100c2d4d8",
+    "_Z13callee_31de28l": "0x710031de28",
+    "_Z13callee_31dfe4l": "0x710031dfe4",
+    "_Z13callee_325b48l": "0x7100325b48",
+    "_Z13callee_325d10l": "0x7100325d10",
+    "got:_ZTV12Screen3a149c": "0x7100c2b2e0",
+    "got:_ZTV12Screen3ab044": "0x7100c2b310",
+    "got:_ZTV12Screen3ab454": "0x7100c2b320",
+    "got:_ZTV10Menu365dc4": "0x7100c2b008",
+    "got:_ZTV10Menu367498": "0x7100c2b010",
+    "_ZN10Part367498D1Ev": "0x710036b06c",
+    "got:_ZTV11Pages3485e8": "0x7100c2af38",
+    "got:_ZTV11NodeBase348": "0x7100c2af28",
+    "_ZN10Base3aab84D1Ev": "0x71003aab84",
+    "_ZN10Slot349480D1Ev": "0x7100349480",
+    "got:_ZTV12Screen34840c": "0x7100c2af60",
+    "got:_ZTV11Pages3487c0": "0x7100c2af30",
+    "got:_ZTV11Table38fc44": "0x7100c2b188",
+    "got:_ZTV10Deck38fc44": "0x7100c2b190",
+    "got:_ZTV14DeckBase38fc44": "0x7100c2b168",
+    "got:_ZTV10Card38fc44": "0x7100c2b198",
+    "got:_ZTV14CardBase38fc44": "0x7100c2b158",
+    "got:_ZTV11Table533118": "0x7100c2d298"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29363,7 +29389,8 @@
         "_ZN15OwnedHeap5c49fcC2EP6RefObj": "0x71005c49fc",
         "_ZN12Worker5f7984C2Ev": "0x71005f7984",
         "_ZN9Mid2d4f14D2Ev": "0x71002d4f14",
-        "_ZN10Node5959d4C2EPKc": "0x7100595930"
+        "_ZN10Node5959d4C2EPKc": "0x7100595930",
+        "_ZN11Table533118C2Ei": "0x7100533118"
       }
     },
     "misc/s4_298094.cpp": {
@@ -29432,7 +29459,13 @@
         "_ZN13Channel5244a0D2Ev": "0x71005244a0",
         "_ZN10Page39ef38D2Ev": "0x710039ef38",
         "_ZN10Page3a164cD2Ev": "0x71003a164c",
-        "_ZN12Screen3ab2bcD2Ev": "0x71003ab2bc"
+        "_ZN12Screen3ab2bcD2Ev": "0x71003ab2bc",
+        "_ZN12Screen3a149cD2Ev": "0x71003a149c",
+        "_ZN12Screen3ab044D2Ev": "0x71003ab044",
+        "_ZN12Screen3ab454D2Ev": "0x71003ab454",
+        "_ZN10Menu365dc4D2Ev": "0x7100365dc4",
+        "_ZN11Board34dd88D2Ev": "0x710034dd88",
+        "_ZN10Menu367498D2Ev": "0x7100367498"
       }
     },
     "misc/s4_29b5f8.cpp": {
@@ -29441,6 +29474,23 @@
       },
       "functions": {
         "_ZN8AdvBoard10initializeEv": "0x710029b5f8"
+      }
+    },
+    "misc/s3_functions18.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z10call_510c8P10Arg510c8_0": "0x71000510c8",
+        "_Z11call_5c6df0P11Arg5c6df0_0": "0x71005c6df0"
+      }
+    },
+    "misc/s3_functions20.cpp": {
+      "functions": {
+        "_ZN11Pages3485e8D2Ev": "0x71003485e8",
+        "_ZN12Screen34840cD2Ev": "0x710034840c",
+        "_ZN11Table38fc44D2Ev": "0x710038fc44"
       }
     }
   }
