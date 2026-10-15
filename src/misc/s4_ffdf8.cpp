@@ -234,6 +234,11 @@ PlayerHud::PlayerHud(int mode) {
 // 0x7100101ae4: near miss, 13 instructions off, 1 with registers abstracted: y0 and h0 swap callee-saved registers and
 // the four half sizes are multiplied in another order.
 PlayerHud::PlayerHud(int mode, float x0, float y0, float w0, float h0, float x1, float y1, float w1, float h1) {
+    // The corners first: it gives the eight parameters' callee-saved registers the original's order but for w1/x1.
+    float ax = x0 - w0 * 0.5f;
+    float ay = y0 - h0 * 0.5f;
+    float bx = x1 - w1 * 0.5f;
+    float by = y1 - h1 * 0.5f;
     player = mode;
     first = mode == 0;
     value28 = 0;
@@ -246,10 +251,10 @@ PlayerHud::PlayerHud(int mode, float x0, float y0, float w0, float h0, float x1,
     view_a.height = h0;
     view_b.width = w1;
     view_b.height = h1;
-    view_a.x = x0 - w0 * 0.5f;
-    view_a.y = y0 - h0 * 0.5f;
-    view_b.x = x1 - w1 * 0.5f;
-    view_b.y = y1 - h1 * 0.5f;
+    view_a.x = ax;
+    view_a.y = ay;
+    view_b.x = bx;
+    view_b.y = by;
     list.count = 0;
     memset(counts, 0, sizeof(counts));
     ptr5f980 = nullptr;
