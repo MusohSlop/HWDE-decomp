@@ -55,3 +55,21 @@ Each with the functions it fixed; three or more make it a generator note.
 - A `bool` in a struct tested with `tbnz #0` (not `cbnz`): an `unsigned char` tested with `& 1`. `3ccf84`.
 - A ShowControllerSupport-style argument block whose halfword store comes before the word store: the default
   setter, then the overrides in the order the original's merged stores show. `3ccf84`.
+- A one-byte fill that is `bl memset` followed by a loop that only counts the pointer and length up: an explicit
+  fast path for the unlimited buffer with the pointer and length in locals (`if (cap == 0) { char* p = ptr; int
+  len = n0; for (...) { *p++ = c; len++; } ptr = p; n0 = len; } else { for (...) put(c); }`). Without it the loop
+  is unswitched but LoopIdiom runs before the pointer is promoted; a helper taking the pointer by value gives the
+  memset but no counting loop. `45b158` (six loops); `45baf8` has the same shape (three).
+- `mov xA, xB; ldrsw xC, [xA, #off]!` reading a self-relative pointer, with the object's other fields then
+  addressed from `xA` (`ldur [xA, #-8]`, `add xA, xA, #0x1a4; ldr [xA]`): the DAG's pre-indexed load, which only
+  forms when `this + off` is built in the same block as both its load and the add that uses it. Evaluate the
+  value inside the block that tests it (a macro setter, not an inline function whose argument is evaluated first
+  and whose field addresses GVN then hoists). `4bc6b8` (nine times); see the `packed_fetch` note in the README.
+- `ptr->array[i]` loads `i` before `ptr` (Clang 3.9 emits a subscript's index first); `(ptr->array + i)` or an
+  accessor taking `i` loads `ptr` first. `4bc6b8` (24 times).
+- Two adjacent `int` fields tested one after the other with separate loads (not one `ldr x` and `lsr #32`): GVN
+  widened the first load because the field is 8-byte aligned; test through a method of a 4-byte struct
+  (`rel.valid()`), whose load is `align 4`. `4bc6b8`.
+- A struct copied through the stack whose first piece sits in its own 16-byte aligned slot rather than in the gap
+  next to a saved `d8`: the struct type is 16-byte aligned. `4bc6b8`.
+- `memcpy(dst, src, n)` with `src` computed before `dst`: evaluate `src` into a local first. `4bc6b8`.

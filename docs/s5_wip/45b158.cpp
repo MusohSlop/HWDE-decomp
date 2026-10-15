@@ -1,10 +1,11 @@
 // Fifth session, parked: 0x710045b158 (2,464 bytes), the integer conversion of the text formatter (the unit is
-// misc/text_format.cpp). This draft compiles to 1,880 bytes. The original turns every single-byte padding loop
-// (zeros, spaces) into a memset plus a loop that only counts the pointer and length up: LoopIdiomRecognize fired
-// there because the buffer pointer was already promoted to a register by the first LICM. Here the promotion only
-// happens in the late LICM, after LoopIdiom has run, so the loops stay byte stores. tools/s5 has no answer yet;
-// a source form that lets the early LICM see the stores through the buffer pointer as not aliasing the length
-// and pointer statics is what is missing. The rest of the structure follows 45a850.
+// misc/text_format.cpp). This draft compiles to 2,520 bytes. The padding loops are solved: the original's memset
+// plus a loop that only counts the pointer and length up comes from put_fill below (an explicit cap == 0 path
+// with the pointer and length in locals, put_byte in the other path); all six memsets come out and the first is
+// at the original offset (0x228). A helper taking the pointer by value gives the memset but no counting loop.
+// 0x710045baf8 (the string conversion, 860 bytes) has the same three-memset shape. Still off: the sign is built
+// as a mask (lsl #30, and asr #31) and tested as a byte (tst #0xff) in the original, the a-f check keeps two
+// compares around the lower test, and the stack layout is 0x10 bytes larger here.
 
 extern "C" unsigned long strlen(const char*);
 
@@ -30,6 +31,23 @@ static inline void put_byte(int c) {
         *sTextPtr = c;
         sTextPtr++;
         sTextLen++;
+    }
+}
+
+static inline void put_fill(int c, int n) {
+    if (sTextCap == 0) {
+        char* p = sTextPtr;
+        int len = sTextLen;
+        for (int i = n; i > 0; i--) {
+            *p++ = c;
+            len++;
+        }
+        sTextPtr = p;
+        sTextLen = len;
+    } else {
+        for (int i = n; i > 0; i--) {
+            put_byte(c);
+        }
     }
 }
 
@@ -71,16 +89,12 @@ int text_format_int(unsigned int value, unsigned int flags, int width, int preci
             put_byte('X' + lower);
             count++;
         }
-        for (int i = zeros; i > 0; i--) {
-            put_byte('0');
-        }
+        put_fill('0', zeros);
         for (const unsigned char* d = digits; *d != 0; d++) {
             put_byte(*d);
             zeros++;
         }
-        for (int i = pad; i > 0; i--) {
-            put_byte(' ');
-        }
+        put_fill(' ', pad);
         return count + pad + zeros;
     }
     if (flags & 4) {
@@ -98,9 +112,7 @@ int text_format_int(unsigned int value, unsigned int flags, int width, int preci
     }
     center = (flags & 0x80) != 0;
     left = center ? pad / 2 : pad;
-    for (int i = left; i > 0; i--) {
-        put_byte((flags & 4) << 2 | ' ');
-    }
+    put_fill((flags & 4) << 2 | ' ', left);
     count += left;
     if (!(flags & 4)) {
         int n = 0;
@@ -116,9 +128,7 @@ int text_format_int(unsigned int value, unsigned int flags, int width, int preci
     }
     if (flags == 0) {
         int remaining = static_cast<int>(strlen(reinterpret_cast<char*>(digits)));
-        for (int i = zeros; i > 0; i--) {
-            put_byte('0');
-        }
+        put_fill('0', zeros);
         for (const unsigned char* d = digits; *d != 0; d++) {
             put_byte(*d);
             zeros++;
@@ -131,9 +141,7 @@ int text_format_int(unsigned int value, unsigned int flags, int width, int preci
             }
         }
     } else {
-        for (int i = zeros; i > 0; i--) {
-            put_byte('0');
-        }
+        put_fill('0', zeros);
         for (const unsigned char* d = digits; *d != 0; d++) {
             put_byte(*d);
             zeros++;
@@ -142,9 +150,7 @@ int text_format_int(unsigned int value, unsigned int flags, int width, int preci
     count += zeros;
     if (center) {
         int right = pad - left;
-        for (int i = right; i > 0; i--) {
-            put_byte(' ');
-        }
+        put_fill(' ', right);
         count += right;
     }
     return count;
