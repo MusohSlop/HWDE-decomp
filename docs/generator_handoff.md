@@ -257,7 +257,11 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   then the do/while from the header, with the registers live after it merged from both paths;
 - a field before the pointer it is reached through (container-of, `[x19, #-8]!`) is read through a byte pointer
   moved back by the offset (knob `nonegoff`); a negative offset from a byte-offset base or a computed address joins
-  that offset.
+  that offset;
+- a stack object whose address is only passed on (an out-parameter the function never reads) is a local as large
+  as its slot (knob `nostackgap`): up to the next object, or up to the lowest register the prologue saves, in terms
+  of the final sp (a `sub sp` after the frame record moves it). It is declared as `int`/`long` at 4/8 bytes, a padded
+  struct otherwise.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
