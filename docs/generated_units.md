@@ -105,6 +105,7 @@ real classes.
 | `misc/variant_functions77.cpp` | variant search, seventy-seventh run (unsigned loop counters) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions78.cpp` | variant search, seventy-eighth run (spill slots) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions79.cpp` | variant search, seventy-ninth run (`nofmerge`) | as `misc/variant_functions26.cpp` |
+| `misc/variant_ctor01.cpp` | the generating constructors of `docs/s3_scope.txt` that match as generated (`tools/gen/ctor_run.py` found no class conversion matching) | as `misc/variant_functions26.cpp` |
 | `misc/s2_functions1.cpp` | second session, first run over `0x7100380000` and up (the whole 4-byte constant pool, 16-byte vector constants from the literal pool) | as `misc/variant_functions26.cpp`; vector constants are `(Vec4f){...}` literals, mapped through `.rodata.cst16` |
 | `misc/s2_functions2.cpp` | second session, second run (float stack slots, `sqrtf`, float branches, indexed floats) | as `misc/s2_functions1.cpp` |
 | `misc/s2_functions3.cpp` | second session, third run (constant-store fields retyped, integer reads of two widths; only the newly generated functions) | as `misc/s2_functions1.cpp` |
@@ -125,7 +126,8 @@ real classes.
 | `misc/s2_functions18.cpp` | second session, float results of indirect calls (`novcallf`) and the functions of `0x7100380000` and up that generate since bitfield-move aliases do not read their destination (`oldbfm`) | as `misc/s2_functions13.cpp` |
 | `misc/s2_functions19.cpp` | second session, two-float call results (`nof2call`) and the functions of `0x7100380000` and up that generate since tail-call liveness (`oldtaillive`) and 16-byte call results (`nopair16`) | as `misc/s2_functions13.cpp`; a call returning two floats returns `Float2` |
 | `misc/s2_functions20.cpp` | second session, values merged in float registers (`nofmerge`) and dataflow liveness at every join (master's `linlive` changes) | as `misc/s2_functions13.cpp` |
-| `misc/s2_functions21.cpp` | second session, address-taken locals declared from the highest offset down (knob sets `stackdesc`, `stackdesc+voidret`) over every generating but unmatched function of `0x7100380000` and up | as `misc/s2_functions13.cpp` |
+| `misc/s2_functions21.cpp` | second session, address-taken locals declared from the highest offset down (knob sets `stackdesc`, `stackdesc+voidret`) over every generating but unmatched function of `0x7100380000` and up | as `misc/s2_functions13.cpp` (4a29d0 and 4a2abc are in `misc/variant_ctor01.cpp`) |
+| `misc/s2_functions22.cpp` | second session, int fields converted to float in a vector register (`noicvt`) and fields at unaligned offsets (`nopackfield`; only the functions whose generated code changed) | as `misc/s2_functions13.cpp` |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/loop_functions2.cpp` | loops with if/else bodies and pointer induction variables | as `misc/loop_functions.cpp`, plus element structs `ElemFUNC_rN` sized to the stride |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |

@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-11.03% of bytes (618,048 of 5,603,025) and 41.89% of functions (7,240 of 17,282) match exactly; 187 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+11.05% of bytes (619,324 of 5,603,025) and 41.92% of functions (7,245 of 17,282) match exactly; 187 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-7,250 of 7,437 attempted functions match: 7,240 inventory functions (618,048 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 187 are near misses, all `m`.
+7,255 of 7,442 attempted functions match: 7,245 inventory functions (619,324 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 187 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -421,6 +421,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 15 of 15 in `misc/variant_functions77.cpp` | loop counters indexed through `uxtw` declared `unsigned int` (as `int`, clang widens them to 64-bit induction variables) | match |
 | 5 of 5 in `misc/variant_functions78.cpp` | functions that generate since spill slots below every address-taken object are reloaded (and pairs and zero registers spilled) | match |
 | 4 of 4 in `misc/variant_functions79.cpp` | the variant search below `0x7100380000` over the functions changed by float merges typed as floats (`nofmerge`) | match |
+| 5 of 5 in `misc/variant_ctor01.cpp` | constructor-shaped functions of the third session's scope that match as generated (no class conversion needed; most generate since spill slots are reloaded) | match |
 | 4 of 4 in `misc/s3_functions01.cpp` | the third session's hand matches over 1,500 bytes, from generated source: layout constructors (`28ee38`, `30be50`, `325e64`, `3b9ccc`) written as classes whose members give the original's calls (single members for unrolled calls, arrays for the construction loops) and `LayoutHandle` members (the `HandleState` base, then the vtable store) | match |
 | 6 of 6 in `misc/s3_functions02.cpp` | the third session's hand fixes of generated source over 1,500 bytes: a `void` init function whose stack locals are declared in reverse (`362914`), quotients computed before a virtual call with the original's load order (`384a50`), a constructor with the first fields zeroed as one block and layout handles constructed in place (`3556b8`), and constructors whose member arrays are real arrays, with the rest of the function as their body, `new PanelPane` for the panes (`35f6e8`) and a cleared block of pointers as one `memset` (`118e44`), and float pairs stored as one 8-byte `Vec2` member (`369d3c`) | match |
 | 8 of 8 in `misc/s3_functions03.cpp` | the third session's constructor-shaped functions (vtable stores into `this`), from generated source: member arrays as real arrays and the rest as the constructor body, layout handles constructed in place, `new PanelPane` | match |
