@@ -1528,6 +1528,10 @@ def gen_function(a, ins):
                     raise Fail("callee arity")
                 for k_ in range(len(alist_), want_):
                     v_ = snap0_.get(k_)
+                    if v_ is None and "noundefext" not in knobs and k_ < 8:
+                        # the register was clobbered: this call passes an uninitialised value the callee ignores
+                        UNDEF_.add(k_)
+                        v_ = ("undef", k_)
                     if v_ is None:
                         raise Fail("callee arity")
                     if v_[0] == "param" and pwidth.get(v_[1]) is None:
@@ -4454,6 +4458,7 @@ def gen_function(a, ins):
             hoist_stack[-1].append((typ, name))
             return f"{pad}{name} = {rhs};"
         return f"{pad}{typ} {name} = {rhs};"
+    MORE_ = []
     def render(its, indent):
         outl = []
         pad = "    " * indent
@@ -4724,6 +4729,12 @@ def gen_function(a, ins):
                 hoisted = hoist_stack.pop()
                 for typ, name in hoisted:
                     outl.append(f"{pad}{typ} {name};")
+                # the condition computed before the updates lives outside the body: a name declared in a do body is
+                # not in scope in its while
+                mn_ = f"more{len(MORE_)}"
+                if pre:
+                    MORE_.append(mn_)
+                    outl.append(f"{pad}bool {mn_};")
                 outl.append(f"{pad}do {{")
                 outl.extend(body_lines)
                 inner = "    " * (indent + 1)
@@ -4731,7 +4742,7 @@ def gen_function(a, ins):
                 if newix_:
                     ups_.append((ix_, None))
                 if pre:
-                    outl.append(f"{inner}bool more = {cond(*cnd2_)};")
+                    outl.append(f"{inner}{mn_} = {cond(*cnd2_)};")
                 def upd2_(name, nv):
                     if nv is None:
                         return f"{name} + 1"
@@ -4744,7 +4755,7 @@ def gen_function(a, ins):
                 else:
                     for name, nv in ups_:
                         outl.append(f"{inner}{name} = {upd2_(name, nv)};")
-                outl.append(f"{pad}}} while ({'more' if pre else cond(*cnd2_)});")
+                outl.append(f"{pad}}} while ({mn_ if pre else cond(*cnd2_)});")
                 for p_ in ptrs_:
                     IDX_.pop(p_, None)
             elif it[0] == "loop":
@@ -4768,11 +4779,15 @@ def gen_function(a, ins):
                 hoisted = hoist_stack.pop()
                 for typ, name in hoisted:
                     outl.append(f"{pad}{typ} {name};")
+                mn_ = f"more{len(MORE_)}"
+                if pre:
+                    MORE_.append(mn_)
+                    outl.append(f"{pad}bool {mn_};")
                 outl.append(f"{pad}do {{")
                 outl.extend(body_lines)
                 inner = "    " * (indent + 1)
                 if pre:
-                    outl.append(f"{inner}bool more = {cond(*cnd)};")
+                    outl.append(f"{inner}{mn_} = {cond(*cnd)};")
                 def upd_text(name, nv):
                     if name in loopelem:
                         if not (nv[0] == "bin" and nv[1] == "+" and nv[2] == ("var", name) and nv[3][0] == "const"):
@@ -4788,7 +4803,7 @@ def gen_function(a, ins):
                 else:
                     for name, nv in updates:
                         outl.append(f"{inner}{name} = {upd_text(name, nv)};")
-                outl.append(f"{pad}}} while ({'more' if pre else cond(*cnd)});")
+                outl.append(f"{pad}}} while ({mn_ if pre else cond(*cnd)});")
             elif it[0] == "lete":
                 outl.append(declare_line(pad, vtype(it[2]), it[1], expr(it[2])))
             elif it[0] == "assign":
