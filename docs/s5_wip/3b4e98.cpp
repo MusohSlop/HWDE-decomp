@@ -1,16 +1,19 @@
 // Fifth session, in progress: 0x71003b4e98 (2,576 bytes), the mode menu's build (eight item slots, the layout
 // load, an optional extra item, then seven items, each with five animations), drafted on top of
 // misc/s5_functions02.cpp (its Pane type gains rotate/scale and slots 13-16; 3bd1d8, 3bdbf0, 3beef0 and 448544
-// are unaffected). 2,580 bytes here, 40 instructions off when registers are abstracted.
+// are unaffected). Same size, 6 instructions off when registers are abstracted.
 // Settled: the anim creation is an inlined CreateAnimTransform (the resource block tested before the allocation,
 // a nothrow class operator new, the base constructor out of line and the derived one inline with the vtable
 // through the GOT, an nn::util-style LinkPrev push-back, then the virtual SetResource); the pane setters each
 // reload items[count]; set_shown as if/else (the csel of orr/and); the two colours are GOT globals; the message
-// manager and its data are loaded before the item's id (set_texts, always_inline).
-// Still off: the loop-carried y is a float phi in FP registers here (d9 saved, ldr s8 constants), but an i32 in
-// the original (GPR immediates, stp w9, w24 into the translate, fmov around the fadd, a GPR spill at sp+0x24);
-// every source form tried (a float local, a loop-carried Float3, an array, memcpy'd bits) gives the same IR. The
-// frame slots and a few schedules follow from that.
+// manager and its data are loaded after &items[count] and before the item's id (set_texts, always_inline). The
+// loop-carried y is a union { float f; int i; } whose int view is written into the translate (main's idea: an
+// integer access to the whole slot makes SROA type it i32, so the phi lives in a GPR with fmov around the fadd);
+// the non-extra start is 224.40001f (0x43606667); the last loop's index is an int (a pointer induction variable).
+// Still off: in the extra item's block, the scale constant is materialised before the first setter in the
+// original and the translate's x is stored after the flags; here the anim-name table's adrp is scheduled there and
+// two registers swap. Shapes tried with identical results: the translate through the int view, its fields in
+// another order, a make_pos helper, a named constant for the scale.
 // Maps for tools/s5/sbs.py (name=address): got:gMgr_c22a00=0x7100c22a00 got:gApp_c21db0=0x7100c21db0
 //   got:gMsg_c2b3f8=0x7100c2b3f8 got:kColorOn_c2b440=0x7100c2b440 got:kColorOff_c2b438=0x7100c2b438
 //   got:_ZTV10Anim3b4e98=0x7100c2a698 kModeMenuBflyt_7db2f6=0x71007db2f6 kModeMenu_740e41=0x7100740e41
@@ -142,6 +145,11 @@ struct Pane3bdbf0 {
             flags &= ~1;
         }
     }
+};
+
+union YBits3b4e98 {
+    float f;
+    int i;
 };
 
 struct Layout3bdbf0 {
@@ -1007,9 +1015,10 @@ struct ModeMenu3b4e98 {
     unsigned char ready;              // +62c
 
     __attribute__((always_inline)) void set_texts(int index) {
+        Item3b4e98& current = items[count];
         MsgMgr3b4e98* mgr = gMsg_c2b3f8;
         void* data = mgr->data;
-        int id = items[count].id;
+        int id = current.id;
         const unsigned short* text = mgr->get(kMsgOff_7e3ca8[id]);
         Item3b4e98& item = items[index];
         set_text_1f7fe4(item.pane->find_pane(kMenuTxtOff_7db306, true), item.text_off, data, text);
@@ -1043,7 +1052,7 @@ void ModeMenu3b4e98::build() {
     gMgr_c22a00->sync();
     void* device = gApp_c21db0->sys->device;
     layout->root->find_pane(kModeMenu_740e41, true)->set_shown(false);
-    Float3_3bdbf0 pos;
+    YBits3b4e98 y;
     if (has_extra == 1) {
         items[count].pane = new ItemPane3b4e98();
         Pane3bdbf0* copy = clone_pane_5dec80(layout->root->find_pane(kModeMenu_740e41, true), gApp_c21db0->sys->device);
@@ -1066,9 +1075,9 @@ void ModeMenu3b4e98::build() {
         items[count].id = 7;
         set_texts(count);
         count++;
-        pos = Float3_3bdbf0{-417.0f, 187.548f, 0.0f};
+        y.f = 187.548f;
     } else {
-        pos = Float3_3bdbf0{-417.0f, 224.4f, 0.0f};
+        y.f = 224.40001f;
     }
     for (int i = 0; i < 7; i++) {
         items[count].pane = new ItemPane3b4e98();
@@ -1079,7 +1088,7 @@ void ModeMenu3b4e98::build() {
         items[count].pane->set_shown(count < 8);
         items[count].pane->set_scale(1.0f, 1.0f);
         items[count].pane->set_rotate(Float3_3bdbf0{0.0f, 0.0f, 0.0f});
-        items[count].pane->set_translate(pos);
+        { Float3_3bdbf0 t; t.x = -417.0f; *reinterpret_cast<int*>(&t.y) = y.i; t.z = 0.0f; items[count].pane->set_translate(t); }
         if (copy != nullptr) {
             const Color3bdbf0& color = lit[i] ? kColorOn_c2b440 : kColorOff_c2b438;
             do {
@@ -1102,9 +1111,9 @@ void ModeMenu3b4e98::build() {
         items[count].id = i;
         set_texts(count);
         count++;
-        pos.y -= 75.0f;
+        y.f -= 75.0f;
     }
-    for (unsigned k = 0; k < count; k++) {
+    for (int k = 0; k < count; k++) {
         items[k].update();
         if (items[k].anims[4] != nullptr) {
             items[k].anims[4]->rewind();
