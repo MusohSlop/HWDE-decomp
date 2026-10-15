@@ -183,6 +183,8 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   a block copy into (or out of) that local, whose struct is made as large as the copied range and aligned as the
   pieces show, its fields typed only by the other accesses (a vector copied into a local, its w set, the local
   passed on);
+- unused merges in loop bodies are pruned like those in straight code (knob `noloopprune`): a call in a conditional
+  in a loop left s0 merged with the incoming s0, and the unused merge failed with "merge types: int|float";
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as

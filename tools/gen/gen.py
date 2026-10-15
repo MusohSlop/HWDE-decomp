@@ -3956,6 +3956,10 @@ def gen_function(a, ins):
                 b_, c_ = prune_merges(it[2])
                 changed = changed or c_
                 it = ("if", it[1], b_)
+            elif it[0] == "loop" and "noloopprune" not in knobs:
+                b_, c_ = prune_merges(it[2])
+                changed = changed or c_
+                it = (it[0], it[1], b_) + tuple(it[3:])
             out_.append(it)
         return out_, changed
     for _ in range(4):
