@@ -260,11 +260,22 @@ Each with the functions it fixed; three or more make it a generator note.
   and the point for the next, both at sp+0x50): pass them as temporaries to `const T&` parameters
   (`shape.support(vec4(-v.x, -v.y, -v.z, 0.0f), nullptr)`); a temporary's lifetime ends with its full expression,
   so stack colouring can give both one slot. A named local, even in a block scope, kept the second one elsewhere.
-  `4eab78` (x6; 9/36 -> 7/34 by edit distance, also fixed a `bfi`'s place).
+  `4eab78` (one template, six copies: a hand note, not yet three sightings for gen; 9/36 -> 7/34 by edit
+  distance, also fixed a `bfi`'s place). The same for an allocation-info struct passed to three allocator calls
+  (`AllocInfo(0x11)` temporaries all at sp+0x70): `492bd0`.
 - A min/max scan whose `fcsel` for the first value sits between the products of the second (`fcmp s2, s1; ldp; fmul;
   fmul; fcsel s1, ...`): compute both values before either update (`da = ...; db = ...; if (da < lo) ...; if (db >
-  hi) ...`). `4eab78` (x6, 13/75 -> 9/36 with the block-scoped slot above).
+  hi) ...`). `4eab78` (one template, six copies: a hand note; 13/75 -> 9/36 with the block-scoped slot above).
 - A diamond `if (c) v = a + b; else v = a;` where the original adds a first (`ldp q1, q0; fadd v0, v0, v1`) without
   hoisting: after SROA every whole load of the non-promoted `a` is the same `load i128`, so a then-block that starts
   with it is hoisted by SimplifyCFG (and the diamond becomes a select, `bsl`); a then-block that loads b first
   stays a diamond, but Reassociate then orders the `fadd` by load rank (b first). Not solved; `4eab78`.
+- Local job arrays whose elements get `bl <ctor>; str <vtable from the GOT + 0x10>` 32 times in a row and
+  `bl <dtor>` in reverse at the end: write the jobs as real classes (base constructor and virtual destructor
+  declared out of line, a key function so the vtable is external) and declare `Job jobs[32];`. The array
+  constructor and destructor loops unroll fully; an explicit init loop does not, and an empty derived destructor
+  stores no vtable pointer before the base destructor call. Map the base constructor and destructor (C2/D2) and
+  `got:_ZTV...` to the GOT slots. `492bd0` (402 -> 277 by edit distance).
+- An integer float compare (`m = (a & b) >> 31; (m ^ a) < (m ^ b)`) whose operands are loaded with `ldr w` and
+  moved to float registers afterwards (`fmov s17, w12`): the helper takes `const float&` and reads the memory as
+  `int`; a by-value helper loads floats and moves them to integer registers instead. `492bd0`.
