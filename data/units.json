@@ -20144,7 +20144,14 @@
     "_Z13callee_5e7574PvliDv4_fS0_S0_S0_": "0x71005e7574",
     "_Z13callee_5e7580PvS_": "0x71005e7580",
     "_Z13callee_5e7584PviS_": "0x71005e7584",
-    "_Z13callee_5e7588PvS_": "0x71005e7588"
+    "_Z13callee_5e7588PvS_": "0x71005e7588",
+    "_ZN8Renderer5setupI9Kind3b64cEEvP4ItemP9DrawState": "0x710003bad0",
+    "_ZN8Renderer5setupI10Kind3d7f04EEvP4ItemP9DrawState": "0x71003d8388",
+    "_ZN8Renderer5setupI10Kind3d9078EEvP4ItemP9DrawState": "0x71003d94fc",
+    "_Z9draw_itemI9Kind3b64cEvP4ItemP9DrawStateP6DeviceP6Shader": "0x710003bdf4",
+    "_Z9draw_itemI10Kind3d7f04EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d86ac",
+    "_Z9draw_itemI10Kind3d9078EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d9820",
+    "_Z13callee_52ac40P6Devicei": "0x710052ac40"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -30423,6 +30430,13 @@
         "_Z11call_5fedacPv": "0x71005fedac",
         "_Z11call_60005cPv": "0x710060005c",
         "_Z11call_600164P11Arg600164_0": "0x7100600164"
+      }
+    },
+    "misc/s4_3b64c.cpp": {
+      "functions": {
+        "_ZN8Renderer10draw_itemsI9Kind3b64cEEvjP4ItemP9DrawStateh": "0x710003b64c",
+        "_ZN8Renderer10draw_itemsI10Kind3d7f04EEvjP4ItemP9DrawStateh": "0x71003d7f04",
+        "_ZN8Renderer10draw_itemsI10Kind3d9078EEvjP4ItemP9DrawStateh": "0x71003d9078"
       }
     }
   }
