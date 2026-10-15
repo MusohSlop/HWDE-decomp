@@ -20845,7 +20845,44 @@
     "_Z13callee_1a8af0l": "0x71001a8af0",
     "_Z13callee_2065f0i": "0x71002065f0",
     "_Z13callee_218850i": "0x7100218850",
-    "_Z13callee_241fd8l": "0x7100241fd8"
+    "_Z13callee_241fd8l": "0x7100241fd8",
+    "_ZN14DeckBase38cff0C2EPvi": "0x710038cff0",
+    "got:_ZTV14DeckBase38cff0": "0x7100c2b168",
+    "_ZN14DeckBase38cff03addEP10Base38c480": "0x710038dc8c",
+    "_ZN10StageEntryC1Ev": "0x7100395218",
+    "_ZN15StageMenu3953244loadEv": "0x7100395e10",
+    "_ZN10Base38c4809set_titleEPKc": "0x710038cc40",
+    "_ZN10Base38c4809set_valueEi": "0x710038cc6c",
+    "_ZN10Base38c4809set_shownEb": "0x710038cc74",
+    "_ZN10Page3940c4C1Ev": "0x71003940c4",
+    "got:_ZTV15StageMenu395324": "0x7100c2b218",
+    "kRecordLayout": "0x71007da88e",
+    "kRecordAnimA": "0x7100740004",
+    "kRecordAnimB": "0x710074053d",
+    "kRecordPane": "0x71007da89e",
+    "kRecordFormatA": "0x71007da8ae",
+    "kRecordText": "0x71007da8b5",
+    "kRecordFormatB": "0x71007da8bf",
+    "got:gRankResources": "0x7100c2aa28",
+    "kRankThresholds": "0x71007f9328",
+    "kRankLayout": "0x71007d7f26",
+    "kRankPos": "0x7100740068",
+    "kRankIcon": "0x71007d7f36",
+    "kRankName": "0x71007d7f47",
+    "_ZN10RankScreen5setupEii": "0x71002c5f5c",
+    "got:_ZTV10RankScreen": "0x7100c2aa20",
+    "_ZN12TrophyWidgetC1Ev": "0x71002f2370",
+    "_ZN12TrophyWidget10set_layoutEi": "0x71002f2b44",
+    "_ZN12TrophyWidget8set_modeEi": "0x71002f8934",
+    "_ZN12TrophyWidget5startEv": "0x71002f8160",
+    "_ZN12TrophySource3setEPv": "0x7100287f40",
+    "_Z12entry_2070fcP12Global20710ci": "0x71002070fc",
+    "_Z11play_1f7a0cPviif": "0x71001f7a0c",
+    "kTrophyLayout": "0x71007d7d20",
+    "kTrophyIn": "0x7100740bd8",
+    "kTrophyLoop": "0x7100740be1",
+    "kTrophyText": "0x71007d7dca",
+    "got:_ZTV12TrophyScreen": "0x7100c2a9e8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -30587,7 +30624,10 @@
         ".rodata.cst16": "0x710073dff0"
       },
       "functions": {
-        "_ZN21ChallengeRecordScreenC2Eb": "0x71003447f0"
+        "_ZN21ChallengeRecordScreenC2Eb": "0x71003447f0",
+        "_ZN11RecordPanelC2Ev": "0x710035c070",
+        "_ZN12TrophyScreenC2EP11TrophyOwner": "0x71002c2454",
+        "_ZN10RankScreenC2EP11TrophyOwner": "0x71002c5700"
       }
     },
     "misc/s2_functions26.cpp": {
@@ -31031,7 +31071,12 @@
         "_ZN10Page3940c4C2Ev": "0x71003940c4",
         "_ZN10Page3a4034C2Ev": "0x71003a4034",
         "_ZN14DeckMenu38dca4C2EPv": "0x710038dca4",
-        "_ZN16OptionSliderBaseC2EiiiiiPKcS1_": "0x710039e2f4"
+        "_ZN16OptionSliderBaseC2EiiiiiPKcS1_": "0x710039e2f4",
+        "_ZN15StageMenu395324C2EPv": "0x7100395324"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
       }
     },
     "misc/s5_functions04.cpp": {
@@ -31208,6 +31253,11 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s3_functions26.cpp": {
+      "functions": {
+        "_ZN14DeckBase38cff0C2EPvi": "0x710038cff0"
       }
     }
   }

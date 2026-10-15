@@ -215,6 +215,9 @@ public:
     virtual ~Base38c480();
     virtual void select(int index);                                         // +10
     void set_animation(int slot, const char* name, int mode);               // 0x710038ccb0
+    void set_title(const char* text);                                       // 0x710038cc40
+    void set_value(int value);                                              // 0x710038cc6c
+    void set_shown(bool shown);                                             // 0x710038cc74
 
     PanelNode* node;             // +08
     AnimHandle* anims[5];        // +10
@@ -285,6 +288,7 @@ class MenuCursor {
 public:
     MenuCursor();                                                           // 0x710037f550
     void init();                                                            // 0x710037cc88
+    void set(float x, float y, float width);                                // 0x710037cd30
 
     unsigned char data[0x30];
 };
@@ -468,4 +472,99 @@ OptionSliderBase::OptionSliderBase(int mode, int steps_, int low_, int value_, i
         set_high(message_text(0x1f));
         break;
     }
+}
+const char* extra_text_2181bc(int id);                                      // 0x71002181bc
+struct Game45f07c {
+    unsigned char stage_cleared_202eb0(int id, int mode);                   // 0x7100202eb0
+};
+Game45f07c* fetch_204728();                                                 // 0x7100204728
+
+// The deck's base, constructed out of line here.
+class DeckBase38cff0 {
+public:
+    DeckBase38cff0(void* owner, int lines);                                 // 0x710038cff0
+    virtual ~DeckBase38cff0();
+    void add(Base38c480* panel);                                            // 0x710038dc8c
+
+    unsigned char pad8[0x220];
+    MenuCursor cursor;           // +228
+};
+
+// A stage line (0x2270 bytes) on the 38c480 base.
+class StageEntry : public Base38c480 {
+public:
+    StageEntry();                                                           // 0x7100395218
+
+    int index;                   // +2268
+    unsigned char pad226c[4];
+};
+
+struct StageRecord {
+    signed char id;              // +0
+    signed char kind;            // +1
+    unsigned char pad2[6];
+};
+
+// A slot: its 32-bit id sits unaligned between two halfwords.
+struct StageSlot {
+    StageSlot() {
+        flags = 0;
+        next = -1;
+        id = -1;
+    }
+
+    short flags;                 // +0
+    int id __attribute__((packed)); // +2
+    short next;                  // +6
+};
+
+// 0x7100395324: the stage menu (vtable GOT 0x7100c2b218): 70 stage lines named from the game's records, a page, and
+// the cursor placed by a tail call.
+class StageMenu395324 : public DeckBase38cff0 {
+public:
+    explicit StageMenu395324(void* owner);
+    virtual ~StageMenu395324();
+    void load();                                                            // 0x7100395e10
+
+    StageEntry entries[70];      // +258
+    Page3940c4 page;             // +96cf8
+    int i99150;                  // +99150
+    bool b99154;                 // +99154
+    void* p99158;                // +99158
+    int i99160;                  // +99160
+    int i99164;                  // +99164
+    int i99168;                  // +99168
+    bool b9916c;                 // +9916c
+    int i99170;                  // +99170
+    int count;                   // +99174
+    StageSlot slots[32];         // +99178
+    StageRecord* records;        // +99278
+    void* p99280;                // +99280
+    void* p99288;                // +99288
+    int i99290;                  // +99290
+};
+
+StageMenu395324::StageMenu395324(void* owner)
+    : DeckBase38cff0(owner, 0xb), i99150(0), b99154(false), p99158(nullptr), i99160(-1), i99164(-1), i99168(0),
+      b9916c(false), i99170(2), count(0), records(nullptr), p99280(nullptr), p99288(nullptr), i99290(0) {
+    load();
+    StageEntry* e = entries;
+    for (int i = 0; i < count; i++, e++) {
+        StageEntry& entry = *e;
+        entry.select(i);
+        entry.index = i;
+        int id = records[i].id;
+        if (fetch_204728()->stage_cleared_202eb0(id, -1))
+            entry.set_title(extra_text_2181bc(records[i].id));
+        else
+            entry.set_title(message_text(0x8a));
+        if (records[i].kind >= 2)
+            entry.set_value(0x4a);
+        else
+            entry.set_value(0x22);
+        add(&entry);
+    }
+    page.set_shown(true);
+    i99150 = 1;
+    cursor.set(-216.0f, 412.0f, 840.0f);
 }

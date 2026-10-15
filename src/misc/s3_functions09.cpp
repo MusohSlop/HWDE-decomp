@@ -1,7 +1,15 @@
 // Hand-written giants (third session): constructors written as classes, their members in the original's order.
 // Names are descriptive placeholders. Status: matching/README.md.
 
-class LayoutAnimation;
+class AnimPlayer {
+public:
+    void set_speed(float speed);                                            // 0x71001e4570
+};
+class LayoutAnimation {
+public:
+    unsigned char pad[0x18];
+    AnimPlayer* player;       // +18
+};
 class PaneBase;
 class PanelPane;
 
@@ -41,7 +49,11 @@ public:
     float offset30;           // +30
     float offset34;           // +34
     float offset38;           // +38
-    unsigned char pad3c[0x1c];
+    unsigned char pad3c[0xc];
+    float scale48;            // +48
+    float scale4c;            // +4c
+    float size50;             // +50
+    float size54;             // +54
     union {
         unsigned char flags58; // +58: bit 0 visible, bit 4 moved
         struct {
@@ -68,6 +80,7 @@ public:
 class EffectManager {
 public:
     void create_node(LightEffectNode** out, int id, const char* layout);    // 0x71001e2360
+    void sync();                                                            // 0x71001e26e8
     void finish(int id);                                                    // 0x71001e22e4
 };
 // Reached through the GOT slot at 0x7100c22a00.
@@ -102,7 +115,8 @@ public:
     unsigned char pad5a;
     unsigned char : 2;
     unsigned char align : 2;  // +5b bits 2-3
-    unsigned char : 4;
+    unsigned char : 2;
+    unsigned char valign : 2; // +5b bits 6-7
     unsigned char pad5c[0x104];
 
     void set_visible(bool on) { visible = on; }
@@ -432,4 +446,331 @@ ChallengeRecordScreen::ChallengeRecordScreen(bool flag_)
     }
     for (int i = 0; i < 15; i++)
         texts[i]->alpha59 = 0;
+}
+void format_text(char* dest, const char* format, ...);                      // 0x710045a77c
+struct Game;
+Game* fetch_204728();                                                       // 0x7100204728
+unsigned char game_has_flag(Game* game, int flag);                          // 0x71002026fc
+
+extern const char kRecordLayout[] __attribute__((visibility("hidden")));       // 0x71007da88e
+extern const char kRecordAnimA[] __attribute__((visibility("hidden")));        // 0x7100740004
+extern const char kRecordAnimB[] __attribute__((visibility("hidden")));        // 0x710074053d
+extern const char kRecordPane[] __attribute__((visibility("hidden")));         // 0x71007da89e
+extern const char kRecordFormatA[] __attribute__((visibility("hidden")));      // 0x71007da8ae
+extern const char kRecordText[] __attribute__((visibility("hidden")));         // 0x71007da8b5
+extern const char kRecordFormatB[] __attribute__((visibility("hidden")));      // 0x71007da8bf
+
+// 0x710035c070: a record panel: its layout and four animations, a copy of its pane when the game's flag 0x2d is set,
+// and one or two texts formatted from messages.
+class RecordPanel {
+public:
+    RecordPanel();
+
+    int i0;                           // +00
+    LightEffectNode* layout;          // +08
+    EffectGroup* copy;                // +10
+    LayoutAnimation* anims[4];        // +18
+    TrackLightTarget lines_a[64];     // +38
+    TrackLightTarget lines_b[64];     // +2238
+    PanelPane* text_a;                // +4438
+    PanelPane* text_b;                // +4440
+};
+
+static inline void move_x(EffectGroup* group, float dx) {
+    group->offset30 += dx;
+    group->flags58 |= 0x10;
+}
+
+RecordPanel::RecordPanel() : i0(0), layout(nullptr), copy(nullptr) {
+    gEffectManager->create_node(&layout, 0x41e5, kRecordLayout);
+    anims[0] = layout->create_animation_3770(kInAnim, false);
+    anims[1] = layout->create_animation_3770(kRecordAnimA, false);
+    anims[2] = layout->create_animation_3770(kRecordAnimB, false);
+    anims[3] = layout->create_animation_3770(kOutAnim, false);
+    EffectGroup* pane = layout->group->find(kRecordPane, 1);
+    if (game_has_flag(fetch_204728(), 0x2d)) {
+        copy = pane->duplicate(gResourceLoader->layout->root);
+        pane->parent->add(copy);
+        move_x(copy, -326.0f);
+    }
+    char text[64];
+    format_text(text, kRecordFormatA, message_text(0xa0));
+    TextRenderer* renderer = gTextRenderer;
+    {
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = 30.0f;
+        size.y = 30.0f;
+        renderer->set_area(&pos, &size, 0x5d, 0x4e, 0);
+        renderer->value20bc9 = 1;
+        renderer->value20bca = 1;
+        renderer->value20b8c = 0x3b;
+        renderer->align = 2;
+        renderer->value20b9c = 1;
+        int count = renderer->draw(lines_a, text, 0x40, 1, 0xff, 0.0f, 0.0f);
+        text_a = new PanelPane;
+        text_a->valign = 2;
+        pane->find(kRecordText, 1)->add(text_a);
+        set_pane_lines(text_a, lines_a, count);
+        text_a->set_visible(count > 0);
+    }
+    if (game_has_flag(fetch_204728(), 0x2d)) {
+        format_text(text, kRecordFormatB, message_text(0x11a));
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = 30.0f;
+        size.y = 30.0f;
+        renderer->set_area(&pos, &size, 0x5d, 0x4e, 0);
+        renderer->value20bc9 = 1;
+        renderer->value20bca = 1;
+        renderer->value20b8c = 0x3b;
+        renderer->align = 2;
+        renderer->value20b9c = 1;
+        int count = renderer->draw(lines_b, text, 0x40, 1, 0xff, 0.0f, 0.0f);
+        text_b = new PanelPane;
+        text_b->valign = 2;
+        copy->find(kRecordText, 1)->add(text_b);
+        set_pane_lines(text_b, lines_b, count);
+        text_b->set_visible(count > 0);
+    }
+}
+struct Picks2045;
+int pick_2046e4(Picks2045* picks, int index);                               // 0x71002046e4
+struct Global20710c;
+Global20710c* load_global_20710c();                                         // 0x710020710c
+void* entry_2070fc(Global20710c* global, int index);                        // 0x71002070fc
+void play_1f7a0c(void* anims, int mode, int flag, float speed);             // 0x71001f7a0c
+
+// The trophy widget (0x1aeb0 bytes), built out of line.
+class TrophyWidget {
+public:
+    TrophyWidget();                                                         // 0x71002f2370
+    void set_layout(int id);                                                // 0x71002f2b44
+    void set_mode(int mode);                                                // 0x71002f8934
+    void show(void* source);                                                // 0x71002f8218
+    void start();                                                           // 0x71002f8160
+
+    unsigned char data[0x1aeb0];
+};
+
+struct TrophySource {
+    void set(void* entry);                                                  // 0x7100287f40
+};
+
+struct Game45f07c {
+    unsigned char unlocked_204518(int index);                               // 0x7100204518
+};
+
+struct TrophyOwner {
+    unsigned char pad0[0xad8];
+    TrophySource source;              // +ad8
+    unsigned char padad9[0xf7];
+    Game45f07c* games_a;              // +bd0
+    Game45f07c* games_b;              // +bd8
+    bool busy;                        // +be0
+};
+
+struct LayoutSprite {
+    LayoutSprite();                                                         // 0x71001ef52c
+    virtual void v00();
+    unsigned char pad8[0x40];
+};
+
+extern const char kTrophyLayout[] __attribute__((visibility("hidden")));      // 0x71007d7d20
+extern const char kTrophyIn[] __attribute__((visibility("hidden")));          // 0x7100740bd8
+extern const char kTrophyLoop[] __attribute__((visibility("hidden")));        // 0x7100740be1
+extern const char kTrophyText[] __attribute__((visibility("hidden")));        // 0x71007d7dca
+
+// Bit 0 through a byte reference: its load is not aligned enough for GVN to widen it over the next field's.
+static inline void set_flag(unsigned char& flags, bool on) {
+    flags = (flags & ~1) | on;
+}
+
+// 0x71002c2454: the trophy screen (vtable GOT 0x7100c2a9e8): unless its owner is busy, the first pick's trophy is shown
+// with a caption; without one it goes to state 2.
+class TrophyScreen {
+public:
+    explicit TrophyScreen(TrophyOwner* owner);
+    virtual ~TrophyScreen();
+
+    TrophyOwner* owner;               // +08
+    int state;                        // +10
+    LightEffectNode* layout;          // +18
+    TrophyWidget widget;              // +20
+    int i1aed0;                       // +1aed0
+    int i1aed4;                       // +1aed4
+    int shown;                        // +1aed8
+    LayoutAnimation* anims[2];        // +1aee0
+    EffectGroup* text_pos;            // +1aef0
+    LayoutSprite sprites[64];         // +1aef8
+    TrackLightTarget lines[32];       // +1c0f8
+};
+
+TrophyScreen::TrophyScreen(TrophyOwner* owner_) : owner(owner_), layout(nullptr), i1aed0(6), i1aed4(0), shown(0) {
+    if (owner->busy)
+        return;
+    int pick = pick_2046e4(reinterpret_cast<Picks2045*>(fetch_204728()), 0);
+    shown = pick != -1;
+    if (pick == -1) {
+        state = 2;
+        return;
+    }
+    gEffectManager->create_node(&layout, 0x421c, kTrophyLayout);
+    anims[0] = layout->create_animation_3770(kTrophyIn, true);
+    anims[1] = layout->create_animation_3770(kTrophyLoop, true);
+    anims[0]->player->set_speed(layout->group->scale48);
+    anims[1]->player->set_speed(layout->group->scale48);
+    text_pos = layout->group->find(kTrophyText, 1);
+    TextRenderer* renderer = gTextRenderer;
+    {
+        float scale = text_pos->size54 * layout->group->scale48;
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = scale;
+        size.y = scale;
+        renderer->set_area(&pos, &size, 0x52, 0x4e, 0);
+        renderer->value20bc9 = 1;
+        renderer->value20bca = 1;
+        renderer->value20b8c = 0x53;
+        renderer->align = 2;
+        renderer->value20b9c = 1;
+        int count = renderer->draw(lines, message_text(0xe4), 0x20, 1, 0xff, 0.0f, 0.0f);
+        PanelPane* pane = new PanelPane;
+        set_pane_lines(pane, lines, count);
+        set_flag(pane->flags58, count != 0);
+        pane->valign = 2;
+        text_pos->add(pane);
+    }
+    widget.set_layout(0x41f7);
+    widget.set_mode(0);
+    owner->source.set(entry_2070fc(load_global_20710c(), pick));
+    widget.show(&owner->source);
+    play_1f7a0c(anims, 2, 0, 1.0f);
+    widget.start();
+    i1aed0 = 0;
+    state = 0;
+}
+struct RankResources {
+    void* frame;                      // +0
+    void* light;                      // +8
+};
+// Reached through the GOT slot at 0x7100c2aa28.
+extern RankResources* gRankResources;
+void* load_layout(int id);                                                  // 0x71001f7868
+void release_light(void** light);                                           // 0x71001f7960
+struct Entry45f07c {
+    int kind_209bd8();                                                      // 0x7100209bd8
+};
+struct Table45f07c {
+    Entry45f07c* entry_209c48(int index);                                   // 0x7100209c48
+};
+Table45f07c* load_global_209cb4();                                          // 0x7100209cb4
+// The score each rank starts above.
+extern const unsigned char kRankThresholds[] __attribute__((visibility("hidden"))); // 0x71007f9328
+
+static inline signed char rank_of(int score) {
+    for (int k = 0; k < 0x27; k++) {
+        if (kRankThresholds[k] > score)
+            return k;
+    }
+    return 0;
+}
+
+extern const char kRankLayout[] __attribute__((visibility("hidden")));        // 0x71007d7f26
+extern const char kRankPos[] __attribute__((visibility("hidden")));           // 0x7100740068
+extern const char kRankIcon[] __attribute__((visibility("hidden")));          // 0x71007d7f36
+extern const char kRankName[] __attribute__((visibility("hidden")));          // 0x71007d7f47
+
+// The first stage open in one table and not yet in the other, or -1.
+static inline int first_open(TrophyOwner* owner) {
+    for (int i = 0; i < 0xff; i++) {
+        unsigned char done = owner->games_b->unlocked_204518(i);
+        unsigned char open = owner->games_a->unlocked_204518(i);
+        if (!done && open)
+            return i;
+    }
+    return -1;
+}
+
+// 0x71002c5700: the rank screen (vtable GOT 0x7100c2aa20): the first stage open in one table and not the other, its
+// rank's light loaded, a caption, and two layout handles.
+class RankScreen {
+public:
+    explicit RankScreen(TrophyOwner* owner);
+    virtual ~RankScreen();
+    void setup(int stage, int kind);                                        // 0x71002c5f5c
+
+    TrophyOwner* owner;               // +08
+    int state;                        // +10
+    LightEffectNode* layout;          // +18
+    int i20;                          // +20
+    LayoutAnimation* anims[2];        // +28
+    void* p38;                        // +38
+    EffectGroup* rank_pos;            // +40
+    EffectGroup* text_pos;            // +48
+    EffectGroup* icon;                // +50
+    EffectGroup* name;                // +58
+    TrackLightTarget frames[64];      // +60
+    TrackLightTarget lines[32];       // +2260
+    LayoutHandle handles[2];          // +3360
+    int i3390;                        // +3390
+    int line_count;                   // +3394
+};
+
+RankScreen::RankScreen(TrophyOwner* owner_)
+    : owner(owner_), layout(nullptr), i20(3), rank_pos(nullptr), text_pos(nullptr), name(nullptr), i3390(0),
+      line_count(0) {
+    int stage = first_open(owner_);
+    if (stage < 0 || stage > 0xfe || owner->busy) {
+        state = 2;
+        return;
+    }
+    RankResources* resources = gRankResources;
+    resources->frame = load_layout(0x44c5);
+    signed char rank = rank_of(stage);
+    if (resources->light) {
+        release_light(&resources->light);
+        resources->light = nullptr;
+    }
+    if (rank != -1) {
+        if (rank >= 0 && rank <= 20)
+            resources->light = load_layout(rank + 0x44b0);
+        else
+            resources->light = load_layout(rank + 0x466c);
+    }
+    int kind = load_global_209cb4()->entry_209c48(stage)->kind_209bd8();
+    gEffectManager->create_node(&layout, 0x4216, kRankLayout);
+    gEffectManager->sync();
+    anims[0] = layout->create_animation_3770(kInAnim, true);
+    anims[1] = layout->create_animation_3770(kOutAnim, true);
+    anims[0]->player->set_speed(layout->group->scale48);
+    anims[1]->player->set_speed(layout->group->scale48);
+    rank_pos = layout->group->find(kRankPos, 1);
+    text_pos = layout->group->find(kTrophyText, 1);
+    icon = layout->group->find(kRankIcon, 1);
+    name = layout->group->find(kRankName, 1);
+    TextRenderer* renderer = gTextRenderer;
+    {
+        float scale = text_pos->size54 * layout->group->scale48;
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = scale;
+        size.y = scale;
+        renderer->set_area(&pos, &size, 0x52, 0x4e, 0);
+        renderer->value20bc9 = 1;
+        renderer->value20bca = 1;
+        renderer->value20b8c = 0x53;
+        renderer->align = 2;
+        renderer->value20b9c = 1;
+        line_count = renderer->draw(lines, message_text(0xe6), 0x20, 1, 0xff, 0.0f, 0.0f);
+        PanelPane* pane = new PanelPane;
+        set_pane_lines(pane, lines, line_count);
+        set_flag(pane->flags58, line_count != 0);
+        pane->valign = 2;
+        text_pos->add(pane);
+    }
+    setup(stage, kind);
+    play_1f7a0c(anims, 2, 0, 1.0f);
+    i20 = 0;
+    state = 0;
 }
