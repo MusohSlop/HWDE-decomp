@@ -198,6 +198,8 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - parameters first used while rendering are declared (knob `nolateparam`): a parameter that reaches the output only
   through a merged value, a lane or float bits is registered where it is rendered (the parameter list is built after
   the body), instead of being used undeclared;
+- an index typed as a pointer is written through `reinterpret_cast<long>` (knob `noptridx`; an 8-byte field holding
+  an index was typed void*, and `field[v]` did not compile);
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
