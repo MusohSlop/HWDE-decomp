@@ -11,7 +11,7 @@ Everything stays under build/s3_perm (ignored by git); the PID is in NAME/pid an
 search's own exit code goes to NAME/exit.txt: 0 means it wrote its match file (perm_match.cpp, topo_match.cpp or
 vol_match.cpp) into NAME/work. A hit still has to be put into its unit and pass the full check before it counts.
 """
-import os, sys, subprocess, time, ctypes
+import os, re, sys, subprocess, time, ctypes
 M = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # the matching/ folder
 S3 = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(M, "build", "s3_perm")
@@ -79,7 +79,8 @@ def main():
         for n, d, pid in searches():
             ex = os.path.join(d, "exit.txt")
             state = ("exit " + open(ex).read().split()[0]) if os.path.exists(ex) else ("running" if alive(pid) else "gone")
-            hits = [f for f in ("perm_match.cpp", "topo_match.cpp", "vol_match.cpp") if os.path.exists(os.path.join(d, "work", f))]
+            w = os.path.join(d, "work")
+            hits = sorted(f for f in (os.listdir(w) if os.path.isdir(w) else []) if re.fullmatch(r"\w+_match(_\w+)?\.cpp", f))
             lines = open(os.path.join(d, "log.txt"), encoding="utf-8", errors="replace").read().strip().split("\n")
             print(f"{n}\tpid {pid}\t{state}\t{','.join(hits) or '-'}\t{lines[-1][:120]}")
         return 0
