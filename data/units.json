@@ -20958,7 +20958,8 @@
     "_Z11place_actorP5ActorP4Vec4if": "0x7100133158",
     "_ZN10PlaceRuleA5validEP5ActorP10PlaceEntry": "0x7100135698",
     "_ZN10PlaceRuleB5validEP5ActorP10PlaceEntry": "0x7100135748",
-    "_ZN6Placer15fallback_heightEv": "0x7100136cf0"
+    "_ZN6Placer15fallback_heightEv": "0x7100136cf0",
+    "_ZNKSt3__120__vector_base_commonILb1EE20__throw_length_errorEv": "0x7100600aa0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -31443,6 +31444,26 @@
       "functions": {
         "_ZN6Placer5placeI10PlaceRuleAEEvv": "0x7100137730",
         "_ZN6Placer5placeI10PlaceRuleBEEvv": "0x710013789c"
+      }
+    },
+    "misc/s4_2bdbd4.cpp": {
+      "functions": {
+        "_ZN10PopupPanel6updateILi0EEEvv": "0x71002bdbd4",
+        "_ZN10PopupPanel6updateILi1EEEvv": "0x71002c0348"
+      },
+      "map": {
+        ".rodata._ZN10PopupPanel6updateILi0EEEvv": "0x71007f9264",
+        ".rodata._ZN10PopupPanel6updateILi1EEEvv": "0x71007f928c",
+        ".rodata.cst4": "0x710073b000"
+      }
+    },
+    "misc/s4_2cba00.cpp": {
+      "functions": {
+        "_ZN6VectorIP10Elem2cba00E19push_back_slow_pathERKS1_": "0x71002cba00",
+        "_ZN6VectorIP10Elem39721cE19push_back_slow_pathERKS1_": "0x710039721c"
+      },
+      "map": {
+        ".rodata.str1.1": "0x7100740c0e"
       }
     }
   }
