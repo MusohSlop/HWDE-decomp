@@ -18374,7 +18374,36 @@
     "kSavingLayout": "0x7100741ea6",
     "kSavingLoop": "0x7100741eb3",
     "kSavingDummy": "0x7100741ebf",
-    "kSavingDummy00": "0x7100741ecc"
+    "kSavingDummy00": "0x7100741ecc",
+    "kGetPieceLayout": "0x71007d7f58",
+    "kPiecePartsLayout": "0x71007d7fd0",
+    "kGetAnim": "0x71007d7fe2",
+    "kVIn": "0x71007db059",
+    "kVOut": "0x71007db05e",
+    "kTitlePlate": "0x7100740bbf",
+    "kPieceLine": "0x71007db064",
+    "kGetPiece": "0x7100740f46",
+    "kPieceFormat": "0x71007d7fbd",
+    "kWallpaperPiece": "0x71007d7fe6",
+    "_ZN10MenuScreenC2EiPKcPv": "0x710038c480",
+    "_ZN10MenuScreen8add_animEiPKci": "0x710038ccb0",
+    "_ZN10MenuScreen5placeEff": "0x710038cc48",
+    "_ZN11EffectGroup6removeEPS_": "0x71005da1b0",
+    "got:_ZTV14GetPieceScreen": "0x7100c2b1e8",
+    "_ZN10AnimPlayer9set_speedEf": "0x71001e4570",
+    "_Z15byte_bit_203bd8P8ByteBitsj": "0x7100203bd8",
+    "_Z18piece_level_1f4e18i": "0x71001f4e18",
+    "_Z13notify_1f47a8ii": "0x71001f47a8",
+    "kGetPieceEffLayout": "0x71007d7f68",
+    "kFrame": "0x71007d7f7c",
+    "kWallpaper": "0x71007d7f82",
+    "kCloneWallpaper": "0x71007d7f8c",
+    "kCompleteAnim": "0x71007d7f9c",
+    "kEffInAnim": "0x71007d7fa5",
+    "kEffLoopAnim": "0x71007d7fac",
+    "kEffOutAnim": "0x71007d7fb5",
+    "kFontTitle": "0x71007d7dca",
+    "_ZN11EffectGroup8set_nameEPKc": "0x71005d9abc"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -28119,7 +28148,9 @@
       "functions": {
         "_ZN10RecordBankC2Ev": "0x71000193e8",
         "_ZN13LoadingScreenC2Ev": "0x71001eeed4",
-        "_ZN12SavingScreenC2Ev": "0x71001f1f88"
+        "_ZN12SavingScreenC2Ev": "0x71001f1f88",
+        "_ZN14GetPieceScreenC2Ev": "0x7100391bd8",
+        "_ZN11Class2c6a58C2EP10PieceOwner": "0x71002c63ac"
       },
       "map": {
         ".rodata.cst4": "0x710073b000",
