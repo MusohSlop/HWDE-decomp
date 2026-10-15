@@ -164,7 +164,11 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   "merge types: float|Vec4f"): the vector side is lane 0; the bits of a float used as an int (`fmov w, s` read
   elsewhere) are an unsigned int through `__builtin_memcpy` in a lambda;
 - an array field also accessed as a scalar at its start (knob `noarrscalar`): the scalar keeps the field and the
-  indexed accesses go through `reinterpret_cast<T*>(&p->field)[i]` with T the element type.
+  indexed accesses go through `reinterpret_cast<T*>(&p->field)[i]` with T the element type;
+- struct copies (knob `nostructcopy`): a run of load/store pieces whose loaded values are only stored, between two
+  (non-stack) bases at one delta and covering 12 or more contiguous bytes in straight-line code, is one struct
+  assignment of `struct alignas(A) BlkR_A_FUNC { unsigned char b[R]; }`, or a loop over the records when the pieces
+  repeat a record pattern (Clang expands both into the same pieces); the pieces no longer type fields.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
