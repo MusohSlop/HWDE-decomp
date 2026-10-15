@@ -90,3 +90,36 @@ void Obj3e1538::update(int idx) {
     }
     gGlobalc21dd0_3e1538.entries[idx] = callee_402c4(idx);
 }
+struct Plane5f9fac {
+    float x, y, z, d;
+};
+
+// The three planes that meet at each frustum corner.
+extern const long kCornerPlanes_a9aea8[8][3] __attribute__((visibility("hidden")));
+
+// 0x71005f9fac: the eight frustum corners, each the intersection of three planes. The matrix's columns are carried
+// from corner to corner (zeroed once, lanes 0-2 rewritten), so no copy of the zero vector is made in the loop.
+void frustum_corners_5f9fac(const Plane5f9fac* planes, XMVECTOR* corners) {
+    XMMATRIX m;
+    m.r[0] = vdupq_n_f32(0.0f);
+    m.r[1] = vdupq_n_f32(0.0f);
+    m.r[2] = vdupq_n_f32(0.0f);
+    m.r[3] = (float32x4_t){0.0f, 0.0f, 0.0f, 1.0f};
+    for (int i = 0; i < 8; i++) {
+        const Plane5f9fac& p0 = planes[kCornerPlanes_a9aea8[i][0]];
+        const Plane5f9fac& p1 = planes[kCornerPlanes_a9aea8[i][1]];
+        const Plane5f9fac& p2 = planes[kCornerPlanes_a9aea8[i][2]];
+        m.r[0] = vsetq_lane_f32(p0.x, m.r[0], 0);
+        m.r[1] = vsetq_lane_f32(p0.y, m.r[1], 0);
+        m.r[2] = vsetq_lane_f32(p0.z, m.r[2], 0);
+        m.r[0] = vsetq_lane_f32(p1.x, m.r[0], 1);
+        m.r[1] = vsetq_lane_f32(p1.y, m.r[1], 1);
+        m.r[2] = vsetq_lane_f32(p1.z, m.r[2], 1);
+        m.r[0] = vsetq_lane_f32(p2.x, m.r[0], 2);
+        m.r[1] = vsetq_lane_f32(p2.y, m.r[1], 2);
+        m.r[2] = vsetq_lane_f32(p2.z, m.r[2], 2);
+        XMMATRIX inv = XMMatrixInverse(m);
+        XMVECTOR d = {-p0.d, -p1.d, -p2.d, 1.0f};
+        corners[i] = XMVector4Transform(d, inv);
+    }
+}
