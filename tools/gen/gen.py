@@ -2262,6 +2262,23 @@ def gen_function(a, ins):
                 regs["f"][fd] = ("i2f", m == "ucvtf", src_, regname(ops[1])[1])
                 if fd < 8: regs.setdefault("fw", set()).add(fd)
                 k += 1; continue
+            if m in ("fcvtms", "fcvtmu", "fcvtps", "fcvtpu", "fcvtas", "fcvtau") and len(ops) == 2 and re.fullmatch(r"s\d+", ops[1]) \
+                    and re.fullmatch(r"[wx]\d+", ops[0]) and "nofround" not in knobs:
+                dn, w = regname(ops[0])
+                rnd_ = {"m": "floor", "p": "ceil", "a": "round"}[m[4]]
+                regs[dn] = ("f2i", m.endswith("u"), ("funary", rnd_, fuse(regs["f"], ops[1])), w)
+                if dn < 8: written.add(dn)
+                k += 1; continue
+            if fdst and m in ("frintm", "frintp", "frinta", "frintz") and len(ops) == 2 and "nofround" not in knobs:
+                fd = fregname(fdst)
+                regs["f"][fd] = ("funary", {"m": "floor", "p": "ceil", "a": "round", "z": "trunc"}[m[5]], fuse(regs["f"], ops[1]))
+                if fd < 8: regs.setdefault("fw", set()).add(fd)
+                k += 1; continue
+            if fdst and m == "fnmul" and len(ops) == 3 and "nofround" not in knobs:
+                fd = fregname(fdst)
+                regs["f"][fd] = ("funary", "fneg", ("fbin", "*", fuse(regs["f"], ops[1]), fuse(regs["f"], ops[2])))
+                if fd < 8: regs.setdefault("fw", set()).add(fd)
+                k += 1; continue
             if m in ("fcvtzs", "fcvtzu") and len(ops) == 2 and re.fullmatch(r"s\d+", ops[1]):
                 dn, w = regname(ops[0])
                 regs[dn] = ("f2i", m == "fcvtzu", fuse(regs["f"], ops[1]), w)
@@ -3807,6 +3824,8 @@ def gen_function(a, ins):
             s_ = f"{expr(v[2], False)} {v[1]} {expr(v[3], False)}"
             return s_ if top else f"({s_})"
         if v[0] == "funary":
+            if v[1] in ("floor", "ceil", "round", "trunc"):
+                return f"__builtin_{v[1]}f({expr(v[2])})"
             return f"-{expr(v[2], False)}" if v[1] == "fneg" else f"__builtin_fabsf({expr(v[2])})"
         if v[0] == "i2f":
             ut = ("unsigned long" if v[3] == "x" else "unsigned int") if v[1] else ("long" if v[3] == "x" else "int")
