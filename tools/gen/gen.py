@@ -1155,6 +1155,10 @@ def gen_function(a, ins):
                     vars_[vn_] = vt_ + (prev_[0],)
             structs[sn_][off_] = (wide_, None)
         return True
+    def spun_(a_, b_):
+        """An int and a float in one stack slot: the slot keeps its first type and the other access is a pun."""
+        return "nostackpun" not in knobs and a_ in ("int", "unsigned int", "float") and b_ in ("int", "unsigned int", "float") \
+            and "float" in (a_, b_)
     def retype_ok_(sn_, off_, prev_t, ct_):
         """A field typed only by 8-byte constant stores may become a narrower scalar."""
         return ((sn_, off_) in cstore_typed_ and prev_t in ("void*", "long") and not ct_.startswith("ARRAY:")
@@ -1315,7 +1319,7 @@ def gen_function(a, ins):
         if not m_:
             raise Fail("freg " + r)
         return int(m_.group(1))
-    def is_vecval_(v):
+    def is_vecval_(v, seen_=None):
         """A 128-bit float vector value (Vec4f)."""
         if v is None:
             return False
@@ -1323,6 +1327,13 @@ def gen_function(a, ins):
             return True
         if v[0] == "var":
             tv_ = vars_.get(v[1])
+            if isinstance(tv_, tuple) and tv_[0] == "merge" and "novecmerge" not in knobs:
+                # a merge of vectors (a loop variable's own update counts as one)
+                seen_ = seen_ or set()
+                if v[1] in seen_:
+                    return True
+                seen_.add(v[1])
+                return is_vecval_(tv_[1], seen_) and is_vecval_(tv_[2], seen_)
             return tv_ == "Vec4f" or (isinstance(tv_, tuple) and tv_[0] == "load" and (
                 (len(tv_) == 3 and structs[tv_[1]].get(tv_[2], ("",))[0] in ("Vec4f", "ARRAY:Vec4f"))
                 or (len(tv_) > 3 and tv_[3] == "Vec4f")))
@@ -3038,7 +3049,7 @@ def gen_function(a, ins):
                     if prev and prev[0] != ct_ and retype_ok_(sn, off_ - st, prev[0], ct_):
                         structs[sn][off_ - st] = (ct_, None)
                         prev = structs[sn][off_ - st]
-                    if prev and prev[0] != ct_ and not vu_check_(sn, off_ - st, ct_):
+                    if prev and prev[0] != ct_ and not spun_(prev[0], ct_) and not vu_check_(sn, off_ - st, ct_):
                         raise Fail("stack field clash")
                     vu_check_(sn, off_ - st, ct_)
                     note_access_(sn, off_ - st, False)
@@ -3139,8 +3150,8 @@ def gen_function(a, ins):
                     if prev and prev[0] != ct and retype_ok_(sn, off_ - st, prev[0], ct):
                         structs[sn][off_ - st] = (ct, None)
                         prev = structs[sn][off_ - st]
-                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not vu_check_(sn, off_ - st, ct) \
-                            and not widen_field_(sn, off_ - st, prev, ct):
+                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not spun_(prev[0], ct) \
+                            and not vu_check_(sn, off_ - st, ct) and not widen_field_(sn, off_ - st, prev, ct):
                         raise Fail("stack field clash")
                     vu_check_(sn, off_ - st, ct)
                     note_access_(sn, off_ - st, False)
@@ -3162,8 +3173,8 @@ def gen_function(a, ins):
                 if prev and prev[0] != ct and retype_ok_(sn, sbase - st, prev[0], ct):
                     structs[sn][sbase - st] = (ct, None)
                     prev = structs[sn][sbase - st]
-                if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not vu_check_(sn, sbase - st, ct) \
-                        and not widen_field_(sn, sbase - st, prev, ct):
+                if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not spun_(prev[0], ct) \
+                        and not vu_check_(sn, sbase - st, ct) and not widen_field_(sn, sbase - st, prev, ct):
                     raise Fail("stack field clash")
                 vu_check_(sn, sbase - st, ct)
                 note_access_(sn, sbase - st, False)
@@ -3221,7 +3232,8 @@ def gen_function(a, ins):
                     if prev and prev[0] != ct and val[0] != "const" and retype_ok_(sn, off_ - st, prev[0], ct):
                         structs[sn][off_ - st] = (ct, None)
                         prev = structs[sn][off_ - st]
-                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not vu_check_(sn, off_ - st, ct):
+                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not spun_(prev[0], ct) \
+                            and not vu_check_(sn, off_ - st, ct):
                         raise Fail("stack field clash")
                     vu_check_(sn, off_ - st, ct)
                     structs[sn].setdefault(off_ - st, (ct, None))
@@ -5441,6 +5453,61 @@ def gen_function(a, ins):
         return out_
     if "globalfirst" in knobs:
         items[:] = global_first(items)
+    def got_first(its):
+        # GOT slots loaded before the first branch
+        early_, pages_ = set(), {}
+        for i_ in ins:
+            mk_ = i_.mnemonic
+            if mk_ in ("b", "br", "ret", "cbz", "cbnz", "tbz", "tbnz") or mk_.startswith("b."):
+                break
+            mm_ = re.fullmatch(r"(x\d+), #(0x[0-9a-f]+|\d+)", i_.op_str) if mk_ == "adrp" else None
+            if mm_:
+                pages_[mm_.group(1)] = int(mm_.group(2), 0)
+                continue
+            mm_ = re.fullmatch(r"(x\d+), \[(x\d+), #(0x[0-9a-f]+|\d+)\]", i_.op_str) if mk_ == "ldr" else None
+            if mm_ and mm_.group(2) in pages_:
+                early_.add(pages_[mm_.group(2)] + int(mm_.group(3), 0))
+            for w_ in rw(i_)[1]:
+                pages_.pop("x%d" % w_, None)
+        if not early_:
+            return its
+        def reads_(x_, acc_):
+            # global reads in item order, nested ones with the path of nested lists that holds them
+            for it_ in x_:
+                if it_[0] == "let" and isinstance(it_[4], tuple) and it_[4][0] == "gotaddr":
+                    acc_.append((it_[4][1], it_))
+                for sub_ in ((it_[2],) if it_[0] == "if" else (it_[3], it_[4]) if it_[0] == "diamond" else ()):
+                    reads_(sub_, acc_)
+            return acc_
+        def drop_(x_, victim_):
+            out2_ = []
+            for it_ in x_:
+                if it_ is victim_:
+                    continue
+                if it_[0] == "if":
+                    it_ = ("if", it_[1], drop_(it_[2], victim_))
+                elif it_[0] == "diamond":
+                    it_ = (it_[0], it_[1], it_[2], drop_(it_[3], victim_), drop_(it_[4], victim_))
+                out2_.append(it_)
+            return out2_
+        out_, seen_ = [], set()
+        for it in its:
+            if it[0] == "let" and isinstance(it[4], tuple) and it[4][0] == "gotaddr":
+                seen_.add(it[4][1])
+            if it[0] in ("if", "diamond"):
+                for g_, rd_ in reads_([it], []):
+                    if g_ in early_ and g_ not in seen_:
+                        seen_.add(g_)
+                        it = drop_([it], rd_)[0]
+                        # before the loads that feed the test too
+                        k_ = len(out_)
+                        while k_ > 0 and out_[k_ - 1][0] == "let" and not (isinstance(out_[k_ - 1][4], tuple) and out_[k_ - 1][4][0] == "gotaddr"):
+                            k_ -= 1
+                        out_.insert(k_, rd_)
+            out_.append(it)
+        return out_
+    if "gotfirst" in knobs:
+        items[:] = got_first(items)
     def scan_uint_(o):
         if isinstance(o, tuple):
             if (len(o) >= 3 and o[0] == "ext" and o[1] == "unsigned int" and isinstance(o[2], tuple) and o[2][0] == "var"
