@@ -27587,6 +27587,15 @@
         "_ZN10Menu3bdbf09show_lineEih": "0x71003bdbf0",
         "_ZN11Scene4485444initEv": "0x7100448544"
       }
+    },
+    "misc/s3_functions08.cpp": {
+      "functions": {
+        "_Z11call_311824P11Arg311824_0": "0x7100311824"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      }
     }
   }
 }
