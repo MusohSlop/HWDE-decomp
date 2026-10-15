@@ -228,6 +228,7 @@ for _r in rows:
 # a hand-written name with fewer parameters than the callee reads (x0-x7 read before they are written in its first
 # block), or a thunk that only branches on, does not limit the calls to it: trust the callee
 READ_OVER_ = set()
+READ_OVER0_ = set()     # names with no parameters at all for a callee that reads x0: never a cap
 for _r in rows:
     _t = int(_r[0], 16) - 0x7100000000
     _ka = KNOWN_ARITY.get(_t)
@@ -251,6 +252,8 @@ for _r in rows:
         _wr |= _w_
     if _rd and max(_rd) + 1 > _ka[0]:
         READ_OVER_.add(_t)
+        if _ka[0] == 0 and 0 in _rd:
+            READ_OVER0_.add(_t)
 
 def regname(r):
     if r in ("wzr", "xzr"):
@@ -1374,6 +1377,8 @@ def gen_function(a, ins):
         n = max(written) + 1 if written else (1 if regs.get(0) is not None else 0)
         ka_ = KNOWN_ARITY.get(target) if "noknownarity" not in knobs else None
         if ka_ is not None and target in READ_OVER_ and "readarity" in knobs:
+            ka_ = None
+        if ka_ is not None and target in READ_OVER0_ and "noread0" not in knobs:
             ka_ = None
         if ka_ is not None and target in TRIVIAL_ and "trivialarity" not in knobs:
             # the name of a trivial callee does not show its parameters
