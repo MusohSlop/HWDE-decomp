@@ -1,7 +1,8 @@
 # Third session (branch matching-s3): hand-matching of functions over 1,500 bytes, and constructor-shaped
 # functions (vtable stores into this) at any size. Generator runs should skip every address listed here.
 # working: functions being hand-matched now; matched: functions matched on matching-s3; tried: parked, with reason.
-working: ef31c 3f6964
-matched: 28ee38 30be50 325e64 3b9ccc 362914 384a50 3556b8 35f6e8 118e44 1721b0 2900cc 3c8578 33f7c0 1ddfe8 3980b8 36983c 187d78 369d3c
+working:
+matched: 28ee38 30be50 325e64 3b9ccc 362914 384a50 3556b8 35f6e8 118e44 1721b0 2900cc 3c8578 33f7c0 1ddfe8 3980b8 36983c 187d78 369d3c ef31c
 tried: 351428 (5,056 B, 6 off: three zeroed fields at +5b318 are stored after +5b350/+5b358 and in reverse; a memset, a sub-object body and 120 orders did not place them)
 tried: 38868 3e1dec 441e94 3e350c (5,920 B each, the same code four times: docs/s3_wip/38868.cpp compiles to 5,900 B with 86 instructions still differing; see its header)
+tried: 3f6964 (1,544 B, 2 off: the generated source with the thunk 5e66c0 called as (obj->x20, &zero vec3) and &this->x19e1 taken first matches but for the order of three constant materialisations at the start of the tail stores)
