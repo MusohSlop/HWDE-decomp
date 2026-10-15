@@ -102,7 +102,12 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - a pointer plus a constant is byte-pointer arithmetic (knob `noptradd`),
   `reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p) + C)`: written as integer arithmetic, Clang's constant
   hoisting kept a large C in a callee-saved register across calls, one more saved register than the original (a
-  different frame and store pairing).
+  different frame and store pairing);
+- a member address computed early is a local declared there (knob `nohoistaddr`): an `add xD, xN, #C` (or a
+  register holding a constant) into x19-x28 whose value is only copied into argument registers after at least one
+  call is `long aN = ...;` at the add (Clang emits the address where the source computes it, so the original declared
+  it early, typically the first element of an array it constructs or destroys); written at the call, the original's
+  extra saved register was missing; a function that fails with it is generated again without it.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,

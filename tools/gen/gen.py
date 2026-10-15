@@ -187,6 +187,7 @@ def mangled_arity(name):
 KNOWN_ARITY = {}
 ARITY_USED = [False]
 PAIR_USED = [False]
+HOIST_USED = [False]
 for _n, _a in list(units["symbols"].items()) + [(_n2, _a2) for _u in units["units"].values() for _n2, _a2 in _u.get("functions", {}).items()]:
     if _n.startswith("got:") or re.search(r"(callee\d?|call|placeholder)_[0-9a-f]+", _n):
         continue
@@ -261,6 +262,41 @@ def gen_function(a, ins):
     callees = {}        # target -> [arg types, ret type]
     counter = [0]
     addr_index = {i.address: k for k, i in enumerate(ins)}
+    hoist_adds_ = set()
+    for k_, i_ in enumerate(ins):
+        ops_h_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", i_.op_str)]
+        if i_.mnemonic != "add" or len(ops_h_) != 3 or not re.fullmatch(r"x(19|2[0-8])", ops_h_[0]) \
+                or not re.fullmatch(r"x\d+", ops_h_[1]) or ops_h_[1] in ("x29", ops_h_[0]) \
+                or not (ops_h_[2].startswith("#") or re.fullmatch(r"x([89]|1[0-7])", ops_h_[2])):
+            continue
+        rn_ = ops_h_[0][1:]
+        rp_ = re.compile(r"\b[xw]%s\b" % rn_)
+        calls_ = uses_ = 0
+        ok_ = True
+        for ij_ in ins[k_ + 1:]:
+            ops_j_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", ij_.op_str)]
+            mj_ = ij_.mnemonic
+            if mj_ == "mov" and len(ops_j_) == 2 and re.fullmatch(r"x[0-7]", ops_j_[0]) and ops_j_[1] == "x" + rn_:
+                if not calls_:
+                    ok_ = False
+                    break
+                uses_ += 1
+                continue
+            writes_ = not (mj_.startswith(("st", "cbz", "cbnz", "tbz", "tbnz", "cmp", "cmn", "tst", "b.", "fcmp", "ccmp", "ccmn"))
+                           or mj_ in ("b", "bl", "blr", "br", "ret"))
+            dsts_ = ops_j_[:2] if mj_ in ("ldp", "ldnp", "ldpsw") else ops_j_[:1]
+            reads_ = ops_j_[len(dsts_):] if writes_ else ops_j_
+            if any(rp_.search(o_) for o_ in reads_):
+                ok_ = False
+                break
+            if writes_ and any(rp_.fullmatch(o_) for o_ in dsts_):
+                break
+            if mj_ in ("bl", "blr"):
+                calls_ += 1
+            if mj_ in ("ret", "br") or (mj_ == "b" and not ij_.op_str.startswith("#")):
+                break
+        if ok_ and uses_:
+            hoist_adds_.add(k_)
     pair_loads_ = set()
     for k_, i_ in enumerate(ins):
         mm_ = re.fullmatch(r"x(\d+), \[(x\d+)(?:, #(0x[0-9a-f]+|\d+))?\]", i_.op_str) if i_.mnemonic in ("ldr", "ldur") else None
@@ -2684,6 +2720,14 @@ def gen_function(a, ins):
                     pwidth[x[2][1]] = nty_
                     lo_ = x[3][1] if x[1] == "-" else -x[3][1]
                     regs[dn] = ("range", x[2], lo_ & y[1], nty_)
+                if "nohoistaddr" not in knobs and k in hoist_adds_ and m == "add" and w == "x" and x[0] in ("param", "var") \
+                        and (y[0] == "const" or (y[0] == "ext" and y[2][0] == "const")) and regs[dn][0] == "bin":
+                    # an address computed early into a callee-saved register: a local declared here
+                    name = f"a{counter[0]}"; counter[0] += 1
+                    vars_[name] = "long"
+                    items.append(("lete", name, regs[dn]))
+                    regs[dn] = ("var", name)
+                    HOIST_USED[0] = True
                 if dn < 8: written.add(dn)
             else:
                 raise Fail(m)
@@ -4251,14 +4295,16 @@ for size, a in sorted(U, key=lambda x: x[1]):
             raise Fail("no call")
         ARITY_USED[0] = False
         PAIR_USED[0] = False
+        HOIST_USED[0] = False
         try:
             text, sigs, gsyms = gen_function(a, ins)
         except Fail:
-            if not (ARITY_USED[0] or PAIR_USED[0]):
+            if not (ARITY_USED[0] or PAIR_USED[0] or HOIST_USED[0]):
                 raise
-            # known argument counts or a split 64-bit load made this function fail: generate it as before
+            # known argument counts, a split 64-bit load or a hoisted address made this function fail: generate it
+            # as before
             KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | ({"noknownarity"} if ARITY_USED[0] else set()) \
-                | ({"nopair32"} if PAIR_USED[0] else set())
+                | ({"nopair32"} if PAIR_USED[0] else set()) | ({"nohoistaddr"} if HOIST_USED[0] else set())
             text, sigs, gsyms = gen_function(a, ins)
         if len(text) > 2000000:
             raise Fail("output too large")
