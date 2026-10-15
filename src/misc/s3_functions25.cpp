@@ -1,5 +1,7 @@
-// Large constructors written by hand (third session): a screen and a set of pools built from many out-of-line parts.
-// Names are descriptive placeholders. Status: matching/README.md.
+// Constructors written by hand (third session): screens, a set of pools and a frame list built from many out-of-line
+// parts. Names are descriptive placeholders. Status: matching/README.md.
+
+extern "C" void* memset(void*, int, unsigned long);
 
 // The panel base (0x40 bytes), constructed out of line.
 class PanelBase_316a64 {
@@ -183,4 +185,158 @@ PoolSet0d04c4::PoolSet0d04c4() : p8(nullptr), used_a(), used_b(), used_c(), used
     unsigned char* bytes = reinterpret_cast<unsigned char*>(items_a);
     for (int i = 0; i < 0xecb0; i++)
         bytes[i] = 0;
+}
+
+// The base of 2d14dc's screen (0x28 bytes), constructed out of line.
+class Base3c7188 {
+public:
+    Base3c7188();                                                           // 0x71003c7188
+    virtual ~Base3c7188();
+    unsigned char pad8[0x20];
+};
+
+// 0x71002d14dc: a screen on the 3c7188 base (vtable GOT 0x7100c2aaa0): a sprite, eleven icons (unrolled) and 256
+// cells (a loop counting bytes, as the array constructor's loop becomes).
+class Screen2d14dc : public Base3c7188 {
+public:
+    Screen2d14dc();
+    ~Screen2d14dc();
+
+    int i28;                     // +28
+    int i2c;                     // +2c
+    int i30;                     // +30
+    int i34;                     // +34
+    LayoutSprite sprite;         // +38
+    int i80;                     // +80
+    void* p88;                   // +88
+    void* p90;                   // +90
+    LayoutSprite icons[11];      // +98
+    LayoutSprite cells[256];     // +3b0
+    int i4bb0;                   // +4bb0
+};
+
+Screen2d14dc::Screen2d14dc() : i28(0), i30(0), i80(0), p88(nullptr), p90(nullptr), i4bb0(0) {}
+
+struct HandleState {
+    long id;                     // +08
+    short a;                     // +10
+    short b;                     // +12
+
+    HandleState() : id(-1), a(0), b(0) {}
+};
+
+// Layout handle; its vtable lives in the effect manager unit (GOT 0x7100c22f00).
+class LayoutHandle : public HandleState {
+public:
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+};
+
+struct LightResource {
+    LightResource();                                                        // 0x71005d2744
+    void* data[0x22];
+};
+
+class EffectManager {
+public:
+    void attach(LightResource* res, void* owner);                           // 0x71001e26dc
+};
+// Reached through the GOT slot at 0x7100c22a00.
+extern EffectManager* gEffectManager;
+extern const char kMid2cfc60Name[] __attribute__((visibility("hidden")));  // 0x71007d82d4
+
+struct Tail2cf74c {
+    Tail2cf74c();                                                           // 0x71002cf74c
+    void* data[2];
+};
+
+// A pointer's index and sprite. The index starts a struct of its own: as a plain member right after the sprite
+// array, its address would be the array's end and stay live across the array's loop.
+struct Pointer4970 {
+    Pointer4970() : index(0) {}
+
+    int index;                   // +00
+    LayoutSprite sprite;         // +08
+};
+
+// The middle base of 2cff80's family (vtable GOT 0x7100c2aa68), inline here: a light resource attached to the
+// effect manager, 256 sprites and a pointer.
+class Mid2cfc60 : public Base3c7188 {
+public:
+    Mid2cfc60() : i28(0), p140(nullptr), p160(nullptr), p168(nullptr), i49c0(0) {
+        p49d0 = nullptr;
+        p49c8 = nullptr;
+        b49d8 = true;
+        i49e0 = 0x41e9;
+        b49e4 = true;
+        i49e8 = 1;
+        name = kMid2cfc60Name;
+        b49f8 = false;
+        p158 = nullptr;
+        p148 = nullptr;
+        p150 = nullptr;
+        gEffectManager->attach(&res, nullptr);
+    }
+    virtual ~Mid2cfc60();
+
+    int i28;                     // +28
+    LightResource res;           // +30
+    void* p140;                  // +140
+    void* p148;                  // +148
+    void* p150;                  // +150
+    void* p158;                  // +158
+    void* p160;                  // +160
+    void* p168;                  // +168
+    LayoutSprite sprites[256];   // +170
+    Pointer4970 pointer;         // +4970
+    int i49c0;                   // +49c0
+    void* p49c8;                 // +49c8
+    void* p49d0;                 // +49d0
+    bool b49d8;                  // +49d8
+    unsigned char pad49d9[7];
+    int i49e0;                   // +49e0
+    bool b49e4;                  // +49e4
+    int i49e8;                   // +49e8
+    const char* name;            // +49f0
+    bool b49f8;                  // +49f8
+};
+
+// 0x71002cfc60: a screen on the middle base (vtable GOT 0x7100c2aa98): 256 cells, 35 icons (unrolled), a layout
+// handle, a second light resource and a last part (its constructor a tail call).
+class Screen2cfc60 : public Mid2cfc60 {
+public:
+    Screen2cfc60();
+    ~Screen2cfc60();
+
+    unsigned char pad4a00[0x68];
+    LayoutSprite cells[256];     // +4a68
+    LayoutSprite icons[35];      // +9268
+    LayoutHandle handle;         // +9c40
+    void* p9c58;                 // +9c58
+    void* p9c60;                 // +9c60
+    short s9c68;                 // +9c68
+    LightResource res2;          // +9c70
+    Tail2cf74c tail;             // +9d80
+};
+
+Screen2cfc60::Screen2cfc60() : p9c58(nullptr), p9c60(nullptr), s9c68(1) {}
+
+// 0x710033be48: fifty layout frames (unrolled) and a layout handle; the list in front is cleared last, by a body
+// memset.
+class Frames33be48 {
+public:
+    Frames33be48();
+
+    void* items[7];              // +00
+    void* p38;                   // +38
+    void* p40;                   // +40
+    LayoutFrame frames[50];      // +48
+    bool b1ad8;                  // +1ad8
+    void* p1ae0;                 // +1ae0
+    LayoutHandle handle;         // +1ae8
+};
+
+Frames33be48::Frames33be48() : p38(nullptr), p40(nullptr), b1ad8(false), p1ae0(nullptr) {
+    memset(items, 0, sizeof(items));
 }

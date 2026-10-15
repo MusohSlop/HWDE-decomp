@@ -20072,6 +20072,12 @@
     "_ZN12SubInit31364C1Ev": "0x7100031364",
     "_ZN12SubInit313644initEv": "0x7100031378",
     "got:_ZTV13PoolSet0d04c4": "0x7100c21d78",
+    "got:_ZTV12Screen2d14dc": "0x7100c2aaa0",
+    "_ZN10Base3c7188C2Ev": "0x71003c7188",
+    "got:_ZTV12Screen2cfc60": "0x7100c2aa98",
+    "got:_ZTV9Mid2cfc60": "0x7100c2aa68",
+    "_ZN10Tail2cf74cC1Ev": "0x71002cf74c",
+    "kMid2cfc60Name": "0x71007d82d4",
     "kRecordLayout": "0x71007da88e",
     "kRecordAnimA": "0x7100740004",
     "kRecordAnimB": "0x710074053d",
@@ -30489,7 +30495,10 @@
     "misc/s3_functions25.cpp": {
       "functions": {
         "_ZN12Screen31d204C2Ev": "0x710031d204",
-        "_ZN13PoolSet0d04c4C2Ev": "0x71000d04c4"
+        "_ZN13PoolSet0d04c4C2Ev": "0x71000d04c4",
+        "_ZN12Screen2d14dcC2Ev": "0x71002d14dc",
+        "_ZN12Screen2cfc60C2Ev": "0x71002cfc60",
+        "_ZN12Frames33be48C2Ev": "0x710033be48"
       }
     },
     "misc/s2_functions31.cpp": {
