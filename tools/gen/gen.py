@@ -2784,7 +2784,8 @@ def gen_function(a, ins):
                     sv = ("stackobj", st)
                     sn = struct_for(sv)
                     prev = structs[sn].get(off_ - st)
-                    if prev and prev[0] != ct and val[0] == "const" and w == "x" and SIZE.get(prev[0], 8) < 8:
+                    if prev and prev[0] != ct and val[0] == "const" and w == "x" and SIZE.get(prev[0], 8) < 8 \
+                            and vu_of_(sn, off_ - st) is None:
                         items.extend(const_pieces_(sn, off_ - st, 8, val[1], sv))
                         continue
                     if prev and prev[0] != ct and val[0] != "const" and retype_ok_(sn, off_ - st, prev[0], ct):
@@ -3431,7 +3432,7 @@ def gen_function(a, ins):
     def split_wide_const_stores(its):
         out_ = []
         for it in its:
-            if it[0] == "store" and len(it) == 5 and it[4][0] == "const" and it[4][2] == "x":
+            if it[0] == "store" and len(it) == 5 and it[4][0] == "const" and it[4][2] == "x" and vu_of_(it[1], it[2]) is None:
                 ft_ = structs[it[1]].get(it[2], ("long", None))[0]
                 if SIZE.get(ft_, 8) < 8:
                     out_.extend(const_pieces_(it[1], it[2], 8, it[4][1], it[3]))
