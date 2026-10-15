@@ -18044,7 +18044,20 @@
     "_Z13callee_1586ecPvS_": "0x71001586ec",
     "_Z13callee_163d48Pvilll": "0x7100163d48",
     "_Z13callee_196474llif": "0x7100196474",
-    "_Z13callee_1a31ecPvi": "0x71001a31ec"
+    "_Z13callee_1a31ecPvi": "0x71001a31ec",
+    "_ZN10Elem132aecC1Ev": "0x7100132aec",
+    "_ZN10Elem13ea74C1Ev": "0x710013ea74",
+    "_ZN10Elem13bce4C1Ev": "0x710013bce4",
+    "_ZN10Part13e2b4C1Ev": "0x710013e2b4",
+    "_ZN10Part14a7dcC1Ev": "0x710014a7dc",
+    "_ZN10Part13dd18C1Ev": "0x710013dd18",
+    "_ZN10Part146f30C1Ev": "0x7100146f30",
+    "_ZN10Part157d68C1Ev": "0x7100157d68",
+    "_ZN10Part154468C1Ev": "0x7100154468",
+    "_ZN10Part135e00C1Ev": "0x7100135e00",
+    "_ZN10Part140b9cC1Ev": "0x7100140b9c",
+    "_ZN10Part15e580C1Ev": "0x710015e580",
+    "_ZN9Sub15aa9cC1Ev": "0x710015aa9c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -27368,7 +27381,8 @@
         "_ZN11Class28b71010initializeEv": "0x710028b710",
         "_Z10call_d89b0P9Ctx_d89b0": "0x71000d89b0",
         "_Z10call_d98e0P9Ctx_d98e0": "0x71000d98e0",
-        "_Z10call_da854P9Ctx_da854": "0x71000da854"
+        "_Z10call_da854P9Ctx_da854": "0x71000da854",
+        "_ZN9Obj1451bcC2Ev": "0x71001451bc"
       }
     },
     "misc/variant_ctor01.cpp": {
