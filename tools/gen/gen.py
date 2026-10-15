@@ -2422,10 +2422,12 @@ def gen_function(a, ins):
                     live_i, live_f = live_at(alt_inner_ if alt_inner_ is not None else join,
                                              any(H_ <= k <= L_ for H_, L_ in loop_info))
                     keys = [(n, None) for n in set(r1) | set(r2) if isinstance(n, int)] + [(n, "f") for n in set(r1["f"]) | set(r2["f"])]
+                    if "nosortjoin" not in knobs:
+                        keys = sorted(keys, key=lambda k_: (k_[1] or "", k_[0]))
                     # spill slots are carried across the join like registers (a value saved before the branch and
                     # reloaded after it); they are memory, so no liveness test applies
                     if "nospillmerge" not in knobs:
-                        keys += [(n, "s") for n in set(r1) | set(r2) if isinstance(n, tuple) and n[0] == "spill"]
+                        keys += sorted([(n, "s") for n in set(r1) | set(r2) if isinstance(n, tuple) and n[0] == "spill"], key=repr)
                     for n, kind in keys:
                         a_ = (r1["f"] if kind == "f" else r1).get(n)
                         b_ = (r2["f"] if kind == "f" else r2).get(n)
