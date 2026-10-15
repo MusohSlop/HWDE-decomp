@@ -2398,9 +2398,23 @@ def gen_function(a, ins):
                 regs["f"][fd] = ("fconst", _st.unpack("<f", d[addr_:addr_ + 4])[0])
                 if fd < 8: regs.setdefault("fw", set()).add(fd)
                 k += 1; continue
-            if fdst and m in ("ldr", "ldur") and len(ops) == 2 and not (ops[1].startswith("[sp") or ops[1].startswith("[x29")):
+            if fdst and m in ("ldr", "ldur") and (len(ops) == 2 or (len(ops) == 3 and ops[2].startswith("#") and ops[1].endswith("]")
+                                                                     and "nofpost" not in knobs)) \
+                    and not (ops[1].startswith("[sp") or ops[1].startswith("[x29")):
                 fd = fregname(fdst)
-                b, off, idx, sh, ext, pre, post = memop2(ops[1], None)
+                b, off, idx, sh, ext, pre, post = memop2(ops[1], ops[2] if len(ops) == 3 else None)
+                if post is not None:
+                    # the load at the base, then the base advanced
+                    bnp_ = regname(b)[0]
+                    sn, base, off2 = field(regs, b, off, "float")
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off2, "float")
+                    items.append(("let", name, sn, off2, base))
+                    letbase[name] = base
+                    regs["f"][fd] = ("var", name)
+                    if fd < 8: regs.setdefault("fw", set()).add(fd)
+                    regs[bnp_] = ("bin", "+", regs.get(bnp_), ("const", post, "x"), "x", "add")
+                    k += 1; continue
                 if idx is not None:
                     # a float read through a byte offset, or a float array element
                     if sh not in (0, 2):
@@ -2505,9 +2519,17 @@ def gen_function(a, ins):
                     else:
                         items.append(("store", sn, off2, base, fuse(regs["f"], fr_)))
                 k += 1; continue
-            if ops and re.fullmatch(r"s\d+", ops[0]) and m in ("str", "stur") and len(ops) == 2 and not (ops[1].startswith("[sp") or ops[1].startswith("[x29")):
+            if ops and re.fullmatch(r"s\d+", ops[0]) and m in ("str", "stur") and (len(ops) == 2 or (len(ops) == 3 and ops[2].startswith("#")
+                                                                                      and ops[1].endswith("]") and "nofpost" not in knobs)) \
+                    and not (ops[1].startswith("[sp") or ops[1].startswith("[x29")):
                 val = fuse(regs["f"], ops[0])
-                b, off, idx, sh, ext, pre, post = memop2(ops[1], None)
+                b, off, idx, sh, ext, pre, post = memop2(ops[1], ops[2] if len(ops) == 3 else None)
+                if post is not None:
+                    bnp_ = regname(b)[0]
+                    sn, base, off2 = field(regs, b, off, "float")
+                    items.append(("store", sn, off2, base, val))
+                    regs[bnp_] = ("bin", "+", regs.get(bnp_), ("const", post, "x"), "x", "add")
+                    k += 1; continue
                 if idx is not None:
                     if sh not in (0, 2):
                         raise Fail("float addressing")
