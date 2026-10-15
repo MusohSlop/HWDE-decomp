@@ -144,7 +144,9 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - float values through general registers (knob `nofbits`): `fmov sD, wN` of a constant is that float constant and of
   an int field load retypes the field as a float; `fmov wD, sN` holds the float's bits, with `eor 0x80000000` a
   negation, `and 0x7fffffff` an absolute value, a 32-bit store a float store and `fmov` back the float (floats in
-  parameter registers, as two-float structs passed in x registers, are not modelled yet).
+  parameter registers, as two-float structs passed in x registers, are not modelled yet);
+- conditional float compares (knob `nofccmp`): `fccmp sA, sB, #nzcv, cond` is a link of the compare chain as `ccmp`
+  is for ints, and a chain may end in a float condition (`mi`, `pl`, ...).
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,

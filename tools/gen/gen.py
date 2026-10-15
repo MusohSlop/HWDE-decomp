@@ -1869,7 +1869,8 @@ def gen_function(a, ins):
                 if dregion is not None:
                     then_rng, else_rng, join = dregion
                     if m.startswith("b."):
-                        if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))):
+                        if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))
+                                             and not (flags[0] == "ccmp" and flags[3][0] == "fcmp" and m[2:] in ("mi", "pl") and "nofccmp" not in knobs)):
                             raise Fail("flags")
                         cnd = (flags, m[2:])
                     elif m in ("cbz", "cbnz"):
@@ -1947,7 +1948,8 @@ def gen_function(a, ins):
             if m.startswith("b.") or m in ("cbz", "cbnz", "tbz", "tbnz"):
                 t = addr_index[imm(ops[-1])]
                 if m.startswith("b."):
-                    if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))):
+                    if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))
+                                         and not (flags[0] == "ccmp" and flags[3][0] == "fcmp" and m[2:] in ("mi", "pl") and "nofccmp" not in knobs)):
                         raise Fail("flags")
                     cnd = (flags, m[2:])
                 elif m in ("cbz", "cbnz"):
@@ -2231,6 +2233,13 @@ def gen_function(a, ins):
                 items.append(("return", r_))
                 returns.append(r_)
                 return items
+            if m in ("fccmp", "fccmpe") and len(ops) == 4 and "nofccmp" not in knobs:
+                if flags is None:
+                    raise Fail("fccmp without flags")
+                x = fuse(regs["f"], ops[0])
+                y = fuse(regs["f"], ops[1])
+                flags = ("ccmp", flags, ops[3], ("fcmp", x, y, "s"), imm(ops[2]))
+                k += 1; continue
             if m == "fcmp" and len(ops) == 2:
                 x = fuse(regs["f"], ops[0])
                 y = ("fconst", 0.0) if ops[1].startswith("#") else fuse(regs["f"], ops[1])
@@ -3826,7 +3835,7 @@ def gen_function(a, ins):
     def cond(f, cc):
         if f is not None and f[0] == "ccmp":
             _, prev, pcc, second, nzcv = f
-            if cc not in CC:
+            if cc not in CC and not (second[0] == "fcmp" and FCC.get(cc) and "nofccmp" not in knobs):
                 raise Fail("ccmp cc")
             first_s = cond(prev, pcc)
             second_s = cond(second, cc)
