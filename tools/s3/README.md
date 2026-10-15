@@ -26,6 +26,10 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
 - `blocks.py`, `ours.py` and `regiondiff.py` are for long functions: `blocks.py` lists the differing runs with their lengths,
   `ours.py` writes our relocated disassembly in the original's address layout, and `regiondiff.py OURS.s ORIG.s START [END] [--abs]`
   prints a side-by-side diff of one region (`--abs` hides register numbers).
+- `floattry.py CPP ADDR SYMJSON [--max K] [--work DIR]` (or `--list FILE`) retypes `int` fields the function
+  stores zero to as `float`, up to K at a time: Clang merges adjacent int stores into one wider store but not
+  stores of different types, so a field that is a float in the original keeps its own `str wzr` (`3322ac`); a
+  match goes to `DIR/float_match.cpp`.
 - `ordtry.py CPP ADDR SYMJSON [--limit N] [--work DIR]` (or `--list FILE`) tries orders of a straight-line
   generated function's statements without a spec: calls keep their order, the statements between two calls are
   permuted (a use after the statement that sets the local), up to N orders; a match goes to `DIR/ord_match.cpp`.
@@ -36,7 +40,7 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
 
 ## Unattended searches
 
-`bgsearch.py` runs one of the searches above (permtry, topotry, voltry, ordtry) detached through `tools/lowprio.py` (idle
+`bgsearch.py` runs one of the searches above (permtry, topotry, voltry, ordtry, floattry) detached through `tools/lowprio.py` (idle
 priority, one job, as `docs/second_session.md` asks of unattended searches), so it only uses spare CPU, with its
 own work folder under `build/s3_perm/NAME/` (ignored by git; nothing tracked is touched). At most two run at a
 time.

@@ -2110,3 +2110,139 @@ public:
 
 Class441a44::Class441a44()
     : f8(nullptr), f10(nullptr), f18(0), f1c(-1), f830(nullptr), f880(nullptr), f888(nullptr), f890(nullptr), f898(nullptr), f8a8(0x64), f8ac(nullptr), f8b4(nullptr) {}
+
+struct Arg1f69c8_0 {
+    long field_0;                // +0
+    int field_8;                 // +8
+    int field_c;                 // +c
+    void* field_10;               // +10
+    void* field_18;               // +18
+};
+// Reached through the GOT slot at 0x7100c231d8.
+extern unsigned char gGlobalc231d8_1f69c8[];
+
+// 0x71001f69c8: stores in the original's order
+void call_1f69c8(Arg1f69c8_0* p0) {
+    p0->field_10 = nullptr;
+    p0->field_18 = nullptr;
+    p0->field_8 = 0x10000302;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc231d8_1f69c8) + 0x10);
+    p0->field_c = -1;
+}
+
+struct Arg58a28_0 {
+    long field_0;                // +0
+    void* field_8;               // +8
+    void* field_10;               // +10
+    int field_18;                 // +18
+    int field_1c;                 // +1c
+    int field_20;                 // +20
+    unsigned char pad24[0x4];
+    void* field_28;               // +28
+    void* field_30;               // +30
+};
+// Reached through the GOT slot at 0x7100c22028.
+extern unsigned char gGlobalc22028_58a28[];
+
+// 0x7100058a28: stores in the original's order
+void call_58a28(Arg58a28_0* p0) {
+    p0->field_10 = nullptr;
+    p0->field_18 = -1;
+    p0->field_1c = -1;
+    p0->field_28 = nullptr;
+    p0->field_30 = nullptr;
+    p0->field_8 = nullptr;
+    p0->field_20 = 0;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc22028_58a28) + 0x10);
+}
+
+struct Arg5b0124_0 {
+    long field_0;                // +0
+    int field_8;                 // +8
+    int field_c;                 // +c
+    int field_10;                 // +10
+    unsigned char pad14[0x4];
+    void* field_18;               // +18
+    void* field_20;               // +20
+    void* field_28;               // +28
+};
+// Reached through the GOT slot at 0x7100c2d930.
+extern unsigned char gGlobalc2d930_5b0124[];
+
+// 0x71005b0124: stores in the original's order
+void call_5b0124(Arg5b0124_0* p0) {
+    p0->field_8 = 0;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2d930_5b0124) + 0x10);
+    p0->field_c = 0;
+    p0->field_10 = 0;
+    p0->field_20 = nullptr;
+    p0->field_28 = nullptr;
+    p0->field_18 = nullptr;
+}
+
+void callee_1f4704(int);        // 0x71001f4704
+int callee_316aa4(void*);        // 0x7100316aa4
+
+struct Arg3322ac_0 {
+    long field_0;                // +0
+    unsigned char pad8[0x58];
+    int field_60;                 // +60
+    unsigned char pad64[0x4];
+    int field_68;                 // +68
+    unsigned char pad6c[0x4];
+    void* field_70;               // +70
+    int field_78;                 // +78
+    unsigned char pad7c[0x18484];
+    float field_18500;                 // +18500
+    int field_18504;                 // +18504
+    unsigned char pad18508[0x8];
+    int field_18510;                 // +18510
+    unsigned char pad18514[0x27c];
+    long field_18790;                // +18790
+};
+
+struct Globalc22f00_3322ac {
+    unsigned char pad0[0x28];
+    void* field_28;               // +28
+};
+
+struct Node3322ac_v2 {
+    unsigned char pad0[0x2af8];
+    void* field_2af8;               // +2af8
+};
+// Reached through the GOT slot at 0x7100c22f00.
+extern Globalc22f00_3322ac gGlobalc22f00_3322ac;
+// Reached through the GOT slot at 0x7100c21db0.
+extern Node3322ac_v2* gGlobalc21db0_3322ac;
+// Reached through the GOT slot at 0x7100c2ae30.
+extern unsigned char gGlobalc2ae30_3322ac[];
+
+// 0x71003322ac: the field at +18500 is a float: a zero stored as float is not merged with the int at +18504
+int call_3322ac(Arg3322ac_0* p0) {
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2ae30_3322ac) + 0x10);
+    p0->field_18500 = 0.0f;
+    p0->field_18510 = 0;
+    p0->field_18504 = 0;
+    callee_1f4704(0x11);
+    p0->field_18790 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(&gGlobalc22f00_3322ac) + 0x10);
+    void* v1 = gGlobalc22f00_3322ac.field_28;
+    Node3322ac_v2* v2 = gGlobalc21db0_3322ac;
+    long m4;
+    if (v2 != 0) {
+        void* v3 = v2->field_2af8;
+        m4 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v3) + 0x10);
+    } else {
+        m4 = 0;
+    }
+    reinterpret_cast<void (*)(long, long)>(v1)(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x18790), m4);
+    callee_5d27b4(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x18640));
+    callee_5d27b4(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x18530));
+    p0->field_60 = 0;
+    p0->field_68 = 0;
+    p0->field_70 = nullptr;
+    p0->field_78 = 0;
+    callee_1f4704(0x11);
+    callee_37f568(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x18468));
+    callee_5d27b4(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x90));
+    return callee_316aa4(p0);
+}

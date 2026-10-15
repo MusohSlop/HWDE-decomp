@@ -26060,7 +26060,11 @@
         "_Z11call_1f1c8cP11Arg1f1c8c_0": "0x71001f1c8c",
         "_Z10call_75bd4P10Arg75bd4_0": "0x7100075bd4",
         "_ZN10Class53958C2Ev": "0x7100053958",
-        "_ZN11Class441a44C2Ev": "0x7100441a44"
+        "_ZN11Class441a44C2Ev": "0x7100441a44",
+        "_Z11call_1f69c8P11Arg1f69c8_0": "0x71001f69c8",
+        "_Z10call_58a28P10Arg58a28_0": "0x7100058a28",
+        "_Z11call_5b0124P11Arg5b0124_0": "0x71005b0124",
+        "_Z11call_3322acP11Arg3322ac_0": "0x71003322ac"
       }
     },
     "misc/variant_functions74.cpp": {
