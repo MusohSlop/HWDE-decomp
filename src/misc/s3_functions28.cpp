@@ -193,3 +193,193 @@ void* call_2defc0(Arg2defc0_0* p0, void* p1) {
     p0->field_268 = c5;
     return c5;
 }
+
+int callee_4a3d34(void*);        // 0x71004a3d34
+void callee_4b24b4(long, int);        // 0x71004b24b4
+
+struct Node4c8b04_v0 {
+    unsigned char pad0[0x10];
+    int field_10;                 // +10
+    unsigned char pad14[0xc];
+    int field_20;                 // +20
+};
+
+class Node4c8b04_v15 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+
+    int field_8;                 // +8
+};
+
+class Node4c8b04_v20 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+
+    int field_8;                 // +8
+};
+
+class Node4c8b04_v25 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+
+    int field_8;                 // +8
+};
+
+class Node4c8b04_v30 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+
+    int field_8;                 // +8
+};
+
+class Node4c8b04_v35 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+
+    int field_8;                 // +8
+};
+
+struct Arg4c8b04_0 {
+    long field_0;                // +0
+    void* field_8;               // +8
+    unsigned char pad10[0x70];
+    Node4c8b04_v0* field_80;      // +80
+    Node4c8b04_v15* field_88;     // +88
+    Node4c8b04_v20* field_90;     // +90
+    Node4c8b04_v25* field_98;     // +98
+    Node4c8b04_v30* field_a0;     // +a0
+    Node4c8b04_v35* field_a8;     // +a8
+};
+
+struct Addr4c8b04_0 {
+    int field_0;                 // +0
+};
+
+struct Addr4c8b04_1 {
+    unsigned char pad0[0x4];
+    int field_4;                 // +4
+    unsigned char pad8[0x158];
+    void* field_160;               // +160
+};
+
+struct Elem4c8b04_0 {
+    unsigned char pad0[0x100];
+    void* field_100;               // +100
+    void* field_108;               // +108
+    unsigned char pad110[0xf0];
+};
+
+struct Node4c8b04_v10 {
+    unsigned char field_0[1];    // +0
+};
+
+struct Addr4c8b04_2 {
+    Node4c8b04_v10* field_0;     // +0
+};
+// Reached through the GOT slot at 0x7100c2cdb0.
+extern unsigned char gGlobalc2cdb0_4c8b04[];
+// Reached through the GOT slot at 0x7100c2cce8.
+extern unsigned char gGlobalc2cce8_4c8b04[];
+
+// 0x71004c8b04 (D2): the table's relative offset is read through its own address and added to it as a char pointer,
+// as the original does; the generator added two integers (the operands came out swapped).
+int call_4c8b04(Arg4c8b04_0* p0) {
+    Node4c8b04_v0* v0 = p0->field_80;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2cdb0_4c8b04) + 0x10);
+    if (v0 != 0) {
+        int v1 = v0->field_10;
+        if (v1 != 0) {
+            void* v2 = p0->field_8;
+            unsigned int r3 = 0;
+            int v4;
+            int v5;
+            int v7;
+            void* v8;
+            void* v9;
+            void* m12;
+            Node4c8b04_v10* v10;
+            void* v11;
+            int v14;
+            do {
+                v4 = *reinterpret_cast<int*>(reinterpret_cast<unsigned char*>(v0) + 0x20);
+                v5 = reinterpret_cast<Addr4c8b04_0*>(static_cast<long>(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v0) + 0x20 + static_cast<int>(v4)) + (static_cast<unsigned long>(static_cast<unsigned int>(r3)) << 2)))->field_0;
+                callee_4b24b4((reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v0) + 0x20 + static_cast<int>(v4)) + (static_cast<unsigned long>(static_cast<unsigned int>(r3)) << 2)) + static_cast<long>(static_cast<int>(v5)), 1);
+                v7 = reinterpret_cast<Addr4c8b04_1*>(static_cast<long>((reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v0) + 0x20 + static_cast<int>(v4)) + (static_cast<unsigned long>(static_cast<unsigned int>(r3)) << 2)) + static_cast<long>(static_cast<int>(v5))))->field_4;
+                v8 = reinterpret_cast<Elem4c8b04_0*>(gGlobalc2cce8_4c8b04)[static_cast<long>(static_cast<int>(v7))].field_100;
+                v9 = reinterpret_cast<Elem4c8b04_0*>(gGlobalc2cce8_4c8b04)[static_cast<long>(static_cast<int>(v7))].field_108;
+                if ((reinterpret_cast<long>(v9) & 1) != 0) {
+                    v10 = reinterpret_cast<Addr4c8b04_2*>(static_cast<long>(((reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v0) + 0x20 + static_cast<int>(v4)) + (static_cast<unsigned long>(static_cast<unsigned int>(r3)) << 2)) + static_cast<long>(static_cast<int>(v5))) + (reinterpret_cast<long>(v9) >> 1)))->field_0;
+                    v11 = *reinterpret_cast<void**>(&v10->field_0[reinterpret_cast<long>(v8)]);
+                    m12 = v11;
+                } else {
+                    m12 = v8;
+                }
+                reinterpret_cast<void (*)(long, void*)>(m12)(((reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v0) + 0x20 + static_cast<int>(v4)) + (static_cast<unsigned long>(static_cast<unsigned int>(r3)) << 2)) + static_cast<long>(static_cast<int>(v5))) + (reinterpret_cast<long>(v9) >> 1), v2);
+                reinterpret_cast<Addr4c8b04_1*>(static_cast<long>((reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v0) + 0x20 + static_cast<int>(v4)) + (static_cast<unsigned long>(static_cast<unsigned int>(r3)) << 2)) + static_cast<long>(static_cast<int>(v5))))->field_160 = nullptr;
+                v14 = v0->field_10;
+                r3 = r3 + 1;
+            } while (static_cast<unsigned int>(r3) < static_cast<unsigned int>(v14));
+        }
+    }
+    Node4c8b04_v15* v15 = p0->field_88;
+    if (v15 != 0) {
+        int v16 = v15->field_8;
+        v15->field_8 = v16 - 1;
+        if ((v16 - 1) == 0) {
+            v15->slot_3();
+        }
+        p0->field_88 = nullptr;
+    }
+    Node4c8b04_v20* v20 = p0->field_90;
+    if (v20 != 0) {
+        int v21 = v20->field_8;
+        v20->field_8 = v21 - 1;
+        if ((v21 - 1) == 0) {
+            v20->slot_3();
+        }
+        p0->field_90 = nullptr;
+    }
+    Node4c8b04_v25* v25 = p0->field_98;
+    if (v25 != 0) {
+        int v26 = v25->field_8;
+        v25->field_8 = v26 - 1;
+        if ((v26 - 1) == 0) {
+            v25->slot_3();
+        }
+        p0->field_98 = nullptr;
+    }
+    Node4c8b04_v30* v30 = p0->field_a0;
+    if (v30 != 0) {
+        int v31 = v30->field_8;
+        v30->field_8 = v31 - 1;
+        if ((v31 - 1) == 0) {
+            v30->slot_3();
+        }
+        p0->field_a0 = nullptr;
+    }
+    Node4c8b04_v35* v35 = p0->field_a8;
+    if (v35 != 0) {
+        int v36 = v35->field_8;
+        v35->field_8 = v36 - 1;
+        if ((v36 - 1) == 0) {
+            v35->slot_3();
+        }
+        p0->field_a8 = nullptr;
+    }
+    return callee_4a3d34(p0);
+}

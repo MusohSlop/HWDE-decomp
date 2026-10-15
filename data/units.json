@@ -20082,6 +20082,8 @@
     "_ZN10Part3192f0D1Ev": "0x71003192f0",
     "_ZN10Part310454D1Ev": "0x7100310454",
     "_ZN10Part3843f0D1Ev": "0x71003843f0",
+    "_ZN12Base3e82b0_8C2Ev": "0x71003e82b0",
+    "got:_ZTV11Class3edc2c": "0x7100c2b6d0",
     "got:_ZTV11Owner554bbc": "0x7100c2d3b0",
     "_ZN10Item5567207releaseEv": "0x7100556720",
     "_ZN10Base53e840D2Ev": "0x710053e840",
@@ -31147,14 +31149,16 @@
     },
     "misc/s3_functions28.cpp": {
       "functions": {
-        "_Z11call_2defc0P11Arg2defc0_0Pv": "0x71002defc0"
+        "_Z11call_2defc0P11Arg2defc0_0Pv": "0x71002defc0",
+        "_Z11call_4c8b04P11Arg4c8b04_0": "0x71004c8b04"
       }
     },
     "misc/s3_functions31.cpp": {
       "functions": {
         "_ZN11Class31a1e0C2Ev": "0x710031a1e0",
         "_ZN11Class37adf4C2Ev": "0x710037adf4",
-        "_ZN11Class2dbe5cC2Ev": "0x71002dbe5c"
+        "_ZN11Class2dbe5cC2Ev": "0x71002dbe5c",
+        "_ZN11Class3edc2cC2Ev": "0x71003edc2c"
       }
     },
     "misc/s5_functions04.cpp": {

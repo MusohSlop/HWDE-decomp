@@ -219,3 +219,74 @@ Class2dbe5c::Class2dbe5c()
     f258 = nullptr;
     f250 = nullptr;
 }
+
+int callee_3e82b0(void*);        // 0x71003e82b0
+
+struct Arg3edc2c_0 {
+    long field_0;                // +0
+    unsigned char pad8[0xc8];
+    void* field_d0;               // +d0
+    void* field_d8;               // +d8
+    void* field_e0;               // +e0
+    void* field_e8;               // +e8
+    int field_f0;                 // +f0
+    int field_f4;                 // +f4
+    int field_f8;                 // +f8
+    int field_fc;                 // +fc
+    int field_100;                 // +100
+    int field_104;                 // +104
+    int field_108;                 // +108
+    unsigned short field_10c;      // +10c
+    unsigned char field_10e;       // +10e
+};
+
+struct Globalc216f8_3edc2c {
+    unsigned char pad0[0x30];
+    void* field_30;               // +30
+    void* field_38;               // +38
+};
+
+struct alignas(8) Blk10_8_3edc2c {
+    unsigned char b[16];
+};
+// Reached through the GOT slot at 0x7100c216f8.
+extern Globalc216f8_3edc2c gGlobalc216f8_3edc2c;
+// Reached through the GOT slot at 0x7100c2b6d0.
+extern unsigned char gGlobalc2b6d0_3edc2c[];
+
+
+class Base3e82b0_8 {
+public:
+    Base3e82b0_8();                                                      // 0x71003e82b0
+    virtual ~Base3e82b0_8();
+    unsigned char pad8[0x0];
+};
+
+class Class3edc2c : public Base3e82b0_8 {
+public:
+    Class3edc2c();
+    virtual void v00();
+
+};
+
+// 0x71003edc2c: +f4 keeps its integer store, +fc and +100 are float stores (as integer stores, 64.0f would be derived
+// from 40.0f's register and the +f8/+fc pair merged).
+Class3edc2c::Class3edc2c() {
+    Arg3edc2c_0* p0 = reinterpret_cast<Arg3edc2c_0*>(this);
+    *reinterpret_cast<Blk10_8_3edc2c*>((reinterpret_cast<unsigned char*>(p0) + 0xc0)) = *reinterpret_cast<const Blk10_8_3edc2c*>((reinterpret_cast<unsigned char*>(&gGlobalc216f8_3edc2c) + 0x30));
+    void* v1 = gGlobalc216f8_3edc2c.field_38;
+    p0->field_d8 = v1;
+    void* v2 = gGlobalc216f8_3edc2c.field_30;
+    p0->field_f0 = 0;
+    p0->field_f4 = 0x42200000;
+    p0->field_f8 = 0;
+    *reinterpret_cast<float*>(&p0->field_fc) = 64.0f;
+    p0->field_e0 = nullptr;
+    p0->field_e8 = nullptr;
+    *reinterpret_cast<float*>(&p0->field_100) = 95000.0f;
+    p0->field_104 = -1;
+    p0->field_108 = 0;
+    p0->field_d0 = v2;
+    p0->field_10c = 0;
+    p0->field_10e = 1;
+}
