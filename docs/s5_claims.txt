@@ -1,8 +1,12 @@
 # Fifth session (branch matching-s5): hand-matching of non-constructor functions over 1,500 bytes at 0x380000 and
 # above, and the giants of that range. Generator runs should skip every address listed here.
 # working: functions being hand-matched now; matched: functions matched on matching-s5; tried: parked, with reason.
-working: 4eab78 4ebc2c 4eccf0 4eddb4 4eee68 (the vector five, handed over by main from s2: one template; 4eab78 drafted, 97 off abstracted, docs/s5_wip/4eab78.cpp)
-working: 5efb3c (6,012 B giant: a branchy state update)
+working: 4eab78 4ebc2c 4eccf0 4eddb4 4eee68 4e9984 (the vector five, handed over by main from s2, and 4e9984, a sixth copy: one template; 4eab78 drafted, 97 off abstracted, docs/s5_wip/4eab78.cpp)
+working: 4f09dc 4f17f8 4f2620 4f3448 (family a: 1,532 B each, one template, a contact search of the vector five's module; decoded, not drafted: docs/s5_wip/4f09dc.txt)
+working: 5a5b64 5a60cc 5a6634 5a6b9c 5a7104 5a766c (family c: 1,384 B each, one template; assigned by main)
+working: 503bd0 504188 3d7708 3d887c 3d98f8 (family d: 1,460 B and 1,220 B pairs/triple, one template each; assigned by main)
+# (c) and (d): none is a near miss in functions.csv (all U) or named in any doc on master.
+working: 5efb3c (6,012 B giant: an audio voice state machine, surveyed; after the families)
 working: 4030ac (13,924 B giant: surveyed, deferred to last; its large callees 402aec 406710 4068c0 406f8c 40a074 4095b8 22286c first)
 tried: 459ffc (1,920 B, in misc/text_format.cpp as a near miss, 2,168 B: the flag loop keeps its bool in the original and the length modifiers are kept as values; it writes the statics 45a850 needs)
 tried: 45b158 (2,464 B, 2,520 B here: padding loops solved by an explicit cap == 0 fill path; the sign mask, the a-f test and the frame size remain; docs/s5_wip/45b158.cpp)
