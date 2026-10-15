@@ -30424,6 +30424,24 @@
         "_Z11call_60005cPv": "0x710060005c",
         "_Z11call_600164P11Arg600164_0": "0x7100600164"
       }
+    },
+    "misc/s5_functions06.cpp": {
+      "functions": {
+        "_ZN9Ctx5a5b643setILi0ELb0EXadL_ZN13Uniform5a5b644loc0EEEXadL_ZNS1_6count0EEEEEvPKS1_": "0x71005a5b64",
+        "_ZN9Ctx5a5b643setILi4ELb0EXadL_ZN13Uniform5a5b644loc4EEEXadL_ZNS1_6count4EEEEEvPKS1_": "0x71005a60cc",
+        "_ZN9Ctx5a5b643setILi1ELb1EXadL_ZN13Uniform5a5b644loc1EEEXadL_ZNS1_6count1EEEEEvPKS1_": "0x71005a6634",
+        "_ZN9Ctx5a5b643setILi2ELb1EXadL_ZN13Uniform5a5b644loc2EEEXadL_ZNS1_6count2EEEEEvPKS1_": "0x71005a6b9c",
+        "_ZN9Ctx5a5b643setILi3ELb1EXadL_ZN13Uniform5a5b644loc3EEEXadL_ZNS1_6count3EEEEEvPKS1_": "0x71005a7104",
+        "_ZN9Ctx5a5b643setILi5ELb1EXadL_ZN13Uniform5a5b644loc5EEEXadL_ZNS1_6count5EEEEEvPKS1_": "0x71005a766c"
+      },
+      "map": {
+        ".rodata._ZN9Ctx5a5b643setILi0ELb0EXadL_ZN13Uniform5a5b644loc0EEEXadL_ZNS1_6count0EEEEEvPKS1_": "0x7100a98948",
+        ".rodata._ZN9Ctx5a5b643setILi4ELb0EXadL_ZN13Uniform5a5b644loc4EEEXadL_ZNS1_6count4EEEEEvPKS1_": "0x7100a98980",
+        ".rodata._ZN9Ctx5a5b643setILi1ELb1EXadL_ZN13Uniform5a5b644loc1EEEXadL_ZNS1_6count1EEEEEvPKS1_": "0x7100a989b8",
+        ".rodata._ZN9Ctx5a5b643setILi2ELb1EXadL_ZN13Uniform5a5b644loc2EEEXadL_ZNS1_6count2EEEEEvPKS1_": "0x7100a989f0",
+        ".rodata._ZN9Ctx5a5b643setILi3ELb1EXadL_ZN13Uniform5a5b644loc3EEEXadL_ZNS1_6count3EEEEEvPKS1_": "0x7100a98a28",
+        ".rodata._ZN9Ctx5a5b643setILi5ELb1EXadL_ZN13Uniform5a5b644loc5EEEXadL_ZNS1_6count5EEEEEvPKS1_": "0x7100a98a60"
+      }
     }
   }
 }
