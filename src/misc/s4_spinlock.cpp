@@ -3,22 +3,76 @@
 
 #include "misc/s4_spinlock.h"
 
+inline void* operator new(unsigned long, void* p) noexcept { return p; }
+
 struct LockedEntry {
+    LockedEntry();                                                          // 0x71004a295c
+    void* setup_4a35e8(char* data, struct GameHeap* heap, void* user);     // 0x71004a35e8
     void update_4a32fc();                                                   // 0x71004a32fc
     void flush_4a3358();                                                    // 0x71004a3358
     unsigned char data[0xf0];
 };
 
 // A spin lock at +60 guarding a four-slot sum ring (+30) with its counters and a flag word at +68.
+struct GameHeap;
+struct HeapTag {
+    HeapTag(short t) : tag(t), flags(0), extra(0) {}
+
+    short tag;                // +00
+    short flags;              // +02
+    long extra;               // +08
+};
+struct GameHeap {
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+    virtual void v18();
+    virtual void v20();
+    virtual void v28();
+    virtual void v30();
+    virtual void* alloc(unsigned long size, const HeapTag& tag);  // +38
+};
+struct ObjectManager {
+    unsigned char pad0[0x10];
+    GameHeap* heap;           // +10
+};
+// Reached through the GOT slot at 0x7100c21de8.
+extern ObjectManager* gObjectManager;
+
+struct LockedSourceInfo {
+    unsigned char pad0[0x14];
+    unsigned int offsets[1];  // +14
+};
+class LockedSource {
+public:
+    char* data_49ba44();                                                    // 0x710049ba44
+    unsigned int count_49ba4c();                                            // 0x710049ba4c
+};
+
+// Its vtable is reached through the GOT slot at 0x7100c2cbb0.
 class LockedFlags {
 public:
+    LockedFlags(GameHeap* h, unsigned int n) : refcount(0), heap(h), lock(0), entry_count(n), flags(0) {
+        for (unsigned int i = 1; i < entry_count; i++) new (&entries[i]) LockedEntry();
+    }
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+    virtual void destroy();   // +18
+
+    static LockedFlags* create(LockedSource* source, GameHeap* heap, void* user);
+    void finish_49c290(char* data);                                         // 0x710049c290
     bool ready();
     void clear_ready();
     void commit();
     int push(float value);
     void flush();
 
-    unsigned char pad0[0x30];
+    int refcount;             // +08
+    void* a10 = 0;            // +10
+    void* a18 = 0;            // +18
+    GameHeap* heap;           // +20
+    void* a28 = 0;            // +28
     float ring[4];            // +30
     unsigned int count;       // +40
     unsigned int start;       // +44

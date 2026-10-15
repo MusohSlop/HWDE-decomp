@@ -22073,7 +22073,13 @@
     "_Z13callee_3874c8Pvii": "0x71003874c8",
     "_Z13callee_39d938Pvl": "0x710039d938",
     "_Z13callee_4624c8lPv": "0x71004624c8",
-    "_Z13callee_4a2fb0PviiS_S_": "0x71004a2fb0"
+    "_Z13callee_4a2fb0PviiS_S_": "0x71004a2fb0",
+    "_ZN11LockedEntryC1Ev": "0x71004a295c",
+    "_ZN11LockedEntry12setup_4a35e8EPcP8GameHeapPv": "0x71004a35e8",
+    "_ZN12LockedSource11data_49ba44Ev": "0x710049ba44",
+    "_ZN12LockedSource12count_49ba4cEv": "0x710049ba4c",
+    "_ZN11LockedFlags13finish_49c290EPc": "0x710049c290",
+    "got:_ZTV11LockedFlags": "0x7100c2cbb0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
