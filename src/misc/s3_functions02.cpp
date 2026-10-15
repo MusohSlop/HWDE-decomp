@@ -1933,3 +1933,1307 @@ Class118e44::Class118e44() {
     p0->field_43480 = 0;
     p0->field_43478 = nullptr;
 }
+
+
+
+void callee_1e41d8(void*, void*, int);        // 0x71001e41d8
+int callee_1e73c0(void*, void*, void*, int, int, int, float, float);        // 0x71001e73c0
+void callee_1f0140(void*);        // 0x71001f0140
+void* callee2_1f8224(void*, void*);        // 0x71001f8224
+void* callee_2aae3c();        // 0x71002aae3c
+void* callee_5dec80(void*, long);        // 0x71005dec80
+
+struct Vec2 {
+    float x;
+    float y;
+    Vec2(float x_, float y_) : x(x_), y(y_) {}
+};
+
+class Node369d3c_v229 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+    virtual void slot_4();
+    virtual void slot_5();
+    virtual void slot_6();
+    virtual void slot_7();
+    virtual void slot_8();
+    virtual void slot_9();
+    virtual void slot_10();
+    virtual void slot_11();
+    virtual void* slot_12(void*, int);
+
+    unsigned char pad8[0x28];
+    float field_30;               // +30
+    Vec2 field_34;                // +34
+    unsigned char pad3c[0x1c];
+    unsigned char field_58;       // +58
+};
+
+struct Node369d3c_v228 {
+    unsigned char pad0[0x18];
+    Node369d3c_v229* field_18;    // +18
+};
+
+class Node369d3c_v263 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+    virtual void slot_4();
+    virtual void slot_5();
+    virtual void slot_6();
+    virtual void slot_7();
+    virtual void slot_8();
+    virtual void slot_9();
+    virtual void slot_10();
+    virtual void slot_11();
+    virtual void* slot_12(void*, int);
+};
+
+struct Node369d3c_v262 {
+    unsigned char pad0[0x18];
+    Node369d3c_v263* field_18;    // +18
+};
+
+struct Node369d3c_v288 {
+    unsigned char pad0[0x34];
+    float field_34;               // +34
+    unsigned char pad38[0x20];
+    unsigned char field_58;       // +58
+    unsigned char pad59[0x2];
+    unsigned char field_5b;       // +5b
+};
+
+struct Node369d3c_v305 {
+    unsigned char pad0[0x5b];
+    union {
+        unsigned char field_5b;
+        struct {
+            unsigned char bf5b_0 : 2;
+            unsigned char bfpad5b_2 : 6;
+        };
+    };                // +5b
+};
+
+struct Node369d3c_v300 {
+    unsigned char pad0[0x5b];
+    unsigned char field_5b;       // +5b
+};
+
+struct Arg369d3c_0 {
+    Node369d3c_v228* field_0;    // +0
+    Node369d3c_v262* field_8;    // +8
+    void* field_10;               // +10
+    void* field_18;               // +18
+    void* field_20;               // +20
+    void* field_28;               // +28
+    void* field_30;               // +30
+    void* field_38;               // +38
+    void* field_40;               // +40
+    void* field_48;               // +48
+    unsigned char pad50[0x10];
+    void* field_60;               // +60
+    void* field_68;               // +68
+    void* field_70;               // +70
+    void* field_78;               // +78
+    void* field_80;               // +80
+    unsigned char field_88[1];    // +88
+    unsigned char pad89[0x87];
+    unsigned char field_110[1];    // +110
+    unsigned char pad111[0x87];
+    unsigned char field_198[1];    // +198
+    unsigned char pad199[0x87];
+    unsigned char field_220[1];    // +220
+    unsigned char pad221[0x87];
+    unsigned char field_2a8[1];    // +2a8
+    unsigned char pad2a9[0x87];
+    unsigned char field_330[1];    // +330
+    unsigned char pad331[0x87];
+    unsigned char field_3b8[1];    // +3b8
+    unsigned char pad3b9[0x87];
+    unsigned char field_440[1];    // +440
+    unsigned char pad441[0x87];
+    unsigned char field_4c8[1];    // +4c8
+    unsigned char pad4c9[0x87];
+    unsigned char field_550[1];    // +550
+    unsigned char pad551[0x87];
+    unsigned char field_5d8[1];    // +5d8
+    unsigned char pad5d9[0x87];
+    unsigned char field_660[1];    // +660
+    unsigned char pad661[0x87];
+    unsigned char field_6e8[1];    // +6e8
+    unsigned char pad6e9[0x87];
+    unsigned char field_770[1];    // +770
+    unsigned char pad771[0x87];
+    unsigned char field_7f8[1];    // +7f8
+    unsigned char pad7f9[0x87];
+    unsigned char field_880[1];    // +880
+    unsigned char pad881[0x87];
+    unsigned char field_908[1];    // +908
+    unsigned char pad909[0x87];
+    unsigned char field_990[1];    // +990
+    unsigned char pad991[0x87];
+    unsigned char field_a18[1];    // +a18
+    unsigned char pada19[0x87];
+    unsigned char field_aa0[1];    // +aa0
+    unsigned char padaa1[0x87];
+    unsigned char field_b28[1];    // +b28
+    unsigned char padb29[0x87];
+    unsigned char field_bb0[1];    // +bb0
+    unsigned char padbb1[0x87];
+    unsigned char field_c38[1];    // +c38
+    unsigned char padc39[0x87];
+    unsigned char field_cc0[1];    // +cc0
+    unsigned char padcc1[0x87];
+    unsigned char field_d48[1];    // +d48
+    unsigned char padd49[0x87];
+    unsigned char field_dd0[1];    // +dd0
+    unsigned char paddd1[0x87];
+    unsigned char field_e58[1];    // +e58
+    unsigned char pade59[0x87];
+    unsigned char field_ee0[1];    // +ee0
+    unsigned char padee1[0x87];
+    unsigned char field_f68[1];    // +f68
+    unsigned char padf69[0x87];
+    unsigned char field_ff0[1];    // +ff0
+    unsigned char padff1[0x87];
+    unsigned char field_1078[1];    // +1078
+    unsigned char pad1079[0x87];
+    unsigned char field_1100[1];    // +1100
+    unsigned char pad1101[0x87];
+    unsigned char field_1188[1];    // +1188
+    unsigned char pad1189[0x87];
+    unsigned char field_1210[1];    // +1210
+    unsigned char pad1211[0x87];
+    unsigned char field_1298[1];    // +1298
+    unsigned char pad1299[0x87];
+    unsigned char field_1320[1];    // +1320
+    unsigned char pad1321[0x87];
+    unsigned char field_13a8[1];    // +13a8
+    unsigned char pad13a9[0x87];
+    unsigned char field_1430[1];    // +1430
+    unsigned char pad1431[0x87];
+    unsigned char field_14b8[1];    // +14b8
+    unsigned char pad14b9[0x87];
+    unsigned char field_1540[1];    // +1540
+    unsigned char pad1541[0x87];
+    unsigned char field_15c8[1];    // +15c8
+    unsigned char pad15c9[0x87];
+    unsigned char field_1650[1];    // +1650
+    unsigned char pad1651[0x87];
+    unsigned char field_16d8[1];    // +16d8
+    unsigned char pad16d9[0x87];
+    unsigned char field_1760[1];    // +1760
+    unsigned char pad1761[0x87];
+    unsigned char field_17e8[1];    // +17e8
+    unsigned char pad17e9[0x87];
+    unsigned char field_1870[1];    // +1870
+    unsigned char pad1871[0x87];
+    unsigned char field_18f8[1];    // +18f8
+    unsigned char pad18f9[0x87];
+    unsigned char field_1980[1];    // +1980
+    unsigned char pad1981[0x87];
+    unsigned char field_1a08[1];    // +1a08
+    unsigned char pad1a09[0x87];
+    unsigned char field_1a90[1];    // +1a90
+    unsigned char pad1a91[0x87];
+    unsigned char field_1b18[1];    // +1b18
+    unsigned char pad1b19[0x87];
+    unsigned char field_1ba0[1];    // +1ba0
+    unsigned char pad1ba1[0x87];
+    unsigned char field_1c28[1];    // +1c28
+    unsigned char pad1c29[0x87];
+    unsigned char field_1cb0[1];    // +1cb0
+    unsigned char pad1cb1[0x87];
+    unsigned char field_1d38[1];    // +1d38
+    unsigned char pad1d39[0x87];
+    unsigned char field_1dc0[1];    // +1dc0
+    unsigned char pad1dc1[0x87];
+    unsigned char field_1e48[1];    // +1e48
+    unsigned char pad1e49[0x87];
+    unsigned char field_1ed0[1];    // +1ed0
+    unsigned char pad1ed1[0x87];
+    unsigned char field_1f58[1];    // +1f58
+    unsigned char pad1f59[0x87];
+    unsigned char field_1fe0[1];    // +1fe0
+    unsigned char pad1fe1[0x87];
+    unsigned char field_2068[1];    // +2068
+    unsigned char pad2069[0x87];
+    unsigned char field_20f0[1];    // +20f0
+    unsigned char pad20f1[0x87];
+    unsigned char field_2178[1];    // +2178
+    unsigned char pad2179[0x87];
+    unsigned char field_2200[1];    // +2200
+    unsigned char pad2201[0x87];
+    unsigned char field_2288[1];    // +2288
+    unsigned char pad2289[0x87];
+    unsigned char field_2310[1];    // +2310
+    unsigned char pad2311[0x87];
+    unsigned char field_2398[1];    // +2398
+    unsigned char pad2399[0x87];
+    unsigned char field_2420[1];    // +2420
+    unsigned char pad2421[0x87];
+    unsigned char field_24a8[1];    // +24a8
+    unsigned char pad24a9[0x87];
+    unsigned char field_2530[1];    // +2530
+    unsigned char pad2531[0x87];
+    unsigned char field_25b8[1];    // +25b8
+    unsigned char pad25b9[0x87];
+    unsigned char field_2640[1];    // +2640
+    unsigned char pad2641[0x87];
+    unsigned char field_26c8[1];    // +26c8
+    unsigned char pad26c9[0x87];
+    unsigned char field_2750[1];    // +2750
+    unsigned char pad2751[0x87];
+    unsigned char field_27d8[1];    // +27d8
+    unsigned char pad27d9[0x87];
+    unsigned char field_2860[1];    // +2860
+    unsigned char pad2861[0x87];
+    unsigned char field_28e8[1];    // +28e8
+    unsigned char pad28e9[0x87];
+    unsigned char field_2970[1];    // +2970
+    unsigned char pad2971[0x87];
+    unsigned char field_29f8[1];    // +29f8
+    unsigned char pad29f9[0x87];
+    unsigned char field_2a80[1];    // +2a80
+    unsigned char pad2a81[0x87];
+    unsigned char field_2b08[1];    // +2b08
+    unsigned char pad2b09[0x87];
+    unsigned char field_2b90[1];    // +2b90
+    unsigned char pad2b91[0x87];
+    unsigned char field_2c18[1];    // +2c18
+    unsigned char pad2c19[0x87];
+    unsigned char field_2ca0[1];    // +2ca0
+    unsigned char pad2ca1[0x87];
+    unsigned char field_2d28[1];    // +2d28
+    unsigned char pad2d29[0x87];
+    unsigned char field_2db0[1];    // +2db0
+    unsigned char pad2db1[0x87];
+    unsigned char field_2e38[1];    // +2e38
+    unsigned char pad2e39[0x87];
+    unsigned char field_2ec0[1];    // +2ec0
+    unsigned char pad2ec1[0x87];
+    unsigned char field_2f48[1];    // +2f48
+    unsigned char pad2f49[0x87];
+    unsigned char field_2fd0[1];    // +2fd0
+    unsigned char pad2fd1[0x87];
+    unsigned char field_3058[1];    // +3058
+    unsigned char pad3059[0x87];
+    unsigned char field_30e0[1];    // +30e0
+    unsigned char pad30e1[0x87];
+    unsigned char field_3168[1];    // +3168
+    unsigned char pad3169[0x87];
+    unsigned char field_31f0[1];    // +31f0
+    unsigned char pad31f1[0x87];
+    unsigned char field_3278[1];    // +3278
+    unsigned char pad3279[0x87];
+    unsigned char field_3300[1];    // +3300
+    unsigned char pad3301[0x87];
+    unsigned char field_3388[1];    // +3388
+    unsigned char pad3389[0x87];
+    unsigned char field_3410[1];    // +3410
+    unsigned char pad3411[0x87];
+    unsigned char field_3498[1];    // +3498
+    unsigned char pad3499[0x87];
+    unsigned char field_3520[1];    // +3520
+    unsigned char pad3521[0x87];
+    unsigned char field_35a8[1];    // +35a8
+    unsigned char pad35a9[0x87];
+    unsigned char field_3630[1];    // +3630
+    unsigned char pad3631[0x87];
+    unsigned char field_36b8[1];    // +36b8
+    unsigned char pad36b9[0x87];
+    unsigned char field_3740[1];    // +3740
+    unsigned char pad3741[0x87];
+    unsigned char field_37c8[1];    // +37c8
+    unsigned char pad37c9[0x87];
+    unsigned char field_3850[1];    // +3850
+    unsigned char pad3851[0x87];
+    unsigned char field_38d8[1];    // +38d8
+    unsigned char pad38d9[0x87];
+    unsigned char field_3960[1];    // +3960
+    unsigned char pad3961[0x87];
+    unsigned char field_39e8[1];    // +39e8
+    unsigned char pad39e9[0x87];
+    unsigned char field_3a70[1];    // +3a70
+    unsigned char pad3a71[0x87];
+    unsigned char field_3af8[1];    // +3af8
+    unsigned char pad3af9[0x87];
+    unsigned char field_3b80[1];    // +3b80
+    unsigned char pad3b81[0x87];
+    unsigned char field_3c08[1];    // +3c08
+    unsigned char pad3c09[0x87];
+    unsigned char field_3c90[1];    // +3c90
+    unsigned char pad3c91[0x87];
+    unsigned char field_3d18[1];    // +3d18
+    unsigned char pad3d19[0x87];
+    unsigned char field_3da0[1];    // +3da0
+    unsigned char pad3da1[0x87];
+    unsigned char field_3e28[1];    // +3e28
+    unsigned char pad3e29[0x87];
+    unsigned char field_3eb0[1];    // +3eb0
+    unsigned char pad3eb1[0x87];
+    unsigned char field_3f38[1];    // +3f38
+    unsigned char pad3f39[0x87];
+    unsigned char field_3fc0[1];    // +3fc0
+    unsigned char pad3fc1[0x87];
+    unsigned char field_4048[1];    // +4048
+    unsigned char pad4049[0x87];
+    unsigned char field_40d0[1];    // +40d0
+    unsigned char pad40d1[0x87];
+    unsigned char field_4158[1];    // +4158
+    unsigned char pad4159[0x87];
+    unsigned char field_41e0[1];    // +41e0
+    unsigned char pad41e1[0x87];
+    unsigned char field_4268[1];    // +4268
+    unsigned char pad4269[0x87];
+    unsigned char field_42f0[1];    // +42f0
+    unsigned char pad42f1[0x87];
+    unsigned char field_4378[1];    // +4378
+    unsigned char pad4379[0x87];
+    unsigned char field_4400[1];    // +4400
+    unsigned char pad4401[0x87];
+    unsigned char field_4488[1];    // +4488
+    unsigned char pad4489[0x87];
+    unsigned char field_4510[1];    // +4510
+    unsigned char pad4511[0x87];
+    unsigned char field_4598[1];    // +4598
+    unsigned char pad4599[0x87];
+    unsigned char field_4620[1];    // +4620
+    unsigned char pad4621[0x87];
+    unsigned char field_46a8[1];    // +46a8
+    unsigned char pad46a9[0x87];
+    unsigned char field_4730[1];    // +4730
+    unsigned char pad4731[0x87];
+    unsigned char field_47b8[1];    // +47b8
+    unsigned char pad47b9[0x87];
+    unsigned char field_4840[1];    // +4840
+    unsigned char pad4841[0x87];
+    unsigned char field_48c8[1];    // +48c8
+    unsigned char pad48c9[0x87];
+    unsigned char field_4950[1];    // +4950
+    unsigned char pad4951[0x87];
+    unsigned char field_49d8[1];    // +49d8
+    unsigned char pad49d9[0x87];
+    unsigned char field_4a60[1];    // +4a60
+    unsigned char pad4a61[0x87];
+    unsigned char field_4ae8[1];    // +4ae8
+    unsigned char pad4ae9[0x87];
+    unsigned char field_4b70[1];    // +4b70
+    unsigned char pad4b71[0x87];
+    unsigned char field_4bf8[1];    // +4bf8
+    unsigned char pad4bf9[0x87];
+    unsigned char field_4c80[1];    // +4c80
+    unsigned char pad4c81[0x87];
+    unsigned char field_4d08[1];    // +4d08
+    unsigned char pad4d09[0x87];
+    unsigned char field_4d90[1];    // +4d90
+    unsigned char pad4d91[0x87];
+    unsigned char field_4e18[1];    // +4e18
+    unsigned char pad4e19[0x87];
+    unsigned char field_4ea0[1];    // +4ea0
+    unsigned char pad4ea1[0x87];
+    unsigned char field_4f28[1];    // +4f28
+    unsigned char pad4f29[0x87];
+    unsigned char field_4fb0[1];    // +4fb0
+    unsigned char pad4fb1[0x87];
+    unsigned char field_5038[1];    // +5038
+    unsigned char pad5039[0x87];
+    unsigned char field_50c0[1];    // +50c0
+    unsigned char pad50c1[0x87];
+    unsigned char field_5148[1];    // +5148
+    unsigned char pad5149[0x87];
+    unsigned char field_51d0[1];    // +51d0
+    unsigned char pad51d1[0x87];
+    unsigned char field_5258[1];    // +5258
+    unsigned char pad5259[0x87];
+    unsigned char field_52e0[1];    // +52e0
+    unsigned char pad52e1[0x87];
+    unsigned char field_5368[1];    // +5368
+    unsigned char pad5369[0x87];
+    unsigned char field_53f0[1];    // +53f0
+    unsigned char pad53f1[0x87];
+    unsigned char field_5478[1];    // +5478
+    unsigned char pad5479[0x87];
+    unsigned char field_5500[1];    // +5500
+    unsigned char pad5501[0x87];
+    unsigned char field_5588[1];    // +5588
+    unsigned char pad5589[0x87];
+    unsigned char field_5610[1];    // +5610
+    unsigned char pad5611[0x87];
+    unsigned char field_5698[1];    // +5698
+    unsigned char pad5699[0x87];
+    unsigned char field_5720[1];    // +5720
+    unsigned char pad5721[0x87];
+    unsigned char field_57a8[1];    // +57a8
+    unsigned char pad57a9[0x87];
+    unsigned char field_5830[1];    // +5830
+    unsigned char pad5831[0x87];
+    unsigned char field_58b8[1];    // +58b8
+    unsigned char pad58b9[0x87];
+    unsigned char field_5940[1];    // +5940
+    unsigned char pad5941[0x87];
+    unsigned char field_59c8[1];    // +59c8
+    unsigned char pad59c9[0x87];
+    unsigned char field_5a50[1];    // +5a50
+    unsigned char pad5a51[0x87];
+    unsigned char field_5ad8[1];    // +5ad8
+    unsigned char pad5ad9[0x87];
+    unsigned char field_5b60[1];    // +5b60
+    unsigned char pad5b61[0x87];
+    unsigned char field_5be8[1];    // +5be8
+    unsigned char pad5be9[0x87];
+    unsigned char field_5c70[1];    // +5c70
+    unsigned char pad5c71[0x87];
+    unsigned char field_5cf8[1];    // +5cf8
+    unsigned char pad5cf9[0x87];
+    unsigned char field_5d80[1];    // +5d80
+    unsigned char pad5d81[0x87];
+    unsigned char field_5e08[1];    // +5e08
+    unsigned char pad5e09[0x87];
+    unsigned char field_5e90[1];    // +5e90
+    unsigned char pad5e91[0x87];
+    unsigned char field_5f18[1];    // +5f18
+    unsigned char pad5f19[0x87];
+    unsigned char field_5fa0[1];    // +5fa0
+    unsigned char pad5fa1[0x87];
+    unsigned char field_6028[1];    // +6028
+    unsigned char pad6029[0x87];
+    unsigned char field_60b0[1];    // +60b0
+    unsigned char pad60b1[0x87];
+    unsigned char field_6138[1];    // +6138
+    unsigned char pad6139[0x87];
+    unsigned char field_61c0[1];    // +61c0
+    unsigned char pad61c1[0x87];
+    unsigned char field_6248[1];    // +6248
+    unsigned char pad6249[0x87];
+    unsigned char field_62d0[1];    // +62d0
+    unsigned char pad62d1[0x87];
+    unsigned char field_6358[1];    // +6358
+    unsigned char pad6359[0x87];
+    unsigned char field_63e0[1];    // +63e0
+    unsigned char pad63e1[0x87];
+    unsigned char field_6468[1];    // +6468
+    unsigned char pad6469[0x87];
+    unsigned char field_64f0[1];    // +64f0
+    unsigned char pad64f1[0x87];
+    unsigned char field_6578[1];    // +6578
+    unsigned char pad6579[0x87];
+    unsigned char field_6600[1];    // +6600
+    unsigned char pad6601[0x87];
+    unsigned char field_6688[1];    // +6688
+    unsigned char pad6689[0x87];
+    unsigned char field_6710[1];    // +6710
+    unsigned char pad6711[0x87];
+    unsigned char field_6798[1];    // +6798
+    unsigned char pad6799[0x87];
+    unsigned char field_6820[1];    // +6820
+    unsigned char pad6821[0x87];
+    unsigned char field_68a8[1];    // +68a8
+    unsigned char pad68a9[0x87];
+    unsigned char field_6930[1];    // +6930
+    unsigned char pad6931[0x87];
+    unsigned char field_69b8[1];    // +69b8
+    unsigned char pad69b9[0x87];
+    unsigned char field_6a40[1];    // +6a40
+    unsigned char pad6a41[0x87];
+    unsigned char field_6ac8[1];    // +6ac8
+    unsigned char pad6ac9[0x87];
+    unsigned char field_6b50[1];    // +6b50
+    unsigned char pad6b51[0x87];
+    unsigned char field_6bd8[1];    // +6bd8
+    unsigned char pad6bd9[0x87];
+    unsigned char field_6c60[1];    // +6c60
+    unsigned char pad6c61[0x87];
+    unsigned char field_6ce8[1];    // +6ce8
+    unsigned char pad6ce9[0x87];
+    unsigned char field_6d70[1];    // +6d70
+    unsigned char pad6d71[0x87];
+    unsigned char field_6df8[1];    // +6df8
+    unsigned char pad6df9[0x87];
+    unsigned char field_6e80[1];    // +6e80
+    unsigned char pad6e81[0x87];
+    unsigned char field_6f08[1];    // +6f08
+    unsigned char pad6f09[0x87];
+    unsigned char field_6f90[1];    // +6f90
+    unsigned char pad6f91[0x87];
+    unsigned char field_7018[1];    // +7018
+    unsigned char pad7019[0x87];
+    unsigned char field_70a0[1];    // +70a0
+    unsigned char pad70a1[0x87];
+    unsigned char field_7128[1];    // +7128
+    unsigned char pad7129[0x87];
+    unsigned char field_71b0[1];    // +71b0
+    unsigned char pad71b1[0x87];
+    unsigned char field_7238[1];    // +7238
+    unsigned char pad7239[0x87];
+    unsigned char field_72c0[1];    // +72c0
+    unsigned char pad72c1[0x87];
+    unsigned char field_7348[1];    // +7348
+    unsigned char pad7349[0x87];
+    unsigned char field_73d0[1];    // +73d0
+    unsigned char pad73d1[0x87];
+    unsigned char field_7458[1];    // +7458
+    unsigned char pad7459[0x87];
+    unsigned char field_74e0[1];    // +74e0
+    unsigned char pad74e1[0x87];
+    unsigned char field_7568[1];    // +7568
+    unsigned char pad7569[0x87];
+    unsigned char field_75f0[1];    // +75f0
+    unsigned char pad75f1[0x87];
+    unsigned char field_7678[1];    // +7678
+    unsigned char pad7679[0x87];
+    unsigned char field_7700[1];    // +7700
+    unsigned char pad7701[0x87];
+    Node369d3c_v288* field_7788;    // +7788
+    Node369d3c_v305* field_7790;    // +7790
+    Node369d3c_v300* field_7798;    // +7798
+    void* field_77a0;               // +77a0
+    void* field_77a8;               // +77a8
+    long field_77b0;                // +77b0
+    long field_77b8;                // +77b8
+    unsigned short field_77c0;      // +77c0
+    unsigned short field_77c2;      // +77c2
+    unsigned char pad77c4[0xc];
+    void* field_77d0;               // +77d0
+    long field_77d8;                // +77d8
+    long field_77e0;                // +77e0
+    unsigned short field_77e8;      // +77e8
+    unsigned short field_77ea;      // +77ea
+    unsigned char pad77ec[0xc];
+    void* field_77f8;               // +77f8
+    long field_7800;                // +7800
+    long field_7808;                // +7808
+    unsigned short field_7810;      // +7810
+    unsigned short field_7812;      // +7812
+    unsigned char pad7814[0xc];
+    void* field_7820;               // +7820
+    long field_7828;                // +7828
+    long field_7830;                // +7830
+    unsigned short field_7838;      // +7838
+    unsigned short field_783a;      // +783a
+    unsigned char pad783c[0xc];
+    void* field_7848;               // +7848
+    long field_7850;                // +7850
+    long field_7858;                // +7858
+    unsigned short field_7860;      // +7860
+    unsigned short field_7862;      // +7862
+    unsigned char pad7864[0xc];
+    void* field_7870;               // +7870
+    long field_7878;                // +7878
+    long field_7880;                // +7880
+    unsigned short field_7888;      // +7888
+    unsigned short field_788a;      // +788a
+    unsigned char pad788c[0xc];
+    void* field_7898;               // +7898
+    long field_78a0;                // +78a0
+    long field_78a8;                // +78a8
+    unsigned short field_78b0;      // +78b0
+    unsigned short field_78b2;      // +78b2
+    unsigned char pad78b4[0xc];
+    void* field_78c0;               // +78c0
+    long field_78c8;                // +78c8
+    long field_78d0;                // +78d0
+    unsigned short field_78d8;      // +78d8
+    unsigned short field_78da;      // +78da
+    unsigned char pad78dc[0xc];
+    void* field_78e8;               // +78e8
+    long field_78f0;                // +78f0
+    long field_78f8;                // +78f8
+    unsigned short field_7900;      // +7900
+    unsigned short field_7902;      // +7902
+    unsigned char pad7904[0xc];
+    void* field_7910;               // +7910
+    long field_7918;                // +7918
+    long field_7920;                // +7920
+    unsigned short field_7928;      // +7928
+    unsigned short field_792a;      // +792a
+    unsigned char pad792c[0xc];
+    void* field_7938;               // +7938
+    long field_7940;                // +7940
+    long field_7948;                // +7948
+    unsigned short field_7950;      // +7950
+    unsigned short field_7952;      // +7952
+    unsigned char pad7954[0xc];
+    void* field_7960;               // +7960
+    long field_7968;                // +7968
+    long field_7970;                // +7970
+    unsigned short field_7978;      // +7978
+    unsigned short field_797a;      // +797a
+    unsigned char pad797c[0xc];
+    void* field_7988;               // +7988
+    long field_7990;                // +7990
+    long field_7998;                // +7998
+    unsigned short field_79a0;      // +79a0
+    unsigned short field_79a2;      // +79a2
+    unsigned char pad79a4[0xc];
+    void* field_79b0;               // +79b0
+    long field_79b8;                // +79b8
+    long field_79c0;                // +79c0
+    unsigned short field_79c8;      // +79c8
+    unsigned short field_79ca;      // +79ca
+    unsigned char pad79cc[0xc];
+    void* field_79d8;               // +79d8
+    long field_79e0;                // +79e0
+    long field_79e8;                // +79e8
+    unsigned short field_79f0;      // +79f0
+    unsigned short field_79f2;      // +79f2
+    unsigned char pad79f4[0xc];
+    void* field_7a00;               // +7a00
+    long field_7a08;                // +7a08
+    long field_7a10;                // +7a10
+    unsigned short field_7a18;      // +7a18
+    unsigned short field_7a1a;      // +7a1a
+    unsigned char pad7a1c[0xc];
+    void* field_7a28;               // +7a28
+    long field_7a30;                // +7a30
+    long field_7a38;                // +7a38
+    unsigned short field_7a40;      // +7a40
+    unsigned short field_7a42;      // +7a42
+    unsigned char pad7a44[0xc];
+    void* field_7a50;               // +7a50
+    long field_7a58;                // +7a58
+    long field_7a60;                // +7a60
+    unsigned short field_7a68;      // +7a68
+    unsigned short field_7a6a;      // +7a6a
+    unsigned char pad7a6c[0xc];
+    void* field_7a78;               // +7a78
+    long field_7a80;                // +7a80
+    long field_7a88;                // +7a88
+    unsigned short field_7a90;      // +7a90
+    unsigned short field_7a92;      // +7a92
+    unsigned char pad7a94[0xc];
+    void* field_7aa0;               // +7aa0
+    long field_7aa8;                // +7aa8
+    long field_7ab0;                // +7ab0
+    unsigned short field_7ab8;      // +7ab8
+    unsigned short field_7aba;      // +7aba
+    unsigned char pad7abc[0xc];
+    void* field_7ac8;               // +7ac8
+    long field_7ad0;                // +7ad0
+    long field_7ad8;                // +7ad8
+    unsigned short field_7ae0;      // +7ae0
+    unsigned short field_7ae2;      // +7ae2
+    unsigned char pad7ae4[0xc];
+    void* field_7af0;               // +7af0
+    long field_7af8;                // +7af8
+    long field_7b00;                // +7b00
+    unsigned short field_7b08;      // +7b08
+    unsigned short field_7b0a;      // +7b0a
+    unsigned char pad7b0c[0xc];
+    void* field_7b18;               // +7b18
+    long field_7b20;                // +7b20
+    long field_7b28;                // +7b28
+    unsigned short field_7b30;      // +7b30
+    unsigned short field_7b32;      // +7b32
+    unsigned char pad7b34[0xc];
+    void* field_7b40;               // +7b40
+    long field_7b48;                // +7b48
+    long field_7b50;                // +7b50
+    unsigned short field_7b58;      // +7b58
+    unsigned short field_7b5a;      // +7b5a
+    unsigned char pad7b5c[0xc];
+    void* field_7b68;               // +7b68
+    long field_7b70;                // +7b70
+    long field_7b78;                // +7b78
+    unsigned short field_7b80;      // +7b80
+    unsigned short field_7b82;      // +7b82
+    unsigned char pad7b84[0xc];
+    void* field_7b90;               // +7b90
+    long field_7b98;                // +7b98
+    long field_7ba0;                // +7ba0
+    unsigned short field_7ba8;      // +7ba8
+    unsigned short field_7baa;      // +7baa
+    unsigned char pad7bac[0xc];
+    void* field_7bb8;               // +7bb8
+    long field_7bc0;                // +7bc0
+    long field_7bc8;                // +7bc8
+    unsigned short field_7bd0;      // +7bd0
+    unsigned short field_7bd2;      // +7bd2
+    unsigned char pad7bd4[0xc];
+    void* field_7be0;               // +7be0
+    long field_7be8;                // +7be8
+    long field_7bf0;                // +7bf0
+    unsigned short field_7bf8;      // +7bf8
+    unsigned short field_7bfa;      // +7bfa
+    unsigned char pad7bfc[0xc];
+    void* field_7c08;               // +7c08
+    unsigned char field_7c10[1];    // +7c10
+    unsigned char pad7c11[0x31f];
+    void* field_7f30;               // +7f30
+    void* field_7f38;               // +7f38
+    long field_7f40;                // +7f40
+};
+
+struct C272369d3c {
+    long field_0;                // +0
+    unsigned char pad8[0x158];
+    void* field_160;               // +160
+    void* field_168;               // +168
+    void* field_170;               // +170
+};
+
+struct C276369d3c {
+    long field_0;                // +0
+    unsigned char pad8[0x158];
+    void* field_160;               // +160
+    void* field_168;               // +168
+    void* field_170;               // +170
+};
+
+struct C279369d3c {
+    long field_0;                // +0
+    unsigned char pad8[0x158];
+    void* field_160;               // +160
+    void* field_168;               // +168
+    void* field_170;               // +170
+};
+
+struct C282369d3c {
+    long field_0;                // +0
+    unsigned char pad8[0x158];
+    void* field_160;               // +160
+    void* field_168;               // +168
+    void* field_170;               // +170
+};
+
+struct C304369d3c {
+    unsigned char pad0[0x4];
+    int field_4;                 // +4
+};
+
+struct C316369d3c {
+    unsigned char pad0[0x18];
+    void* field_18;               // +18
+    unsigned char pad20[0x38];
+    unsigned char field_58;       // +58
+};
+
+struct Node369d3c_v320 {
+    unsigned char pad0[0x2af8];
+    void* field_2af8;               // +2af8
+};
+
+struct Node369d3c_v326 {
+    unsigned char pad0[0x58];
+    unsigned char field_58;       // +58
+};
+
+struct Elem369d3c_r319 {
+    unsigned char pad0[0x20];
+    Node369d3c_v326* field_20;    // +20
+};
+
+struct C322369d3c {
+    unsigned char pad0[0x30];
+    float field_30;               // +30
+    Vec2 field_34;                // +34
+    unsigned char pad3c[0x1c];
+    unsigned char field_58;       // +58
+};
+
+struct Node369d3c_v329 {
+    unsigned char pad0[0x20b8c];
+    int field_20b8c;                 // +20b8c
+    unsigned char pad20b90[0x8];
+    int field_20b98;                 // +20b98
+    unsigned char pad20b9c[0x2d];
+    unsigned char field_20bc9;       // +20bc9
+    unsigned char field_20bca;       // +20bca
+};
+
+struct C347369d3c {
+    unsigned char pad0[0x30];
+    float field_30;               // +30
+    Vec2 field_34;                // +34
+    unsigned char pad3c[0x1c];
+    unsigned char field_58;       // +58
+};
+// Reached through the GOT slot at 0x7100c22a00.
+extern void* gGlobalc22a00_369d3c;
+// Reached through the GOT slot at 0x7100c21db0.
+extern Node369d3c_v320* gGlobalc21db0_369d3c;
+// Reached through the GOT slot at 0x7100c22a30.
+extern Node369d3c_v329* gGlobalc22a30_369d3c;
+// Reached through the GOT slot at 0x7100c22f00.
+extern unsigned char gGlobalc22f00_369d3c[];
+extern unsigned char gLocal7daadc_369d3c[] __attribute__((visibility("hidden")));    // 0x71007daadc
+extern unsigned char gLocal7daaf0_369d3c[] __attribute__((visibility("hidden")));    // 0x71007daaf0
+extern unsigned char gLocal7dab06_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab06
+extern unsigned char gLocal7dab13_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab13
+extern unsigned char gLocal7dab21_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab21
+extern unsigned char gLocal7dab2e_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab2e
+extern unsigned char gLocal7da33f_369d3c[] __attribute__((visibility("hidden")));    // 0x71007da33f
+extern unsigned char gLocal7da347_369d3c[] __attribute__((visibility("hidden")));    // 0x71007da347
+extern unsigned char gLocal7dab3c_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab3c
+extern unsigned char gLocal7dab41_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab41
+extern unsigned char gLocal7dab4e_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab4e
+extern unsigned char gLocal7dab5b_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab5b
+extern unsigned char gLocal7dab64_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab64
+extern unsigned char gLocal7dab6c_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab6c
+// Reached through the GOT slot at 0x7100c22f68.
+extern unsigned char gGlobalc22f68_369d3c[];
+extern unsigned char gLocal7dab7b_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab7b
+extern unsigned char gLocal7dab8e_369d3c[] __attribute__((visibility("hidden")));    // 0x71007dab8e
+
+// 0x7100369d3c: a constructor whose body sets up panes: float pairs at +0x34 are one Vec2 member (stored as one 8-byte value), the 153.0f fields are floats, a member pointer between two layout handles is initialised between them, and the two stack locals are declared in reverse.
+class Class369d3c {
+public:
+    Class369d3c();
+
+};
+
+Class369d3c::Class369d3c() {
+    Arg369d3c_0* p0 = reinterpret_cast<Arg369d3c_0*>(this);
+    void* local_8;
+    long local_0;
+    p0->field_0 = nullptr;
+    p0->field_10 = nullptr;
+    p0->field_8 = nullptr;
+    p0->field_78 = nullptr;
+    p0->field_80 = nullptr;
+    p0->field_68 = nullptr;
+    p0->field_70 = nullptr;
+    callee_1f0140(p0->field_88);
+    callee_1f0140(p0->field_110);
+    callee_1f0140(p0->field_198);
+    callee_1f0140(p0->field_220);
+    callee_1f0140(p0->field_2a8);
+    callee_1f0140(p0->field_330);
+    callee_1f0140(p0->field_3b8);
+    callee_1f0140(p0->field_440);
+    callee_1f0140(p0->field_4c8);
+    callee_1f0140(p0->field_550);
+    callee_1f0140(p0->field_5d8);
+    callee_1f0140(p0->field_660);
+    callee_1f0140(p0->field_6e8);
+    callee_1f0140(p0->field_770);
+    callee_1f0140(p0->field_7f8);
+    callee_1f0140(p0->field_880);
+    callee_1f0140(p0->field_908);
+    callee_1f0140(p0->field_990);
+    callee_1f0140(p0->field_a18);
+    callee_1f0140(p0->field_aa0);
+    callee_1f0140(p0->field_b28);
+    callee_1f0140(p0->field_bb0);
+    callee_1f0140(p0->field_c38);
+    callee_1f0140(p0->field_cc0);
+    callee_1f0140(p0->field_d48);
+    callee_1f0140(p0->field_dd0);
+    callee_1f0140(p0->field_e58);
+    callee_1f0140(p0->field_ee0);
+    callee_1f0140(p0->field_f68);
+    callee_1f0140(p0->field_ff0);
+    callee_1f0140(p0->field_1078);
+    callee_1f0140(p0->field_1100);
+    callee_1f0140(p0->field_1188);
+    callee_1f0140(p0->field_1210);
+    callee_1f0140(p0->field_1298);
+    callee_1f0140(p0->field_1320);
+    callee_1f0140(p0->field_13a8);
+    callee_1f0140(p0->field_1430);
+    callee_1f0140(p0->field_14b8);
+    callee_1f0140(p0->field_1540);
+    callee_1f0140(p0->field_15c8);
+    callee_1f0140(p0->field_1650);
+    callee_1f0140(p0->field_16d8);
+    callee_1f0140(p0->field_1760);
+    callee_1f0140(p0->field_17e8);
+    callee_1f0140(p0->field_1870);
+    callee_1f0140(p0->field_18f8);
+    callee_1f0140(p0->field_1980);
+    callee_1f0140(p0->field_1a08);
+    callee_1f0140(p0->field_1a90);
+    callee_1f0140(p0->field_1b18);
+    callee_1f0140(p0->field_1ba0);
+    callee_1f0140(p0->field_1c28);
+    callee_1f0140(p0->field_1cb0);
+    callee_1f0140(p0->field_1d38);
+    callee_1f0140(p0->field_1dc0);
+    callee_1f0140(p0->field_1e48);
+    callee_1f0140(p0->field_1ed0);
+    callee_1f0140(p0->field_1f58);
+    callee_1f0140(p0->field_1fe0);
+    callee_1f0140(p0->field_2068);
+    callee_1f0140(p0->field_20f0);
+    callee_1f0140(p0->field_2178);
+    callee_1f0140(p0->field_2200);
+    callee_1f0140(p0->field_2288);
+    callee_1f0140(p0->field_2310);
+    callee_1f0140(p0->field_2398);
+    callee_1f0140(p0->field_2420);
+    callee_1f0140(p0->field_24a8);
+    callee_1f0140(p0->field_2530);
+    callee_1f0140(p0->field_25b8);
+    callee_1f0140(p0->field_2640);
+    callee_1f0140(p0->field_26c8);
+    callee_1f0140(p0->field_2750);
+    callee_1f0140(p0->field_27d8);
+    callee_1f0140(p0->field_2860);
+    callee_1f0140(p0->field_28e8);
+    callee_1f0140(p0->field_2970);
+    callee_1f0140(p0->field_29f8);
+    callee_1f0140(p0->field_2a80);
+    callee_1f0140(p0->field_2b08);
+    callee_1f0140(p0->field_2b90);
+    callee_1f0140(p0->field_2c18);
+    callee_1f0140(p0->field_2ca0);
+    callee_1f0140(p0->field_2d28);
+    callee_1f0140(p0->field_2db0);
+    callee_1f0140(p0->field_2e38);
+    callee_1f0140(p0->field_2ec0);
+    callee_1f0140(p0->field_2f48);
+    callee_1f0140(p0->field_2fd0);
+    callee_1f0140(p0->field_3058);
+    callee_1f0140(p0->field_30e0);
+    callee_1f0140(p0->field_3168);
+    callee_1f0140(p0->field_31f0);
+    callee_1f0140(p0->field_3278);
+    callee_1f0140(p0->field_3300);
+    callee_1f0140(p0->field_3388);
+    callee_1f0140(p0->field_3410);
+    callee_1f0140(p0->field_3498);
+    callee_1f0140(p0->field_3520);
+    callee_1f0140(p0->field_35a8);
+    callee_1f0140(p0->field_3630);
+    callee_1f0140(p0->field_36b8);
+    callee_1f0140(p0->field_3740);
+    callee_1f0140(p0->field_37c8);
+    callee_1f0140(p0->field_3850);
+    callee_1f0140(p0->field_38d8);
+    callee_1f0140(p0->field_3960);
+    callee_1f0140(p0->field_39e8);
+    callee_1f0140(p0->field_3a70);
+    callee_1f0140(p0->field_3af8);
+    callee_1f0140(p0->field_3b80);
+    callee_1f0140(p0->field_3c08);
+    callee_1f0140(p0->field_3c90);
+    callee_1f0140(p0->field_3d18);
+    callee_1f0140(p0->field_3da0);
+    callee_1f0140(p0->field_3e28);
+    callee_1f0140(p0->field_3eb0);
+    callee_1f0140(p0->field_3f38);
+    callee_1f0140(p0->field_3fc0);
+    callee_1f0140(p0->field_4048);
+    callee_1f0140(p0->field_40d0);
+    callee_1f0140(p0->field_4158);
+    callee_1f0140(p0->field_41e0);
+    callee_1f0140(p0->field_4268);
+    callee_1f0140(p0->field_42f0);
+    callee_1f0140(p0->field_4378);
+    callee_1f0140(p0->field_4400);
+    callee_1f0140(p0->field_4488);
+    callee_1f0140(p0->field_4510);
+    callee_1f0140(p0->field_4598);
+    callee_1f0140(p0->field_4620);
+    callee_1f0140(p0->field_46a8);
+    callee_1f0140(p0->field_4730);
+    callee_1f0140(p0->field_47b8);
+    callee_1f0140(p0->field_4840);
+    callee_1f0140(p0->field_48c8);
+    callee_1f0140(p0->field_4950);
+    callee_1f0140(p0->field_49d8);
+    callee_1f0140(p0->field_4a60);
+    callee_1f0140(p0->field_4ae8);
+    callee_1f0140(p0->field_4b70);
+    callee_1f0140(p0->field_4bf8);
+    callee_1f0140(p0->field_4c80);
+    callee_1f0140(p0->field_4d08);
+    callee_1f0140(p0->field_4d90);
+    callee_1f0140(p0->field_4e18);
+    callee_1f0140(p0->field_4ea0);
+    callee_1f0140(p0->field_4f28);
+    callee_1f0140(p0->field_4fb0);
+    callee_1f0140(p0->field_5038);
+    callee_1f0140(p0->field_50c0);
+    callee_1f0140(p0->field_5148);
+    callee_1f0140(p0->field_51d0);
+    callee_1f0140(p0->field_5258);
+    callee_1f0140(p0->field_52e0);
+    callee_1f0140(p0->field_5368);
+    callee_1f0140(p0->field_53f0);
+    callee_1f0140(p0->field_5478);
+    callee_1f0140(p0->field_5500);
+    callee_1f0140(p0->field_5588);
+    callee_1f0140(p0->field_5610);
+    callee_1f0140(p0->field_5698);
+    callee_1f0140(p0->field_5720);
+    callee_1f0140(p0->field_57a8);
+    callee_1f0140(p0->field_5830);
+    callee_1f0140(p0->field_58b8);
+    callee_1f0140(p0->field_5940);
+    callee_1f0140(p0->field_59c8);
+    callee_1f0140(p0->field_5a50);
+    callee_1f0140(p0->field_5ad8);
+    callee_1f0140(p0->field_5b60);
+    callee_1f0140(p0->field_5be8);
+    callee_1f0140(p0->field_5c70);
+    callee_1f0140(p0->field_5cf8);
+    callee_1f0140(p0->field_5d80);
+    callee_1f0140(p0->field_5e08);
+    callee_1f0140(p0->field_5e90);
+    callee_1f0140(p0->field_5f18);
+    callee_1f0140(p0->field_5fa0);
+    callee_1f0140(p0->field_6028);
+    callee_1f0140(p0->field_60b0);
+    callee_1f0140(p0->field_6138);
+    callee_1f0140(p0->field_61c0);
+    callee_1f0140(p0->field_6248);
+    callee_1f0140(p0->field_62d0);
+    callee_1f0140(p0->field_6358);
+    callee_1f0140(p0->field_63e0);
+    callee_1f0140(p0->field_6468);
+    callee_1f0140(p0->field_64f0);
+    callee_1f0140(p0->field_6578);
+    callee_1f0140(p0->field_6600);
+    callee_1f0140(p0->field_6688);
+    callee_1f0140(p0->field_6710);
+    callee_1f0140(p0->field_6798);
+    callee_1f0140(p0->field_6820);
+    callee_1f0140(p0->field_68a8);
+    callee_1f0140(p0->field_6930);
+    callee_1f0140(p0->field_69b8);
+    callee_1f0140(p0->field_6a40);
+    callee_1f0140(p0->field_6ac8);
+    callee_1f0140(p0->field_6b50);
+    callee_1f0140(p0->field_6bd8);
+    callee_1f0140(p0->field_6c60);
+    callee_1f0140(p0->field_6ce8);
+    callee_1f0140(p0->field_6d70);
+    callee_1f0140(p0->field_6df8);
+    callee_1f0140(p0->field_6e80);
+    callee_1f0140(p0->field_6f08);
+    callee_1f0140(p0->field_6f90);
+    callee_1f0140(p0->field_7018);
+    callee_1f0140(p0->field_70a0);
+    callee_1f0140(p0->field_7128);
+    callee_1f0140(p0->field_71b0);
+    callee_1f0140(p0->field_7238);
+    callee_1f0140(p0->field_72c0);
+    callee_1f0140(p0->field_7348);
+    callee_1f0140(p0->field_73d0);
+    callee_1f0140(p0->field_7458);
+    callee_1f0140(p0->field_74e0);
+    callee_1f0140(p0->field_7568);
+    callee_1f0140(p0->field_75f0);
+    callee_1f0140(p0->field_7678);
+    callee_1f0140(p0->field_7700);
+    p0->field_77a8 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x77b0) LayoutHandle;
+    p0->field_77d0 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x77d8) LayoutHandle;
+    p0->field_77f8 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7800) LayoutHandle;
+    p0->field_7820 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7828) LayoutHandle;
+    p0->field_7848 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7850) LayoutHandle;
+    p0->field_7870 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7878) LayoutHandle;
+    p0->field_7898 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x78a0) LayoutHandle;
+    p0->field_78c0 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x78c8) LayoutHandle;
+    p0->field_78e8 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x78f0) LayoutHandle;
+    p0->field_7910 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7918) LayoutHandle;
+    p0->field_7938 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7940) LayoutHandle;
+    p0->field_7960 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7968) LayoutHandle;
+    p0->field_7988 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7990) LayoutHandle;
+    p0->field_79b0 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x79b8) LayoutHandle;
+    p0->field_79d8 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x79e0) LayoutHandle;
+    p0->field_7a00 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7a08) LayoutHandle;
+    p0->field_7a28 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7a30) LayoutHandle;
+    p0->field_7a50 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7a58) LayoutHandle;
+    p0->field_7a78 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7a80) LayoutHandle;
+    p0->field_7aa0 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7aa8) LayoutHandle;
+    p0->field_7ac8 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7ad0) LayoutHandle;
+    p0->field_7af0 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7af8) LayoutHandle;
+    p0->field_7b18 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7b20) LayoutHandle;
+    p0->field_7b40 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7b48) LayoutHandle;
+    p0->field_7b68 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7b70) LayoutHandle;
+    p0->field_7b90 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7b98) LayoutHandle;
+    p0->field_7bb8 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7bc0) LayoutHandle;
+    p0->field_7be0 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x7be8) LayoutHandle;
+    p0->field_7c08 = nullptr;
+    p0->field_7f38 = nullptr;
+    p0->field_7f30 = nullptr;
+    p0->field_7f40 = static_cast<unsigned long>(static_cast<unsigned int>(-1));
+    void* v224 = gGlobalc22a00_369d3c;
+    callee_1e2360(v224, p0, 0x4203, gLocal7daadc_369d3c);
+    void* v226 = gGlobalc22a00_369d3c;
+    callee_1e2360(v226, &p0->field_8, 0x4203, gLocal7daaf0_369d3c);
+    Node369d3c_v228* v228 = p0->field_0;
+    Node369d3c_v229* v229 = v228->field_18;
+    v229->field_30 = 153.0f;
+    v229->field_34 = Vec2(-15.0f, 0.0f);
+    v229->field_58 |= 0x10;
+    Node369d3c_v228* v231 = p0->field_0;
+    void* c232 = callee_1e3770(v231, gLocal7dab06_369d3c, 0);
+    p0->field_18 = c232;
+    Node369d3c_v228* v233 = p0->field_0;
+    void* c234 = callee_1e3770(v233, gLocal7dab13_369d3c, 0);
+    p0->field_20 = c234;
+    Node369d3c_v262* v235 = p0->field_8;
+    void* c236 = callee_1e3770(v235, gLocal7dab21_369d3c, 0);
+    p0->field_28 = c236;
+    Node369d3c_v262* v237 = p0->field_8;
+    void* c238 = callee_1e3770(v237, gLocal7dab2e_369d3c, 0);
+    p0->field_30 = c238;
+    Node369d3c_v262* v239 = p0->field_8;
+    void* c240 = callee_1e3770(v239, gLocal7da33f_369d3c, 0);
+    p0->field_38 = c240;
+    Node369d3c_v262* v241 = p0->field_8;
+    void* c242 = callee_1e3770(v241, gLocal7da347_369d3c, 0);
+    p0->field_40 = c242;
+    Node369d3c_v228* v243 = p0->field_0;
+    void* c244 = callee_1e3770(v243, gLocal7dab3c_369d3c, 0);
+    Node369d3c_v228* v245 = p0->field_0;
+    p0->field_48 = c244;
+    Node369d3c_v229* v246 = v245->field_18;
+    void* c249 = v246->slot_12(gLocal7dab41_369d3c, 1);
+    Node369d3c_v228* v250 = p0->field_0;
+    p0->field_60 = c249;
+    void* c251 = callee2_1f8224(v250, c249);
+    Node369d3c_v228* v252 = p0->field_0;
+    p0->field_60 = c251;
+    Node369d3c_v229* v253 = v252->field_18;
+    void* c256 = v253->slot_12(gLocal7dab4e_369d3c, 1);
+    Node369d3c_v228* v257 = p0->field_0;
+    p0->field_68 = c256;
+    Node369d3c_v229* v258 = v257->field_18;
+    void* c261 = v258->slot_12(gLocal7dab5b_369d3c, 1);
+    p0->field_70 = c261;
+    Node369d3c_v262* v262 = p0->field_8;
+    Node369d3c_v263* v263 = v262->field_18;
+    void* c266 = v263->slot_12(gLocal7dab64_369d3c, 1);
+    p0->field_78 = c266;
+    Node369d3c_v262* v267 = p0->field_8;
+    Node369d3c_v263* v268 = v267->field_18;
+    void* c271 = v268->slot_12(gLocal7dab6c_369d3c, 1);
+    p0->field_80 = c271;
+    PanelPane* m274 = new PanelPane;
+    p0->field_7788 = reinterpret_cast<Node369d3c_v288*>(m274);
+    PanelPane* c276 = new PanelPane;
+    p0->field_7790 = reinterpret_cast<Node369d3c_v305*>(c276);
+    PanelPane* c279 = new PanelPane;
+    p0->field_7798 = reinterpret_cast<Node369d3c_v300*>(c279);
+    PanelPane* c282 = new PanelPane;
+    void* v285 = p0->field_68;
+    Node369d3c_v288* v286 = p0->field_7788;
+    p0->field_77a0 = reinterpret_cast<void*>(c282);
+    callee_5da17c(v285, v286);
+    Node369d3c_v288* v288 = p0->field_7788;
+    float v289 = v288->field_34 + -2.0f;
+    v288->field_58 |= 0x10;
+    v288->field_34 = v289;
+    void* v291 = p0->field_70;
+    Node369d3c_v305* v292 = p0->field_7790;
+    callee_5da17c(v291, v292);
+    void* v294 = p0->field_78;
+    Node369d3c_v300* v295 = p0->field_7798;
+    callee_5da17c(v294, v295);
+    void* v297 = p0->field_80;
+    void* v298 = p0->field_77a0;
+    callee_5da17c(v297, v298);
+    Node369d3c_v300* v300 = p0->field_7798;
+    unsigned char v301 = v300->field_5b;
+    v300->field_5b = (v301 & 0xfc) | 1;
+    Node369d3c_v300* v302 = p0->field_7798;
+    unsigned char v303 = v302->field_5b;
+    v302->field_5b = (v303 & 0xf3) | 8;
+    C304369d3c* c304 = static_cast<C304369d3c*>(callee_2aae3c());
+    p0->field_7790->bf5b_0 = c304->field_4 != 0 ? 2 : 1;
+    Node369d3c_v305* v308 = p0->field_7790;
+    unsigned char v309 = v308->field_5b;
+    v308->field_5b = (v309 & 0xf3) | 8;
+    Node369d3c_v288* v310 = p0->field_7788;
+    unsigned char v311 = v310->field_5b;
+    v310->field_5b = (v311 & 0xf3) | 8;
+    Node369d3c_v228* v312 = p0->field_0;
+    Node369d3c_v229* v313 = v312->field_18;
+    C316369d3c* c316 = static_cast<C316369d3c*>(v313->slot_12(gLocal7dab7b_369d3c, 1));
+    unsigned char v317 = c316->field_58;
+    c316->field_58 = v317 & 0xfe;
+    long r318 = 0;
+    Elem369d3c_r319* r319 = reinterpret_cast<Elem369d3c_r319*>(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x7788));
+    Node369d3c_v320* v320;
+    void* v321;
+    C322369d3c* c322;
+    void* v323;
+    unsigned char v325;
+    Node369d3c_v326* v326;
+    unsigned char v327;
+    do {
+        float at = static_cast<float>(static_cast<int>(r318));
+        v320 = gGlobalc21db0_369d3c;
+        v321 = v320->field_2af8;
+        c322 = static_cast<C322369d3c*>(callee_5dec80(c316, reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v321) + 0x10)));
+        v323 = c316->field_18;
+        callee_5da17c(v323, c322);
+        r319->field_20 = reinterpret_cast<Node369d3c_v326*>(c322);
+        c322->field_30 = at;
+        c322->field_34 = Vec2(0.0f, 0.0f);
+        c322->field_58 |= 0x10;
+        v326 = r319->field_20;
+        v327 = v326->field_58;
+        v326->field_58 = v327 & 0xfe;
+        long next_r318 = r318 + 0x14;
+        Elem369d3c_r319* next_r319 = r319 + 1;
+        r318 = next_r318;
+        r319 = next_r319;
+    } while (r318 != 0x230);
+    memset(reinterpret_cast<void*>(p0->field_7c10), 0, 0x320);
+    Node369d3c_v329* v329 = gGlobalc22a30_369d3c;
+    local_0 = 0x41f0000041f00000;
+    local_8 = nullptr;
+    callee_1e709c(v329, &local_8, &local_0, 0x5a, 0x41, 0);
+    v329->field_20bc9 = 1;
+    v329->field_20bca = 1;
+    v329->field_20b8c = 0x5b;
+    v329->field_20b98 = 2;
+    void* c331 = callee_217d64(0x72);
+    int c332 = callee_1e73c0(v329, p0->field_88, c331, 0x20, 1, 0xff, 0.0f, 0.0f);
+    Node369d3c_v288* v333 = p0->field_7788;
+    callee_1e41d8(v333, p0->field_88, c332);
+    local_0 = 0x41e0000041e00000;
+    local_8 = nullptr;
+    callee_1e709c(v329, &local_8, &local_0, 0x4c, 0x41, 0);
+    v329->field_20b98 = 2;
+    void* c336 = callee_217d64(0x74);
+    int c337 = callee_1e73c0(v329, p0->field_3388, c336, 0x40, 1, 0xff, 0.0f, 0.0f);
+    Node369d3c_v262* v338 = p0->field_8;
+    void* v339 = p0->field_80;
+    callee2_1f8224(v338, v339);
+    Node369d3c_v300* v341 = p0->field_7798;
+    callee_1e41d8(v341, p0->field_3388, c337);
+    Node369d3c_v228* v343 = p0->field_0;
+    Node369d3c_v229* v344 = v343->field_18;
+    C347369d3c* c347 = static_cast<C347369d3c*>(v344->slot_12(gLocal7dab8e_369d3c, 1));
+    c347->field_30 = 153.0f;
+    c347->field_34 = Vec2(0.0f, 0.0f);
+    c347->field_58 |= 0x10;
+}
