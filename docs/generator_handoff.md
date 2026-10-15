@@ -136,7 +136,11 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - int fields converted to float in a vector register (knob `noicvt`): `ldr s0, [..]; ucvtf s0, s0` (scvtf for int),
   `ldr h0, [..]; ucvtf s0, s0` (an unsigned short, as `ldr h` zero-extends; `ldr b` for unsigned char) and
   `ldr h0, [..]; sshll v0.4s, v0.4h, #0; scvtf s0, s0` (short, ushll for unsigned short) are int loads of the
-  field's type and `static_cast<float>` of them (these failed as "ucvtf", "scvtf" and "reg h0").
+  field's type and `static_cast<float>` of them (these failed as "ucvtf", "scvtf" and "reg h0");
+- byte-offset accesses into typed fields (knob `nobytearr`): an unscaled register-indexed access of a value wider
+  than a byte made the field at its base a byte array, and a direct access of another type at that offset failed
+  with "field clash"; the typed field now wins and the byte-offset access goes through
+  `reinterpret_cast<unsigned char*>(&p->field)[i]` (real byte arrays keep their type).
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
