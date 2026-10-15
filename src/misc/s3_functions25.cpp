@@ -245,6 +245,7 @@ public:
 // Reached through the GOT slot at 0x7100c22a00.
 extern EffectManager* gEffectManager;
 extern const char kMid2cfc60Name[] __attribute__((visibility("hidden")));  // 0x71007d82d4
+extern const char kMid2cec6cName[] __attribute__((visibility("hidden")));  // 0x71007d81bd
 
 struct Tail2cf74c {
     Tail2cf74c();                                                           // 0x71002cf74c
@@ -261,17 +262,17 @@ struct Pointer4970 {
 };
 
 // The middle base of 2cff80's family (vtable GOT 0x7100c2aa68), inline here: a light resource attached to the
-// effect manager, 256 sprites and a pointer.
+// effect manager, 256 sprites, a pointer, and the screen's id and name.
 class Mid2cfc60 : public Base3c7188 {
 public:
-    Mid2cfc60() : i28(0), p140(nullptr), p160(nullptr), p168(nullptr), i49c0(0) {
+    Mid2cfc60(int id_, const char* name_) : i28(0), p140(nullptr), p160(nullptr), p168(nullptr), i49c0(0) {
         p49d0 = nullptr;
         p49c8 = nullptr;
         b49d8 = true;
-        i49e0 = 0x41e9;
+        id = id_;
         b49e4 = true;
         i49e8 = 1;
-        name = kMid2cfc60Name;
+        name = name_;
         b49f8 = false;
         p158 = nullptr;
         p148 = nullptr;
@@ -295,11 +296,12 @@ public:
     void* p49d0;                 // +49d0
     bool b49d8;                  // +49d8
     unsigned char pad49d9[7];
-    int i49e0;                   // +49e0
+    int id;                      // +49e0
     bool b49e4;                  // +49e4
     int i49e8;                   // +49e8
     const char* name;            // +49f0
     bool b49f8;                  // +49f8
+    int i49fc;                   // +49fc
 };
 
 // 0x71002cfc60: a screen on the middle base (vtable GOT 0x7100c2aa98): 256 cells, 35 icons (unrolled), a layout
@@ -320,7 +322,25 @@ public:
     Tail2cf74c tail;             // +9d80
 };
 
-Screen2cfc60::Screen2cfc60() : p9c58(nullptr), p9c60(nullptr), s9c68(1) {}
+Screen2cfc60::Screen2cfc60() : Mid2cfc60(0x41e9, kMid2cfc60Name), p9c58(nullptr), p9c60(nullptr), s9c68(1) {}
+
+// 0x71002cec6c: a second screen on the middle base (vtable GOT 0x7100c2aa90): 64 sprites (unrolled) and a layout
+// handle; it sets the base's +49fc to -1.
+class Screen2cec6c : public Mid2cfc60 {
+public:
+    Screen2cec6c();
+    ~Screen2cec6c();
+
+    void* p4a00;                 // +4a00
+    unsigned char pad4a08[0x18];
+    LayoutSprite sprites[64];    // +4a20
+    LayoutHandle handle;         // +5c20
+    int i5c38;                   // +5c38
+};
+
+Screen2cec6c::Screen2cec6c() : Mid2cfc60(0x41e5, kMid2cec6cName), p4a00(nullptr), i5c38(0) {
+    i49fc = -1;
+}
 
 // 0x710033be48: fifty layout frames (unrolled) and a layout handle; the list in front is cleared last, by a body
 // memset.
@@ -339,4 +359,37 @@ public:
 
 Frames33be48::Frames33be48() : p38(nullptr), p40(nullptr), b1ad8(false), p1ae0(nullptr) {
     memset(items, 0, sizeof(items));
+}
+
+// 0x710032e4f4: a layout handle and three runs of layout frames (544, 544 and 67, the last unrolled).
+class Frames32e4f4 {
+public:
+    Frames32e4f4();
+
+    unsigned char pad0[0x40];
+    LayoutHandle handle;         // +40
+    unsigned char pad58[0x58];
+    LayoutFrame frames_a[544];   // +b0
+    LayoutFrame frames_b[544];   // +121b0
+    LayoutFrame frames_c[67];    // +242b0
+};
+
+Frames32e4f4::Frames32e4f4() {}
+
+// 0x71002ce7bc: a third screen on the middle base (vtable GOT 0x7100c2aa88): a layout handle; the two fields in
+// front of it are set in the body.
+class Screen2ce7bc : public Mid2cfc60 {
+public:
+    Screen2ce7bc();
+    ~Screen2ce7bc();
+
+    void* p4a00;                 // +4a00
+    int i4a08;                   // +4a08
+    void* p4a10;                 // +4a10
+    LayoutHandle handle;         // +4a18
+};
+
+Screen2ce7bc::Screen2ce7bc() : Mid2cfc60(0x41e5, kMid2cec6cName), p4a10(nullptr) {
+    p4a00 = nullptr;
+    i4a08 = -1;
 }

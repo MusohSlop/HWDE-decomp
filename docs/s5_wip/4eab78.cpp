@@ -1,25 +1,23 @@
-// Fifth session, in progress: 0x71004eab78 (1,524 bytes), the first of the vector five (4eab78 4ebc2c 4eccf0 4eddb4
-// 4eee68: one template, the shape member at +20 is 0x20/0x30/0x30/0x40/0x70 bytes and the two shape calls differ; the
-// 64 entries of 0x60 bytes follow it, then the count and the frame pointer). It sums the entries' edge vectors and
-// their normals weighted by edge length, normalises both unless near zero (|c| < 0.0011920929 per component),
-// picks the normal sum or both (dot < 0.3), projects every entry on that direction (min of a, max of b, the best
-// entry's b becomes pos), then sets result from the shape's support and closest points (dot < 0.3) or by the
-// projection, and writes the frame-based direction to out, normalised.
-// Settled (each measured): the engine vector is a union (not an HFA, so by value it travels as two 64-bit integers:
-// the original's integer round trips come from by-value helpers: to_vec4 of a Vec3 (12-byte copy, int zero w),
-// operator+/-/*, vec4(x, y, z, w) for the negated direction, giving the eor); the sums zeroed field by field as
-// two longs (GVN cannot forward two 8-byte stores to the vector reload, which the original keeps); the edge length
-// evaluated after the normal (sum_b + to_vec4(e.n) * length3(e.b - e.a)), so the normal's 8+4-byte loads come before
-// the sqrt call as in the original (loop body identical). This draft is 97 instructions off abstracted at 1,588 bytes;
-// with v merged by a conditional expression and the sums zeroed by zero4() it is the same size (1,524) at 108 off. Still off: the near-zero tests (the original keeps every compare a branch except the last, ours
-// folds pairs into and), v's representation after the merge (the original keeps it in one vector register), and
-// the frame (0xd0 with d8-d13 and x19-x24 in the original).
-// On the near-zero tests: a helper's && is folded into an and inside the helper itself, before inlining (the
-// -print-after-all dumps show the ands right after the inliner), because reference parameters are dereferenceable
-// and their loads are safe to speculate. Through a pointer parameter (const Vec4u*) the x pair stays two branches
-// as in the original, but the y and z pairs still fold after inlining; the original keeps all but the last compare
-// as branches and zeroes the result register twice (before the chain and after the x pair). Per-component helpers
-// by value, pointer or reference and nested ifs all compile alike (104 off).
+// Fifth session, in progress: 0x71004eab78 (1,524 bytes), the first of the vector six (4eab78 4ebc2c 4eccf0 4eddb4
+// 4eee68 4e9984: one template over the shape at +20, 0x20/0x30/0x30/0x40/0x70/0x50 bytes, with its support and
+// closest callees; 4eee68's closest takes an extra null argument). It sums the entries' edge vectors and their
+// normals weighted by edge length, normalises both unless near zero (|c| < 0.0011920929 per component), picks the
+// normal sum or both (dot < 0.3), projects every entry on that direction (min of a, max of b, the best entry's b
+// becomes pos), then sets result from the shape's support and closest points (dot < 0.3) or by the projection,
+// and writes the frame-based direction to out, normalised. This draft is 15 instructions off abstracted (1,532 B).
+// Settled (each measured): the engine vector is a union (by value it travels as two 64-bit integers); the sums
+// zeroed as two longs and kept in memory (the alternate pick takes their address); the sums, the near tests and
+// the pick of v in their own block scope (their slots are reused by dir and q, which gives the 0xd0 frame); the
+// alternate copied as a vector (v.v = alt.v: SROA only vector-promotes v when one access covers it as a vector;
+// with the memcpy form v is split into 32-bit pieces and lives in integer registers); operator+ takes its left side
+// by reference and its right side by value (the pick loads both sums as vectors, only the result goes through
+// x9/x8); the pick tested as !(dot < 0.3) is fine either way; the output's frame transform computed into locals
+// and stored after (78 -> 53 alone).
+// Still off: the near-zero tests of the sums (the original keeps the five compares as branches and the last as a
+// cset; ours folds the y and z pairs into and/cset values: per-pair helpers fold inside the helper, a flat chain
+// folds the last four, and early if-conversion turns the rest into csets; 27 off with either), the order of the
+// two products in the b projection, the zero of best before the count test, the dir build (bfi) and q's slot,
+// and the out near tests (x, z with +E first, y).
 // Maps: --map "_ZNK12Sphere4eab787supportEPK5Vec4uPv=0x7100506264" --map "_ZNK12Sphere4eab787closestEPK5Vec4u=0x7100506284"
 //   --map sqrtf=0x71006008a0 --name _ZN9Fit4eab786updateEP5Vec4u
 #include <arm_neon.h>
@@ -47,7 +45,7 @@ static inline Vec4u vec4(float32x4_t v) {
     r.v = v;
     return r;
 }
-static inline Vec4u operator+(Vec4u a, Vec4u b) {
+static inline Vec4u operator+(const Vec4u& a, Vec4u b) {
     return vec4(a.v + b.v);
 }
 static inline Vec4u operator-(Vec4u a, Vec4u b) {
@@ -143,6 +141,9 @@ bool Fit4eab78::update(Vec4u* out) {
     if (count == 0) {
         return false;
     }
+    Vec4u v;
+    float dot;
+    {
     Vec4u sum_b;
     sum_b.l[0] = 0;
     sum_b.l[1] = 0;
@@ -168,19 +169,19 @@ bool Fit4eab78::update(Vec4u* out) {
         sum_a.y = inv * sum_a.y;
         sum_a.z = inv * sum_a.z;
     }
-    float dot = sum_b.x * sum_a.x + sum_b.y * sum_a.y + sum_b.z * sum_a.z;
-    Vec4u v;
-    if (dot < 0.3f) {
-        v = sum_b;
-    } else {
+    dot = sum_b.x * sum_a.x + sum_b.y * sum_a.y + sum_b.z * sum_a.z;
+    if (!(dot < 0.3f)) {
         v = sum_b + sum_a;
+    } else {
+        v = sum_b;
     }
-    if (near_zero3v(v)) {
+    if (near_zero3(v)) {
         const Vec4u& alt = zero_b ? sum_a : sum_b;
-        v = alt;
-        if (near_zero3v(v)) {
+        v.v = alt.v;
+        if (near_zero3(v)) {
             return false;
         }
+    }
     }
     float inv = 1.0f / length3v(v);
     v.x = v.x * inv;
@@ -217,9 +218,12 @@ bool Fit4eab78::update(Vec4u* out) {
             *out = to_vec4(frame->t) - pos;
         } else {
             Frame4eab78* f = frame;
-            out->x = -v.x * f->x.x - v.y * f->y.x - v.z * f->z.x;
-            out->y = -v.x * f->x.y - v.y * f->y.y - v.z * f->z.y;
-            out->z = -v.x * f->x.z - v.y * f->y.z - v.z * f->z.z;
+            float ox = -v.x * f->x.x - v.y * f->y.x - v.z * f->z.x;
+            float oy = -v.x * f->x.y - v.y * f->y.y - v.z * f->z.y;
+            float oz = -v.x * f->x.z - v.y * f->y.z - v.z * f->z.z;
+            out->x = ox;
+            out->y = oy;
+            out->z = oz;
             out->w = 0.0f;
         }
         float inv2 = 1.0f / length3(*out);
