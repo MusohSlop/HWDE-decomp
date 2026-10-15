@@ -19060,7 +19060,46 @@
     "got:gGlobalc21880_3e1538": "0x7100c21880",
     "got:gGlobalc21dd0_3e1538": "0x7100c21dd0",
     "_ZN9Obj3e153813callee_3e17a8EiPv": "0x71003e17a8",
-    "_Z12callee_402c4i": "0x71000402c4"
+    "_Z12callee_402c4i": "0x71000402c4",
+    "gLocal7d8541_2ee754": "0x71007d8541",
+    "gLocal7d855b_2ee754": "0x71007d855b",
+    "gLocal7d8568_2ee754": "0x71007d8568",
+    "gLocal7d8579_2ee754": "0x71007d8579",
+    "gLocal7d8588_2ee754": "0x71007d8588",
+    "gLocal7d8599_2ee754": "0x71007d8599",
+    "gLocal7d85c9_2ee754": "0x71007d85c9",
+    "gLocal7d85dd_2ee754": "0x71007d85dd",
+    "gLocal7d85ee_2ee754": "0x71007d85ee",
+    "gLocal7d8601_2ee754": "0x71007d8601",
+    "gLocal7d8622_2ee754": "0x71007d8622",
+    "gLocal7d8686_2ee754": "0x71007d8686",
+    "gLocal7e1fe0_1e5774": "0x71007e1fe0",
+    "gLocal7f0ad4_1e5774": "0x71007f0ad4",
+    "gLocal7f0bf0_1e5774": "0x71007f0bf0",
+    "gLocal7f0c40_1e5774": "0x71007f0c40",
+    "gLocalba7af8_1e5774": "0x7100ba7af8",
+    "got:gGlobalc21698_1b4750": "0x7100c21698",
+    "got:gGlobalc21698_1d9f54": "0x7100c21698",
+    "got:gGlobalc21698_81e28": "0x7100c21698",
+    "got:gGlobalc216e8_153f8c": "0x7100c216e8",
+    "got:gGlobalc216e8_1d9f54": "0x7100c216e8",
+    "got:gGlobalc216e8_81e28": "0x7100c216e8",
+    "got:gGlobalc22a00_2ee754": "0x7100c22a00",
+    "got:gGlobalc22f68_2ee754": "0x7100c22f68",
+    "_Z11callee_fa7ci": "0x710000fa7c",
+    "_Z12callee_43770ii": "0x7100043770",
+    "_Z12callee_82278Pv": "0x7100082278",
+    "_Z13callee_19fef4Pviil": "0x710019fef4",
+    "_Z13callee_1a0d0cPvil": "0x71001a0d0c",
+    "_Z12callee_3f584ii": "0x710003f584",
+    "_Z13callee_209bd8i": "0x7100209bd8",
+    "_Z13callee_452af8Pv": "0x7100452af8",
+    "_Z13callee_1fd408Pvii": "0x71001fd408",
+    "_Z13callee_1fd4acPvii": "0x71001fd4ac",
+    "_Z13callee_20c154ib": "0x710020c154",
+    "_Z13callee_255f08v": "0x7100255f08",
+    "_Z13callee_256a70l": "0x7100256a70",
+    "_Z13callee_32118cPviiiffffff": "0x710032118c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -28950,6 +28989,17 @@
       "functions": {
         "_ZN11Light5a3ce06updateEv": "0x71005a3ce0",
         "_ZN9Obj3e15386updateEi": "0x71003e1538"
+      }
+    },
+    "misc/variant_functions88.cpp": {
+      "functions": {
+        "_Z9call_c038Pv": "0x710000c038",
+        "_Z9call_c1f0Pvi": "0x710000c1f0",
+        "_Z11call_287e54P11Arg287e54_0i": "0x7100287e54"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
       }
     }
   }
