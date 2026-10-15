@@ -3572,7 +3572,7 @@ def gen_function(a, ins):
                 return "float"
             if t in ("w", "int"):
                 return "int"
-            if t in ("long", "unsigned long"):
+            if t in ("long", "unsigned long", "short", "signed char", "unsigned short"):
                 return t
             if t in ("x", "void*", "?"):
                 return "void*" if t != "?" else "int"
@@ -4692,6 +4692,31 @@ def gen_function(a, ins):
                 scan_uint_(x_)
     if "nouintloop" not in knobs:
         scan_uint_(items)
+    NARROW_EXT_ = {"short": "short", "signed char": "signed char", "unsigned short": "unsigned short"}
+    narrow_seen_ = {}
+    def scan_narrow_(o):
+        if isinstance(o, tuple):
+            if len(o) >= 3 and o[0] == "ext" and o[1] in NARROW_EXT_ and isinstance(o[2], tuple):
+                x_ = o[2]
+                if x_[0] == "var" and vars_.get(x_[1]) in ("?", "w") and x_[1].startswith("c"):
+                    narrow_seen_.setdefault(("v", x_[1]), set()).add(o[1])
+                elif x_[0] == "param" and pwidth.get(x_[1]) in (None, "w"):
+                    narrow_seen_.setdefault(("p", x_[1]), set()).add(o[1])
+            for y_ in o:
+                scan_narrow_(y_)
+        elif isinstance(o, list):
+            for y_ in o:
+                scan_narrow_(y_)
+    if "noshortidx" not in knobs:
+        scan_narrow_(items)
+        for (kind_, key_), tys_ in narrow_seen_.items():
+            if len(tys_) != 1:
+                continue
+            ty_ = tys_.pop()
+            if kind_ == "v":
+                vars_[key_] = ty_
+            else:
+                pwidth[key_] = ty_
     lines = render(items, 1)
     for p_, h_ in ESHIFT_.items():
         structs[loopelem[p_]] = {o_ - h_: v_ for o_, v_ in structs[loopelem[p_]].items()}
