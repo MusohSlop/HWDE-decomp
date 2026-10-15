@@ -4326,6 +4326,8 @@ def gen_function(a, ins):
             s_ = f"{c_} ? 0 : {expr(v[2], False)}" if v[3] else f"{c_} ? {expr(v[2], False)} : 0"
             return s_ if top else f"({s_})"
         if v[0] == "fparam":
+            if "nolateparam" not in knobs:
+                fparams.add(v[1])
             return f"f{v[1]}"
         if v[0] == "vconst":
             return "(Vec4f){" + ", ".join(expr(("fconst", x_)) for x_ in v[1]) + "}"
@@ -4458,6 +4460,8 @@ def gen_function(a, ins):
                 gobjs[sn] = v
             return f"&{gname(v)}" if structs[sn] else gname(v)
         if v[0] == "param":
+            if "nolateparam" not in knobs and v[1] not in pwidth:
+                pwidth[v[1]] = "x"
             return f"p{v[1]}"
         if v[0] == "var":
             if v[1] in IDX_:
