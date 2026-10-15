@@ -1,5 +1,5 @@
 # Third session (branch matching-s3): hand-matching of functions over 1,500 bytes.
 # Generator runs should skip every address listed here (hex image offsets).
-# working: the function being hand-matched now; matched: functions matched on matching-s3.
-working: 351428
-matched: 28ee38 30be50 325e64 3b9ccc
+# working: the functions being hand-matched now; matched: functions matched on matching-s3.
+working: 351428 369d3c 187d78 118e44 ef31c 3f6964
+matched: 28ee38 30be50 325e64 3b9ccc 362914 384a50 3556b8 35f6e8
