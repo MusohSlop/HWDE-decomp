@@ -222,12 +222,38 @@ def main():
     flags = [f for f in man["flags"] if not f.startswith(("-std=", "-stdlib", "-fno-exceptions", "-fstandalone", "-g"))]
     cc = os.path.join(ROOT, man["compiler"])
     mapping = dict(check.collect_externals(man))
+    for u in man["units"].values():  # functions of any unit resolve too, as in sbs.py
+        for n, v in u.get("functions", {}).items():
+            mapping.setdefault(n, check.address(v))
     for x in a.map:
         n, v = x.split("=")
         mapping[n] = check.address(v)
     mapping.setdefault(".rodata.cst4", 0x73b000)
     mapping.setdefault(".rodata.cst16", 0x73dff0)
     mapping[a.func] = addr
+    placeholders_done = {"done": False}
+
+    def add_placeholders(obj):
+        """Undefined names ending in an address (callee_X, kName_X, ...) resolve to it, as in sbs.py; without this
+        every reference to them is scored as a difference."""
+        if placeholders_done["done"]:
+            return
+        placeholders_done["done"] = True
+        for s in check_obj.read_elf(obj)[2]:
+            if s.is_section or s.shndx != 0 or s.name in mapping:
+                continue
+            mm = re.match(r"_Z(\d+)", s.name)
+            va = None
+            if mm:
+                ident = s.name[mm.end():mm.end() + int(mm.group(1))]
+                mi = re.search(r"_([0-9a-f]{5,6})$", ident)
+                if mi:
+                    va = int(mi.group(1), 16)
+            if va is None:
+                mm = re.search(r"_([0-9a-f]{5,6})(?=[A-Z]|$|E|P|v|i|f)", s.name)
+                va = int(mm.group(1), 16) if mm else None
+            if va is not None:
+                mapping[s.name] = va
     sizes = {check.address(r["Address"]): int(r["Size"]) for r in csv.DictReader(open(os.path.join(M, "data", "functions.csv"), newline=""))}
     image = check_obj.IMAGE.read_bytes()
     orig = image[addr: addr + sizes[addr]]
@@ -315,6 +341,7 @@ def main():
             if failed["n"] == 1:
                 shutil.copyfile(tmp_ll, tmp_ll + ".fail")
             return None
+        add_placeholders(tmp_o)
         mine = mm_tally.mine_bytes(tmp_o, a.func, addr, mapping, image)
         mi = [f"{i.mnemonic} {i.op_str}" for i in md.disasm(mine, 0x7100000000 + addr)]
         ma = [_ab(x) for x in mi]

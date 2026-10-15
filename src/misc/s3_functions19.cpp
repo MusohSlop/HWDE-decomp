@@ -118,11 +118,21 @@ public:
     virtual ~Basec719c();        // 0x71003c719c
 };
 
-// 0x71003c5cc0 (D2): vtable GOT 0x7100c2b480; twelve slots.
+class DefaultHeap {
+public:
+    void release(void* ptr, int a, int b);                                   // 0x710045c2f4
+};
+DefaultHeap* get_default_heap();                                            // 0x710045c96c
+
+// 0x71003c5cc0 (D2) and 0x71003c5e74 (D0, deleted through the default heap): vtable GOT 0x7100c2b480; twelve slots.
 class Screen3c5cc0 : public Basec719c {
 public:
     virtual void anchor();
     ~Screen3c5cc0();
+    static void operator delete(void* ptr) {
+        if (ptr)
+            get_default_heap()->release(ptr, 1, 0);
+    }
     void close();                // 0x71003c5d8c
 
     unsigned char pad8[0x20];
@@ -497,3 +507,168 @@ public:
 };
 
 Menu367498::~Menu367498() { player.stop(); }
+
+// 0x71003aace4 (D2): vtable GOT 0x7100c2b2d8; six plain pages.
+class Screen3aace4 : public ScreenBase3ab2bc {
+public:
+    void anchor();
+    ~Screen3aace4();
+
+    Base3aab84 page_c0;          // +c0
+    Base3aab84 page_23e0;        // +23e0
+    Base3aab84 page_4700;        // +4700
+    Base3aab84 page_6a20;        // +6a20
+    Base3aab84 page_8d40;        // +8d40
+    Base3aab84 page_b060;        // +b060
+};
+
+Screen3aace4::~Screen3aace4() {}
+// 0x71003a4f90 (D2): a node holder with a layout handle; the node is released as on a node page.
+struct NodeHolder3a4f90 {
+    ~NodeHolder3a4f90();
+
+    LightEffectNode* node;       // +00
+    unsigned char pad8[0x20];
+    HandleBody handle;           // +28
+    unsigned char pad38[0x1118];
+};
+
+NodeHolder3a4f90::~NodeHolder3a4f90() {
+    if (page_ids()) {
+        EffectManager* manager = gEffectManager;
+        if (node) {
+            void* root = gResourceLoader->layout->root;
+            manager->unregister(manager->registry, 0x4202);
+            node->detach(root);
+            node->release();
+            manager->children.remove(node);
+            node = nullptr;
+        }
+    } else {
+        EffectManager* manager = gEffectManager;
+        if (node) {
+            node->detach(gResourceLoader->layout->root);
+            node->release();
+            manager->nodes.remove(node);
+            node = nullptr;
+        }
+    }
+}
+void table_free(void* obj);                                                  // 0x71005d43a0
+
+class Pane2bfda4 {
+public:
+    virtual ~Pane2bfda4();
+    virtual void v10();
+    virtual void unbind(LayoutContext* context);    // +18
+};
+
+class PaneGroup {
+public:
+    void remove(Pane2bfda4* pane);                                          // 0x71005da1b0
+};
+
+// 0x71002bfda4 (D2): seventeen pairs of panes taken off the node's group and freed, the node unregistered and
+// released, two layout handles.
+struct Board2bfda4 {
+    ~Board2bfda4();
+
+    void release_pane(Pane2bfda4*& pane, LayoutContext* context) {
+        if (pane) {
+            pane->unbind(context);
+            reinterpret_cast<PaneGroup*>(node->group)->remove(pane);
+            if (Pane2bfda4* p = pane) {
+                p->~Pane2bfda4();
+                table_free(p);
+            }
+        }
+    }
+
+    unsigned char pad0[0x10];
+    LightEffectNode* node;       // +10
+    unsigned char pad18[0x20];
+    Pane2bfda4* front[17];       // +38
+    void* pc0;                   // +c0
+    Pane2bfda4* back[17];        // +c8
+    HandleBody handle150;        // +150
+    void* p160;                  // +160
+    HandleBody handle168;        // +168
+};
+
+Board2bfda4::~Board2bfda4() {
+    LayoutContext* context = layout_context();
+    for (int i = 0; i < 17; i++) {
+        if (front[i] && back[i]) {
+            release_pane(front[i], context);
+            release_pane(back[i], context);
+            front[i] = nullptr;
+            back[i] = nullptr;
+        }
+    }
+    if (node) {
+        EffectManager* manager = gEffectManager;
+        void* root = gResourceLoader->layout->root;
+        manager->unregister(manager->registry, 0x4217);
+        node->detach(root);
+        node->release();
+        manager->children.remove(node);
+        node = nullptr;
+    }
+}
+
+// 3a43c4's class and the 3a57fc items, their destructors out of line.
+struct Class3a43c4 {
+    ~Class3a43c4();              // 0x71003a43c4
+    unsigned char data[0x34a0];
+};
+struct Item3a57fc {
+    ~Item3a57fc();               // 0x71003a57fc
+    unsigned char data[0x1160];
+};
+
+// 0x71003a7668 (D2): vtable GOT 0x7100c2b330; a node released as on a node page, then nine items, nine node holders
+// (0x71003a4f90), nine 3a43c4 pages, nine plain pages in an array and eight more.
+class Screen3a7668 : public ScreenBase3ab2bc {
+public:
+    void anchor();
+    ~Screen3a7668();
+
+    Base3aab84 page_c0;          // +c0
+    Base3aab84 page_23e0;        // +23e0
+    Base3aab84 page_4700;        // +4700
+    Base3aab84 page_6a20;        // +6a20
+    Base3aab84 page_8d40;        // +8d40
+    Base3aab84 page_b060;        // +b060
+    Base3aab84 page_d380;        // +d380
+    Base3aab84 page_f6a0;        // +f6a0
+    Base3aab84 pages[9];         // +119c0
+    unsigned char pad255e0[0x10];
+    Class3a43c4 lists[9];        // +255f0
+    NodeHolder3a4f90 holders[9]; // +42f90
+    unsigned char pad4cb60[0x50];
+    LightEffectNode* node;       // +4cbb0
+    unsigned char pad4cbb8[0x128];
+    Item3a57fc items[9];         // +4cce0
+};
+
+Screen3a7668::~Screen3a7668() {
+    if (page_ids()) {
+        EffectManager* manager = gEffectManager;
+        if (node) {
+            void* root = gResourceLoader->layout->root;
+            manager->unregister(manager->registry, 0x4202);
+            node->detach(root);
+            node->release();
+            manager->children.remove(node);
+            node = nullptr;
+        }
+    } else {
+        EffectManager* manager = gEffectManager;
+        if (node) {
+            node->detach(gResourceLoader->layout->root);
+            node->release();
+            manager->nodes.remove(node);
+            node = nullptr;
+        }
+    }
+}

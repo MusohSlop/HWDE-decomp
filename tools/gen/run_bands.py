@@ -269,7 +269,21 @@ def candidates():
     alo = int(os.environ.get("RV_ADDR_LO", "0"), 16); ahi = int(os.environ.get("RV_ADDR_HI", "ffffffff"), 16)
     found = {int(r[0], 16) - 0x7100000000 for r in rows if r[1] == "U" and lo <= int(r[2]) <= hi
              and alo <= int(r[0], 16) - 0x7100000000 < ahi} - taken
-    for skipf in [f_ for f_ in os.environ.get("RV_SKIP", "").split(";") if f_.strip()]:
+    skips_ = [f_ for f_ in os.environ.get("RV_SKIP", "").split(";") if f_.strip()]
+    if not os.environ.get("RV_NODEFAULTSKIP"):
+        # every hand session's scope and claims, from this checkout and each session's worktree, so a function belongs
+        # to exactly one session's pass; RV_OWN (for example s3) keeps that session's own files out of the list
+        own_ = os.environ.get("RV_OWN", "").strip()
+        root_ = os.path.dirname(M)      # project1, or project1\worktrees\sN when run from a worktree
+        if os.path.basename(os.path.dirname(root_)) == "worktrees":
+            root_ = os.path.dirname(os.path.dirname(root_))
+        for f_ in ("s3_scope.txt", "s3_claims.txt", "s4_claims.txt", "s5_claims.txt"):
+            if own_ and f_.startswith(own_ + "_"):
+                continue
+            skips_.append(os.path.join(M, "docs", f_))
+            skips_.append(os.path.join(root_, "worktrees", f_[:2], "matching", "docs", f_))
+    n0_ = len(found)
+    for skipf in skips_:
         # addresses other sessions are hand-matching (hex image offsets or full 0x71... addresses); a file that does
         # not exist yet is skipped
         if not os.path.exists(skipf.strip()):
@@ -277,9 +291,10 @@ def candidates():
         for tok in re.findall(r"\b(?:0x)?([0-9a-f]{4,10})\b", open(skipf.strip(), encoding="utf-8-sig").read().lower()):
             v_ = int(tok, 16)
             found.discard(v_ - 0x7100000000 if v_ >= 0x7100000000 else v_)
+    print(f"skipped {n0_ - len(found)} candidates listed by other sessions", flush=True)
     if os.environ.get("RV_ONLY"):
         # a file of hex image offsets (whitespace or comma separated): only these functions
-        found &= {int(x, 16) for x in re.split(r"[\s,]+", open(os.environ["RV_ONLY"], encoding="utf-8").read()) if x}
+        found &= {int(x, 16) for x in re.split(r"[\s,]+", open(os.environ["RV_ONLY"], encoding="utf-8-sig").read()) if x}
     return found
 
 def final_units(best):

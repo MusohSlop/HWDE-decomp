@@ -94,6 +94,11 @@ from `worktrees\s5` on branch `matching-s5`.
 - Both skip the second session's near-miss list and the third session's `s3_scope.txt`.
 - New units: `misc/s4_functionsNN.cpp` and `misc/s5_functionsNN.cpp`. Each keeps `matching/docs/sN_claims.txt` in its
   own worktree, and the generator runs skip those through `RV_SKIP` as above.
+- `tools/gen/run_bands.py` now skips every session's scope and claims files by default (`s3_scope.txt`,
+  `s3_claims.txt`, `s4_claims.txt`, `s5_claims.txt`, from the checkout's `docs/` and each `worktrees\sN`), so each
+  function belongs to exactly one session's pass and no `RV_SKIP` is needed for them. A session running a pass over its
+  own scope sets `RV_OWN` to its name (`RV_OWN=s3`); `RV_NODEFAULTSKIP=1` turns the default off. The run prints how many
+  candidates it skipped.
 - Neither edits `matching/tools/gen/*`, `tools/check.py` or `tools/check_obj.py`.
 - The main session merges `matching-s4` and `matching-s5` like the other branches; a function matched on both sides
   keeps `master`'s copy.

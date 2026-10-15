@@ -274,7 +274,15 @@ Mesh5e3f48::Mesh5e3f48(unsigned int attrs_, int type_, int segments_)
     index_bytes = n * sizeof(unsigned int);
 }
 
-// 0x71002d4d84 and 0x71002d4e4c (D2): two screens on 2cff80's middle base, each holding a layout handle.
+class DefaultHeap {
+public:
+    void release(void* ptr, int a, int b);                                   // 0x710045c2f4
+};
+DefaultHeap* get_default_heap();                                            // 0x710045c96c
+
+// 0x71002d4d84 and 0x71002d4e4c (D2; their deleting forms 0x71002d61d4 and 0x71002d601c, deleted through the default
+// heap): two screens on 2cff80's middle base, each holding a layout handle. 0x71002d60f8 is the second screen's
+// deleting destructor once more (vtable GOT 0x7100c2aa88 too), from a class of its own.
 struct ObjHeap;
 // Reached through the GOT slot at 0x7100c22a00.
 extern ObjHeap* gObjHeap;
@@ -343,6 +351,7 @@ class Screen2d4d84 : public Mid2d5f90 {
 public:
     void v10();
     ~Screen2d4d84();
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
 
     unsigned char pad4a00[0x1220];
     HandleBody handle;           // +5c20
@@ -354,12 +363,25 @@ class Screen2d4e4c : public Mid2d5f90 {
 public:
     void v10();
     ~Screen2d4e4c();
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
 
     unsigned char pad4a00[0x18];
     HandleBody handle;           // +4a18
 };
 
 Screen2d4e4c::~Screen2d4e4c() {}
+
+class Screen2d60f8 : public Mid2d5f90 {
+public:
+    void v10();
+    ~Screen2d60f8();
+    static void operator delete(void* ptr) { get_default_heap()->release(ptr, 1, 0); }
+
+    unsigned char pad4a00[0x18];
+    HandleBody handle;           // +4a18
+};
+
+Screen2d60f8::~Screen2d60f8() {}
 
 // 0x7100534010: a table that keeps a copy of its entries and the distinct keys among them (at most 16).
 struct Entry534010 {

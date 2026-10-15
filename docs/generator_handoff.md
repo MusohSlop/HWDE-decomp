@@ -191,6 +191,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   returned or passed in x registers, the high half of an 8-byte value) is the float its low 32 bits hold, through
   `__builtin_memcpy` in a lambda; a 64-bit load whose high half goes to a float register stays one load (an int and
   a float of a struct copied as one 8-byte value);
+- a merge of vectors is a vector (knob `novecmerge`): a lane of a vector merged at a join (matrix rows from one of two
+  sources) no longer fails with "lane of scalar";
+- an int and a float in one stack slot (knob `nostackpun`): the slot keeps its first type and the other access is a
+  pun through a reinterpret_cast pointer, as for fields reached through pointers;
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
@@ -202,7 +206,11 @@ Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `
 call, the loads whose values the call does not use come first: Clang's schedulers reorder independent loads, and
 the order decides whether the two values share a callee-saved register) and `vptrfirst` (a vtable pointer store
 moves up past the loads just before it that read the same object at or after its offset: an inlined member
-destructor stores the member's vtable pointer first, and the scheduler hoists the field loads above it). Functions whose generated source would exceed 2 MB
+destructor stores the member's vtable pointer first, and the scheduler hoists the field loads above it) and
+`gotfirst` (a global whose GOT address the original loads before the first branch is read before the first test:
+the first read of it inside an if moves in front of that if and of the loads that feed its test; the value load
+sinks back into the if, the GOT address stays in a callee-saved register for the later reads, as s3 found in
+destructors that read a manager global at the top). Functions whose generated source would exceed 2 MB
 are skipped (forking at every branch can grow a function's source exponentially).
 
 ## Queued next

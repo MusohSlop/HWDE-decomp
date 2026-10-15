@@ -1,16 +1,20 @@
-// 0x710021d738 (948 B): a model builder (template-like family: 21ddf8, 21f9f8, 2200b8, 450710 differ only in the
-// object size and vtables; 73070, 73e50, 74520, 4100e8, 4107c8, 410ea8, 73770, 23efbc and others add a little).
-// Written exactly like the main session's create_model_72768 (misc/model_builders.cpp) with TrackedModel
-// (0x710058fe30) as the base and 0x12f0 as the object size. Status: abstract diff count 18, all of it register
-// allocation:
-//   - the original keeps the loader (x0) in x20 and the user pointer (x6) in x21 until after query, then spills
-//     both with one stp; it spills extras (x3) at entry. Ours spills loader, extras and user at entry.
-//   - the original keeps base (nodes + 0x12f0) in x21 and spills materials/textures/samplers (sp+54/58/5c); ours
-//     keeps materials in a register and spills base, textures and samplers.
-// Tried without effect (build/s3 scratch, scratchpad gen21d738.py): base/body computed after the table sizes,
-// end = body + tables, the table pointers from a running offset, extra_count unsigned, validate as bool (37 off),
-// 32 combinations in all; none below 18. Queued: irsearch --groups --loads-free (irs-free6) and plain mode
-// (irs-plain7).
+// 0x710021d738 (948 B): a model builder. The family (parked at 14 abstract diffs, all register allocation): 21d738,
+// 21ddf8, 21f9f8, 2200b8, 450710 (only the object size and the vtables differ), 73070, 73e50, 74520, 4100e8, 4107c8,
+// 410ea8, 73770, 23efbc, 21d074, 3e5954, 21e4b8, 21f318, 450dd4, 44e84c, 44e15c, 44da50, 44ffb8, 21eb98, and the main
+// session's 72768 (misc/model_builders.cpp, now the third session's).
+// Written like 72768 with TrackedModel (0x710058fe30) as the base and 0x12f0 as the object size, plus the fifth
+// session's arrangement: the node pointer (p + base) right after the name table and the weight pointer (p + end) as
+// its own statement just before the shape table, so base keeps a callee-saved register and materials, textures and
+// samplers are spilled as in the original (18 to 14).
+// Left: (1) the original keeps the loader (x0) and user (x6) arguments in x20/x21 across query and spills both with
+// one stp at the top of the success block; ours spills loader, user and extras at their definitions (greedy's region
+// split takes only the compact region around setup). (2) bones and end swap w23/w24. (3) the reloads around setup
+// follow from (1).
+// Tried without effect: 32 statement-order/type variants (before s5's arrangement); after it, the query outputs'
+// order, an early return, a named AllocParams (47 off), late locals for loader/user, a ternary for size, the list and
+// count locals declared before the query or in the plain branch, the skin local at the top, the copy loop through a
+// pointer (73 off). irsearch: --groups --loads-free and plain mode on the size block (18 to 16 before the
+// arrangement); s5's plain runs over every block of 5+ instructions moved nothing.
 // Symbols for try.py: --map got:_ZTV19SkinnedModel_21d738=0x7100c233e0 --map got:_ZTV17PlainModel_21d738=0x7100c233e8
 //
 // The diff (ours -, original +; branch-only lines dropped):
@@ -23,50 +27,19 @@
 //       38 - stp x3, x6, [sp, #0x60]
 //       3c + mov x21, x6
 //    --- replace ours[19:20] orig[20:21]
-//    --- replace ours[22:23] orig[23:25]
-//       58 - add w10, w8, w9
+//    --- insert ours[22:22] orig[23:24]
 //       5c + stp x21, x20, [sp, #0x60]
-//       60 + add w21, w8, w9
-//    --- replace ours[24:26] orig[26:28]
-//       60 - mov w27, w10
-//       68 + mov w27, w21
-//    --- replace ours[28:30] orig[30:31]
-//       70 - add w27, w9, w10
-//       74 - str w10, [sp, #0x5c]
-//       78 + add w27, w9, w21
-//    --- replace ours[33:34] orig[34:35]
-//       84 - lsl w21, w9, #3
+//    --- replace ours[25:26] orig[27:28]
+//    --- replace ours[32:33] orig[34:35]
+//       80 - lsl w24, w9, #3
 //       88 + lsl w23, w9, #3
-//    --- replace ours[35:36] orig[36:37]
-//       8c - and w24, w9, #0xfffffff8
-//       90 + and w25, w9, #0xfffffff8
-//    --- replace ours[38:43] orig[39:47]
-//       98 - lsl w25, w10, #3
-//       9c - lsl w10, w11, #3
-//       a0 - and w11, w9, #0xfffffff8
-//       a4 - add w9, w21, w24
-//       a8 - add w9, w9, w25
-//       9c + lsl w15, w10, #3
-//       a0 + and w10, w9, #0xfffffff8
+//    --- replace ours[39:40] orig[41:42]
+//       9c - add w9, w24, w25
 //       a4 + add w9, w23, w25
-//       a8 + lsl w14, w11, #3
-//       ac + ldr x13, [x22]
-//       b0 + stp w15, w14, [sp, #0x54]
-//       b4 + add w9, w9, w15
-//       b8 + add w9, w9, w14
-//    --- delete ours[44:45] orig[48:48]
-//       b0 - add w9, w9, w11
-//    --- replace ours[46:48] orig[49:50]
-//       b8 - ldr x13, [x22]
-//       bc - stp w11, w10, [sp, #0x54]
-//       c4 + str w10, [sp, #0x5c]
-//    --- delete ours[52:53] orig[54:54]
-//       d0 - and w10, w10, #0xfffffff0
-//    --- replace ours[55:58] orig[56:60]
+//    --- replace ours[55:58] orig[57:60]
 //       dc - add w23, w9, w27
 //       e0 - add w9, w10, w23
 //       e4 - csel w9, w23, w9, eq
-//       e0 + and w10, w10, #0xfffffff0
 //       e4 + add w24, w9, w27
 //       e8 + add w9, w10, w24
 //       ec + csel w9, w24, w9, eq
@@ -89,12 +62,10 @@
 //    --- replace ours[102:103] orig[105:106]
 //    --- replace ours[107:108] orig[110:111]
 //    --- replace ours[115:116] orig[118:119]
-//    --- replace ours[134:138] orig[137:140]
-//      218 - ldp w28, w13, [sp, #0x50]
+//    --- replace ours[135:138] orig[138:140]
 //      21c - ldp x7, x15, [sp, #0x60]
 //      220 - ldr x1, [sp, #0x70]
 //      224 - ldp w12, w14, [sp, #0x58]
-//      224 + ldp w28, w11, [sp, #0x50]
 //      228 + ldr x7, [sp, #0x70]
 //      22c + ldp w12, w13, [sp, #0x58]
 //    --- replace ours[140:143] orig[142:145]
@@ -111,33 +82,31 @@
 //      268 + ldr x17, [sp, #0x70]
 //    --- replace ours[168:169] orig[167:168]
 //    --- replace ours[170:171] orig[169:170]
-//    --- replace ours[175:179] orig[174:177]
+//    --- replace ours[175:177] orig[174:175]
 //      2bc - ldr x15, [sp, #0x68]
 //      2c0 - ldp w12, w14, [sp, #0x58]
-//      2c4 - ldr w13, [sp, #0x54]
-//      2c8 - mov x5, x2
 //      2b8 + ldp w12, w13, [sp, #0x58]
-//      2bc + ldr w11, [sp, #0x54]
+//    --- replace ours[178:179] orig[176:177]
+//      2c8 - mov x5, x2
 //      2c0 + mov x5, x1
-//    --- replace ours[180:184] orig[178:181]
-//      2d0 - add x9, x8, w21, uxtw
-//      2d4 - add x10, x9, w24, uxtw
-//      2d8 - stp x8, x9, [sp]
-//      2dc - add x11, x10, w25, uxtw
+//    --- replace ours[180:181] orig[178:179]
+//      2d0 - add x9, x8, w24, uxtw
 //      2c8 + add x9, x8, w23, uxtw
-//      2cc + add x10, x9, w25, uxtw
-//      2d0 + add x11, x10, w11, uxtw
-//    --- replace ours[186:188] orig[183:187]
-//      2e8 - add x4, x20, w14, uxtw
-//      2ec - add x14, x20, w23, uxtw
+//    --- delete ours[182:183] orig[180:180]
+//      2d8 - stp x8, x9, [sp]
+//    --- insert ours[185:185] orig[182:186]
+//      2d8 + add x13, x12, w13, uxtw
 //      2dc + add x14, x20, w24, uxtw
 //      2e0 + stp x13, x14, [sp, #0x28]
 //      2e4 + ldp x14, x1, [sp, #0x60]
-//      2e8 + add x4, x20, w21, uxtw
+//    --- delete ours[186:187] orig[187:187]
+//      2e8 - add x13, x20, w23, uxtw
+//    --- delete ours[189:190] orig[189:189]
+//      2f4 - add x14, x12, w14, uxtw
 //    --- replace ours[191:194] orig[190:194]
-//      2fc - stp x14, x15, [sp, #0x30]
+//      2fc - stp x13, x15, [sp, #0x30]
 //      300 - stp x10, x11, [sp, #0x10]
-//      304 - stp x12, x13, [sp, #0x20]
+//      304 - stp x12, x14, [sp, #0x20]
 //      2f8 + stp x11, x12, [sp, #0x18]
 //      2fc + str x14, [sp, #0x38]
 //      300 + stp x9, x10, [sp, #8]
@@ -302,13 +271,15 @@ void* create_model_21d738(ResourceLoader* loader, ModelResource* resource, int e
             unsigned char* p = reinterpret_cast<unsigned char*>(model);
             unsigned char* bone_table = p + body;
             unsigned char* name_table = bone_table + bones;
+            unsigned char* node_table = p + base;
             unsigned char* material_table = name_table + bone_names;
             unsigned char* texture_table = material_table + materials;
             unsigned char* sampler_table = texture_table + textures;
+            unsigned char* weight_table = p + end;
             unsigned char* shape_table = sampler_table + samplers;
-            if (!model->setup(loader, heap, resource, p + base, skin, count, list, bone_table,
+            if (!model->setup(loader, heap, resource, node_table, skin, count, list, bone_table,
                               name_table, material_table, texture_table, sampler_table,
-                              shape_table, p + end, user)) {
+                              shape_table, weight_table, user)) {
                 drop(model);
                 model = nullptr;
             } else if (validate && !model->validate()) {
