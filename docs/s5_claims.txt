@@ -14,6 +14,7 @@ tried: 3be490 (2,656 B, 2,624 B here, 16 off abstracted: the indexes derived fro
 tried: 3b4e98 (2,576 B, same size here, 6 off abstracted: scheduling in the extra item's setters; docs/s5_wip/3b4e98.cpp)
 tried: 3bf978 (3,060 B, 3,056 B here, 174 off abstracted: the rank-to-frame mapping and the slot reloads; docs/s5_wip/3bf978.cpp)
 tried: 3c2280 (4,044 B, same size here, 18 off abstracted: a bounds test's encoding, select and store scheduling; docs/s5_wip/3c2280.cpp)
+tried: 4ce8e0 (2,104 B, 2,112 B here, 23 off abstracted: register allocation of the stage pointers and offsets; docs/s5_wip/4ce8e0.cpp)
 # The NEON matrix-inverse family (main: s5 owns the shared inline and all 23 copies, any range or size), working:
 96e0c
 a6470
