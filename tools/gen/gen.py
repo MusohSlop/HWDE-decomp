@@ -77,6 +77,9 @@ def frw(i):
     return {num(r) for r in reads} - {None}, {num(r) for r in writes} - {None}
 
 RW_FIX = [True]
+BFM_FIX = [True]
+# aliases of ubfm/sbfm: capstone reports the destination as read, as it does for bfm
+BFM_ALIASES = {"lsl", "lsr", "asr", "ubfx", "sbfx", "ubfiz", "sbfiz", "sxtb", "sxth", "sxtw", "uxtb", "uxth"}
 def rw(i):
     reads, writes = i.regs_access()
     def num(r):
@@ -84,6 +87,11 @@ def rw(i):
         mm = re.fullmatch(r"[wx](\d+)", n)
         return int(mm.group(1)) if mm else None
     r_, w_ = {num(r) for r in reads} - {None}, {num(r) for r in writes} - {None}
+    if BFM_FIX[0] and i.mnemonic in BFM_ALIASES:
+        ops_ = [o_.strip() for o_ in i.op_str.split(",")]
+        md_ = re.fullmatch(r"[wx](\d+)", ops_[0]) if ops_ else None
+        if md_ and not any(re.fullmatch(r"[wx]%s" % md_.group(1), o_) for o_ in ops_[1:]):
+            r_.discard(int(md_.group(1)))
     if RW_FIX[0] and i.mnemonic in ("cmp", "cmn", "tst"):
         # capstone reports the first operand of a compare as written; it is only read
         mm = re.match(r"[wx](\d+)", i.op_str)
@@ -261,6 +269,7 @@ VA_SAVES = {"q6, q7, [sp, #0x60]", "x6, x7, [sp, #0xb0]", "x4, x5, [sp, #0xa0]",
 def gen_function(a, ins):
     knobs = KNOB_MAP.get(a, DEFAULT_KNOBS)
     RW_FIX[0] = "oldrw" not in knobs
+    BFM_FIX[0] = "oldbfm" not in knobs
     if ("novastub" not in knobs and len(ins) == 11 and (ins[0].mnemonic, ins[0].op_str) == ("sub", "sp, sp, #0xc0")
             and all(i_.mnemonic == "stp" for i_ in ins[1:9]) and {i_.op_str for i_ in ins[1:9]} == VA_SAVES
             and (ins[9].mnemonic, ins[9].op_str) == ("add", "sp, sp, #0xc0") and ins[10].mnemonic == "ret"):
