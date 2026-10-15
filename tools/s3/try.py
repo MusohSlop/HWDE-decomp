@@ -47,10 +47,26 @@ for x in a.map:
 mapping[".rodata.cst4"] = 0x73b000
 mapping[".rodata.cst16"] = 0x73dff0
 data, sections, symbols, relocs = check_obj.read_elf(obj)
+
+
+def placeholder_address(name):
+    """The address suffix of a placeholder name (callee_X, Class_X, ...). For a mangled free function the
+    identifier is cut at its length prefix, so a parameter code after the address (callee_33840cl) is not read
+    as part of it."""
+    mm = re.match(r"_Z(\d+)", name)
+    if mm:
+        ident = name[mm.end():mm.end() + int(mm.group(1))]
+        mi = re.search(r"_([0-9a-f]{5,6})$", ident)
+        if mi:
+            return int(mi.group(1), 16)
+    mm = re.search(r"_([0-9a-f]{5,6})(?=[A-Z]|$|E|P|v|i|f)", name)
+    return int(mm.group(1), 16) if mm else None
+
+
 for s in symbols:
-    mm = re.search(r"_([0-9a-f]{5,6})(?=[A-Z]|$|E|P|v|i|f)", s.name) if not s.is_section and s.shndx == 0 else None
-    if mm and s.name not in mapping:
-        mapping[s.name] = int(mm.group(1), 16)
+    va = placeholder_address(s.name) if not s.is_section and s.shndx == 0 else None
+    if va is not None and s.name not in mapping:
+        mapping[s.name] = va
 defined = [s.name for s in symbols if not s.is_section and s.shndx != 0 and s.size]
 name = a.name or next((d for d in defined if re.search(r"_0*%x(?![0-9a-f])" % addr, d)), None)
 mapping.setdefault(name, addr)
