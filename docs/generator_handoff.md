@@ -164,13 +164,23 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   "merge types: float|Vec4f"): the vector side is lane 0; the bits of a float used as an int (`fmov w, s` read
   elsewhere) are an unsigned int through `__builtin_memcpy` in a lambda;
 - an array field also accessed as a scalar at its start (knob `noarrscalar`): the scalar keeps the field and the
-  indexed accesses go through `reinterpret_cast<T*>(&p->field)[i]` with T the element type.
+  indexed accesses go through `reinterpret_cast<T*>(&p->field)[i]` with T the element type;
+- struct copies (knob `nostructcopy`): a run of load/store pieces whose loaded values are only stored, between two
+  (non-stack) bases at one delta and covering 12 or more contiguous bytes in straight-line code, is one struct
+  assignment of `struct alignas(A) BlkR_A_FUNC { unsigned char b[R]; }`, or a loop over the records when the pieces
+  repeat a record pattern (Clang expands both into the same pieces); the pieces no longer type fields.
+- a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
+  marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
+  value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
+  `*reinterpret_cast<ZeroN_FUNC*>(p) = ZeroN_FUNC{};` for zero, a byte fill loop otherwise.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
-`inlmask_N`, `memberaddr`, `sortstores`, `vptrlast`, `copy64` and `loadfirst` (in a run of loads right before a
+`inlmask_N`, `memberaddr`, `sortstores`, `vptrlast`, `copy64`, `loadfirst` (in a run of loads right before a
 call, the loads whose values the call does not use come first: Clang's schedulers reorder independent loads, and
-the order decides whether the two values share a callee-saved register). Functions whose generated source would exceed 2 MB
+the order decides whether the two values share a callee-saved register) and `vptrfirst` (a vtable pointer store
+moves up past the loads just before it that read the same object at or after its offset: an inlined member
+destructor stores the member's vtable pointer first, and the scheduler hoists the field loads above it). Functions whose generated source would exceed 2 MB
 are skipped (forking at every branch can grow a function's source exponentially).
 
 ## Queued next
