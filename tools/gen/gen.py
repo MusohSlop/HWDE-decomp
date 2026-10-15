@@ -5107,6 +5107,30 @@ def gen_function(a, ins):
         return out_
     if "revstores" in knobs:
         items[:] = reverse_runs(items)
+    def vptr_first(its):
+        def is_vp_(v_):
+            return v_[0] == "bin" and v_[1] == "+" and v_[2][0] == "gotaddr" and v_[3][0] == "const" and v_[3][1] == 0x10
+        out_ = []
+        for it in its:
+            if it[0] == "if":
+                it = ("if", it[1], vptr_first(it[2]))
+            elif it[0] == "diamond":
+                it = (it[0], it[1], it[2], vptr_first(it[3]), vptr_first(it[4]))
+            elif it[0] == "loop":
+                it = (it[0], it[1], vptr_first(it[2])) + tuple(it[3:])
+            if it[0] == "store" and len(it) == 5 and is_vp_(it[4]):
+                k_, j_ = len(out_), len(out_)
+                while j_ > 0 and (out_[j_ - 1][0] == "lete" or (out_[j_ - 1][0] == "let" and out_[j_ - 1][4] == it[3]
+                                                                 and out_[j_ - 1][2] == it[1] and out_[j_ - 1][3] >= it[2])):
+                    j_ -= 1
+                    if out_[j_][0] == "let":
+                        k_ = j_
+                out_.insert(k_, it)
+                continue
+            out_.append(it)
+        return out_
+    if "vptrfirst" in knobs:
+        items[:] = vptr_first(items)
     def sort_runs(its):
         # knob 'sortstores': a run of plain stores is written in field order (member initialisers in declaration order)
         out_, run = [], []

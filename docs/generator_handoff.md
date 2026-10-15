@@ -172,9 +172,11 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
-`inlmask_N`, `memberaddr`, `sortstores`, `vptrlast`, `copy64` and `loadfirst` (in a run of loads right before a
+`inlmask_N`, `memberaddr`, `sortstores`, `vptrlast`, `copy64`, `loadfirst` (in a run of loads right before a
 call, the loads whose values the call does not use come first: Clang's schedulers reorder independent loads, and
-the order decides whether the two values share a callee-saved register). Functions whose generated source would exceed 2 MB
+the order decides whether the two values share a callee-saved register) and `vptrfirst` (a vtable pointer store
+moves up past the loads just before it that read the same object at or after its offset: an inlined member
+destructor stores the member's vtable pointer first, and the scheduler hoists the field loads above it). Functions whose generated source would exceed 2 MB
 are skipped (forking at every branch can grow a function's source exponentially).
 
 ## Queued next
