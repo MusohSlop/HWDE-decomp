@@ -20060,6 +20060,7 @@
     "_ZN9PanelNode16create_text_paneEv": "0x71001e4148",
     "got:_ZTV16OptionSliderBase": "0x7100c2b2c0",
     "_ZN14DeckBase38cff0C2EPvi": "0x710038cff0",
+    "got:_ZTV14DeckBase38cff0": "0x7100c2b168",
     "_ZN14DeckBase38cff03addEP10Base38c480": "0x710038dc8c",
     "_ZN10StageEntryC1Ev": "0x7100395218",
     "_ZN15StageMenu3953244loadEv": "0x7100395e10",
@@ -30427,6 +30428,11 @@
         "_ZN14DeckMenu38dca4C2EPv": "0x710038dca4",
         "_ZN16OptionSliderBaseC2EiiiiiPKcS1_": "0x710039e2f4",
         "_ZN15StageMenu395324C2EPv": "0x7100395324"
+      }
+    },
+    "misc/s3_functions26.cpp": {
+      "functions": {
+        "_ZN14DeckBase38cff0C2EPvi": "0x710038cff0"
       }
     },
     "misc/s5_functions04.cpp": {
