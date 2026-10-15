@@ -152,6 +152,35 @@ are skipped (forking at every branch can grow a function's source exponentially)
 2. Keep sampling the largest mismatch groups (`mm_probe.py`) for shared causes. The remaining big groups are
    mostly register allocation and scheduling inside large functions.
 
+## Source rules found by hand
+
+Shapes the hand-matching sessions confirmed, for the generator and for hand work. Each held in the functions named.
+
+- Global operators are called through their PLT stubs. `operator new[]` (`_Znam`) is defined at `0x71003ccc34`
+  (`heap_operators.cpp` binds the name there to match the definition), but nothing calls that address directly: all
+  three callers go through the stub at `0x7100600880`, because a call to a global operator can be preempted. One name
+  stands for two addresses, so `units.json` keeps the definition and a unit that calls the operator maps the name to
+  its stub for itself: `tools/add_symbols.py --map UNIT _Znam=0x7100600880` (da854).
+- Memory-stream loaders: the stream is a local object called through a pointer (`MemStream memory; MemStream* stream =
+  &memory;`, since calls on the object itself are devirtualised), one `read(&rec->field, nullptr, sizeof field)` per
+  field in field order, the target id read into an `int` initialised to 0, and the record type built from the read
+  list (`add x1, x21, #off` with `mov w3, #size`) (d89b0, d98e0, da854).
+- A preheader value used only after a loop is sunk into the exit block by IndVarSimplify, which skips the instruction
+  before each one it moves; a derived local right after it (`int table32 = table;`) makes the truncation the sunk value
+  (da854).
+- Byte pointers keep big member offsets as GEP offsets, which constant hoisting leaves alone (176ce0).
+- A `memcpy` whose source address is computed first sets `x1` before `x0`: the source was in a local first (19c9a4).
+- Some records are copied member by member, not by struct assignment (19c9a4).
+- A range-for over a member array unrolls fully where an index loop unrolls by four (20e224); an unsigned counter used
+  as an `int` index kept an unroll factor of two (1f9a98).
+- Placement constructors return `this` (`mov x0, x19` at the end): the generator returns its first argument when `x0`
+  is set back to it after the last call (425de0's pieces, `noretthis`).
+- A byte fill that compiles to `bl memset` and then a loop counting only pointer and length is an explicit
+  unlimited-buffer fast path with locals (`if (cap == 0) { char* p = ptr; int len = n0; for (...) { *p++ = c; len++; }
+  ptr = p; n0 = len; } else { for (...) put(c); }`) (45b158).
+- A three-case switch compares in source case order (3e934). A bounded table getter keeps its null `csel` only when the
+  address is computed before the null choice (`T* p = &tbl[i]; return i < N ? p : nullptr;`).
+
 ## Rules carried over
 
 Full check (`tools/check.py --update`) before every commit, zero masked relocations, local commits only, and only
