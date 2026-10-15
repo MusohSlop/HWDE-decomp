@@ -4466,3 +4466,39 @@ int call_49d50c(Arg49d50c_0* p0) {
     p0->field_15f8 = nullptr;
     return callee_4a1ae0(p0);
 }
+
+int callee_38f958(void*);        // 0x710038f958
+void callee_391fbc(long);        // 0x7100391fbc
+
+struct Arg392abc_0 {
+    long field_0;                // +0
+};
+// Reached through the GOT slot at 0x7100c2b1e8.
+extern unsigned char gGlobalc2b1e8_392abc[];
+
+// 0x7100392abc: stores in the original's order (ordtry)
+int call_392abc(Arg392abc_0* p0) {
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2b1e8_392abc) + 0x10);
+    long a0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2268);
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x25f8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x25c8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2598));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2568));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2538));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2508));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x24d8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x24a8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2478));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2448));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2418));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x23e8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x23b8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2388));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2358));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2328));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x22f8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x22c8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2298));
+    callee_391fbc(a0);
+    return callee_38f958(p0);
+}
