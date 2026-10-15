@@ -17961,7 +17961,15 @@
     "_Z13callee_58f108PjP10Heap448544": "0x710058f108",
     "_Z13callee_58f2c0PviP11Light448544": "0x710058f2c0",
     "_Z13callee_58f37cPvP11Vec4_448544": "0x710058f37c",
-    "_Z13callee_5c2d40P10Heap448544Pviiii": "0x71005c2d40"
+    "_Z13callee_5c2d40P10Heap448544Pviiii": "0x71005c2d40",
+    "gLocal740512_1ee914": "0x7100740512",
+    "_Z12callee2_db3cv": "0x710000db3c",
+    "_Z13callee_197a28lt": "0x7100197a28",
+    "_Z13callee_1e00b4PvS_S_l": "0x71001e00b4",
+    "_Z13callee_1e30e8Pv": "0x71001e30e8",
+    "_Z13callee_1ee968PvS_i": "0x71001ee968",
+    "_Z13callee_217d2ci": "0x7100217d2c",
+    "_Z14callee2_218fc0lii": "0x7100218fc0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -27586,6 +27594,29 @@
       "functions": {
         "_ZN10Menu3bdbf09show_lineEih": "0x71003bdbf0",
         "_ZN11Scene4485444initEv": "0x7100448544"
+      }
+    },
+    "misc/variant_functions84.cpp": {
+      "functions": {
+        "_Z10call_22558lsiPv": "0x7100022558",
+        "_Z10call_33b20l": "0x7100033b20",
+        "_Z10call_3f848v": "0x710003f848",
+        "_Z10call_3f8a4v": "0x710003f8a4",
+        "_Z10call_3fb48v": "0x710003fb48",
+        "_Z10call_414c8i": "0x71000414c8",
+        "_Z10call_41544v": "0x7100041544",
+        "_Z10call_415acPvi": "0x71000415ac",
+        "_Z10call_4301ci": "0x710004301c",
+        "_Z10call_43098iP10Arg43098_1": "0x7100043098",
+        "_Z10call_4338cPvP10Arg4338c_1": "0x710004338c",
+        "_Z10call_43444iP10Arg43444_1": "0x7100043444",
+        "_Z11call_1e00acPvS_S_l": "0x71001e00ac",
+        "_Z11call_1e30e0PvS_": "0x71001e30e0",
+        "_Z11call_1ee914P11Arg1ee914_0iii": "0x71001ee914"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
       }
     }
   }
