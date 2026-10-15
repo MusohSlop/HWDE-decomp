@@ -1367,6 +1367,7 @@ def gen_function(a, ins):
         raise Fail("index ext")
     returns = []
     UNDEF_ = set()      # argument registers passed uninitialised
+    FUNDEF_ = set()     # float argument registers passed uninitialised
     UINTLOOP_ = set()   # int loop counters used as unsigned indexes
     PAIRS_ = set()      # calls whose result is a 16-byte struct (its high half in x1 is used)
     calls_by_target_ = {}
@@ -1492,6 +1493,41 @@ def gen_function(a, ins):
                 vars_[name] = "f"
         prev = callees.get(target)
         snap_ = {k_: (None if (regs.get(k_) or ("",))[0] == "hi" else regs.get(k_)) for k_ in range(8)}
+        fsnap_ = {k_: regs["f"].get(k_) for k_ in range(8)}
+        ni_ = len(args) - len(fargs)
+        if (prev and "nofarity" not in knobs and (nf or any(c_[2] for c_ in calls_by_target_.get(target, [])))
+                and not any(x_[0] == "vecu" for x_ in args)
+                and (len(prev[0]) != len(args) or any(c_[2] != nf for c_ in calls_by_target_.get(target, [])))):
+            calls_ = calls_by_target_.get(target, []) + [(args, snap_, nf, fsnap_, ni_)]
+            if any(len(c_) < 5 for c_ in calls_):
+                raise Fail("callee arity")
+            want_i_ = max(c_[4] for c_ in calls_)
+            want_f_ = max(c_[2] for c_ in calls_)
+            for alist_, snap0_, nf0_, fsnap0_, ni0_ in calls_:
+                ints_, flts_ = alist_[:ni0_], alist_[ni0_:]
+                for k_ in range(ni0_, want_i_):
+                    v_ = snap0_.get(k_)
+                    if v_ is None:
+                        UNDEF_.add(k_)
+                        v_ = ("undef", k_)
+                    elif v_[0] == "param" and pwidth.get(v_[1]) is None:
+                        pwidth[v_[1]] = "x"
+                    ints_.append(v_)
+                for k_ in range(nf0_, want_f_):
+                    v_ = fsnap0_.get(k_)
+                    if v_ is None:
+                        FUNDEF_.add(k_)
+                        v_ = ("fundef", k_)
+                    elif v_[0] == "fparam":
+                        fparams.add(v_[1])
+                    flts_.append(v_)
+                alist_[:] = ints_ + flts_
+            callees[target][0] = args
+            calls_by_target_.setdefault(target, []).append((args, snap_, want_f_, fsnap_, want_i_))
+            for j_, c_ in enumerate(calls_by_target_[target]):
+                calls_by_target_[target][j_] = (c_[0], c_[1], want_f_, c_[3], want_i_)
+            items.append(("call", name, target, args, tail))
+            return ("var", name)
         if prev and len(prev[0]) != len(args):
             def extend_(alist_, snap0_, nf0_, want_):
                 if nf0_ or nf:
@@ -1510,13 +1546,13 @@ def gen_function(a, ins):
             if "noarity" in knobs:
                 raise Fail("callee arity")
             if len(args) > len(prev[0]):
-                for alist_, snap0_, nf0_ in calls_by_target_.get(target, []):
-                    extend_(alist_, snap0_, nf0_, len(args))
+                for c_ in calls_by_target_.get(target, []):
+                    extend_(c_[0], c_[1], c_[2], len(args))
                 callees[target][0] = args
             else:
                 extend_(args, snap_, nf, len(prev[0]))
         callees.setdefault(target, [args, None])
-        calls_by_target_.setdefault(target, []).append((args, snap_, nf))
+        calls_by_target_.setdefault(target, []).append((args, snap_, nf, fsnap_, ni_))
         items.append(("call", name, target, args, tail))
         return ("var", name)
     def copyregs(r):
@@ -3549,6 +3585,8 @@ def gen_function(a, ins):
             raise Fail("float bits")
         if v[0] == "hi" or (v[0] == "var" and v[1] in PAIRS_) or v[0] == "undef":
             return "long"
+        if v[0] == "fundef":
+            return "float"
         if v[0] == "retobj":
             return f"{RETN_}*"
         if v[0] == "retval":
@@ -3740,6 +3778,8 @@ def gen_function(a, ins):
     def expr(v, top=True):
         if v[0] == "undef":
             return f"u{v[1]}"
+        if v[0] == "fundef":
+            return f"uf{v[1]}"
         if v[0] == "hi":
             return f"{v[1]}.b"
         if v[0] == "var" and v[1] in PAIRS_:
@@ -4338,6 +4378,7 @@ def gen_function(a, ins):
             hoist_stack[-1].append((typ, name))
             return f"{pad}{name} = {rhs};"
         return f"{pad}{typ} {name} = {rhs};"
+    MORE_ = []
     def render(its, indent):
         outl = []
         pad = "    " * indent
@@ -4608,6 +4649,12 @@ def gen_function(a, ins):
                 hoisted = hoist_stack.pop()
                 for typ, name in hoisted:
                     outl.append(f"{pad}{typ} {name};")
+                # the condition computed before the updates lives outside the body: a name declared in a do body is
+                # not in scope in its while
+                mn_ = f"more{len(MORE_)}"
+                if pre:
+                    MORE_.append(mn_)
+                    outl.append(f"{pad}bool {mn_};")
                 outl.append(f"{pad}do {{")
                 outl.extend(body_lines)
                 inner = "    " * (indent + 1)
@@ -4615,7 +4662,7 @@ def gen_function(a, ins):
                 if newix_:
                     ups_.append((ix_, None))
                 if pre:
-                    outl.append(f"{inner}bool more = {cond(*cnd2_)};")
+                    outl.append(f"{inner}{mn_} = {cond(*cnd2_)};")
                 def upd2_(name, nv):
                     if nv is None:
                         return f"{name} + 1"
@@ -4628,7 +4675,7 @@ def gen_function(a, ins):
                 else:
                     for name, nv in ups_:
                         outl.append(f"{inner}{name} = {upd2_(name, nv)};")
-                outl.append(f"{pad}}} while ({'more' if pre else cond(*cnd2_)});")
+                outl.append(f"{pad}}} while ({mn_ if pre else cond(*cnd2_)});")
                 for p_ in ptrs_:
                     IDX_.pop(p_, None)
             elif it[0] == "loop":
@@ -4652,11 +4699,15 @@ def gen_function(a, ins):
                 hoisted = hoist_stack.pop()
                 for typ, name in hoisted:
                     outl.append(f"{pad}{typ} {name};")
+                mn_ = f"more{len(MORE_)}"
+                if pre:
+                    MORE_.append(mn_)
+                    outl.append(f"{pad}bool {mn_};")
                 outl.append(f"{pad}do {{")
                 outl.extend(body_lines)
                 inner = "    " * (indent + 1)
                 if pre:
-                    outl.append(f"{inner}bool more = {cond(*cnd)};")
+                    outl.append(f"{inner}{mn_} = {cond(*cnd)};")
                 def upd_text(name, nv):
                     if name in loopelem:
                         if not (nv[0] == "bin" and nv[1] == "+" and nv[2] == ("var", name) and nv[3][0] == "const"):
@@ -4672,7 +4723,7 @@ def gen_function(a, ins):
                 else:
                     for name, nv in updates:
                         outl.append(f"{inner}{name} = {upd_text(name, nv)};")
-                outl.append(f"{pad}}} while ({'more' if pre else cond(*cnd)});")
+                outl.append(f"{pad}}} while ({mn_ if pre else cond(*cnd)});")
             elif it[0] == "lete":
                 outl.append(declare_line(pad, vtype(it[2]), it[1], expr(it[2])))
             elif it[0] == "assign":
@@ -4815,6 +4866,8 @@ def gen_function(a, ins):
         decl_lines.insert(0, f"    {RETN_} r;")
     for k_ in sorted(UNDEF_, reverse=True):
         decl_lines.insert(0, f"    long u{k_};")
+    for k_ in sorted(FUNDEF_, reverse=True):
+        decl_lines.insert(0, f"    float uf{k_};")
     lines = decl_lines + lines
     if rtype == "void" and lines and lines[-1].strip() == "return;":
         lines.pop()
