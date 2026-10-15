@@ -372,6 +372,7 @@ def gen_function(a, ins):
                 if n_ in r_ or n_ in w_ or ij_.mnemonic in ("bl", "blr", "b", "br", "ret") or ij_.mnemonic.startswith("b."):
                     break
     copy_skip_, copy_emit_ = set(), {}
+    cstore1_ = set()       # (struct, offset, size) written by a single constant store
     stack_min_, stack_al_ = {}, {}     # stack structs: the size and alignment their block copies need
     valinit_imp_ = set()
     if "nostructcopy" not in knobs:
@@ -3576,6 +3577,8 @@ def gen_function(a, ins):
                         if structs[sn][off2][0] == ct and ct in ("unsigned char", "unsigned short") and not any(
                                 it_[0] in ("let", "leti") and it_[2] == sn and it_[3] == off2 for it_ in items):
                             store_typed.add((sn, off2))
+                        if not pair and val[0] == "const" and SIZE.get(ct, 8) <= 4:
+                            cstore1_.add((sn, off2, SIZE[ct]))
                         items.append(("store", sn, off2, base, val))
                 if pre:
                     regs[bn_] = basev
@@ -5681,6 +5684,12 @@ def gen_function(a, ins):
         else:
             gdecls.append(f"{note}extern {sn} g{sn}{hidden};{tail}")
         gsyms.append(sym)
+    vol_fields_ = set()
+    if "volstores" in knobs:
+        for sn_, off_, sz_ in cstore1_:
+            if any((sn_, off_ + sz_, s2_) in cstore1_ for s2_ in (1, 2, 4)) \
+                    or any((sn_, off_ - s2_, s2_) in cstore1_ for s2_ in (1, 2, 4)):
+                vol_fields_.add((sn_, off_))
     def pack_(ct_, off_):
         """The attribute that keeps a field of type ct_ at an offset its type is not aligned to."""
         sz_ = SIZE.get(ct_[6:] if ct_.startswith("ARRAY:") else ct_)
@@ -5742,6 +5751,8 @@ def gen_function(a, ins):
                     pos = off + SIZE[ct[6:]]
                     continue
                 t2 = f"{child}*" if child else ct
+                if (sn, off) in vol_fields_:
+                    t2 = "volatile " + t2
                 fl.extend(bf_lines_(sn, off, t2)) if (sn, off) in bitfields_ and t2 in BFW_ else \
                     fl.append(f"    {t2} field_{off:x}{pack_(ct, off)};{' ' * max(1, 20 - len(t2))}// +{off:x}")
                 pos = off + SIZE[ct]
@@ -5766,6 +5777,8 @@ def gen_function(a, ins):
                 pos = off + SIZE[ct[6:]]
                 continue
             t = f"{child}*" if child else ct
+            if (sn, off) in vol_fields_:
+                t = "volatile " + t
             fl.extend(bf_lines_(sn, off, t)) if (sn, off) in bitfields_ and t in BFW_ else \
                 fl.append(f"    {t} field_{off:x}{pack_(ct, off)};{' ' * max(1, 20 - len(t))}// +{off:x}")
             pos = off + SIZE[ct]
