@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-11.61% of bytes (649,140 of 5,590,485) and 42.21% of functions (7,317 of 17,335) match exactly; 188 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+11.67% of bytes (652,220 of 5,590,485) and 42.37% of functions (7,345 of 17,335) match exactly; 188 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-7,327 of 7,515 attempted functions match: 7,317 inventory functions (649,140 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 188 are near misses, all `m`.
+7,355 of 7,543 attempted functions match: 7,345 inventory functions (652,220 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 188 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -423,6 +423,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 4 of 4 in `misc/variant_functions79.cpp` | the variant search below `0x7100380000` over the functions changed by float merges typed as floats (`nofmerge`) | match |
 | 5 of 5 in `misc/variant_ctor01.cpp` | constructor-shaped functions of the third session's scope that match as generated (no class conversion needed; most generate since spill slots are reloaded) | match |
 | 2 of 2 in `misc/variant_functions80.cpp` | functions that generate since pair loads from the stack are two stack loads | match |
+| 28 of 28 in `misc/variant_functions81.cpp` | the variant search below `0x7100380000` over the functions changed by stack-address and offset-pointer bases and the second session's int-to-float fields and packed fields | match |
 | 4 of 4 in `misc/s3_functions01.cpp` | the third session's hand matches over 1,500 bytes, from generated source: layout constructors (`28ee38`, `30be50`, `325e64`, `3b9ccc`) written as classes whose members give the original's calls (single members for unrolled calls, arrays for the construction loops) and `LayoutHandle` members (the `HandleState` base, then the vtable store) | match |
 | 6 of 6 in `misc/s3_functions02.cpp` | the third session's hand fixes of generated source over 1,500 bytes: a `void` init function whose stack locals are declared in reverse (`362914`), quotients computed before a virtual call with the original's load order (`384a50`), a constructor with the first fields zeroed as one block and layout handles constructed in place (`3556b8`), and constructors whose member arrays are real arrays, with the rest of the function as their body, `new PanelPane` for the panes (`35f6e8`) and a cleared block of pointers as one `memset` (`118e44`), and float pairs stored as one 8-byte `Vec2` member (`369d3c`) | match |
 | 30 of 30 in `misc/s3_functions03.cpp` | the third session's constructor-shaped functions (vtable stores into `this`), from generated source: member arrays as real arrays and the rest as the constructor body, layout handles constructed in place, `new PanelPane`; a run of members as an array where the original's vtable store post-increments to its second element (`1ec528`), one `volatile` field where the original keeps that store in source order (`5f80bc`, `5f37e8`, `3aa468`), stores in the original's order (`c5df8`, `1f18e8`, `1f1c8c`, `75bd4`), fields at offsets their types would not get declared packed (`c5df8`, and the classes `53958`, `441a44`), and a stored address computed once where the original stores through a pre-indexed `str xA, [xB, #K]!` and passes `xB` on, as inlined handle destructors do (`37af54`, `34d974`, `2a6fd0`, `3c8724` and six more) | match |
