@@ -19478,6 +19478,17 @@
     "gAnimB3a4034": "0x71007db1a6",
     "gPaneA3a4034": "0x71007db1b1",
     "gPaneB3a4034": "0x71007db1ba",
+    "_ZN11Pages3485e8C1EP12Screen34840ci": "0x7100342c60",
+    "_ZN11Pages3485e87prepareEv": "0x710034305c",
+    "_ZN10Part5d27b4C1Ev": "0x71005d2744",
+    "_ZN9Basec719cC2Ev": "0x71003c7188",
+    "_ZN11Pages3487c0C1EP12Screen34840c": "0x7100342498",
+    "_Z10apply_iconP11EffectGroupP10HandleBodyP9IconTablePK8IconRect": "0x71001f7fe4",
+    "_ZN11Gauge2021307refreshEv": "0x7100202130",
+    "gLayout347fe4": "0x71007da6b2",
+    "gAnimIn347fe4": "0x710073fffb",
+    "gAnimLoop347fe4": "0x710074056c",
+    "gPane347fe4": "0x71007da6c3",
     "gLocal73ce6c_1406b0": "0x710073ce6c",
     "gLocal73cea4_183004": "0x710073cea4",
     "gLocal73dff0_193028": "0x710073dff0",
@@ -29866,6 +29877,7 @@
       "functions": {
         "_ZN11Pages3485e8D2Ev": "0x71003485e8",
         "_ZN12Screen34840cD2Ev": "0x710034840c",
+        "_ZN12Screen34840cC2Ev": "0x7100347fe4",
         "_ZN11Table38fc44D2Ev": "0x710038fc44"
       }
     },
