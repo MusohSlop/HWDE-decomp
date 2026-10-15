@@ -169,6 +169,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   (non-stack) bases at one delta and covering 12 or more contiguous bytes in straight-line code, is one struct
   assignment of `struct alignas(A) BlkR_A_FUNC { unsigned char b[R]; }`, or a loop over the records when the pieces
   repeat a record pattern (Clang expands both into the same pieces); the pieces no longer type fields.
+- a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
+  marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
+  value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
+  `*reinterpret_cast<ZeroN_FUNC*>(p) = ZeroN_FUNC{};` for zero, a byte fill loop otherwise.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
