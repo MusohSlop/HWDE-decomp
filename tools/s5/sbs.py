@@ -1,10 +1,12 @@
 """Compile one scratch cpp and print a side-by-side diff of one function against the original.
 
-usage: sbs.py CPP ADDR [SYMJSON] [--name SYM] [--map NAME=ADDR ...] [--all] [--ctx N] [--width W] [--abs]
+usage: sbs.py CPP ADDR [SYMJSON] [--name SYM] [--map NAME=ADDR ...] [--all] [--ctx N] [--width W] [--abs] [--lev]
 Symbols resolve as in tools/s3/try.py (units.json, SYMJSON, --map, and placeholder names ending in _<hex address>).
 Prints the instruction diff counts, MATCH for identical bytes, then ours | orig rows ('|' equal, '*' differing,
 '<' only ours, '>' only orig), each run of equal rows outside the context collapsed (all of it with --all).
 --abs compares with register numbers and large immediates abstracted (shows scheduling and size problems only).
+--lev also prints the edit distances and aligns the rows by edit distance, which cannot pair a block with its
+duplicate elsewhere in the function (difflib can, in functions with repeated inline code).
 """
 import os as _os
 M = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))  # the matching/ folder
@@ -23,6 +25,7 @@ ap.add_argument("cpp"); ap.add_argument("addr"); ap.add_argument("symjson", narg
 ap.add_argument("--name"); ap.add_argument("--all", action="store_true"); ap.add_argument("--ctx", type=int, default=2)
 ap.add_argument("--map", action="append", default=[]); ap.add_argument("--width", type=int, default=44)
 ap.add_argument("--abs", action="store_true"); ap.add_argument("--obj")
+ap.add_argument("--lev", action="store_true", help="align by edit distance (tools/s5/lev.py) instead of difflib")
 a = ap.parse_args()
 addr = int(a.addr, 16) & 0xffffffff
 man = json.load(open(os.path.join(M, "data", "units.json"), encoding="utf-8-sig"))
@@ -104,9 +107,16 @@ if mine == orig and not unres:
     sys.exit(0)
 W = a.width
 ka, kb = (ma, oa) if a.abs else (mi, oi)
-sm = difflib.SequenceMatcher(None, ka, kb, autojunk=False)
 rows = []
-for tag, i1, i2, j1, j2 in sm.get_opcodes():
+if a.lev:
+    sys.path.insert(0, os.path.join(M, "tools", "s5"))
+    import lev  # noqa
+    print("edit distance abstract", lev.distance(ma, oa), " exact", lev.distance(mi, oi))
+    for i, j in lev.align(ka, kb):
+        rows.append(("|" if i is not None and j is not None and ka[i] == kb[j] else
+                     "*" if i is not None and j is not None else "<" if j is None else ">", i, j))
+sm = difflib.SequenceMatcher(None, ka, kb, autojunk=False)
+for tag, i1, i2, j1, j2 in ([] if a.lev else sm.get_opcodes()):
     if tag == "equal":
         for k in range(i2 - i1):
             rows.append(("|", i1 + k, j1 + k))

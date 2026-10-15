@@ -1,13 +1,14 @@
 """Compile source variants described by a Python spec file and print each one's distance to the original.
 
-usage: vspec.py SPEC.py [--show K] [--keep]
+usage: vspec.py SPEC.py [--show K] [--keep] [--lev]
 
 SPEC.py defines BASE (a scratch .cpp), ADDR (hex), SYM (the compiled symbol), MAPS (a list of NAME=ADDR) and
 SLOTS, a list of (old_text, [option, ...]) pairs: old_text must occur exactly once in BASE and every combination
 of the options replaces it. Options may hold any text (the command line of variants_cpp.py cannot carry `||`).
 Optional: WORK (scratch folder, default build/s5/var). Prints abstract instruction diffs, instruction diffs and
 word diffs per variant, best last, with the option indexes; stops at a match (WORK/match.cpp). --keep writes
-every variant to WORK/vNNN.cpp.
+every variant to WORK/vNNN.cpp. --lev ranks by edit distances (tools/s5/lev.py) instead of difflib's counts, for
+functions with duplicated blocks (difflib can pair a block with its copy elsewhere and count both as changed).
 """
 import os as _os
 M = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))  # the matching/ folder
@@ -19,6 +20,20 @@ sys.path.append(os.path.join(M, "tools", "gen"))
 import capstone  # noqa
 import check_obj, check  # noqa
 import mm_tally  # noqa
+sys.path.insert(0, os.path.join(M, "tools", "s5"))
+import lev  # noqa
+
+
+def placeholder_address(name):
+    """The address suffix of a placeholder name (callee_X, Class_X, ...), as in sbs.py."""
+    mm = re.match(r"_Z(\d+)", name)
+    if mm:
+        ident = name[mm.end():mm.end() + int(mm.group(1))]
+        mi = re.search(r"_([0-9a-f]{5,6})$", ident)
+        if mi:
+            return int(mi.group(1), 16)
+    mm = re.search(r"_([0-9a-f]{5,6})(?=[A-Z]|$|E|P|v|i|f)", name)
+    return int(mm.group(1), 16) if mm else None
 
 
 def main():
@@ -29,7 +44,8 @@ def main():
         show = int(args[i + 1])
         del args[i:i + 2]
     keep = "--keep" in args
-    args = [a for a in args if a != "--keep"]
+    use_lev = "--lev" in args
+    args = [a for a in args if a not in ("--keep", "--lev")]
     spec = runpy.run_path(args[0])
     addr = int(spec["ADDR"], 16) & 0xffffffff
     work = spec.get("WORK") or os.path.join(M, "build", "s5", "var")
@@ -72,6 +88,12 @@ def main():
         if r.returncode:
             print("compile error for", combo, r.stderr[-600:])
             continue
+        _, _, symbols, _ = check_obj.read_elf(obj)
+        for s in symbols:  # placeholder names ending in an address resolve as in sbs.py
+            if not s.is_section and s.name not in mapping:
+                va = placeholder_address(s.name)
+                if va is not None:
+                    mapping[s.name] = va
         mine = mm_tally.mine_bytes(obj, sym, addr, mapping, image)
         mi = [f"{i.mnemonic} {i.op_str}" for i in md.disasm(mine, 0x7100000000 + addr)]
         ma = [_ab(x) for x in mi]
@@ -80,6 +102,8 @@ def main():
         sm = difflib.SequenceMatcher(None, mi, oi, autojunk=False)
         nd = max(len(mi), len(oi)) - sum(b.size for b in sm.get_matching_blocks())
         wd = sum(1 for k in range(0, min(len(mine), len(orig)), 4) if mine[k:k + 4] != orig[k:k + 4]) + abs(len(mine) - len(orig)) // 4
+        if use_lev:
+            nab, nd = lev.distance(ma, oa), lev.distance(mi, oi)
         res.append((nab, nd, wd, combo, len(mine)))
         if mine == orig:
             open(os.path.join(work, "match.cpp"), "w", encoding="utf-8").write(src)

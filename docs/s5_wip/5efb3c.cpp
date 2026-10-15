@@ -1,10 +1,11 @@
-// Fifth session, in progress: 0x71005efb3c (6,012 bytes), the stream voice's update (a state machine over
+// Fifth session, parked: 0x71005efb3c (6,012 bytes), the stream voice's update (a state machine over
 // state +dc8: 0 idle, 1 starting, 2 playing, 3 pausing, 4 paused, 5 resuming, 6 closing). It runs the faders
 // (main, pause, volume, pitch and up to six channel groups, 0x28 bytes each), copies the newest command block out of
 // the double buffer at +dd8 (flags read with ldarh, cleared with stlr), applies it to the current command at +f78
 // (whole, or bit by bit), starts or stops the stream, creates and releases the voices, submits the decoded block as
 // one wave buffer per voice, retires released buffers, and publishes a status block under the write lock.
-// This draft is 154 instructions off abstracted, 5,980 B against 6,012.
+// This draft is the original's size (6,012 B); edit distance 168 instructions abstracted, 488 exact (tools/s5/lev.py,
+// sbs.py --lev: difflib's counts pair the two copies of the effects block wrongly here and read about 340).
 // Settled (each measured): the changed flag is a bool (no masking on the ors); the 8-byte command fields (start
 // info, pan, gain) are passed by value to small setters that store the halves (one ldr x, two str w), with the
 // 2D vector a union so it is not an HFA; the range test of the start fraction is written to let NaN through
@@ -15,13 +16,20 @@
 // starting state's block first in source so it is the fall-through; the start position is a switch with the cases
 // in the order 0, 0x4000, 0x8000 (lowered 0x8000, 0x4000, 0 as in the original); the command copy is the flags
 // stored first (volatile u16, so its reads stay in memory) and one memcpy of the rest, which SROA splits into the
-// original's pieces (0x3a, scalars, 0x34, 0x34, 8).
-// Still off: mostly register allocation (which of the flags live in w20/w25-w28 and which are spilled, x19 spilled
-// in the wave buffer loop, the frame is 0x10 bytes smaller), the group update loop's reload of channels (the
-// original reloads it on both paths instead of before the branch), the pan/mix update's tail (the original tests
-// output_changed twice, cbz and tbz), the release loop's compares (the original compares the zero-extended voice
-// count first and widens the busy scan's index to 64 bits), the info base kept in x23 in the start path, the pitch
-// ratio multiplied before the loop, and the position's scheduling in the status block.
+// original's pieces (0x3a, scalars, 0x34, 0x34, 8). Second pass: the release loop's index is an unsigned long tested
+// as (int)i < (int)count (64-bit index for the addresses, 32-bit exit compare) with the inner test written
+// count > i; the busy scan's index is a long over (buffers + read_index)[j * block_count]; the wave buffer address
+// is dest + stride * (unsigned)i, which LSR turns into the original's 64-bit accumulator over the widened
+// stride|start load (an explicit u32 accumulator splits that load in two); the context pointer is read before the
+// x30/in_use stores; the pitch ratio (exp2f * gain.y) is computed before the loop (MachineSink moves it past the
+// count test); the normal start also sets pitch_changed; Fader::remaining multiplies step * count; the position
+// is computed into a local before the status stores.
+// Still off: register allocation (0x43 sits in w27 instead of w24, applied in w24 instead of w26, pitch_changed is
+// spilled at the first path instead of living in w27, so the spill area is 0x10 bytes smaller and every sp offset
+// differs), the group update loop's channels load hoisted above the tbz (the original reloads it on both paths), the
+// command copy's memcpy source taken from the field base (x25 + 0xdda) instead of the flags pointer (x21 + 2), the
+// info base kept in x23 in the start path, the start transition's block layout, the pan/mix tail (the original tests
+// output_changed in two blocks, cbz and tbz), and the advance block's schedule.
 // Maps: the nn::audio and nn::os imports by their mangled names (0x7100601910-0x7100601c70), exp2f (0x7100601430),
 //   and .rodata (the state-to-status lookup table) at 0x7100a9adc0.
 extern "C" void* memcpy(void* dest, const void* src, unsigned long size);   // 0x7100600870
@@ -98,7 +106,7 @@ struct Fader5efb3c {
         }
     }
     unsigned int remaining() const {
-        float elapsed = static_cast<float>(static_cast<unsigned int>(count * step) / rate);
+        float elapsed = static_cast<float>(static_cast<unsigned int>(step * count) / rate);
         return duration > elapsed ? static_cast<unsigned int>(duration - elapsed) : 0;
     }
 };
@@ -185,7 +193,7 @@ struct WaveBuffer5efb3c {
 };
 
 struct Block5efb3c {
-    int count;                // +0
+    unsigned int count;       // +0
     unsigned int size;        // +4
     unsigned int stride;      // +8
     int start;                // +c
@@ -810,6 +818,7 @@ void Voice5efb3c::update(float volume_scale, bool changed) {
                         set_group_volume(k);
                     }
                     start_voices();
+                    pitch_changed = true;
                     s = 2;
                     changed = true;
                 } else {
@@ -865,9 +874,9 @@ active:
             nn::audio::SetSubMixVolume(&submix, gain.x * (main.value * pause.value * volume.value * volume_scale));
         }
         if (pitch_changed) {
-            float ratio = exp2f(pitch.value);
+            float ratio = exp2f(pitch.value) * gain.y;
             for (unsigned int i = 0; i < voice_count; i++) {
-                nn::audio::SetVoicePitch(&voices[i], ratio * gain.y);
+                nn::audio::SetVoicePitch(&voices[i], ratio);
             }
         }
         if (pan_changed && info.channels == 1 && !(play_flags & 2)) {
@@ -886,27 +895,24 @@ submit:
         if (b.count == 0) {
             xdcc = 1;
         } else {
-            char* dest = buffer_base + static_cast<unsigned int>(block_size * pending);
+            char* dest = buffer_base + static_cast<unsigned int>(pending * block_size);
             nn::audio::CopyMemoryPoolData(&pool, dest, b.data, b.stride * b.count);
-            unsigned int offset = 0;
-            for (unsigned long i = 0; i < static_cast<unsigned long>(b.count); i++) {
+            for (unsigned long i = 0; i < static_cast<unsigned int>(b.count); i++) {
                 WaveBuffer5efb3c* wb = &buffers[static_cast<unsigned int>(block_count * i)] + pending;
-                wb->buffer = dest + offset;
+                wb->buffer = dest + b.stride * static_cast<unsigned int>(i);
                 wb->size = b.size;
                 wb->start = b.start;
                 wb->end = b.end;
                 wb->loop = false;
                 wb->end_of_stream = false;
+                wb->context = b.contexts[i];
                 wb->x30 = b.x14;
                 wb->in_use = true;
-                const void* context = b.contexts[i];
-                wb->context = context;
-                wb->context_size = context != nullptr ? b.context_size : 0;
-                if (i < voice_count &&
+                wb->context_size = wb->context != nullptr ? b.context_size : 0;
+                if (voice_count > i &&
                     nn::audio::AppendWaveBuffer(&voices[i], reinterpret_cast<nn::audio::WaveBuffer*>(wb))) {
                     queued[i]++;
                 }
-                offset += b.stride;
             }
             queued_blocks++;
         }
@@ -915,8 +921,8 @@ submit:
 
     if (voice_count != 0) {
         while (queued_blocks > 0) {
-            for (int i = 0; i < static_cast<int>(voice_count); i++) {
-                while (static_cast<unsigned int>(i) < voice_count) {
+            for (unsigned long i = 0; static_cast<int>(i) < static_cast<int>(voice_count); i++) {
+                while (voice_count > i) {
                     WaveBuffer5efb3c* wb = const_cast<WaveBuffer5efb3c*>(reinterpret_cast<const WaveBuffer5efb3c*>(
                         nn::audio::GetReleasedWaveBuffer(&voices[i])));
                     if (wb == nullptr) {
@@ -927,8 +933,8 @@ submit:
                 }
             }
             bool busy = false;
-            for (int j = 0; j < info.channels; j++) {
-                if (buffers[read_index + j * block_count].in_use) {
+            for (long j = 0; j < info.channels; j++) {
+                if ((buffers + read_index)[j * block_count].in_use) {
                     busy = true;
                     break;
                 }
@@ -1018,10 +1024,11 @@ status_update:
         status.x3c = 0.0f;
     } else {
         samples = voice_count != 0 ? nn::audio::GetVoicePlayedSampleCount(&voices[0]) : 0;
+        float position = static_cast<float>(static_cast<unsigned int>(static_cast<int>(samples) -
+                                                                       static_cast<int>(status.played) + xd38)) /
+                         static_cast<float>(static_cast<unsigned int>(status.total));
         status.x14 = 1.0f;
-        status.position = static_cast<float>(static_cast<unsigned int>(static_cast<int>(samples) -
-                                                                        static_cast<int>(status.played) + xd38)) /
-                          static_cast<float>(static_cast<unsigned int>(status.total));
+        status.position = position;
         if (play_flags & 4) {
             status.x3c = meter.level_5ec694(status.channels);
         }
