@@ -1629,6 +1629,14 @@ def gen_function(a, ins):
         if base is None:
             raise Fail("undefined base")
         base, off = fold(base, off)
+        if off < 0 and "nonegoff" not in knobs and base[0] in ("param", "var", "local", "gotaddr", "stackobj"):
+            base = ("bytes", base, ("const", off, "x")); off = 0
+        elif off < 0 and "nonegoff" not in knobs and base[0] == "bytes":
+            # a byte offset already: the field's offset joins it
+            base = ("bytes", base[1], ("bin", "-", base[2], ("const", -off, "x"), "x", "sub")); off = 0
+        elif off < 0 and "nonegoff" not in knobs and "noaddrbase" not in knobs and base[0] == "bin" and base[1] == "+":
+            # a computed address (noaddrbase): the field's offset joins it
+            base = ("bin", "-", base, ("const", -off, "x"), "x", "sub"); off = 0
         if off < 0:
             raise Fail("negative offset")
         if base[0] == "sub" and SIZE.get(ct) != base[4]:
@@ -4419,6 +4427,8 @@ def gen_function(a, ins):
             return f"{base[1]}[{IDX_[base[1]]}].field_{off - ESHIFT_.get(base[1], 0):x}"
         if base[0] == "bytes":
             sn_ = bytekinds[base]
+            if base[2][0] == "const" and base[2][1] < 0:
+                return f"reinterpret_cast<{sn_}*>(reinterpret_cast<unsigned char*>({expr(base[1])}) - {hex(-base[2][1])})->field_{off:x}"
             return f"reinterpret_cast<{sn_}*>(reinterpret_cast<unsigned char*>({expr(base[1])}) + {expr(base[2], 'noaddrparen' in knobs)})->field_{off:x}"
         if base[0] == "bin" and base in bytekinds:
             sn_ = bytekinds[base]
