@@ -14,6 +14,12 @@
 // with v merged by a conditional expression and the sums zeroed by zero4() it is the same size (1,524) at 108 off. Still off: the near-zero tests (the original keeps every compare a branch except the last, ours
 // folds pairs into and), v's representation after the merge (the original keeps it in one vector register), and
 // the frame (0xd0 with d8-d13 and x19-x24 in the original).
+// On the near-zero tests: a helper's && is folded into an and inside the helper itself, before inlining (the
+// -print-after-all dumps show the ands right after the inliner), because reference parameters are dereferenceable
+// and their loads are safe to speculate. Through a pointer parameter (const Vec4u*) the x pair stays two branches
+// as in the original, but the y and z pairs still fold after inlining; the original keeps all but the last compare
+// as branches and zeroes the result register twice (before the chain and after the x pair). Per-component helpers
+// by value, pointer or reference and nested ifs all compile alike (104 off).
 // Maps: --map "_ZNK12Sphere4eab787supportEPK5Vec4uPv=0x7100506264" --map "_ZNK12Sphere4eab787closestEPK5Vec4u=0x7100506284"
 //   --map sqrtf=0x71006008a0 --name _ZN9Fit4eab786updateEP5Vec4u
 #include <arm_neon.h>
