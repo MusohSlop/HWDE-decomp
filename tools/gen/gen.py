@@ -3497,6 +3497,8 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] in ("vins", "vcomb"):
             kids = [v[1], v[2]]
+        if v[0] == "fbits":
+            kids = [v[1]]
         if v[0] == "vecuv":
             kids = [v[1]]
         if v[0] == "vbin":
@@ -3645,7 +3647,7 @@ def gen_function(a, ins):
         return f"{p}*"
     def vtype(v):
         if v[0] == "fbits":
-            raise Fail("float bits")
+            return "unsigned int"
         if v[0] == "hi" or (v[0] == "var" and v[1] in PAIRS_) or v[0] == "undef":
             return "long"
         if v[0] == "retobj":
@@ -3890,6 +3892,8 @@ def gen_function(a, ins):
             return s_ if top else f"({s_})"
         if v[0] == "vins":
             return f"vins({expr(v[1])}, {expr(v[2])}, {v[3]})"
+        if v[0] == "fbits":
+            return f"[&] {{ unsigned int b_; float f_ = {expr(v[1])}; __builtin_memcpy(&b_, &f_, 4); return b_; }}()"
         if v[0] == "vecuv":
             return f"{expr(v[1])}.v"
         if v[0] == "vpart" and "novcomb" not in knobs:
