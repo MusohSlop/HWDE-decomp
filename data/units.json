@@ -21190,6 +21190,11 @@
     "_ZN10Part3192f0D1Ev": "0x71003192f0",
     "_ZN10Part310454D1Ev": "0x7100310454",
     "_ZN10Part3843f0D1Ev": "0x71003843f0",
+    "_Z11flag_204614P4Game": "0x7100204614",
+    "_ZN10Part2d6c5cC1Ev": "0x71002d6c5c",
+    "_ZN10Part2e2a90C1Ev": "0x71002e2a90",
+    "got:_ZTV11Panel2eeb18": "0x7100c2ac00",
+    "got:_ZTV11Panel2f1504": "0x7100c2ac08",
     "_Z10set_2036b8P4Gameiii": "0x71002036b8",
     "_Z10set_2038c0P4Gameiii": "0x71002038c0",
     "_Z12level_16f640P13Options16ef34": "0x710016f640",
@@ -32066,7 +32071,10 @@
     },
     "misc/s3_functions33.cpp": {
       "functions": {
-        "_ZN11Panel2e8c64C2EPv": "0x71002e8c64"
+        "_ZN11Panel2e8c64C2EPv": "0x71002e8c64",
+        "_ZN11Panel2eeb18C2EPv": "0x71002eeb18",
+        "_ZN11Panel2f1504C2EPv": "0x71002f1504",
+        "_ZN11Panel2eb9d4C2EPv": "0x71002eb9d4"
       }
     },
     "misc/s4_3becc.cpp": {
