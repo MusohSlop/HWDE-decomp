@@ -57,3 +57,4 @@ noloopjoin+oldlive
 voidret
 voidret+sink
 voidret+callinline
+loadfirst
