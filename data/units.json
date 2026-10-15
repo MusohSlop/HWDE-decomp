@@ -20959,7 +20959,29 @@
     "_ZN10PlaceRuleA5validEP5ActorP10PlaceEntry": "0x7100135698",
     "_ZN10PlaceRuleB5validEP5ActorP10PlaceEntry": "0x7100135748",
     "_ZN6Placer15fallback_heightEv": "0x7100136cf0",
-    "_ZNKSt3__120__vector_base_commonILb1EE20__throw_length_errorEv": "0x7100600aa0"
+    "_ZNKSt3__120__vector_base_commonILb1EE20__throw_length_errorEv": "0x7100600aa0",
+    "_ZN10Scene5f79411enter_678d4EP10SceneEntry": "0x71000678d4",
+    "_ZN10Scene5f79411reset_5f8c8Ev": "0x710005f8c8",
+    "_ZN10Scene5f79413prepare_5fae8Ev": "0x710005fae8",
+    "_ZN10Scene5f79413prepare_60d60Ev": "0x7100060d60",
+    "_ZN10Scene5f79415set_range_6a4f4Eii": "0x710006a4f4",
+    "_ZN11TrophyTimes12reset_287e40Ev": "0x7100287e40",
+    "_Z19trophy_times_28873cP12TrophyRecord": "0x710028873c",
+    "_ZN11GameOptions11init_2021e8Ev": "0x71002021e8",
+    "_Z17icon_ready_1f4918i": "0x71001f4918",
+    "_Z17icon_table_1f4940iP14IconRect28d460": "0x71001f4940",
+    "_Z17apply_icon_1f7fe4P11EffectGroupPvS1_P14IconRect28d460": "0x71001f7fe4",
+    "got:gSideTable": "0x7100c21698",
+    "_ZN10MaterialId2idEv": "0x71002005f4",
+    "_Z17stop_voice_3fecccv": "0x71003feccc",
+    "_Z18play_layout_1f7a0cPviif": "0x71001f7a0c",
+    "_ZN10TrophyView15set_mode_316b2cEi": "0x7100316b2c",
+    "_ZN10TrophyView11show_317844EP12TrophyRecord": "0x7100317844",
+    "_ZN10TrophyView11show_318a3cEP12TrophyRecord": "0x7100318a3c",
+    "_Z20unit_material_200accPv": "0x7100200acc",
+    "_ZN8UnitTask10next_b7614Ev": "0x71000b7614",
+    "_ZN8UnitTask10next_b7654Ev": "0x71000b7654",
+    "_ZN12PageScroller13update_37d96cEv": "0x710037d96c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -31464,6 +31486,48 @@
       },
       "map": {
         ".rodata.str1.1": "0x7100740c0e"
+      }
+    },
+    "misc/s4_5f794.cpp": {
+      "functions": {
+        "_ZN10Scene5f7945startILi0EEEvv": "0x710005f794",
+        "_ZN10Scene5f7945startILi1EEEvv": "0x7100060c2c"
+      }
+    },
+    "misc/s4_20493c.cpp": {
+      "functions": {
+        "_ZN9GameState4initILi0EEEvv": "0x710020493c",
+        "_ZN9GameState4initILi1EEEvv": "0x7100204aac"
+      }
+    },
+    "misc/s4_28d460.cpp": {
+      "functions": {
+        "_ZN9IconPanel6updateILi0EEEvv": "0x710028d460",
+        "_ZN9IconPanel6updateILi1EEEvv": "0x710037781c"
+      }
+    },
+    "misc/s4_317754.cpp": {
+      "functions": {
+        "_ZN10TrophyView4openILi0EEEvh": "0x7100317754",
+        "_ZN10TrophyView4openILi1EEEvh": "0x710031894c"
+      }
+    },
+    "misc/s4_4f8c8.cpp": {
+      "functions": {
+        "_ZN12FrameCounter12nested_countILi0EEEjPvi": "0x710004f8c8",
+        "_ZN12FrameCounter12nested_countILi1EEEjPvi": "0x710004f994"
+      }
+    },
+    "misc/s4_b8168.cpp": {
+      "functions": {
+        "_ZN8UnitTask6updateILi0EEEvv": "0x71000b8168",
+        "_ZN8UnitTask6updateILi1EEEvv": "0x71000b821c"
+      }
+    },
+    "misc/s4_366ab0.cpp": {
+      "functions": {
+        "_ZN8PageMenu4drawILi0EEEvv": "0x7100366ab0",
+        "_ZN8PageMenu4drawILi1EEEvv": "0x7100366b64"
       }
     }
   }
