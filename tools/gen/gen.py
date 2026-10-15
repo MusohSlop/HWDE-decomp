@@ -3914,7 +3914,7 @@ def gen_function(a, ins):
         if v[0] in ("funary", "i2f", "f2i"):
             kids = [v[2]]
         if v[0] == "fselect":
-            kids = [v[1][0][1], v[1][0][2], v[2], v[3]]
+            kids = ([v[1][0][1], v[1][0][2]] if "nomarkfix" in knobs else flag_values(v[1][0])) + [v[2], v[3]]
         if v[0] == "elem":
             kids = [v[1], v[2]]
         if v[0] in ("sub", "sub2"):
@@ -3951,6 +3951,15 @@ def gen_function(a, ins):
             kids = flag_values(v[1][0]) + ([v[2], v[3]] if v[0] == "select" else [])
         for x in kids:
             mark(x, True)
+        if "nomarkfix" not in knobs and v[0] not in ("var", "hi"):
+            mark_vars_(v)
+    def mark_vars_(v):
+        for x in v[1:]:
+            if isinstance(x, (tuple, list)):
+                if len(x) == 2 and x[0] == "var" and isinstance(x[1], str):
+                    used.add(x[1])
+                else:
+                    mark_vars_(x)
     def mark_items(its):
         for it in its:
             if it[0] == "bfstore":

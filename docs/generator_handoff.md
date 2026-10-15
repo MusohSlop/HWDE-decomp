@@ -209,7 +209,14 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
-  `*reinterpret_cast<ZeroN_FUNC*>(p) = ZeroN_FUNC{};` for zero, a byte fill loop otherwise.
+  `*reinterpret_cast<ZeroN_FUNC*>(p) = ZeroN_FUNC{};` for zero, a byte fill loop otherwise;
+- an argument in a position where the callee's overloads differ is cast to its own overload's type (knob
+  `noovcast`): the overloads of one callee in a unit come from different functions, so a literal 0 against `long`
+  and `void*`, or an `unsigned long` against `int` and `long`, made the call ambiguous. Arguments are marked while
+  rendering and resolved once the unit's declarations are known;
+- a float select on a chained compare marks every compare's operands as used, and any variable inside an
+  expression the explicit kinds do not list is marked too (knob `nomarkfix`; a call result read only there was
+  called without being declared).
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
