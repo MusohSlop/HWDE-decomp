@@ -548,12 +548,17 @@ def gen_function(a, ins):
         ADDI_ = re.compile(r"(x\d+), (x\d+), #(0x[0-9a-f]+|\d+)(?:, lsl #(\d+))?$")
         MOVR_ = re.compile(r"(x\d+), (x\d+)$")
         MOVI_ = re.compile(r"[wx](\d+), #(0x[0-9a-f]+|\d+)$")
+        PAIRB_ = re.compile(r"[wxqds]\d+, ([wxqds])(\d+), \[(x\d+%s)(?:, #(-?0x[0-9a-f]+|-?\d+))?\](x)?$"
+                            % ("" if "nostackcopy" in knobs else "|sp"))
+        LDPC_ = re.compile(r"([wxqds])(\d+), ([wxqds])(\d+), \[(?:x\d+|sp)(?:, #(?:-?0x[0-9a-f]+|-?\d+))?\]$")
         MOVK_ = re.compile(r"[wx](\d+), #(0x[0-9a-f]+|\d+)(?:, lsl #(\d+))?$")
         for k_, i_ in enumerate(ins):
             if is_br_(i_):
                 addk_, constk_ = {}, {}
                 continue
             m_ = MEMC_.match(i_.op_str) if i_.mnemonic in ("ldr", "ldur", "str", "stur") else None
+            if m_ is None and i_.mnemonic in ("ldp", "stp") and "nocopypair" not in knobs:
+                m_ = PAIRB_.match(i_.op_str)
             if m_:
                 b_, o_ = m_.group(3), int(m_.group(4), 0) if m_.group(4) else 0
                 if m_.group(5) and m_.group(5) not in constk_:
@@ -631,6 +636,38 @@ def gen_function(a, ins):
                             rd_, do_ = res_c_[j_]
                             groups_.setdefault(((rb_, vsnap_[k_].get(rb_, 0)), (rd_, vsnap_[j_].get(rd_, 0)), do_ - so_), []) \
                                 .append((so_, SZC_[rk_], k_, j_))
+                        break
+                    if rpat_.search(ij_.op_str) or is_br_(ij_):
+                        break
+            mp_ = LDPC_.match(i_.op_str) if i_.mnemonic == "ldp" and "nocopypair" not in knobs else None
+            if mp_ and mp_.group(1) == mp_.group(3) and mp_.group(2) != mp_.group(4) and k_ in res_c_ \
+                    and (res_c_[k_][0] not in written_c_ or "nocopyver" not in knobs):
+                rk_, ra_, rb2_ = mp_.group(1), mp_.group(2), mp_.group(4)
+                rb_, so_ = res_c_[k_]
+                cls_ = "wx" if rk_ in "wx" else "qdsvbh"
+                rpat_ = re.compile(r"\b[%s](%s|%s)\b" % (cls_, ra_, rb2_))
+                for j_ in range(k_ + 1, min(len(ins), k_ + 8)):
+                    ij_ = ins[j_]
+                    mq_ = LDPC_.match(ij_.op_str) if ij_.mnemonic == "stp" else None
+                    if mq_ and mq_.group(1) == rk_ and mq_.group(3) == rk_ and mq_.group(2) == ra_ and mq_.group(4) == rb2_ \
+                            and j_ in res_c_ and (res_c_[j_][0] not in written_c_ or "nocopyver" not in knobs) \
+                            and (res_c_[j_][0] == "sp" or not any(int(res_c_[j_][0][1:]) in rw(ins[jw_])[1] for jw_ in range(k_, j_))):
+                        dead_ = True
+                        for rn_ in (ra_, rb2_):
+                            for jj_ in range(j_ + 1, len(ins)):
+                                ix_ = ins[jj_]
+                                if is_br_(ix_):
+                                    break
+                                r2_, w2_ = (frw(ix_) if rk_ not in "wx" else rw(ix_))
+                                if int(rn_) in r2_:
+                                    dead_ = False
+                                    break
+                                if int(rn_) in w2_:
+                                    break
+                        if dead_:
+                            rd_, do_ = res_c_[j_]
+                            groups_.setdefault(((rb_, vsnap_[k_].get(rb_, 0)), (rd_, vsnap_[j_].get(rd_, 0)), do_ - so_), []) \
+                                .append((so_, 2 * SZC_[rk_], k_, j_))
                         break
                     if rpat_.search(ij_.op_str) or is_br_(ij_):
                         break
@@ -1251,6 +1288,8 @@ def gen_function(a, ins):
         return True
     def spun_(a_, b_):
         """An int and a float in one stack slot: the slot keeps its first type and the other access is a pun."""
+        if "nostackpun8" not in knobs and "float" in (a_, b_) and ({a_, b_} - {"float"}) <= {"long", "void*"} and a_ != b_:
+            return True
         return "nostackpun" not in knobs and a_ in ("int", "unsigned int", "float") and b_ in ("int", "unsigned int", "float") \
             and "float" in (a_, b_)
     def retype_ok_(sn_, off_, prev_t, ct_):
@@ -1357,7 +1396,8 @@ def gen_function(a, ins):
                 ct0, child0 = structs[sn0][off0]
                 if ct0 == "ARRAY:void*" and len(cur) > 3 and cur[3] != "void*":
                     raise Fail("non-pointer load base")
-                if ct0 == "long" and "nolongbase" not in knobs and off0 != 0 and (len(cur) == 3 or cur[3] in ("void*", "long")):
+                if ct0 == "long" and "nolongbase" not in knobs and (off0 != 0 or "novptrlong" not in knobs) \
+                        and (len(cur) == 3 or cur[3] in ("void*", "long")):
                     # an address kept in an 8-byte field: a pointer
                     structs[sn0][off0] = ("void*", child0)
                     ct0 = "void*"
@@ -3525,7 +3565,8 @@ def gen_function(a, ins):
                             sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char", base=basev, bytecast=True)
                             iv = index_value(regs, idx, ext)
                             name = f"v{counter[0]}"; counter[0] += 1
-                            vars_[name] = ("load", sn, off2, ct)
+                            # a pointer read from the bytes of a field: untyped until used as a base
+                            vars_[name] = "x" if ct == "void*" and "nobyteptr" not in knobs else ("load", sn, off2, ct)
                             items.append(("leti", name, sn, off2, base, iv, ct))
                             regs[dn] = ("var", name)
                             if dn < 8: written.add(dn)
@@ -4382,6 +4423,12 @@ def gen_function(a, ins):
                     return tb
                 if ta.endswith("*") and tb.endswith("*"):
                     return "void*"
+                if "float" in (ta, tb) and "nofqmerge" not in knobs:
+                    oth_ = t[1] if tb == "float" else t[2]
+                    if oth_[0] == "var" and vars_.get(oth_[1]) == "?":
+                        # the stale s0 of a call: the callee's float result
+                        vars_[oth_[1]] = "f"
+                        return "float"
                 if "float" in (ta, tb):
                     if os.environ.get("DBG"): print("DBG merge", t, vars_.get(t[1][1]) if t[1][0]=="var" else None, vars_.get(t[2][1]) if t[2][0]=="var" else None)
                     raise Fail(f"merge types: {ta}|{tb}")
@@ -5270,6 +5317,10 @@ def gen_function(a, ins):
                 continue
             if it[0] == "leti" and len(it) > 6:
                 _, name, sn, off, base, iv, wt = it
+                if isinstance(vars_.get(name), str) and vars_[name] in structs:
+                    wt = f"{vars_[name]}*"
+                elif vars_.get(name) == "x" and name in arith:
+                    wt = "long"
                 bp_ = acc(base, off) if structs[sn].get(off, ("",))[0] == "ARRAY:unsigned char" else f"reinterpret_cast<unsigned char*>(&{acc(base, off)})"
                 outl.append(declare_line(pad, wt, name, f"*reinterpret_cast<{wt}*>(&{bp_}[{iexpr_(iv)}])") if "declare_line" in dir() else f"{pad}{wt} {name} = *reinterpret_cast<{wt}*>(&{bp_}[{iexpr_(iv)}]);")
                 continue
@@ -5315,6 +5366,11 @@ def gen_function(a, ins):
                 lt_ = vars_[name]
                 if isinstance(lt_, tuple) and len(lt_) > 3 and lt_[3] != t and t in ("int", "unsigned int", "float") and lt_[3] in ("int", "unsigned int", "float") and "float" in (t, lt_[3]):
                     outl.append(declare_line(pad, lt_[3], name, f"*reinterpret_cast<{lt_[3]}*>(&{acc(base, off)})"))
+                    continue
+                if "nostackpun8" not in knobs and isinstance(lt_, tuple) and len(lt_) > 3 and "float" in (t, lt_[3]) \
+                        and ({t, lt_[3]} - {"float"}) <= {"long", "void*"} and t != lt_[3]:
+                    want8_ = "long" if lt_[3] == "void*" else lt_[3]
+                    outl.append(declare_line(pad, want8_, name, f"*reinterpret_cast<{want8_}*>(&{acc(base, off)})"))
                     continue
                 if isinstance(lt_, tuple) and len(lt_) > 3 and lt_[3] != t and not t.endswith("*") or (isinstance(lt_, tuple) and len(lt_) > 3 and lt_[3] == "long" and t == "void*"):
                     want = lt_[3]
@@ -5373,11 +5429,21 @@ def gen_function(a, ins):
                 vt0_ = vtype(val)
                 view_, want_ = vu_view_("Vec4f" if vt0_ == "Vec4f" else ("float" if vt0_ == "float" else ("long" if vt0_ in ("long", "void*") or vt0_.endswith("*") else "int")), off - u_)
                 outl.append(f"{pad}{acc(base, u_)}.{view_} = {fit(expr(val), vt0_, want_)};")
+            elif it[0] == "store" and it[2] == 0 and it[1] in vtables and "novptrlong" not in knobs \
+                    and it[3][0] in ("param", "var"):
+                # field 0 of a class with virtual slots is its vtable pointer, declared by the class itself
+                _, sn, off, base, val = it
+                outl.append(f"{pad}*reinterpret_cast<long*>({expr(base)}) = {fit(expr(val), vtype(val), 'long')};")
             elif it[0] == "store":
                 _, sn, off, base, val = it
                 vt_, ft_ = vtype(val), ftype(sn, off)
                 if vt_ != ft_ and vt_ in ("int", "unsigned int", "float") and ft_ in ("int", "unsigned int", "float") and "float" in (vt_, ft_) and not (val[0] == "const" and val[1] == 0):
                     outl.append(f"{pad}*reinterpret_cast<{vt_}*>(&{acc(base, off)}) = {expr(val)};")
+                    continue
+                if "nostackpun8" not in knobs and vt_ != ft_ and "float" in (vt_, ft_) and ({vt_, ft_} - {"float"}) <= {"long", "void*"} \
+                        and not (val[0] == "const" and val[1] == 0):
+                    w8_ = "long" if vt_ == "void*" else vt_
+                    outl.append(f"{pad}*reinterpret_cast<{w8_}*>(&{acc(base, off)}) = {fit(expr(val), vt_, w8_)};")
                     continue
                 outl.append(f"{pad}{acc(base, off)} = {fit(expr(val), vt_, ft_)};")
             elif it[0] == "call":
@@ -6115,7 +6181,8 @@ for size, a in sorted(U, key=lambda x: x[1]):
         for x in gsyms:
             if x.startswith("JTAB="):
                 _, ta_, ts_ = x.split("=")
-                if jt_end_ is not None and int(ta_, 16) != jt_end_:
+                if jt_end_ is not None and int(ta_, 16) != jt_end_ and not os.environ.get("DRYRUN"):
+                    # (a dry run lists what generates: one unit per jump table is the runner's business)
                     raise Fail("switch table apart")
                 jt_end_ = int(ta_, 16) + int(ts_, 16)
         upd_ = {}

@@ -183,6 +183,8 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   a block copy into (or out of) that local, whose struct is made as large as the copied range and aligned as the
   pieces show, its fields typed only by the other accesses (a vector copied into a local, its w set, the local
   passed on); a stack side addressed through x29 resolves to sp offsets through the frame offset (knob `nofpcopy`);
+  an ldp whose two registers are stored in the same order by one stp is one piece of twice the register size (knob
+  `nocopypair`; constructors copy 16-byte members through two x registers);
 - unused merges in loop bodies are pruned like those in straight code (knob `noloopprune`): a call in a conditional
   in a loop left s0 merged with the incoming s0, and the unused merge failed with "merge types: int|float";
 - a 64-bit load split into two neighbouring fields is found along the control flow (knob `nopairflow`): the scan
@@ -194,7 +196,9 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - a merge of vectors is a vector (knob `novecmerge`): a lane of a vector merged at a join (matrix rows from one of two
   sources) no longer fails with "lane of scalar";
 - an int and a float in one stack slot (knob `nostackpun`): the slot keeps its first type and the other access is a
-  pun through a reinterpret_cast pointer, as for fields reached through pointers;
+  pun through a reinterpret_cast pointer, as for fields reached through pointers; the same for an 8-byte integer
+  over a float slot and a float over an 8-byte slot (knob `nostackpun8`; two floats stored to a local, read back as
+  one x register);
 - parameters first used while rendering are declared (knob `nolateparam`): a parameter that reaches the output only
   through a merged value, a lane or float bits is registered where it is rendered (the parameter list is built after
   the body), instead of being used undeclared;
@@ -209,6 +213,13 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - an 8-byte integer field whose load is used as a base is a pointer (knob `nolongbase`): a member's address kept in
   a field (`add x9, x8, #0x1a0; stp x8, x9, [x20, #0x50]`) typed the field long, and its load as a base failed with
   "non-pointer load base" (offset 0, a vtable slot, is left alone);
+- a pointer loaded through a byte offset is untyped until used as a base (knob `nobyteptr`): a table of pointers
+  walked by a byte index reads the bytes of a field typed as a byte array, so the loaded pointer had no struct;
+- a stored vtable pointer read back for a virtual call (knob `novptrlong`): field 0 typed long by the store of a
+  vtable address is retyped too, and a store to field 0 of a class with virtual slots is written through the object
+  pointer (`*reinterpret_cast<long*>(obj) = ...`), the class declaring no field 0;
+- an untyped call result merged with a float is a float (knob `nofqmerge`): the stale s0 of a call on one arm against
+  the incoming s0 typed the merge "int|float"; the call result is the callee's float result;
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
