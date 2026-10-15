@@ -1,5 +1,6 @@
-# Third session (branch matching-s3): hand-matching of functions over 1,500 bytes.
-# Generator runs should skip every address listed here (hex image offsets).
-# working: the functions being hand-matched now; matched: functions matched on matching-s3.
-working: 351428 369d3c 187d78 118e44 ef31c 3f6964
-matched: 28ee38 30be50 325e64 3b9ccc 362914 384a50 3556b8 35f6e8
+# Third session (branch matching-s3): hand-matching of functions over 1,500 bytes, and constructor-shaped
+# functions (vtable stores into this) at any size. Generator runs should skip every address listed here.
+# working: functions being hand-matched now; matched: functions matched on matching-s3; tried: parked, with reason.
+working: 369d3c 187d78 ef31c 3f6964
+matched: 28ee38 30be50 325e64 3b9ccc 362914 384a50 3556b8 35f6e8 118e44 1721b0 2900cc 3c8578 33f7c0 1ddfe8 3980b8 36983c
+tried: 351428 (5,056 B, 6 off: three zeroed fields at +5b318 are stored after +5b350/+5b358 and in reverse; a memset, a sub-object body and 120 orders did not place them)
