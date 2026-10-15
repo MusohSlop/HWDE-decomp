@@ -811,6 +811,8 @@ const char* item_name(int item);                                            // 0
 
 extern const char kSliderName[] __attribute__((visibility("hidden")));        // 0x71007db128
 extern const char kSliderLayout[] __attribute__((visibility("hidden")));      // 0x71007db152
+extern const char kRangeName[] __attribute__((visibility("hidden")));         // 0x71007db11f
+extern const char kRangeLayout[] __attribute__((visibility("hidden")));       // 0x71007db160
 
 // A slider line of the options (0xabf0 bytes), built out of line on a node page.
 class OptionSliderBase {
@@ -821,6 +823,12 @@ public:
     virtual void v10();
     virtual void select(int index);                                         // +18
     void refresh();                                                         // 0x710039e820
+    void set_title(const char* text) { title = text; }
+    void set_sub(const char* text) { sub = text; }
+    void set_left(const char* text) { left = text; refresh(); }
+    void set_right(const char* text) { right = text; refresh(); }
+    void set_low(const char* text) { low = text; refresh(); }
+    void set_high(const char* text) { high = text; refresh(); }
 
     unsigned char pad8[0x22e0];
     const char* title;                // +22e8
@@ -828,7 +836,9 @@ public:
     unsigned char pad22f8[0x88b8];
     const char* left;                 // +abb0
     const char* right;                // +abb8
-    unsigned char padabc0[0x30];
+    const char* low;                  // +abc0
+    const char* high;                 // +abc8
+    unsigned char padabd0[0x20];
 };
 
 class OptionSlider : public OptionSliderBase {
@@ -909,5 +919,157 @@ SliderOptionScreen::SliderOptionScreen(OptionOwner* owner_) : OptionScreenBase(o
     add(&panel_c);
     valueb0 = 0;
     valueb4 = 6;
+    open();
+}
+struct Game;
+Game* fetch_204728();                                                       // 0x7100204728
+unsigned char game_has_flag(Game* game, int flag);                          // 0x71002026fc
+
+class OptionRangeA : public OptionSliderBase {
+public:
+    OptionRangeA() : OptionSliderBase(3, -0xb, 0x1e, -0x36, 0xaa, kRangeName, kRangeLayout) {}
+    virtual void v20();       // declared, not defined: the vtable stays external (GOT 0x7100c2b2e8)
+};
+
+class OptionRangeB : public OptionSliderBase {
+public:
+    OptionRangeB() : OptionSliderBase(4, -0x2a, 0, -0x53, 0x85, kRangeName, kRangeLayout) {}
+    virtual void v20();       // declared, not defined: the vtable stays external (GOT 0x7100c2b2f0)
+};
+
+// 0x71003a0e4c: an options screen with a range slider (vtable GOT 0x7100c2b2e0): the game's flag picks which of two
+// range sliders is shown; three sliders and two panels follow, listed in order.
+class RangeOptionScreen : public OptionScreenBase {
+public:
+    explicit RangeOptionScreen(OptionOwner* owner);
+    virtual ~RangeOptionScreen();
+
+    template <class T> void add(T* panel) { list[count++] = panel; }
+
+    OptionSliderBase* current;        // +c0
+    OptionRangeA range_a;             // +c8
+    OptionRangeB range_b;             // +acb8
+    OptionSlider slider_a;            // +158a8
+    OptionSlider slider_b;            // +20498
+    OptionSlider slider_c;            // +2b088
+    OptionPanel panel_a;              // +35c78
+    OptionPanel panel_b;              // +37f98
+};
+
+RangeOptionScreen::RangeOptionScreen(OptionOwner* owner_) : OptionScreenBase(owner_) {
+    if (game_has_flag(fetch_204728(), 0))
+        current = &range_b;
+    else
+        current = &range_a;
+    current->select(0);
+    current->set_title(message_text(0x1b));
+    current->set_sub(text_217dd8(0));
+    current->set_left(message_text(0x1c));
+    current->set_right(message_text(0x1d));
+    current->set_low(message_text(0x1e));
+    current->set_high(message_text(0x1f));
+    add(current);
+    slider_a.select(1);
+    slider_a.title = message_text(0xa3);
+    slider_a.sub = text_217dd8(0x4e);
+    add(&slider_a);
+    slider_b.select(2);
+    slider_b.title = message_text(0xc1);
+    slider_b.sub = text_217dd8(0x53);
+    add(&slider_b);
+    slider_c.select(3);
+    slider_c.title = message_text(0x13e);
+    slider_c.sub = item_name(0x15a);
+    add(&slider_c);
+    panel_a.place(6, 1);
+    panel_a.title = message_text(0x26);
+    panel_a.sub = text_217dd8(0x3a);
+    add(&panel_a);
+    panel_b.place(7, 1);
+    panel_b.title = message_text(0x27);
+    panel_b.sub = text_217dd8(0x3b);
+    add(&panel_b);
+    valueb0 = 0;
+    valueb4 = 6;
+    open();
+}
+// 0x71003a01e4: an options screen of six panels (vtable GOT 0x7100c2b2d8), four of them placed and listed.
+class PanelOptionScreen : public OptionScreenBase {
+public:
+    explicit PanelOptionScreen(OptionOwner* owner);
+    virtual ~PanelOptionScreen();
+
+    template <class T> void add(T* panel) { list[count++] = panel; }
+
+    OptionPanel panel_a;              // +c0
+    OptionPanel panel_b;              // +23e0
+    OptionPanel panel_c;              // +4700
+    OptionPanel panel_d;              // +6a20
+    OptionPanel panel_e;              // +8d40
+    OptionPanel panel_f;              // +b060
+};
+
+PanelOptionScreen::PanelOptionScreen(OptionOwner* owner_) : OptionScreenBase(owner_) {
+    panel_a.place(0, 1);
+    panel_a.title = message_text(0xc0);
+    panel_a.sub = text_217dd8(0x52);
+    add(&panel_a);
+    panel_d.place(1, 1);
+    panel_d.title = message_text(0x24);
+    panel_d.sub = text_217dd8(3);
+    add(&panel_d);
+    panel_e.place(2, 1);
+    panel_e.title = message_text(0x25);
+    panel_e.sub = text_217dd8(4);
+    add(&panel_e);
+    panel_f.place(7, 1);
+    panel_f.title = message_text(0x27);
+    panel_f.sub = text_217dd8(0x3b);
+    add(&panel_f);
+    valueb0 = 0;
+    valueb4 = 4;
+    open();
+}
+// 0x71003a1dd0: an options screen of four sliders and three panels (vtable GOT 0x7100c2b310), five of them listed.
+class SliderPanelOptionScreen : public OptionScreenBase {
+public:
+    explicit SliderPanelOptionScreen(OptionOwner* owner);
+    virtual ~SliderPanelOptionScreen();
+
+    template <class T> void add(T* panel) { list[count++] = panel; }
+
+    OptionSlider slider_a;            // +c0
+    OptionSlider slider_b;            // +acb0
+    OptionSlider slider_c;            // +158a0
+    OptionSlider slider_d;            // +20490
+    OptionPanel panel_a;              // +2b080
+    OptionPanel panel_b;              // +2d3a0
+    OptionPanel panel_c;              // +2f6c0
+    int value319e0;                   // +319e0
+};
+
+SliderPanelOptionScreen::SliderPanelOptionScreen(OptionOwner* owner_) : OptionScreenBase(owner_), value319e0(0) {
+    slider_a.select(0);
+    slider_a.title = message_text(0x20);
+    slider_a.sub = text_217dd8(1);
+    add(&slider_a);
+    slider_b.select(1);
+    slider_b.title = message_text(0xe9);
+    slider_b.sub = item_name(0x150);
+    add(&slider_b);
+    slider_c.select(2);
+    slider_c.title = message_text(0xea);
+    slider_c.sub = item_name(0x151);
+    add(&slider_c);
+    panel_a.place(3, 1);
+    panel_a.title = message_text(0xec);
+    panel_a.sub = item_name(0x152);
+    add(&panel_a);
+    panel_b.place(6, 1);
+    panel_b.title = message_text(0x26);
+    panel_b.sub = text_217dd8(0x3a);
+    add(&panel_b);
+    valueb0 = 0;
+    valueb4 = 5;
     open();
 }
