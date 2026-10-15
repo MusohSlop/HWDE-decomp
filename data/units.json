@@ -21322,7 +21322,70 @@
     "_Z20unit_material_200accPv": "0x7100200acc",
     "_ZN8UnitTask10next_b7614Ev": "0x71000b7614",
     "_ZN8UnitTask10next_b7654Ev": "0x71000b7654",
-    "_ZN12PageScroller13update_37d96cEv": "0x710037d96c"
+    "_ZN12PageScroller13update_37d96cEv": "0x710037d96c",
+    "got:gGaugeRate": "0x7100c21d80",
+    "got:gGaugeRateMax": "0x7100c21d88",
+    "_Z18unit_command_7f310P9UnitActori": "0x710007f310",
+    "_Z18unit_command_7f584P9UnitActori": "0x710007f584",
+    "_Z18unit_command_80bf8P9UnitActori": "0x7100080bf8",
+    "_Z18unit_command_82244P9UnitActori": "0x7100082244",
+    "_Z18unit_command_85908P9UnitActor": "0x7100085908",
+    "_Z18unit_command_9906cP9UnitActorPv": "0x710009906c",
+    "_Z18unit_command_995f4P9UnitActori": "0x71000995f4",
+    "_Z17side_unit_id_db3ci": "0x710000db3c",
+    "_Z18unit_command_863c4P9UnitActor": "0x71000863c4",
+    "_Z18unit_command_864b4P9UnitActor": "0x71000864b4",
+    "_Z16unit_range_997e0P9UnitActor": "0x71000997e0",
+    "_Z18unit_command_99098P9UnitActor": "0x7100099098",
+    "_ZN9UnitTable10UnitRoster4rankEP4Unit": "0x710005d4d0",
+    "_Z16item_rank_1fb810i": "0x71001fb810",
+    "_ZN11UnitWatcher17base_update_c480cEv": "0x71000c480c",
+    "_Z14unit_can_7c5a8P9UnitActori": "0x710007c5a8",
+    "_ZN9UnitTimer10step_3c784EP15UnitTimerTarget": "0x710003c784",
+    "_Z16side_ready_4126ci": "0x710004126c",
+    "_Z21set_controller_3ce218b": "0x71003ce218",
+    "_Z17side_order_1eb798iii": "0x71001eb798",
+    "_Z17side_order_1eb904ii": "0x71001eb904",
+    "_ZN11RegionEntry11mode_20bbfcEv": "0x710020bbfc",
+    "_ZN14RegionSettings12entry_20c154Ei": "0x710020c154",
+    "_Z17item_field_211530i": "0x7100211530",
+    "_Z15set_track_46c68PviiP5Vec4f": "0x7100046c68",
+    "_Z17item_of_unit_a870i": "0x710000a870",
+    "_Z23fallback_unit_id_170c58v": "0x7100170c58",
+    "_Z17find_effect_7f7a8P9UnitActori": "0x710007f7a8",
+    "_Z18battle_mode_1720c4v": "0x71001720c4",
+    "_ZN9UnitTable9has_22640EP7UnitRef": "0x7100022640",
+    "_Z16copy_state_cb0a8P9UnitStateS0_": "0x71000cb0a8",
+    "_Z13rule_on_3c520i": "0x710003c520",
+    "_Z16actor_flag_9d2b4P9UnitActori": "0x710009d2b4",
+    "_Z16actor_flag_81070P9UnitActori": "0x7100081070",
+    "_Z17item_allowed_ba08ish": "0x710000ba08",
+    "_Z15side_value_ebe8i": "0x710000ebe8",
+    "_Z15give_item_33df0P4UnitP9UnitActori": "0x7100033df0",
+    "_Z14item_used_bc1ci": "0x710000bc1c",
+    "_Z19special_item_171de0i": "0x7100171de0",
+    "_ZN7ItemRow12value_209ffcEv": "0x7100209ffc",
+    "_ZN7ItemRow12count_20a0ccEv": "0x710020a0cc",
+    "_ZN8ItemRows10row_20a4e8Ei": "0x710020a4e8",
+    "_Z20get_item_rows_20a31cv": "0x710020a31c",
+    "_ZN13SideItemPanel10show_f4890Eiii": "0x71000f4890",
+    "got:gSideItemPanels": "0x7100c21d48",
+    "got:gUnitLimitMin": "0x7100c21a10",
+    "got:gUnitLimitMax": "0x7100c21a18",
+    "_Z17raise_actor_99810P9UnitActorf": "0x7100099810",
+    "_Z17raise_actor_99820P9UnitActorf": "0x7100099820",
+    "_Z21set_unit_value_1715e0if": "0x71001715e0",
+    "_Z17apply_setup_999d4P9UnitActorP13UnitSetupLink": "0x71000999d4",
+    "_Z16actor_flag_8105cP9UnitActori": "0x710008105c",
+    "_Z16actor_slot_8bf6cP9UnitActori": "0x710008bf6c",
+    "_Z16actor_slot_8be6cP9UnitActori": "0x710008be6c",
+    "_Z14actor_on_835a8P9UnitActor": "0x71000835a8",
+    "_Z16actor_mode_990e0P9UnitActor": "0x71000990e0",
+    "_Z15item_class_c42ci": "0x710000c42c",
+    "_Z16side_busy_3e7a10i": "0x71003e7a10",
+    "_Z16actor_rate_85914P9UnitActor": "0x7100085914",
+    "_Z19actor_limited_99a60P9UnitActor": "0x7100099a60",
+    "_Z19capture_setup_99830P9UnitActorP13UnitSetupLink": "0x7100099830"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -31960,6 +32023,65 @@
       "functions": {
         "_ZN8PageMenu4drawILi0EEEvv": "0x7100366ab0",
         "_ZN8PageMenu4drawILi1EEEvv": "0x7100366b64"
+      }
+    },
+    "misc/s4_262d8.cpp": {
+      "functions": {
+        "_ZN5Gauge4fillILi0EEEvf": "0x71000262d8",
+        "_ZN5Gauge4fillILi1EEEvf": "0x710002fc94"
+      }
+    },
+    "misc/s4_4b76c.cpp": {
+      "functions": {
+        "_ZN8Registry4findILi0EEEP14RegistryObjecti": "0x710004b76c",
+        "_ZN8Registry4findILi1EEEP14RegistryObjecti": "0x7100075fd8"
+      }
+    },
+    "misc/s4_unit_state.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata": "0x710073fadc"
+      },
+      "functions": {
+        "_ZN12UnitCommands13command_2169cEsi": "0x710002169c",
+        "_ZN12UnitCommands13command_22d58Esi": "0x7100022d58",
+        "_ZN12UnitCommands13command_22e80Esi": "0x7100022e80",
+        "_Z18unit_command_3e29c6UnitIdi": "0x710003e29c",
+        "_Z17unit_command_b548s": "0x710000b548",
+        "_Z16unit_flag35_b488s": "0x710000b488",
+        "_Z18unit_command_40b0csPv": "0x7100040b0c",
+        "_Z18unit_command_40404ii": "0x7100040404",
+        "_Z18unit_command_3e60csi": "0x710003e60c",
+        "_Z18unit_command_3fc30ii": "0x710003fc30",
+        "_ZN12UnitCommands13command_234fcEsh": "0x71000234fc",
+        "_Z21side_unit_range_431f4i": "0x71000431f4",
+        "_Z22side_unit_flag57_43128i": "0x7100043128",
+        "_Z18unit_command_41e24s": "0x7100041e24",
+        "_ZN8UnitLink11linked_unitEv": "0x71000ce7e8",
+        "_Z19unit_part_flag_eda4i": "0x710000eda4",
+        "_ZN12UnitCommands13command_23260Ei": "0x7100023260",
+        "_Z15unit_rank_40bccs": "0x7100040bcc",
+        "_ZN11UnitWatcher6updateEv": "0x71000c6190",
+        "_ZN9UnitTimer6updateEfP15UnitTimerTarget": "0x710003c674",
+        "_ZN9UnitProxy7refreshEv": "0x71000af770",
+        "_ZN9UnitProxy5reachEv": "0x71000af8c4",
+        "_ZN9UnitProxy6flag15Ev": "0x71000afa10",
+        "_ZN10SideOrders11issue_cdbb4Ei": "0x71000cdbb4",
+        "_ZN11UnitWatcher11apply_c6828EPv": "0x71000c6828",
+        "_Z19side_unit_busy_ec18i": "0x710000ec18",
+        "_ZN8UnitPair4syncEv": "0x710005acb0",
+        "_Z15side_rank_41990ij": "0x7100041990",
+        "_ZN9UnitTable10give_211dcEsihhh": "0x71000211dc",
+        "_ZN13UnitSetupList5applyEv": "0x7100075434"
+      }
+    },
+    "misc/s4_unit_state2.cpp": {
+      "map": {
+        ".rodata": "0x710073fb8c"
+      },
+      "functions": {
+        "_Z18unit_slot_on_41f0csj": "0x7100041f0c",
+        "_Z16side_ready_4126ci": "0x710004126c"
       }
     }
   }
