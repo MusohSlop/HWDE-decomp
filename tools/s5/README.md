@@ -56,7 +56,11 @@ Run them with the project's Python, `python -B -I tools/s5/SCRIPT ...`, from `ma
   loads move among themselves (stores and calls stay ordered), which is how local definitions read from memory can
   be reordered in source (`4ce8e0`). `--minimize BEST.ll` moves single instructions back toward the source order
   (`--strict`: the exact distance may not grow either); both minimizers accept only moves that reduce the number of
-  inverted pairs, so they always end. Multi-line instructions (`switch`) stay whole and terminators and phis stay
+  inverted pairs, so they always end; both read the order file's block without its comments and the use-list orders
+  after the last block's `ret` (a KeyError on `uselistorder` lines before, when the searched block was the last
+  one). Multi-line instructions (`switch`) stay whole (the closing `]` carries `, !dbg !N` in IR emitted with `-g`;
+  before that fix, every block after a function's first `switch` was read as part of it and could not be searched
+  or picked with `--block`) and terminators and phis stay
   in place; orders that fail to compile are counted and reported at the end, the first kept as `irs_tmp.ll.fail`.
   Names ending in an address (`callee_X`, `kName_X`) and the functions of every unit resolve as in sbs.py (before
   this fix, each reference to such a name counted as a difference: 386 off where sbs.py says 117 on `3ba734`).
@@ -260,11 +264,47 @@ Each with the functions it fixed; three or more make it a generator note.
   and the point for the next, both at sp+0x50): pass them as temporaries to `const T&` parameters
   (`shape.support(vec4(-v.x, -v.y, -v.z, 0.0f), nullptr)`); a temporary's lifetime ends with its full expression,
   so stack colouring can give both one slot. A named local, even in a block scope, kept the second one elsewhere.
-  `4eab78` (x6; 9/36 -> 7/34 by edit distance, also fixed a `bfi`'s place).
+  `4eab78` (one template, six copies: a hand note, not yet three sightings for gen; 9/36 -> 7/34 by edit
+  distance, also fixed a `bfi`'s place). The same for an allocation-info struct passed to three allocator calls
+  (`AllocInfo(0x11)` temporaries all at sp+0x70): `492bd0`.
 - A min/max scan whose `fcsel` for the first value sits between the products of the second (`fcmp s2, s1; ldp; fmul;
   fmul; fcsel s1, ...`): compute both values before either update (`da = ...; db = ...; if (da < lo) ...; if (db >
-  hi) ...`). `4eab78` (x6, 13/75 -> 9/36 with the block-scoped slot above).
+  hi) ...`). `4eab78` (one template, six copies: a hand note; 13/75 -> 9/36 with the block-scoped slot above).
 - A diamond `if (c) v = a + b; else v = a;` where the original adds a first (`ldp q1, q0; fadd v0, v0, v1`) without
   hoisting: after SROA every whole load of the non-promoted `a` is the same `load i128`, so a then-block that starts
   with it is hoisted by SimplifyCFG (and the diamond becomes a select, `bsl`); a then-block that loads b first
   stays a diamond, but Reassociate then orders the `fadd` by load rank (b first). Not solved; `4eab78`.
+- Local job arrays whose elements get `bl <ctor>; str <vtable from the GOT + 0x10>` 32 times in a row and
+  `bl <dtor>` in reverse at the end: write the jobs as real classes (base constructor and virtual destructor
+  declared out of line, a key function so the vtable is external) and declare `Job jobs[32];`. The array
+  constructor and destructor loops unroll fully; an explicit init loop does not, and an empty derived destructor
+  stores no vtable pointer before the base destructor call. Map the base constructor and destructor (C2/D2) and
+  `got:_ZTV...` to the GOT slots. `492bd0` (402 -> 277 by edit distance).
+- Values kept in registers across a call that takes their address (the hit point spilled once, the ray in d10-d12,
+  never reloaded after the call) in a loop that is not unswitched: the callee is defined in the same unit, so
+  FunctionAttrs marks its pointer parameters `nocapture readonly`; the callee may still write memory (it calls
+  `sqrtf`, which sets errno), so EarlyCSE keeps the reloads until GVN, which removes them after LoopUnswitch has
+  seen the larger loop. `__attribute__((pure))` on a declaration drops the reloads before LoopUnswitch, and the outer
+  loop was unswitched on an inner guard. `402aec` (with its classifier `409078` in the unit).
+- A guard `cmp wN, #2; b.eq` (n == 2) inside a loop, before an inner loop whose latch is `j + 3 < n` from j = 0: the
+  source loop is `for (k = 2; k < n; k++)` (LSR rebases k); LICM hoists the invariant guard `2 < n` into the outer
+  preheader, where InstCombine folds it against the outer guard (`n > 1`, the preheader's single predecessor) into
+  `n != 2`, and CodeGenPrepare sinks the compare back to its branch. Needs the loop not unswitched (above). `402aec`.
+- Operand order of float adds and multiplies (no fast-math): Reassociate still canonicalises every commutative FP
+  operation, lower rank first; loads take ranks in block order, a computed value one more than its highest operand.
+  A store, a call or a `lifetime.start` between two reads of the same field makes EarlyCSE keep the second read
+  (with a higher rank) until GVN merges them, so the original's operand orders tell which reads were fresh:
+  `d * n` with d first means n was read again after a lifetime start (`Vec4u hit;` declared between the two uses),
+  and `p.y + dy * t` next to `dz * t + p.z` means p.y was read before a store to hit and p.z after one. `402aec`.
+- Lanes of a vector extracted in the order of their first use (lane 2 before lane 1 for a cross product that reads
+  z first): the vector is a local written through `.v` (`Vec4u e; e.v = a.v - b.v;`) and read by lanes, so SROA
+  makes each lane read an extract at its place; a union returned by value from an operator is extracted in lane
+  order. The order of the extracts' cross-block copies then sets the registers of a later block. `402aec` (the
+  collinear case's dot product), `409078` (30 -> 7 off abstracted, now its original size).
+- A flag materialised negated (`mov w8, #1` on the comparison chain's early exits, `cset ne` on the last lane, then
+  `tbz`) for `!(a == b)`: write `operator!=` as its own inline function returning `!(a == b)`; optimised before it is
+  inlined, its xor folds into the chain's phi. Written in the caller, the first InstCombine (before inlining) folds
+  the negation into the branch, and the flag is kept as equal. `409078`.
+- An integer float compare (`m = (a & b) >> 31; (m ^ a) < (m ^ b)`) whose operands are loaded with `ldr w` and
+  moved to float registers afterwards (`fmov s17, w12`): the helper takes `const float&` and reads the memory as
+  `int`; a by-value helper loads floats and moves them to integer registers instead. `492bd0`.

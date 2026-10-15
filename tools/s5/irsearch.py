@@ -78,14 +78,15 @@ def name_args(define):
 
 
 def join_multiline(body):
-    """One entry per instruction: a switch or indirectbr spans lines up to its closing ']'."""
+    """One entry per instruction: a switch or indirectbr spans lines up to its closing ']' (which carries the
+    instruction's metadata in IR emitted with -g: '], !dbg !N')."""
     out, k = [], 0
     while k < len(body):
         l = body[k]
         if l.rstrip().endswith("[") and re.search(r"\b(switch|indirectbr)\b", l):
             parts = [l]
             k += 1
-            while k < len(body) and body[k].strip() != "]":
+            while k < len(body) and not body[k].strip().startswith("]"):
                 parts.append(body[k])
                 k += 1
             if k < len(body):
@@ -513,6 +514,9 @@ def group_search(a, blk, score, emit, work, rnd):
 
 
 def read_order(path, blk, lab):
+    """The order of the block labelled lab in an emitted order file (best.ll, gbest.ll), as indexes into blk.
+    Comment lines and the use-list orders that close the last block ('uselistorder ...' after its 'ret') are not
+    instructions of the block and are skipped; multi-line instructions (switch) are joined as in split_blocks."""
     t = open(path, encoding="utf-8").read().split("\n")
     name = lab.split(":")[0] + ":"
     s = next(k for k, l in enumerate(t) if l.startswith(name))  # the label's comment may differ
@@ -520,7 +524,13 @@ def read_order(path, blk, lab):
     while e < len(t) and not NAMED.match(t[e]) and t[e] != "}":
         e += 1
     idx = {l: k for k, l in enumerate(blk.instrs)}
-    return [idx[l] for l in t[s + 1: e] if l.strip() and not l.strip().startswith(";")]
+    lines = [l for l in join_multiline(t[s + 1: e])
+             if l.strip() and not l.strip().startswith((";", "uselistorder"))]
+    missing = [l for l in lines if l not in idx]
+    if missing:
+        sys.exit("irsearch: %s holds instructions that are not in the block %s, e.g. %s"
+                 % (path, name, missing[0].strip()[:100]))
+    return [idx[l] for l in lines]
 
 
 def inversions(order):
@@ -585,16 +595,7 @@ def group_minimize(a, blk, groups, owner, gdeps, calls, flat, score, emit, work)
 def minimize(a, blk, blocks, bi, score, emit, work):
     """Move instructions of the order in a.minimize back to their places in LL's order (each just after its
     predecessor or just before its successor there) while the abstract distance does not grow."""
-    t = open(a.minimize, encoding="utf-8").read().split("\n")
-    lab = blocks[bi][0]
-    name = lab.split(":")[0] + ":"
-    s = next(k for k, l in enumerate(t) if l.startswith(name))  # the label's comment may differ
-    e = s + 1
-    while e < len(t) and not NAMED.match(t[e]) and t[e] != "}":
-        e += 1
-    lines = [l for l in t[s + 1: e] if l.strip()]
-    idx = {l: k for k, l in enumerate(blk.instrs)}
-    order = [idx[l] for l in lines]
+    order = read_order(a.minimize, blk, blocks[bi][0])
     n = len(order)
     cur = score(order)
     if cur is None:
