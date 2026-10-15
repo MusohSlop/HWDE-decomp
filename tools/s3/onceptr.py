@@ -1,6 +1,6 @@
 """onceptr.py IN.cpp OUT.cpp: in generated source, a store `p0->field_X = V;` whose address p0+X is later passed
 again as `reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0xX)` becomes one pointer used by both
-(`long* hX = ...; *hX = V; ... reinterpret_cast<long>(hX)`). That is one value in the IR, so Clang folds the
+(`auto* hX = &p0->field_X; *hX = V; ... reinterpret_cast<long>(hX)`). That is one value in the IR, so Clang folds the
 store into a pre-indexed `str xA, [xB, #X]!` and passes xB on, as the original does where an inlined handle
 destructor stores its vtable and then releases itself. Only stores at the start of a line and the next use of
 the same address are rewritten. Exit code 0 (also when nothing changed); prints the number of rewrites."""
@@ -20,8 +20,7 @@ for i, l in enumerate(lines):
         if use in lines[j]:
             h = "h" + m.group(2)
             ind = m.group(1)
-            lines[i] = (f"{ind}long* {h} = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x{m.group(2)});\n"
-                        f"{ind}*{h} = {m.group(3)};")
+            lines[i] = f"{ind}auto* {h} = &p0->field_{m.group(2)};\n{ind}*{h} = {m.group(3)};"
             lines[j] = lines[j].replace(use, f"reinterpret_cast<long>({h})", 1)
             n += 1
             break
