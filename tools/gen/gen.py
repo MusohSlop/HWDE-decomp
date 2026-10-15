@@ -3914,7 +3914,7 @@ def gen_function(a, ins):
         if v[0] in ("funary", "i2f", "f2i"):
             kids = [v[2]]
         if v[0] == "fselect":
-            kids = [v[1][0][1], v[1][0][2], v[2], v[3]]
+            kids = ([v[1][0][1], v[1][0][2]] if "nomarkfix" in knobs else flag_values(v[1][0])) + [v[2], v[3]]
         if v[0] == "elem":
             kids = [v[1], v[2]]
         if v[0] in ("sub", "sub2"):
@@ -3951,6 +3951,15 @@ def gen_function(a, ins):
             kids = flag_values(v[1][0]) + ([v[2], v[3]] if v[0] == "select" else [])
         for x in kids:
             mark(x, True)
+        if "nomarkfix" not in knobs and v[0] not in ("var", "hi"):
+            mark_vars_(v)
+    def mark_vars_(v):
+        for x in v[1:]:
+            if isinstance(x, (tuple, list)):
+                if len(x) == 2 and x[0] == "var" and isinstance(x[1], str):
+                    used.add(x[1])
+                else:
+                    mark_vars_(x)
     def mark_items(its):
         for it in its:
             if it[0] == "bfstore":
@@ -4790,6 +4799,11 @@ def gen_function(a, ins):
     inline_map = {}
     inl_seen_ = [0]
     inl_mask_ = next((int(k_.split("_")[1]) for k_ in knobs if k_.startswith("inlmask_")), None)
+    def ovarg_(target_, n_, j_, text_, at_):
+        if "noovcast" in knobs or at_ not in ("int", "long", "unsigned int", "unsigned long", "short", "unsigned short",
+                                              "unsigned char", "signed char", "bool", "float", "void*"):
+            return text_
+        return f"\x01{target_:x}/{n_}/{j_}\x03{at_}\x03{text_}\x02"
     def want_inline(name, local_rts, rts):
         if not (name in used and use_count.get(name, 0) == 1 and local_rts == rts):
             return False
@@ -5154,7 +5168,7 @@ def gen_function(a, ins):
                     raise Fail("callee types")
                 ov_[tuple(atypes)] = rts
                 callees[target][1] = (atypes, rts)
-                argtext = ", ".join(expr(x) for x in args)
+                argtext = ", ".join(ovarg_(target, len(args), j_, expr(x), at_) for j_, (x, at_) in enumerate(zip(args, atypes)))
                 if imp_:
                     kind_, mangled_, qname_, iret_, iparams_ = imp_[0], imp_[1], imp_[2], imp_[3], imp_[4]
                     if len(iparams_) != len(args):
@@ -5188,7 +5202,11 @@ def gen_function(a, ins):
                     outl.append(f"{pad}return;")
                 elif v[0] == "var" and any(x[0] == "call" and x[1] == v[1] and x[4] for x in its):
                     call_it = next(x for x in its if x[0] == "call" and x[1] == v[1])
-                    argtext = ", ".join(expr(member_arg(x)) for x in call_it[3])
+                    tat_ = ["void*" if vtype(member_arg(x)).endswith("*") else vtype(member_arg(x)) for x in call_it[3]]
+                    if "nosextarg" not in knobs:
+                        tat_ = ["int" if x_ in ("short", "signed char") else x_ for x_ in tat_]
+                    argtext = ", ".join(ovarg_(call_it[2], len(tat_), j_, expr(member_arg(x)), at_)
+                                        for j_, (x, at_) in enumerate(zip(call_it[3], tat_)))
                     pre = "return " if rtype != "void" else ""
                     if import_of(call_it[2]):
                         raise Fail("import tail call")
@@ -5863,6 +5881,23 @@ for size, a in sorted(U, key=lambda x: x[1]):
         else:
             k = f"{type(e).__name__}: {str(e)[:40]}"
             internal[k] = internal.get(k, 0) + 1
+def resolve_ovcasts(d_):
+    """Replace each argument marker: a cast where the callee's overloads of that arity differ in that position."""
+    pat_ = re.compile("\x01([0-9a-f]+)/(\\d+)/(\\d+)\x03([^\x01\x02\x03]*)\x03([^\x01\x02]*)\x02")
+    def one_(mm_):
+        t_, n_, j_ = int(mm_.group(1), 16), int(mm_.group(2)), int(mm_.group(3))
+        at_, text_ = mm_.group(4), mm_.group(5)
+        if len({a_[j_] for (tt_, a_, nm_) in CALLEES if tt_ == t_ and len(a_) == n_}) < 2:
+            return text_
+        if at_ == "void*":
+            return f"reinterpret_cast<void*>({text_})"
+        return f"static_cast<{at_}>({text_})"
+    while "\x01" in d_:
+        d2_ = pat_.sub(one_, d_)
+        if d2_ == d_:
+            break
+        d_ = d2_
+    return d_.replace("\x01", "").replace("\x02", "").replace("\x03", "")
 VEC4_DECL = "typedef float Vec4f __attribute__((ext_vector_type(4)));\n\n"
 FLOAT2_DECL = "struct Float2 {\n    float x;\n    float y;\n};\n\n"
 PAIR16_DECL = "// A 16-byte struct returned in x0 and x1.\nstruct Pair16 {\n    long a;\n    long b;\n};\n\n"
@@ -5885,6 +5920,7 @@ for mn in sorted(IMPORTS_USED):
     if mn in C_PROTOS:
         r_, ps_ = C_PROTOS[mn]
         imp_lines.append(f'extern "C" {r_} {mn}({", ".join(ps_)});')
+defs = [resolve_ovcasts(d_) for d_ in defs]
 cdecl_text = "\n".join(imp_lines) + "\n\n" + "\n".join(f"{rts} {nm}_{t:x}({', '.join(atypes)});{' ' * 8}// 0x71{t:08x}" for (t, atypes, nm), rts in sorted(CALLEES.items())
                        if not any(x.endswith("*") and x != "void*" for x in list(atypes) + [rts]))
 open(out, "w", encoding="utf-8", newline="\n").write(head + ("#include <arm_neon.h>\n\n" if any("float32x4_t" in d_ or "vcombine_f32" in d_ for d_ in defs) else "") + (VEC4_DECL if any("Vec4f" in d_ or "VecU" in d_ or "vins(" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + (PAIR16_DECL if any("Pair16" in d_ for d_ in defs) else "") + (VECU_DECL if any("VecU" in d_ for d_ in defs) else "") + (VINS_DECL if any("vins(" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))
