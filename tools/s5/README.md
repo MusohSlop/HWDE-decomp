@@ -177,4 +177,30 @@ Each with the functions it fixed; three or more make it a generator note.
 - A transform written into an output entry with all three results computed before the first store (`stp s, s;
   str s` after the arithmetic): compute into locals, then store; storing each component as it is computed makes
   the input reloaded after every store (the output may alias it), and returning the union by value sends it
-  through integer registers (`fmov; bfi; stp x`). `5a18e0`.
+  through integer registers (`fmov; bfi; stp x`). `5a18e0`, `4f09dc` (parked).
+- A switch whose cases end in `mov w8, #1; lsl w8, w8, wN; b tail` (the source register differing between groups of
+  cases) before one shared `ldr; orr; str`: the source sets the bit in every case; branch folding merges the
+  identical or/store tails. One statement after the switch computes the shift once in the shared block instead.
+  `5a5b64` and its five siblings (misc/s5_functions06.cpp).
+- Copy loops unrolled by 4 with pointer increments and a 32-bit counter (`add w9, w9, #4; cbnz`, remainder loop with
+  post-increments): `for (unsigned i = 0; i < n; i++) { d->f = *src; src++; d++; }`. The index form `d[i] = src[i]`
+  widens the counter to 64 bits and unrolls by 2; `d++->f = *src++` leaves register copies in the loop; `d++`
+  before `src++` swaps the two adds. `5a5b64` (x6, five loops each).
+- A loop that counts down from a trip count rebuilt from the clamp (`mvn; mvn; csinv; sub w9, w15(-2), w9 ... sub
+  w9, w9, #1; cbnz`) with its first element stored from an earlier wider load (GVN load PRE): the loop tests
+  `i != n`; with `i < n` LSR keeps an index register for the address and an up-counting compare. `5a5b64` (x6).
+- A store `*(T*)ptr() = value` whose original loads the destination before the value: put the destination in a
+  local first (the right side of an assignment is evaluated first). The same for a call argument read before
+  the destination (`const void* s = u->ptr; memcpy(dst(), s, n)`). One of the two orders can differ between
+  otherwise identical template copies (`5a6634` against `5a5b64`): a bool template parameter selects it.
+  `5a5b64` (x6).
+- Jump tables of template instantiations go to `.rodata.<mangled name>` (one comdat section each): map each
+  section to the original table in the unit's map (`tools/add_symbols.py --map`). `5a5b64` (x6).
+- A struct member with a user-provided default constructor makes the struct non-POD, so its assignment copies
+  only the data size (a 0x28-byte memcpy for a 0x30-byte, 16-aligned element). `4f09dc` (parked, x4).
+- A local whose original slot sits above the caller's arrays: inside an inlined (member) function its alloca moves
+  to the top of the caller's entry block, ahead of the caller's own locals. `4f09dc` (parked, x4).
+- Compares whose operands come out swapped from a helper (`fcmp c, a` where the original has `fcmp a, c`): a static
+  helper's reference parameters are turned into values by ArgumentPromotion, and InstCombine puts the argument
+  (less complex) on the right; write the test in the caller (or in a non-static inline function). The last load
+  of a block in IR order takes the pre-indexed base (`ldr s0, [x22, #0x70]!`). `4f09dc` (parked, x4).
