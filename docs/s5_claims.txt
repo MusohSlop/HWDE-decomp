@@ -3,8 +3,8 @@
 # working: functions being hand-matched now; matched: functions matched on matching-s5; tried: parked, with reason.
 working:
 tried: 459ffc (1,920 B, in misc/text_format.cpp as a near miss, 2,168 B: the flag loop keeps its bool in the original and the length modifiers are kept as values; it writes the statics 45a850 needs)
-tried: 45b158 (2,464 B: the padding loops are memset plus a counting loop in the original, LoopIdiom after an early promotion that this source does not get; docs/s5_wip/45b158.cpp)
-matched: 415f00 38e39c 45a850 425de0
+tried: 45b158 (2,464 B, 2,520 B here: padding loops solved by an explicit cap == 0 fill path; the sign mask, the a-f test and the frame size remain; docs/s5_wip/45b158.cpp)
+matched: 415f00 38e39c 45a850 425de0 4bc6b8
 tried: 423e04 (2,808 B, 61 off, same size: layout of the first test and of the shared tail, two byte loads merged; docs/s5_wip/423e04.cpp)
 tried: 3ccf84 (3,100 B, 24 off, same size: only the tail differs, the shared reset block and the keep-flag test; docs/s5_wip/3ccf84.cpp)
 # The rest of 3ccf84's unit (its globals only lay out right with the flag setters in the same unit), kept for it:
