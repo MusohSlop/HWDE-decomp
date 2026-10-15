@@ -18057,7 +18057,13 @@
     "_ZN10Part135e00C1Ev": "0x7100135e00",
     "_ZN10Part140b9cC1Ev": "0x7100140b9c",
     "_ZN10Part15e580C1Ev": "0x710015e580",
-    "_ZN9Sub15aa9cC1Ev": "0x710015aa9c"
+    "_ZN9Sub15aa9cC1Ev": "0x710015aa9c",
+    "_ZN10InfoMarkerC1Ev": "0x71001f18e8",
+    "_ZN9InfoGaugeC1Ev": "0x71001305e4",
+    "_ZN9InfoTimerC1Ev": "0x71000e05d4",
+    "_ZN12InfoMapPanelC1Ev": "0x71000e4ee0",
+    "_ZN11InfoIconSetC1Ev": "0x71000e510c",
+    "_ZN13InfoIconTableC1Ev": "0x71000e51c8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -27739,6 +27745,14 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s4_e25dc.cpp": {
+      "map": {
+        ".rodata.str1.1": "0x71007403e7"
+      },
+      "functions": {
+        "_ZN18InformationDisplayC2Ev": "0x71000e25dc"
       }
     }
   }
