@@ -225,6 +225,33 @@ for _r in rows:
                for _o in _i.op_str.split(", ")[1:]) for _i in _ins):
             TRIVIAL_.add(_t)
 
+# a hand-written name with fewer parameters than the callee reads (x0-x7 read before they are written in its first
+# block), or a thunk that only branches on, does not limit the calls to it: trust the callee
+READ_OVER_ = set()
+for _r in rows:
+    _t = int(_r[0], 16) - 0x7100000000
+    _ka = KNOWN_ARITY.get(_t)
+    if _ka is None:
+        continue
+    _ins = list(md.disasm(d[_t:_t + min(int(_r[2]), 256)], _t))
+    if _ins and _ins[0].mnemonic in ("b", "br"):
+        READ_OVER_.add(_t)
+        continue
+    _wr, _rd = set(), set()
+    for _i in _ins:
+        _mk = _i.mnemonic
+        if _mk in ("b", "br", "bl", "blr", "ret", "cbz", "cbnz", "tbz", "tbnz") or _mk.startswith("b."):
+            if _mk in ("cbz", "cbnz", "tbz", "tbnz"):
+                _m = re.match(r"[wx](\d+)", _i.op_str)
+                if _m and int(_m.group(1)) < 8 and int(_m.group(1)) not in _wr:
+                    _rd.add(int(_m.group(1)))
+            break
+        _r_, _w_ = rw(_i)
+        _rd |= {x for x in _r_ if x < 8 and x not in _wr}
+        _wr |= _w_
+    if _rd and max(_rd) + 1 > _ka[0]:
+        READ_OVER_.add(_t)
+
 def regname(r):
     if r in ("wzr", "xzr"):
         return None, r[0]
@@ -1359,6 +1386,8 @@ def gen_function(a, ins):
         nf = max(fw) + 1 if fw else 0
         n = max(written) + 1 if written else (1 if regs.get(0) is not None else 0)
         ka_ = KNOWN_ARITY.get(target) if "noknownarity" not in knobs else None
+        if ka_ is not None and target in READ_OVER_ and "readarity" in knobs:
+            ka_ = None
         if ka_ is not None and target in TRIVIAL_ and "trivialarity" not in knobs:
             # the name of a trivial callee does not show its parameters
             if ka_[0] < n or ka_[1] < nf:
