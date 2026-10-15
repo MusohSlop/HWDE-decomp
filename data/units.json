@@ -20882,7 +20882,14 @@
     "kTrophyIn": "0x7100740bd8",
     "kTrophyLoop": "0x7100740be1",
     "kTrophyText": "0x71007d7dca",
-    "got:_ZTV12TrophyScreen": "0x7100c2a9e8"
+    "got:_ZTV12TrophyScreen": "0x7100c2a9e8",
+    "_ZN8Renderer5setupI9Kind3b64cEEvP4ItemP9DrawState": "0x710003bad0",
+    "_ZN8Renderer5setupI10Kind3d7f04EEvP4ItemP9DrawState": "0x71003d8388",
+    "_ZN8Renderer5setupI10Kind3d9078EEvP4ItemP9DrawState": "0x71003d94fc",
+    "_Z9draw_itemI9Kind3b64cEvP4ItemP9DrawStateP6DeviceP6Shader": "0x710003bdf4",
+    "_Z9draw_itemI10Kind3d7f04EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d86ac",
+    "_Z9draw_itemI10Kind3d9078EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d9820",
+    "_Z13callee_52ac40P6Devicei": "0x710052ac40"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -31258,6 +31265,13 @@
     "misc/s3_functions26.cpp": {
       "functions": {
         "_ZN14DeckBase38cff0C2EPvi": "0x710038cff0"
+      }
+    },
+    "misc/s4_3b64c.cpp": {
+      "functions": {
+        "_ZN8Renderer10draw_itemsI9Kind3b64cEEvjP4ItemP9DrawStateh": "0x710003b64c",
+        "_ZN8Renderer10draw_itemsI10Kind3d7f04EEvjP4ItemP9DrawStateh": "0x71003d7f04",
+        "_ZN8Renderer10draw_itemsI10Kind3d9078EEvjP4ItemP9DrawStateh": "0x71003d9078"
       }
     }
   }
