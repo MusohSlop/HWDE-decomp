@@ -2027,6 +2027,10 @@ def gen_function(a, ins):
                         if a_ is None or b_ is None or (kind != "s" and n not in (live_f if kind else live_i)):
                             (merged["f"] if kind == "f" else merged)[n] = None
                             continue
+                        if kind == "f" and "vlanemerge" in knobs and is_vecval_(a_) != is_vecval_(b_) \
+                                and not any(x_[0] in ("ivec", "fbits") for x_ in (a_, b_)):
+                            # a vector on one arm and a scalar on the other: the scalar is lane 0
+                            a_, b_ = [("vlane", x_, 0) if is_vecval_(x_) else x_ for x_ in (a_, b_)]
                         if kind == "f" and "nofmerge" not in knobs:
                             # a float register holds floats: an untyped call result merged there is one, and an
                             # int or pointer side (or a call result merged in a general register at this join too)
@@ -5097,7 +5101,15 @@ for size, a in sorted(U, key=lambda x: x[1]):
         HOIST_USED[0] = False
         TRIVIAL_USED[0] = False
         try:
-            text, sigs, gsyms = gen_function(a, ins)
+            try:
+                text, sigs, gsyms = gen_function(a, ins)
+            except Fail as e_:
+                if not ("merge types" in str(e_) and "Vec4f" in str(e_) and "float" in str(e_)
+                        and "vlanemerge" not in KNOB_MAP.get(a, DEFAULT_KNOBS) and "novlanemerge" not in KNOB_MAP.get(a, DEFAULT_KNOBS)):
+                    raise
+                # a vector and a scalar merged in one float register: the vector side is lane 0
+                KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | {"vlanemerge"}
+                text, sigs, gsyms = gen_function(a, ins)
         except Fail:
             if not (ARITY_USED[0] or PAIR_USED[0] or HOIST_USED[0] or TRIVIAL_USED[0]):
                 raise
