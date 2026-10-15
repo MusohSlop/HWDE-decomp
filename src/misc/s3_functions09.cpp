@@ -80,6 +80,7 @@ public:
 class EffectManager {
 public:
     void create_node(LightEffectNode** out, int id, const char* layout);    // 0x71001e2360
+    void sync();                                                            // 0x71001e26e8
     void finish(int id);                                                    // 0x71001e22e4
 };
 // Reached through the GOT slot at 0x7100c22a00.
@@ -556,10 +557,16 @@ struct TrophySource {
     void set(void* entry);                                                  // 0x7100287f40
 };
 
+struct Game45f07c {
+    unsigned char unlocked_204518(int index);                               // 0x7100204518
+};
+
 struct TrophyOwner {
     unsigned char pad0[0xad8];
     TrophySource source;              // +ad8
-    unsigned char padad9[0x107];
+    unsigned char padad9[0xf7];
+    Game45f07c* games_a;              // +bd0
+    Game45f07c* games_b;              // +bd8
     bool busy;                        // +be0
 };
 
@@ -641,5 +648,129 @@ TrophyScreen::TrophyScreen(TrophyOwner* owner_) : owner(owner_), layout(nullptr)
     play_1f7a0c(anims, 2, 0, 1.0f);
     widget.start();
     i1aed0 = 0;
+    state = 0;
+}
+struct RankResources {
+    void* frame;                      // +0
+    void* light;                      // +8
+};
+// Reached through the GOT slot at 0x7100c2aa28.
+extern RankResources* gRankResources;
+void* load_layout(int id);                                                  // 0x71001f7868
+void release_light(void** light);                                           // 0x71001f7960
+struct Entry45f07c {
+    int kind_209bd8();                                                      // 0x7100209bd8
+};
+struct Table45f07c {
+    Entry45f07c* entry_209c48(int index);                                   // 0x7100209c48
+};
+Table45f07c* load_global_209cb4();                                          // 0x7100209cb4
+// The score each rank starts above.
+extern const unsigned char kRankThresholds[] __attribute__((visibility("hidden"))); // 0x71007f9328
+
+static inline signed char rank_of(int score) {
+    for (int k = 0; k < 0x27; k++) {
+        if (kRankThresholds[k] > score)
+            return k;
+    }
+    return 0;
+}
+
+extern const char kRankLayout[] __attribute__((visibility("hidden")));        // 0x71007d7f26
+extern const char kRankPos[] __attribute__((visibility("hidden")));           // 0x7100740068
+extern const char kRankIcon[] __attribute__((visibility("hidden")));          // 0x71007d7f36
+extern const char kRankName[] __attribute__((visibility("hidden")));          // 0x71007d7f47
+
+// The first stage open in one table and not yet in the other, or -1.
+static inline int first_open(TrophyOwner* owner) {
+    for (int i = 0; i < 0xff; i++) {
+        unsigned char done = owner->games_b->unlocked_204518(i);
+        unsigned char open = owner->games_a->unlocked_204518(i);
+        if (!done && open)
+            return i;
+    }
+    return -1;
+}
+
+// 0x71002c5700: the rank screen (vtable GOT 0x7100c2aa20): the first stage open in one table and not the other, its
+// rank's light loaded, a caption, and two layout handles.
+class RankScreen {
+public:
+    explicit RankScreen(TrophyOwner* owner);
+    virtual ~RankScreen();
+    void setup(int stage, int kind);                                        // 0x71002c5f5c
+
+    TrophyOwner* owner;               // +08
+    int state;                        // +10
+    LightEffectNode* layout;          // +18
+    int i20;                          // +20
+    LayoutAnimation* anims[2];        // +28
+    void* p38;                        // +38
+    EffectGroup* rank_pos;            // +40
+    EffectGroup* text_pos;            // +48
+    EffectGroup* icon;                // +50
+    EffectGroup* name;                // +58
+    TrackLightTarget frames[64];      // +60
+    TrackLightTarget lines[32];       // +2260
+    LayoutHandle handles[2];          // +3360
+    int i3390;                        // +3390
+    int line_count;                   // +3394
+};
+
+RankScreen::RankScreen(TrophyOwner* owner_)
+    : owner(owner_), layout(nullptr), i20(3), rank_pos(nullptr), text_pos(nullptr), name(nullptr), i3390(0),
+      line_count(0) {
+    int stage = first_open(owner_);
+    if (stage < 0 || stage > 0xfe || owner->busy) {
+        state = 2;
+        return;
+    }
+    RankResources* resources = gRankResources;
+    resources->frame = load_layout(0x44c5);
+    signed char rank = rank_of(stage);
+    if (resources->light) {
+        release_light(&resources->light);
+        resources->light = nullptr;
+    }
+    if (rank != -1) {
+        if (rank >= 0 && rank <= 20)
+            resources->light = load_layout(rank + 0x44b0);
+        else
+            resources->light = load_layout(rank + 0x466c);
+    }
+    int kind = load_global_209cb4()->entry_209c48(stage)->kind_209bd8();
+    gEffectManager->create_node(&layout, 0x4216, kRankLayout);
+    gEffectManager->sync();
+    anims[0] = layout->create_animation_3770(kInAnim, true);
+    anims[1] = layout->create_animation_3770(kOutAnim, true);
+    anims[0]->player->set_speed(layout->group->scale48);
+    anims[1]->player->set_speed(layout->group->scale48);
+    rank_pos = layout->group->find(kRankPos, 1);
+    text_pos = layout->group->find(kTrophyText, 1);
+    icon = layout->group->find(kRankIcon, 1);
+    name = layout->group->find(kRankName, 1);
+    TextRenderer* renderer = gTextRenderer;
+    {
+        float scale = text_pos->size54 * layout->group->scale48;
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = scale;
+        size.y = scale;
+        renderer->set_area(&pos, &size, 0x52, 0x4e, 0);
+        renderer->value20bc9 = 1;
+        renderer->value20bca = 1;
+        renderer->value20b8c = 0x53;
+        renderer->align = 2;
+        renderer->value20b9c = 1;
+        line_count = renderer->draw(lines, message_text(0xe6), 0x20, 1, 0xff, 0.0f, 0.0f);
+        PanelPane* pane = new PanelPane;
+        set_pane_lines(pane, lines, line_count);
+        set_flag(pane->flags58, line_count != 0);
+        pane->valign = 2;
+        text_pos->add(pane);
+    }
+    setup(stage, kind);
+    play_1f7a0c(anims, 2, 0, 1.0f);
+    i20 = 0;
     state = 0;
 }

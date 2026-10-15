@@ -20078,6 +20078,14 @@
     "kRecordFormatA": "0x71007da8ae",
     "kRecordText": "0x71007da8b5",
     "kRecordFormatB": "0x71007da8bf",
+    "got:gRankResources": "0x7100c2aa28",
+    "kRankThresholds": "0x71007f9328",
+    "kRankLayout": "0x71007d7f26",
+    "kRankPos": "0x7100740068",
+    "kRankIcon": "0x71007d7f36",
+    "kRankName": "0x71007d7f47",
+    "_ZN10RankScreen5setupEii": "0x71002c5f5c",
+    "got:_ZTV10RankScreen": "0x7100c2aa20",
     "_ZN12TrophyWidgetC1Ev": "0x71002f2370",
     "_ZN12TrophyWidget10set_layoutEi": "0x71002f2b44",
     "_ZN12TrophyWidget8set_modeEi": "0x71002f8934",
@@ -29968,7 +29976,8 @@
       "functions": {
         "_ZN21ChallengeRecordScreenC2Eb": "0x71003447f0",
         "_ZN11RecordPanelC2Ev": "0x710035c070",
-        "_ZN12TrophyScreenC2EP11TrophyOwner": "0x71002c2454"
+        "_ZN12TrophyScreenC2EP11TrophyOwner": "0x71002c2454",
+        "_ZN10RankScreenC2EP11TrophyOwner": "0x71002c5700"
       }
     },
     "misc/s2_functions26.cpp": {
