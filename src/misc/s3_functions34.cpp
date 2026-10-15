@@ -386,3 +386,194 @@ void complete_from_base_f8(unsigned char* base) {
 
 template void complete_from_base_f8<0>(unsigned char*);   // 0x710002aec0
 template void complete_from_base_f8<1>(unsigned char*);   // 0x71000cace0
+
+// Families released in s4's second list.
+
+// Completion through the unit's secondary base at +e8 (0x7100027684, 0x71000cd0cc: the same code twice) or +f8
+// (0x71000277f8, 0x71000cd144), with two more parts.
+void step_d02b8(void* part);                              // 0x71000d02b8
+void step_d046c(void* part);                              // 0x71000d046c
+
+template <int Copy>
+void complete_parts(unsigned char* base) {
+    const long offset = Copy < 2 ? 0xe8 : 0xf8;
+    prepare_cf594(base + (0xe8 - offset));
+    CommandUnit2aec0* unit = reinterpret_cast<CommandUnit2aec0*>(base - offset);
+    unsigned char* queue = reinterpret_cast<unsigned char*>(unit) + 0x100;
+    post_result_cff58(queue, unit->command());
+    step_d02b8(reinterpret_cast<unsigned char*>(unit) + 0x110);
+    step_d046c(reinterpret_cast<unsigned char*>(unit) + 0x150);
+    finish_d04bc(reinterpret_cast<unsigned char*>(unit) + 0x160);
+}
+
+template void complete_parts<0>(unsigned char*);   // 0x7100027684
+template void complete_parts<1>(unsigned char*);   // 0x71000cd0cc
+template void complete_parts<2>(unsigned char*);   // 0x71000277f8
+template void complete_parts<3>(unsigned char*);   // 0x71000cd144
+
+// The grid cell of a position (0x71001778b8, 0x710017792c), in the table 1485cc's entries are in (cells after
+// the entries). The conversions come first, then the first index, the table and the second index.
+struct Point1778b8 {
+    float x;                     // +00
+    float y;                     // +04
+    float z;                     // +08
+};
+
+struct Cell1778b8 {
+    void* head;
+};
+
+struct World1778b8 {
+    unsigned char pad[0xc6dc0];
+    Cell1778b8 cells[64][64];    // +c6dc0
+};
+// Reached through the GOT slot at 0x7100c216e8.
+extern World1778b8* gWorld1778b8;
+
+void update_cell_196474(Cell1778b8* cell, const Point1778b8* pos, int arg);   // 0x7100196474
+void update_cell_196570(Cell1778b8* cell, const Point1778b8* pos, int arg);   // 0x7100196570
+
+template <int Copy>
+void update_at(const Point1778b8* pos, int arg) {
+    unsigned int x = static_cast<unsigned int>(pos->x);
+    unsigned int z = static_cast<unsigned int>(pos->z);
+    unsigned int ix = x / 1000;
+    World1778b8* world = gWorld1778b8;
+    unsigned int iz = z / 1000;
+    Cell1778b8* cell = &world->cells[ix < 64 ? ix : 0][iz < 64 ? iz : 0];
+    if (Copy == 0)
+        update_cell_196474(cell, pos, arg);
+    else
+        update_cell_196570(cell, pos, arg);
+}
+
+template void update_at<0>(const Point1778b8*, int);   // 0x71001778b8
+template void update_at<1>(const Point1778b8*, int);   // 0x710017792c
+
+// A handle refreshed, or reset when its object is gone (0x71002563c0, 0x7100256418): its index half is tested on its
+// own (a short load) before the id is read.
+struct Handle2563c0 {
+    union {
+        int id;                  // +00
+        short index;             // +00: -1 when unset
+    };
+};
+
+void* find_241dcc(int id);                                                  // 0x7100241dcc
+void apply_241d00(int id, int arg);                                         // 0x7100241d00
+void apply_241db0(int id, int arg);                                         // 0x7100241db0
+
+template <int Copy>
+void refresh_handle(Handle2563c0* handle, int arg) {
+    if (handle && handle->index != -1) {
+        if (find_241dcc(handle->id)) {
+            if (Copy == 0)
+                apply_241d00(handle->id, arg);
+            else
+                apply_241db0(handle->id, arg);
+            return;
+        }
+        handle->id = -1;
+    }
+}
+
+template void refresh_handle<0>(Handle2563c0*, int);   // 0x71002563c0
+template void refresh_handle<1>(Handle2563c0*, int);   // 0x7100256418
+
+// A step taken in states 7-10 and 12, then a notification whatever the state (0x7100256e8c, 0x7100256ee4).
+struct GameState256e8c {
+    unsigned char pad[0xd4c];
+    int demo;                    // +d4c
+    int state;                   // +d50
+};
+// Reached through the GOT slot at 0x7100c22d68.
+extern GameState256e8c* gGameState;
+
+void step_2540fc(GameState256e8c* state);                                   // 0x71002540fc
+void step_254110(GameState256e8c* state);                                   // 0x7100254110
+void* current_248b6c();                                                     // 0x7100248b6c
+void notify_248d90(void* target, int kind);                                 // 0x7100248d90
+void notify_248f0c(void* target, int kind);                                 // 0x7100248f0c
+
+template <int Copy>
+void step_in_play() {
+    GameState256e8c* state = gGameState;
+    switch (state->state) {
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 12:
+        if (Copy == 0)
+            step_2540fc(state);
+        else
+            step_254110(state);
+        break;
+    }
+    if (current_248b6c()) {
+        if (Copy == 0)
+            notify_248d90(current_248b6c(), 7);
+        else
+            notify_248f0c(current_248b6c(), 7);
+    }
+}
+
+template void step_in_play<0>();   // 0x7100256e8c
+template void step_in_play<1>();   // 0x7100256ee4
+
+// A demo event's value, or the default (0x7100257334, 0x71002573b8). The value is 16-byte aligned, so it is returned
+// as one 128-bit integer and the call stays a tail call (with 8-byte alignment it comes back as two halves).
+struct alignas(16) Value16 {
+    long lo;
+    long hi;
+};
+
+struct ObjectTable257334 {
+    unsigned char pad[0x68];
+    int* entries[100];           // +68
+};
+// Reached through the GOT slots at 0x7100c2a518, 0x7100c2a560, 0x7100c2a5a8 and 0x7100c216a8.
+extern ObjectTable257334* gObjectTableA;
+extern unsigned int gDemoEventIndex;
+extern void* gDemoPlayer;
+extern Value16 kTrackDefaultVector;
+
+Value16 event_value_251a0c(void* player, int id, int arg);                 // 0x7100251a0c
+Value16 event_value_251acc(void* player, int id, int arg);                 // 0x7100251acc
+
+template <int Copy>
+Value16 demo_event_value(int id, int arg) {
+    int index = id - 0x118;
+    if (static_cast<unsigned int>(index) <= 0x63) {
+        int* entry = gObjectTableA->entries[index];
+        if (entry && entry[1] == 0 && gGameState->demo >= 0 && gDemoEventIndex <= 0x10c) {
+            if (Copy == 0)
+                return event_value_251a0c(gDemoPlayer, id, arg);
+            return event_value_251acc(gDemoPlayer, id, arg);
+        }
+    }
+    return kTrackDefaultVector;
+}
+
+template Value16 demo_event_value<0>(int, int);   // 0x7100257334
+template Value16 demo_event_value<1>(int, int);   // 0x71002573b8
+
+// An id looked up in 241954's singleton's table and applied when in range (0x710023bb90, 0x710023bd98).
+int offset_id_23a458(void* table, int key);                                 // 0x710023a458
+int offset_id_23a474(void* table, int key);                                 // 0x710023a474
+void apply_id_23ba18(void* self, int id);                                   // 0x710023ba18
+void mark_id_23a350(void* table, int id);                                   // 0x710023a350
+
+template <int Copy>
+bool apply_key(void* self, int key) {
+    void* table = static_cast<unsigned char*>(gInstance241954) + 0x1118;
+    int id = Copy == 0 ? offset_id_23a458(table, key) : offset_id_23a474(table, key);
+    if (static_cast<unsigned int>(id) <= 0x4a1d) {
+        apply_id_23ba18(self, id);
+        mark_id_23a350(static_cast<unsigned char*>(gInstance241954) + 0x1118, id);
+    }
+    return true;
+}
+
+template bool apply_key<0>(void*, int);   // 0x710023bb90
+template bool apply_key<1>(void*, int);   // 0x710023bd98

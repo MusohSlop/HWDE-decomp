@@ -34,6 +34,8 @@ struct SceneEntry {
 class Scene5f794 {
 public:
     template <int Copy> void start();
+    template <int Copy> void restart();
+    void prepare_60244();                                                   // 0x7100060244
     void reset_5f8c8();                                                     // 0x710005f8c8
     void prepare_5fae8();                                                   // 0x710005fae8
     void prepare_60d60();                                                   // 0x7100060d60
@@ -43,6 +45,13 @@ public:
     template <int Copy> void prepare() {
         if (Copy == 0)
             prepare_5fae8();
+        else
+            prepare_60d60();
+    }
+
+    template <int Copy> void prepare_again() {
+        if (Copy == 0)
+            prepare_60244();
         else
             prepare_60d60();
     }
@@ -81,3 +90,19 @@ void Scene5f794::start() {
 template void Scene5f794::start<0>();
 // 0x7100060c2c
 template void Scene5f794::start<1>();
+
+template <int Copy>
+void Scene5f794::restart() {
+    timer = 1;
+    phase = 5;
+    prepare_again<Copy>();
+    for (unsigned int i = 0; i < count; i++) {
+        SceneEntry* e = &entries[i];
+        if (e->ready()) enter_678d4(e);
+    }
+}
+
+// 0x710006090c (2-copy family 6090c)
+template void Scene5f794::restart<0>();
+// 0x7100061188
+template void Scene5f794::restart<1>();

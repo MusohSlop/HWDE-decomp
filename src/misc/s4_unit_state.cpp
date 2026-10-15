@@ -759,3 +759,18 @@ void UnitSetupList::apply() {
         apply_setup_999d4(a, &s->link);
     }
 }
+
+// Reached through the GOT slot at 0x7100c2ec00.
+extern int gGlobalMode_c2ec00;
+
+// 0x710003e350 (found by an unattended variant search: the goto form of unit_can keeps the second lookup of a null
+// unit from being threaded away)
+int any_side_busy_3e350() {
+    if (!(gGlobalMode_c2ec00 == 0 || gGlobalMode_c2ec00 == 1)) return 1;
+    for (int side = 0; side < 2; side++) {
+        short id = side_unit_id_db3c(side);
+        if (unit_can_jump(id, 0xf) || unit_can_jump(id, 0x22) || unit_can_jump(id, 0x2e) || unit_can_jump(id, 0x36))
+            return 1;
+    }
+    return 0;
+}
