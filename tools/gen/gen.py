@@ -239,7 +239,7 @@ BIN = {"add": "+", "sub": "-", "and": "&", "orr": "|", "eor": "^", "lsl": "<<", 
 # literal pools: 4-byte floats and 16-byte vectors (merged .rodata.cst4 / .rodata.cst16)
 POOL4 = (0x73b000, 0x73ca00)
 POOL16 = (0x73dff0, 0x73e7a0)
-SIZE = {"Vec4f": 16, "int": 4, "long": 8, "void*": 8, "unsigned char": 1, "signed char": 1, "unsigned short": 2, "short": 2, "float": 4}
+SIZE = {"Vec4f": 16, "int": 4, "unsigned int": 4, "long": 8, "void*": 8, "unsigned char": 1, "signed char": 1, "unsigned short": 2, "short": 2, "float": 4}
 CC = {"eq": "==", "ne": "!=", "lt": "<", "le": "<=", "gt": ">", "ge": ">=", "lo": "<", "ls": "<=", "hi": ">", "hs": ">="}
 SAVED = {"x19", "x20", "x21", "x22", "x23", "x24", "x25", "x26", "x27", "x28", "x29", "x30",
          "d8", "d9", "d10", "d11", "d12", "d13", "d14", "d15"}
