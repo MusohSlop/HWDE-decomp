@@ -5314,7 +5314,9 @@ def gen_function(a, ins):
             elif it[0] == "valinit":
                 _, dv_, n_, v_ = it
                 db_ = f"reinterpret_cast<unsigned char*>({expr(dv_)})"
-                if v_ == 0:
+                if v_ == 0 and "zeroloop" in knobs:
+                    outl.append(f"{pad}for (int i = 0; i < {n_:#x}; i++) {db_}[i] = 0;")
+                elif v_ == 0:
                     zero_types_.add(n_)
                     outl.append(f"{pad}*reinterpret_cast<Zero{n_:x}_{a:x}*>({db_}) = Zero{n_:x}_{a:x}{{}};")
                 else:
