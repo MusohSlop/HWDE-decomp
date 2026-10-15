@@ -992,6 +992,39 @@ def gen_function(a, ins):
             raise Fail("stack form")
     starts = sorted(starts)
     stackobjs = {}      # start -> {off: ctype}
+    def gap_obj_(st_):
+        if "nostackgap" in knobs:
+            raise Fail("unused stack object")
+        # the locals end where the prologue saved its first register, in terms of the final sp
+        sp_, saves_ = 0, []
+        for i_ in ins[:10]:
+            o_ = i_.op_str
+            r0_ = o_.split(",")[0].strip()
+            saved_ = r0_ in ("x29", "x30", "fp", "lr") or (r0_[:1] in "xd" and r0_[1:].isdigit()
+                                                            and (19 <= int(r0_[1:]) <= 28 if r0_[0] == "x" else 8 <= int(r0_[1:]) <= 15))
+            if i_.mnemonic in ("stp", "str") and "[sp" in o_ and (saved_ or o_.endswith("]!")):
+                n_ = imm(o_.split("#")[-1].rstrip("]!")) if "#" in o_ else 0
+                if o_.endswith("]!"):
+                    sp_ -= -n_ if n_ < 0 else n_
+                    saves_.append(sp_)
+                else:
+                    saves_.append(sp_ + n_)
+            elif i_.mnemonic == "sub" and o_.startswith("sp, sp, #"):
+                sp_ -= imm(o_.split(",")[2])
+        lows_ = [s_ - sp_ for s_ in saves_]
+        tops_ = [s_ for s_ in starts if s_ > st_] + [x_ for x_ in lows_ + [frame_total_] if x_ > st_]
+        if not tops_:
+            raise Fail("unused stack object")
+        n_ = min(tops_) - st_
+        sn_ = f"Stack{hx_(st_)}_{a:x}"
+        structs.setdefault(sn_, {})
+        stackobjs[st_] = sn_
+        if n_ in (4, 8) and not structs[sn_]:
+            structs[sn_][0] = ("int" if n_ == 4 else "long", None)
+        else:
+            stack_min_[sn_] = n_
+            stack_al_[sn_] = 16 if n_ >= 16 and st_ % 16 == 0 else 8 if st_ % 8 == 0 else 4
+        return sn_
     cstore_typed_ = set()   # (struct, off) typed only by constant stores so far
     bitfields_ = {}         # (struct, off) -> {(first bit, width)} written as bitfields
     BFW_ = {"unsigned char": 8, "signed char": 8, "unsigned short": 16, "short": 16, "int": 32, "unsigned int": 32}
@@ -4293,7 +4326,7 @@ def gen_function(a, ins):
         if v[0] == "stackaddr":
             st = stack_obj(v[1]); sn = stackobjs.get(st)
             if sn is None:
-                raise Fail("unused stack object")
+                sn = gap_obj_(st)
             if set(structs[sn]) == {0} and v[1] == st and sn not in stack_min_:
                 return structs[sn][0][0] + "*"
             if v[1] == st:
@@ -4639,7 +4672,7 @@ def gen_function(a, ins):
         if v[0] == "stackaddr":
             st = stack_obj(v[1]); sn = stackobjs.get(st)
             if sn is None:
-                raise Fail("unused stack object")
+                sn = gap_obj_(st)
             if v[1] == st:
                 return f"&local_{hx_(st)}"
             return f"&local_{hx_(st)}.field_{v[1] - st:x}"
