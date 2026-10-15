@@ -630,3 +630,195 @@ bool Buffered5ef6<Clear, Set>::set(unsigned int value) {
 
 template bool Buffered5ef6<8, 4>::set(unsigned int);   // 0x71005ef678
 template bool Buffered5ef6<4, 8>::set(unsigned int);   // 0x71005ef6dc
+
+// 4d95c8/4dc6e4: every entry (self-relative offsets after the count) set up through its type's descriptor.
+struct Entry4d95;
+// A type's descriptor (0x20 bytes): its set-up function (a function and a this adjustment shifted left once).
+struct EntryType4d95 {
+    void (*setup)(void* self);
+    long setup_adjust;
+    unsigned char pad10[0x10];
+};
+// Reached through the GOT slots at 0x7100c2cea0 and 0x7100c2cec0.
+extern EntryType4d95 gEntryTypesA[];
+extern EntryType4d95 gEntryTypesB[];
+
+struct Entry4d95 {
+    int pad0;
+    int type;                    // +04
+    EntryType4d95* type_info;    // +08
+};
+
+template <int Table>
+struct EntryList4d95 {
+    void setup_all();
+
+    unsigned char pad0[0x10];
+    unsigned int count;          // +10
+    int offsets[1];              // +14: each relative to itself
+};
+
+template <int Table>
+void EntryList4d95<Table>::setup_all() {
+    EntryType4d95* types = Table == 0 ? gEntryTypesA : gEntryTypesB;
+    for (unsigned int i = 0; i < count; ++i) {
+        int* offset = &offsets[i];
+        Entry4d95* entry = reinterpret_cast<Entry4d95*>(reinterpret_cast<unsigned char*>(offset) + *offset);
+        EntryType4d95& type_info = types[entry->type];
+        type_info.setup(reinterpret_cast<unsigned char*>(entry) + (type_info.setup_adjust >> 1));
+        entry->type_info = &types[entry->type];
+    }
+}
+
+template void EntryList4d95<0>::setup_all();   // 0x71004d95c8
+template void EntryList4d95<1>::setup_all();   // 0x71004dc6e4
+
+// 50a1dc/50a4f8: two vectors computed into a local pair and copied out (the first a point, w 1).
+struct alignas(16) Vec4_50a1 {
+    float x, y, z, w;
+};
+struct Pair50a1 {
+    Vec4_50a1 a;
+    Vec4_50a1 b;
+    Vec4_50a1 c;
+};
+unsigned char compute_50a254(Pair50a1* out, void* p, void* q);              // 0x710050a254
+unsigned char compute_50a570(Pair50a1* out, void* p, void* q);              // 0x710050a570
+
+template <int Copy>
+bool compute_pair(Vec4_50a1* a, Vec4_50a1* b, void* p, void* q) {
+    Pair50a1 pair;
+    pair.a.w = 0.0f;
+    if (!(Copy == 0 ? compute_50a254(&pair, p, q) : compute_50a570(&pair, p, q)))
+        return false;
+    *b = pair.b;
+    *a = pair.a;
+    a->w = 1.0f;
+    return true;
+}
+
+template bool compute_pair<0>(Vec4_50a1*, Vec4_50a1*, void*, void*);   // 0x710050a1dc
+template bool compute_pair<1>(Vec4_50a1*, Vec4_50a1*, void*, void*);   // 0x710050a4f8
+
+// 5fe300/5ff588: an evaluation run on a copy of the state; two of its fields kept.
+struct State5fe3 {
+    ~State5fe3();                // 0x71005fa980
+
+    unsigned char pad0[0x14];
+    int a;                       // +14
+    int b;                       // +18
+    unsigned char pad1c[0x4c];
+};
+
+float run_5fe414(State5fe3* state, void* input, int mode, int p3, void* p4, void* p5);   // 0x71005fe414
+float run_5ff69c(State5fe3* state, void* input, int mode, int p3, void* p4, void* p5);   // 0x71005ff69c
+
+template <int Copy>
+float evaluate(State5fe3* state, void* input, int mode) {
+    State5fe3 copy;
+    memcpy(&copy, state, sizeof(copy));
+    float result = Copy == 0 ? run_5fe414(&copy, input, mode, 0, nullptr, nullptr)
+                             : run_5ff69c(&copy, input, mode, 0, nullptr, nullptr);
+    int a = copy.a;
+    int b = copy.b;
+    state->a = a;
+    state->b = b;
+    return result;
+}
+
+// The same with every argument given.
+template <int Copy>
+float evaluate_with(State5fe3* state, void* input, int mode, int p3, void* p4, void* p5) {
+    State5fe3 copy;
+    memcpy(&copy, state, sizeof(copy));
+    float result = Copy == 0 ? run_5fe414(&copy, input, mode, p3, p4, p5) : run_5ff69c(&copy, input, mode, p3, p4, p5);
+    int a = copy.a;
+    int b = copy.b;
+    state->a = a;
+    state->b = b;
+    return result;
+}
+
+template float evaluate<0>(State5fe3*, void*, int);   // 0x71005fe300
+template float evaluate<1>(State5fe3*, void*, int);   // 0x71005ff588
+template float evaluate_with<0>(State5fe3*, void*, int, int, void*, void*);   // 0x71005fe380
+template float evaluate_with<1>(State5fe3*, void*, int, int, void*, void*);   // 0x71005ff608
+
+namespace nn {
+namespace os {
+struct MutexType;
+void LockMutex(MutexType* mutex);
+void UnlockMutex(MutexType* mutex);
+}  // namespace os
+}  // namespace nn
+
+// 5e9ff0/5ea398, 5ea084/5ea42c: an item attached to or detached from one of two slots, under both locks.
+struct Mutex5e9f {
+    unsigned char data[0x20];
+};
+
+template <int Slot>
+struct Hub5e9f {
+    int attach(void* item);
+    int detach(void* item);
+
+    unsigned char pad0[0xd0];
+    Mutex5e9f slots_lock;        // +d0
+    unsigned char padf0[0x1c3];
+    bool ready;                  // +2b3
+    unsigned char pad2b4[0x4];
+    Mutex5e9f lock;              // +2b8
+    unsigned char pad2d8[0xc98];
+    void* items[10];             // +f70 (slot 0), +fb8 (slot 9)
+};
+
+template <int Slot>
+int Hub5e9f<Slot>::attach(void* item) {
+    if (!item)
+        return -5;
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(&lock));
+    int result;
+    if (!__atomic_load_n(&ready, __ATOMIC_ACQUIRE)) {
+        result = -1;
+    } else {
+        nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(&slots_lock));
+        if (items[Slot]) {
+            nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(&slots_lock));
+            result = -2;
+        } else {
+            items[Slot] = item;
+            nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(&slots_lock));
+            result = 0;
+        }
+    }
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(&lock));
+    return result;
+}
+
+template <int Slot>
+int Hub5e9f<Slot>::detach(void* item) {
+    if (!item)
+        return -5;
+    nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(&lock));
+    int result;
+    if (!__atomic_load_n(&ready, __ATOMIC_ACQUIRE)) {
+        result = -1;
+    } else {
+        nn::os::LockMutex(reinterpret_cast<nn::os::MutexType*>(&slots_lock));
+        if (items[Slot] != item) {
+            nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(&slots_lock));
+            result = -5;
+        } else {
+            items[Slot] = nullptr;
+            nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(&slots_lock));
+            result = 0;
+        }
+    }
+    nn::os::UnlockMutex(reinterpret_cast<nn::os::MutexType*>(&lock));
+    return result;
+}
+
+template int Hub5e9f<0>::attach(void*);   // 0x71005e9ff0
+template int Hub5e9f<9>::attach(void*);   // 0x71005ea398
+template int Hub5e9f<0>::detach(void*);   // 0x71005ea084
+template int Hub5e9f<9>::detach(void*);   // 0x71005ea42c
