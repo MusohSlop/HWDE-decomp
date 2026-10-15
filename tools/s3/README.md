@@ -158,6 +158,14 @@ third session's reports). Paths may be absolute or relative to the caller's dire
   and checked (with `tools/gen/autosym.py` for the callee names). NOTE becomes the comment over the function.
 - `dropunit.py UNIT` removes a unit's entry from `units.json` (its symbols stay).
 
+## Template families in the third session's scope
+
+- `famscan.py OUT.txt [--skip FILE ...] [--keep HEX ...]` groups every unmatched function by the abstracted opcode
+  sequence of `tools/s4/families.py` (shape code copied from there) but keeps what that scan leaves out: families
+  with a copy in `docs/s3_scope.txt`, a constructor-shaped copy or a copy over 1,500 bytes. Families with a copy in a
+  SKIP file (another session's claims or family list) or at a `--keep` address (held elsewhere) are dropped. Each
+  line marks copies in the scope (`*`) and constructor-shaped ones (`+`).
+
 ## One address, start to end
 
 ```
