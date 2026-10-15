@@ -300,6 +300,21 @@ def gen_function(a, ins):
     for i_ in ins:
         if (i_.mnemonic in ("b", "cbz", "cbnz", "tbz", "tbnz") or i_.mnemonic.startswith("b.")) and "#" in i_.op_str:
             jump_targets_.add(imm(i_.op_str.split(", ")[-1]))
+    sret_ = False
+    if "nosret" not in knobs:
+        for i_ in ins:
+            if is_frame(i_):
+                continue
+            r_, w_ = rw(i_)
+            if i_.mnemonic in ("bl", "blr", "br", "ret", "b") or i_.mnemonic.startswith("b.") or i_.mnemonic in ("cbz", "cbnz", "tbz", "tbnz"):
+                sret_ = 8 in r_ and i_.mnemonic not in ("bl", "blr", "br")
+                break
+            if 8 in r_:
+                sret_ = True
+                break
+            if 8 in w_:
+                break
+    RETN_ = f"Ret{a:x}"
     jt_, jt_skip_, jt_idx_ = {}, {}, {}
     jtabs_ = []         # (address, size) of each jump table, in emission order
     for kb_, ib_ in enumerate(ins):
@@ -765,6 +780,9 @@ def gen_function(a, ins):
             raise Fail("unaddressed stack slot")
         return cands[-1]
     def struct_for(v):
+        if v[0] == "retobj":
+            structs.setdefault(RETN_, {})
+            return RETN_
         if v[0] == "param":
             cur = pwidth.get(v[1])
             if cur in (None, "x"):
@@ -1453,6 +1471,11 @@ def gen_function(a, ins):
                 continue
             if is_frame(i):
                 k += 1; continue
+            if m == "ret" and sret_:
+                structs.setdefault(RETN_, {})
+                items.append(("return", ("retval",)))
+                returns.append(("retval",))
+                return items
             if k in jt_skip_:
                 if i.mnemonic == "ldrsw":
                     jt_idx_[jt_skip_[k]] = regs.get(jt_[jt_skip_[k]][1])
@@ -2667,6 +2690,8 @@ def gen_function(a, ins):
             k += 1
     regs0 = {n: ("param", n) for n in range(8)}
     regs0["f"] = {n: ("fparam", n) for n in range(8)}
+    if sret_:
+        regs0[8] = ("retobj",)
     items = walk(0, regs0, None, set(), 0)
     def arg_first(its):
         out_ = list(its)
@@ -2917,6 +2942,10 @@ def gen_function(a, ins):
             return "long" if n in arith else "void*"
         return f"{p}*"
     def vtype(v):
+        if v[0] == "retobj":
+            return f"{RETN_}*"
+        if v[0] == "retval":
+            return RETN_
         if v[0] in ("fparam", "fconst", "fbin", "funary", "i2f", "fselect", "vlane"):
             return "float"
         if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg", "vparam", "vins", "vundef"):
@@ -3079,6 +3108,8 @@ def gen_function(a, ins):
             if set(structs[sn]) == {0}:
                 return f"local_{hx_(base[1])}"
             return f"local_{hx_(base[1])}.field_{off:x}"
+        if base[0] == "retobj":
+            return f"r.field_{off:x}"
         if base[0] in ("gotaddr", "local"):
             sn = f"{'Global' if base[0] == 'gotaddr' else 'Local'}{base[1]:x}_{a:x}"
             if set(structs[sn]) == {0}:
@@ -3086,6 +3117,10 @@ def gen_function(a, ins):
             return f"{gname(base)}.field_{off:x}"
         return f"{expr(base)}->field_{off:x}"
     def expr(v, top=True):
+        if v[0] == "retobj":
+            return "&r"
+        if v[0] == "retval":
+            return "r"
         if v[0] == "pick":
             c_ = cond(*v[1])
             s_ = f"{c_} ? 0 : {expr(v[2], False)}" if v[3] else f"{c_} ? {expr(v[2], False)} : 0"
@@ -4053,6 +4088,8 @@ def gen_function(a, ins):
             decl_lines.append(f"    {structs[sn][0][0]} local_{hx_(st)};")
         else:
             decl_lines.append(f"    {sn} local_{hx_(st)};")
+    if sret_:
+        decl_lines.insert(0, f"    {RETN_} r;")
     lines = decl_lines + lines
     if rtype == "void" and lines and lines[-1].strip() == "return;":
         lines.pop()
@@ -4169,6 +4206,9 @@ def gen_function(a, ins):
                 raise Fail("element size")
             if pos < size:
                 fl.append(f"    unsigned char pad{pos:x}[0x{size - pos:x}];")
+        if sn == RETN_ and sret_:
+            # a user-declared copy makes the type non-trivial, so it is returned through x8 whatever its size
+            fl = [f"    {sn}() {{}}", f"    {sn}(const {sn}&);"] + fl
         sdefs.append(f"struct {sn} {{\n" + "\n".join(fl) + "\n};\n")
     sigs = {}
     for t, (args, sig) in list(callees.items()):
