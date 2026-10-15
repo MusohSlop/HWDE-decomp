@@ -6,6 +6,11 @@
 // read between the uniform and the sampler offset sums. Still off: register allocation and spill slots (stage 0
 // and one offset stay in registers in the original; 8 bytes of reloads here), which depend on the order and the
 // lifetimes of the locals: a topotry candidate.
+// irsearch --loads-free (instruction moves, loads free among themselves) reaches 0 off abstracted (same size and
+// schedule) with 36 register diffs left, two swapped pairs of callee-saved registers (s0/f1 and s2/f2). The order
+// (build/s5 scratch, minimized with --minimize --strict): main read before the binding count, the stages, u1, f1,
+// u2, then the geometry pointer; s2's sampler count, the extra sampler base and s1's sampler count read before s2's
+// uniform count; the extra uniform base before f2. Not yet a readable source order.
 // Maps for tools/s5/sbs.py (name=address): _ZN9Sub4ce8e05readyEv=0x71005998cc
 //   _Z20bind_uniforms_5a4848P11Stage4ce8e0Pvib=0x71005a4848 _Z20bind_samplers_5a4b00P11Stage4ce8e0Pvib=0x71005a4b00
 //   _Z20bind_uniforms_5a86c8P11Stage4ce8e0Pvib=0x71005a86c8 _Z20bind_samplers_5a88c4P11Stage4ce8e0Pvib=0x71005a88c4

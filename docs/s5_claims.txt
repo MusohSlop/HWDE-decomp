@@ -14,10 +14,11 @@ tried: 3be490 (2,656 B, 2,624 B here, 16 off abstracted: the indexes derived fro
 tried: 3b4e98 (2,576 B, same size here, 6 off abstracted: scheduling in the extra item's setters; s3's create_anim_transform shape gives the same 6; docs/s5_wip/3b4e98.cpp)
 tried: 3bf978 (3,060 B, 3,056 B here, 174 off abstracted: the rank-to-frame mapping and the slot reloads; docs/s5_wip/3bf978.cpp)
 tried: 3c2280 (4,044 B, same size here, 18 off abstracted: a bounds test's encoding, select and store scheduling; docs/s5_wip/3c2280.cpp)
-tried: 4ce8e0 (2,104 B, 2,112 B here, 23 off abstracted: register allocation of the stage pointers and offsets; docs/s5_wip/4ce8e0.cpp)
+tried: 4ce8e0 (2,104 B, 2,112 B here, 23 off abstracted: register allocation of the stage pointers and offsets; an IR order gives 0 off abstracted and 36 register diffs; docs/s5_wip/4ce8e0.cpp)
 tried: 242070 (876 B, 860 B here, 93 off abstracted: the pre-RA scheduler sinks the matrix product below the inverse; docs/s5_wip/242070.cpp)
 tried: 54e330 (948 B, 980 B here, 125 off abstracted: the pre-RA scheduler hoists the loads and runs out of registers; docs/s5_wip/54e330.cpp)
 tried: 5b6cbc (784 B, same size here, 37 off abstracted: the scalar bias product's order; docs/s5_wip/5b6cbc.cpp)
+tried: 96e0c (868 B, same size here, 47 off abstracted, 14 with an IR order: the Euler rotation's loads and products; docs/s5_wip/96e0c.cpp)
 # The NEON matrix-inverse family (main: s5 owns the shared inline and all 23 copies, any range or size; the inline is
 # include/misc/matrix_inverse.h, 5a3ce0 and 3e1538 matched on it; 1e26f8 and 5f4418, a look-at instead, are released
 # to the normal split), working:

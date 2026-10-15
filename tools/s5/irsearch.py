@@ -18,7 +18,7 @@ The point is to learn which IR order the original's schedule comes from, then wr
 """
 import os as _os
 M = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))  # the matching/ folder
-import os, sys, json, re, subprocess, difflib, argparse, random, csv, math
+import os, sys, json, re, subprocess, difflib, argparse, random, csv, math, atexit, shutil
 ROOT = os.path.dirname(M)
 sys.path.insert(0, os.path.join(M, "tools"))
 sys.path.insert(0, os.path.join(ROOT, ".tools", "python"))
@@ -75,8 +75,29 @@ def name_args(define):
     return define[:p0 + 1] + ",".join(named) + define[k:], unnamed
 
 
+def join_multiline(body):
+    """One entry per instruction: a switch or indirectbr spans lines up to its closing ']'."""
+    out, k = [], 0
+    while k < len(body):
+        l = body[k]
+        if l.rstrip().endswith("[") and re.search(r"\b(switch|indirectbr)\b", l):
+            parts = [l]
+            k += 1
+            while k < len(body) and body[k].strip() != "]":
+                parts.append(body[k])
+                k += 1
+            if k < len(body):
+                parts.append(body[k])
+            out.append("\n".join(parts))
+        else:
+            out.append(l)
+        k += 1
+    return out
+
+
 def split_blocks(body):
     """body: lines between 'define ... {' and '}'. Returns [(label_line or None, [instr lines])]."""
+    body = join_multiline(body)
     blocks, cur, lab = [], [], None
     for l in body:
         if not l.strip():
@@ -100,8 +121,12 @@ def is_mem(l):
     return False
 
 
+def is_load(l):
+    return " = load " in l
+
+
 class Block:
-    def __init__(self, instrs):
+    def __init__(self, instrs, loads_free=False):
         self.instrs = instrs
         n = len(instrs)
         self.defs = {}
@@ -119,8 +144,22 @@ class Block:
                 if j is not None and j != i:
                     self.deps[i].add(j)
         mem = [i for i, l in enumerate(instrs) if is_mem(l)]
-        for a, b in zip(mem, mem[1:]):
-            self.deps[b].add(a)
+        if not loads_free:
+            for a, b in zip(mem, mem[1:]):
+                self.deps[b].add(a)
+        else:  # loads move among themselves; stores and calls stay ordered with everything that touches memory
+            last_barrier, since = None, []
+            for i in mem:
+                if is_load(instrs[i]):
+                    if last_barrier is not None:
+                        self.deps[i].add(last_barrier)
+                    since.append(i)
+                else:
+                    for j in since:
+                        self.deps[i].add(j)
+                    if last_barrier is not None:
+                        self.deps[i].add(last_barrier)
+                    last_barrier, since = i, []
         self.users = [set() for _ in range(n)]
         self.real_users = [set() for _ in range(n)]  # without the debug intrinsics that describe the value
         for i, d in enumerate(self.deps):
@@ -154,12 +193,16 @@ def main():
     ap.add_argument("--start", help="an order to start from (a previous best.ll)")
     ap.add_argument("--minimize", help="an order (a best.ll) to move back toward LL's order while its abstract "
                                        "distance does not grow; writes DIR/min.ll and prints what stays moved")
+    ap.add_argument("--strict", action="store_true", help="--minimize: the exact distance may not grow either")
     ap.add_argument("--groups", action="store_true",
                     help="move whole statements only (an instruction with several users or none, with the operands "
                          "only it uses), and swap the two halves of a statement with two calls: orders a source "
                          "file can give")
     ap.add_argument("--gmin", help="--groups: an order (gbest.ll) to move back toward LL's order statement by "
                                    "statement while neither distance grows; writes DIR/gmin.ll")
+    ap.add_argument("--loads-free", action="store_true",
+                    help="let loads move among themselves (only stores and calls stay ordered): source orders of "
+                         "independent reads, such as the definitions of locals read from memory")
     ap.add_argument("--temp", type=float, default=1.0, help="--groups: annealing start temperature (one abstract "
                                                              "diff = 1, one word diff = 0.01)")
     ap.add_argument("--restart", type=int, default=400, help="--groups: iterations without a new best before going "
@@ -187,13 +230,34 @@ def main():
     _ab = lambda s: re.sub(r"#0x7100[0-9a-f]+|#0x[0-9a-f]{5,}", "#ADDR", re.sub(r"\b([xwqsdvbh])(\d+|zr)\b", r"\1", s))
     oa = [_ab(x) for x in oi]
 
+    def compiles(ll):
+        r = subprocess.run([cc, *flags, "-Xclang", "-disable-llvm-optzns", "-c", ll, "-o",
+                            os.path.join(work, "irs_base.o")], capture_output=True, text=True)
+        return r.returncode == 0, r.stderr
+
     if a.ll.endswith(".cpp"):  # emit the IR as the unit compile sees it: -g, use-list order kept
         ll = os.path.join(work, os.path.splitext(os.path.basename(a.ll))[0] + ".ll")
-        r = subprocess.run([cc, *man["flags"], "-I", os.path.join(M, "include"), "-S", "-emit-llvm", "-Xclang",
-                            "-emit-llvm-uselists", a.ll, "-o", ll], capture_output=True, text=True)
-        if r.returncode:
-            sys.exit(r.stderr[-2000:])
+        for variant in ("-g", "no -g"):
+            uflags = man["flags"] if variant == "-g" else [f for f in man["flags"] if not f.startswith(("-g", "-fstandalone"))]
+            r = subprocess.run([cc, *uflags, "-I", os.path.join(M, "include"), "-S", "-emit-llvm", "-Xclang",
+                                "-emit-llvm-uselists", a.ll, "-o", ll], capture_output=True, text=True)
+            if r.returncode:
+                sys.exit(r.stderr[-2000:])
+            ok, err = compiles(ll)
+            if ok:
+                break
+            # clang 3.9.1 crashes on some -g IR read back (761d8); the IR without debug info still compiles
+            print(f"the IR emitted with {variant} does not compile back: {err.strip().splitlines()[-1] if err.strip() else ''}",
+                  flush=True)
+        else:
+            sys.exit("irsearch: the IR of this function does not compile back, with or without -g")
+        if variant != "-g":
+            print("notice: searching the IR without -g; its first score may differ from sbs.py's", flush=True)
         a.ll = ll
+    elif not a.start:
+        ok, err = compiles(a.ll)
+        if not ok:
+            sys.exit("irsearch: %s does not compile back:\n%s" % (a.ll, err[-2000:]))
     text = open(a.start or a.ll, encoding="utf-8").read().split("\n")
     d0 = next(k for k, l in enumerate(text) if l.startswith("define ") and ("@" + a.func + "(") in l)
     d1 = next(k for k in range(d0, len(text)) if text[k] == "}")
@@ -212,7 +276,7 @@ def main():
         bi = next(k for k, (lab, _) in enumerate(blocks) if lab and lab.startswith(a.block + ":"))
     else:
         bi = max(range(len(blocks)), key=lambda k: len(blocks[k][1]))
-    blk = Block(blocks[bi][1])
+    blk = Block(blocks[bi][1], a.loads_free)
     a.block_label = blocks[bi][0]
     n = len(blk.instrs)
     print(f"block {blocks[bi][0] or '(entry)'}: {n} instructions")
@@ -228,12 +292,22 @@ def main():
         return "\n".join(out)
 
     tmp_ll, tmp_o = os.path.join(work, "irs_tmp.ll"), os.path.join(work, "irs_tmp.o")
+    failed = {"n": 0}
+
+    def report_failures():
+        if failed["n"]:
+            print(f"{failed['n']} orders failed to compile (skipped); the first is kept as {tmp_ll}.fail", flush=True)
+    atexit.register(report_failures)
 
     def score(order):
         open(tmp_ll, "w", encoding="utf-8").write(emit(order))
         r = subprocess.run([cc, *flags, "-Xclang", "-disable-llvm-optzns", "-c", tmp_ll, "-o", tmp_o], capture_output=True, text=True)
         if r.returncode:
-            print(r.stderr[-2000:])
+            failed["n"] += 1
+            if failed["n"] <= 3:
+                print("compile failed:", r.stderr.strip()[-1500:], flush=True)
+            if failed["n"] == 1:
+                shutil.copyfile(tmp_ll, tmp_ll + ".fail")
             return None
         mine = mm_tally.mine_bytes(tmp_o, a.func, addr, mapping, image)
         mi = [f"{i.mnemonic} {i.op_str}" for i in md.disasm(mine, 0x7100000000 + addr)]
@@ -250,6 +324,8 @@ def main():
     if a.groups:
         return group_search(a, blk, score, emit, work, rnd)
     best = score(order)
+    if best is None:
+        sys.exit("irsearch: the starting order does not compile")
     print("start", best)
     cur = best
     best_order = list(order)
@@ -351,6 +427,8 @@ def group_search(a, blk, score, emit, work, rnd):
     if a.gmin:
         return group_minimize(a, blk, groups, owner, gdeps, calls, flat, score, emit, work)
     cur = score(flat(gorder, flips))
+    if cur is None:
+        sys.exit("irsearch: the starting order does not compile")
     print("start", cur, flush=True)
     best, best_state = cur, (list(gorder), set(flips))
     energy = lambda s: s[0] + s[1] / 100.0
@@ -403,12 +481,18 @@ def group_search(a, blk, score, emit, work, rnd):
 
 def read_order(path, blk, lab):
     t = open(path, encoding="utf-8").read().split("\n")
-    s = t.index(lab)
+    name = lab.split(":")[0] + ":"
+    s = next(k for k, l in enumerate(t) if l.startswith(name))  # the label's comment may differ
     e = s + 1
     while e < len(t) and not NAMED.match(t[e]) and t[e] != "}":
         e += 1
     idx = {l: k for k, l in enumerate(blk.instrs)}
     return [idx[l] for l in t[s + 1: e] if l.strip()]
+
+
+def inversions(order):
+    """Pairs out of their source order: the distance a minimizer must strictly reduce (so it always ends)."""
+    return sum(1 for i in range(len(order)) for j in range(i + 1, len(order)) if order[i] > order[j])
 
 
 def group_minimize(a, blk, groups, owner, gdeps, calls, flat, score, emit, work):
@@ -425,6 +509,8 @@ def group_minimize(a, blk, groups, owner, gdeps, calls, flat, score, emit, work)
         if gi in calls and order.index(c[1]) < order.index(c[0]):
             flips.add(gi)
     cur = score(flat(gorder, flips))
+    if cur is None:
+        sys.exit("irsearch: the order in --gmin does not compile")
     print("start", cur, flush=True)
 
     def valid(go):
@@ -447,7 +533,7 @@ def group_minimize(a, blk, groups, owner, gdeps, calls, flat, score, emit, work)
                 rest = [g for g in gorder if g != gi]
                 q = rest.index(anchor) + (1 if after else 0)
                 new = rest[:q] + [gi] + rest[q:]
-                if new == gorder or not valid(new):
+                if new == gorder or not valid(new) or inversions(new) >= inversions(gorder):
                     continue
                 s = score(flat(new, flips))
                 if s is not None and s[:2] <= cur[:2]:
@@ -468,7 +554,8 @@ def minimize(a, blk, blocks, bi, score, emit, work):
     predecessor or just before its successor there) while the abstract distance does not grow."""
     t = open(a.minimize, encoding="utf-8").read().split("\n")
     lab = blocks[bi][0]
-    s = t.index(lab)
+    name = lab.split(":")[0] + ":"
+    s = next(k for k, l in enumerate(t) if l.startswith(name))  # the label's comment may differ
     e = s + 1
     while e < len(t) and not NAMED.match(t[e]) and t[e] != "}":
         e += 1
@@ -477,6 +564,8 @@ def minimize(a, blk, blocks, bi, score, emit, work):
     order = [idx[l] for l in lines]
     n = len(order)
     cur = score(order)
+    if cur is None:
+        sys.exit("irsearch: the order in --minimize does not compile")
     print("start", cur)
     target = cur[0]
 
@@ -495,11 +584,12 @@ def minimize(a, blk, blocks, bi, score, emit, work):
                 rest = [y for y in order if y != x]
                 q = rest.index(anchor) + (1 if after else 0)
                 new = rest[:q] + [x] + rest[q:]
-                if new == order or not valid(new):
+                if new == order or not valid(new) or inversions(new) >= inversions(order):
                     continue
                 s2 = score(new)
-                if s2 is not None and s2[0] <= target:
+                if s2 is not None and s2[0] <= target and (not a.strict or s2[1] <= cur[1]):
                     order, cur, changed = new, s2, True
+                    print("back", x, s2, flush=True)
                     break
     open(os.path.join(work, "min.ll"), "w", encoding="utf-8").write(emit(order))
     print("result", cur)

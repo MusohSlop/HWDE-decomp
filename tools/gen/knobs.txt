@@ -63,3 +63,4 @@ stackdesc+voidret
 stackdesc+sink
 readarity
 readarity+voidret
+vptrfirst
