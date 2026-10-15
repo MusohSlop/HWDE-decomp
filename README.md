@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-11.14% of bytes (624,420 of 5,603,025) and 41.95% of functions (7,249 of 17,282) match exactly; 187 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+11.26% of bytes (630,960 of 5,603,025) and 41.96% of functions (7,252 of 17,282) match exactly; 187 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-7,259 of 7,446 attempted functions match: 7,249 inventory functions (624,420 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 187 are near misses, all `m`.
+7,262 of 7,449 attempted functions match: 7,252 inventory functions (630,960 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 187 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -430,6 +430,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 1 of 1 in `misc/s5_functions01.cpp` | the fifth session's hand matches over 1,500 bytes: `415f00`, a copy of an object with every field set to the difference of two others, the view blocks subtracted by inline `operator-` returning the block by value (angles wrapped to [-180, 180], pitches clamped to [-90, 90] with the negated test through `double`, see `tools/s5/README.md`) | match |
 | 1 of 1 in `misc/switches/switch_38e39c.cpp` | the fifth session's `38e39c`, a mode switch written as one `switch` with a shared tail (the original's shared sequences come from LLVM's tail merging), byte-sized `finished()` results, inline setters for the original's load order | match |
 | 2 of 2 in `misc/s4_functions01.cpp` | the fourth session's hand fixes of generated source over 1,500 bytes: a `void` function whose two inlined `0x37f0`-byte objects store their two-float field (24.0f, 24.0f) as two floats, so the merged 64-bit constant is built in place instead of hoisted into a callee-saved register (`f6fc0`); float results passed on as call arguments (`2578`'s result is `25fc`'s second argument, the results of `25fc` and `2684` go to the virtual calls) and `db3c` returning a `short` id, checked unsigned and used as a signed index (`1f00`) | match |
+| 5 of 5 in `misc/s4_functions01.cpp` | the fourth session's hand fixes of generated source over 1,500 bytes: a `void` function whose two inlined `0x37f0`-byte objects store their two-float field (24.0f, 24.0f) as two floats, so the merged 64-bit constant is built in place instead of hoisted into a callee-saved register (`f6fc0`); float results passed on as call arguments (`2578`'s result is `25fc`'s second argument, the results of `25fc` and `2684` go to the virtual calls) and `db3c` returning a `short` id, checked unsigned and used as a signed index (`1f00`); a save-data writer whose output buffer is a byte pointer, so its large member offsets stay GEP offsets that constant hoisting leaves alone, with its copy loops stepping two pointers on a 64-bit count (`176ce0`); two save copiers (`11298c`, `f1278`): an int, then struct-assignment loops (20-byte records, a 24-byte block, 29-byte names at a 0x20 stride) that Clang unrolls into inline copies | match |
 | 35 of 35 in `misc/variant_functions16.cpp` | the variant search with library calls named after their imports (stub addresses mapped through the PLT relocations to the dynamic symbol names): C functions with their prototypes and `nn::os`/`nn::oe`/`nn::util` functions declared in their namespaces | match |
 | 107 of 107 in `misc/variant_functions15.cpp` | the variant search with element arrays that start inside a struct (the element base shifted by whole strides) and unscaled indexes on wider accesses as byte offsets (`*reinterpret_cast<T*>(&field[i])`) | match |
 | 20 of 20 in `misc/variant_functions14.cpp` | the variant search with float register copies through the vector unit (`mov v8.16b, v0.16b`) and `ccmp` chains written as `&&`/`||` (the `nzcv` immediate decides which) | match |
