@@ -76,10 +76,10 @@ static inline XMVECTOR XMVectorReciprocal(XMVECTOR v) {
 static inline XMVECTOR XMVector4Transform(XMVECTOR v, XMMATRIX m) {
     float32x2_t lo = vget_low_f32(v);
     float32x2_t hi = vget_high_f32(v);
-    XMVECTOR r = vmulq_lane_f32(m.r[0], lo, 0);
-    r = vfmaq_lane_f32(r, m.r[1], lo, 1);
-    r = vfmaq_lane_f32(r, m.r[2], hi, 0);
-    return vfmaq_lane_f32(r, m.r[3], hi, 1);
+    XMVECTOR r = vmulq_f32(m.r[0], vdupq_lane_f32(lo, 0));
+    r = vfmaq_f32(r, vdupq_lane_f32(lo, 1), m.r[1]);
+    r = vfmaq_f32(r, vdupq_lane_f32(hi, 0), m.r[2]);
+    return vfmaq_f32(r, vdupq_lane_f32(hi, 1), m.r[3]);
 }
 
 // The inverse by cofactors of the transposed rows (YXXX, ZZYY, WWWZ swizzles: the 3x3 minors), all zero when the

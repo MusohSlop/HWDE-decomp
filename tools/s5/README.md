@@ -34,7 +34,11 @@ Run them with the project's Python, `python -B -I tools/s5/SCRIPT ...`, from `ma
   list is what to change in the source. Without `--groups` it moves single instructions (finds schedule matches
   fast, but the orders rarely map back to source). Writes `gbest.ll`/`best.ll` and stops at a match (`match.ll`).
   Use it for schedule- or register-only near misses where the pre-RA scheduler keeps the IR order (check with
-  `-mllvm -print-machineinstrs`: compare the input and output of "Machine Instruction Scheduler").
+  `-mllvm -print-machineinstrs`: compare the input and output of "Machine Instruction Scheduler"). Give it the
+  scratch `.cpp` and it emits the IR itself with the unit flags, `-g` and `-Xclang -emit-llvm-uselists`: both the
+  debug intrinsics and the use-list order change codegen in some functions (`3b4e98`: 6 off from source, 8 from IR
+  without `-g`, 7 without the use-lists), so its first score must equal what sbs.py reports. Loads, stores and calls
+  keep their relative order, so blocks made mostly of memory operations leave it little to move.
 
 ## Source patterns found by hand
 
@@ -134,4 +138,14 @@ Each with the functions it fixed; three or more make it a generator note.
   move statements to lengthen or shorten them by single instructions; `irsearch.py --groups` finds such orders. For
   the inverse: the d row's swizzles in the order d2, d1, d3 (the YX control's range otherwise ties c2's and wins on
   vreg number) and each cofactor row multiplied by its sign in the same statement (c1-c3 one instruction longer).
-  `5a3ce0`, `3e1538` (first try on the shared `include/misc/matrix_inverse.h`).
+  `5a3ce0`, `3e1538` (first try on the shared `include/misc/matrix_inverse.h`), `5f9fac`.
+- Vectors built by lane inserts inside a loop with no copy of the zero vector per iteration (`mov vN.16b, vZ.16b`
+  only before the loop): the vectors are carried, zeroed once before the loop and their lanes rewritten each time
+  (`m.r[0] = vsetq_lane_f32(p0.x, m.r[0], 0)`), so lane 3 keeps its zero without a copy. `5f9fac`.
+- A float finite test as `ubfx wN, wM, #23, #8; cmp wN, #0xfe; b.hi`: `(bits & 0x7f800000) < 0x7f800000`; the
+  shift-and-mask forms (`((bits >> 23) & 0xff) != 0xff`, a bitfield) are folded to `and; cmp #0x7f800000`. Two such
+  tests on adjacent floats sharing one `ldr x` read them through a 16-byte aligned type (GVN widens an 8-aligned
+  load). `242070` (parked).
+- Fused multiply-adds with a constant splat as the first multiplicand (`fmla v, vSplat, vRow`): the transform is
+  written `vfmaq_f32(r, vdupq_lane_f32(lo, 1), m.r[1])`; with a variable vector both forms give the by-element
+  `fmla`, so the shared `XMVector4Transform` is written splat-first. `242070` (parked).
