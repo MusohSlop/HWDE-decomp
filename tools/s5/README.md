@@ -36,3 +36,22 @@ Each with the functions it fixed; three or more make it a generator note.
 - Two loads that the original makes unconditionally and selects with `csel` (`x >= 0 ? x : y` where `y` is a
   field of another object): load both into locals first; with pointer parameters Clang cannot speculate the
   second load and branches instead. `415f00`.
+- Globals laid out as one block and reached through one base register: file statics that GlobalMerge merged
+  (sorted by size, then by first use); a struct of them keeps the declared order. Statics never stored in the unit
+  are folded to their initialiser, so the functions that write them must be in the unit too. `3ccf84`, `45a850`.
+- Stores through a `char*` that do not force reloads of a buffer's length and size: the buffer fields are file
+  statics whose address is never taken (GlobalsAA). `__attribute__((used))` takes the address and brings the
+  reloads back. `45a850`.
+- A `switch` lowered as `cmp #b; b.eq; cmp #a; b.eq; cbnz` (the zero case last, falling through): the case block
+  that follows the switch in source order is the one the lowering moves last; write the cases in that order
+  (`default` first here). `45a850`.
+- A `csel` whose operand is a division by two that Clang turned into a branch: the select condition needs a second
+  use (CodeGenPrepare only turns selects into branches when their compare has one use), for example a `bool`
+  flag tested again later. `45a850`.
+- Padding loops counting down from `n + 1` to `> 1`: `for (int i = n; i > 0; i--)`; counting up unrolls by two.
+  `45a850`.
+- Operands of an `add` of two phis in the wrong order: Reassociate orders by rank, which follows the order of the
+  phis in the block, which follows the declaration order of the variables; try the declaration orders. `45a850`.
+- A `bool` in a struct tested with `tbnz #0` (not `cbnz`): an `unsigned char` tested with `& 1`. `3ccf84`.
+- A ShowControllerSupport-style argument block whose halfword store comes before the word store: the default
+  setter, then the overrides in the order the original's merged stores show. `3ccf84`.
