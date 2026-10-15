@@ -20069,6 +20069,18 @@
     "kRecordFormatA": "0x71007da8ae",
     "kRecordText": "0x71007da8b5",
     "kRecordFormatB": "0x71007da8bf",
+    "_ZN12TrophyWidgetC1Ev": "0x71002f2370",
+    "_ZN12TrophyWidget10set_layoutEi": "0x71002f2b44",
+    "_ZN12TrophyWidget8set_modeEi": "0x71002f8934",
+    "_ZN12TrophyWidget5startEv": "0x71002f8160",
+    "_ZN12TrophySource3setEPv": "0x7100287f40",
+    "_Z12entry_2070fcP12Global20710ci": "0x71002070fc",
+    "_Z11play_1f7a0cPviif": "0x71001f7a0c",
+    "kTrophyLayout": "0x71007d7d20",
+    "kTrophyIn": "0x7100740bd8",
+    "kTrophyLoop": "0x7100740be1",
+    "kTrophyText": "0x71007d7dca",
+    "got:_ZTV12TrophyScreen": "0x7100c2a9e8",
     "_Z13callee_1ec94cl": "0x71001ec94c",
     "_Z13callee_1ec974l": "0x71001ec974",
     "_Z13callee_1ec974li": "0x71001ec974",
@@ -29946,7 +29958,8 @@
       },
       "functions": {
         "_ZN21ChallengeRecordScreenC2Eb": "0x71003447f0",
-        "_ZN11RecordPanelC2Ev": "0x710035c070"
+        "_ZN11RecordPanelC2Ev": "0x710035c070",
+        "_ZN12TrophyScreenC2EP11TrophyOwner": "0x71002c2454"
       }
     },
     "misc/s2_functions26.cpp": {
