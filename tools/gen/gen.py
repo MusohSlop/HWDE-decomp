@@ -319,6 +319,36 @@ def gen_function(a, ins):
     vars_ = {}          # name -> type (or 'w'/'x' pending, or struct name)
     callees = {}        # target -> [arg types, ret type]
     counter = [0]
+    if "nosqrtpair" not in knobs:
+        # move `fcmp sD, sD` down to its b.vc/b.vs over instructions that neither use sD nor the flags
+        tg_ = set()
+        for i_ in ins:
+            if i_.mnemonic in ("b", "bl", "cbz", "cbnz", "tbz", "tbnz") or i_.mnemonic.startswith("b."):
+                m_ = re.search(r"#(0x[0-9a-f]+|\d+)$", i_.op_str)
+                if m_:
+                    tg_.add(int(m_.group(1), 0))
+        k_ = 0
+        while k_ < len(ins) - 1:
+            i_ = ins[k_]
+            ops_ = [o_.strip() for o_ in i_.op_str.split(",")]
+            if i_.mnemonic == "fcmp" and len(ops_) == 2 and ops_[0] == ops_[1] and re.fullmatch(r"s\d+", ops_[0]) \
+                    and ins[k_ + 1].mnemonic not in ("b.vc", "b.vs"):
+                n_ = int(ops_[0][1:])
+                kb_ = None
+                for j_ in range(k_ + 1, min(len(ins), k_ + 10)):
+                    ij_ = ins[j_]
+                    if ij_.mnemonic in ("b.vc", "b.vs"):
+                        kb_ = j_
+                        break
+                    if ij_.address in tg_ or ij_.mnemonic in ("b", "bl", "blr", "br", "ret", "cbz", "cbnz", "tbz", "tbnz") \
+                            or ij_.mnemonic.startswith(("b.", "cmp", "cmn", "tst", "fcmp", "ccmp", "fccmp", "subs", "adds", "ands", "bics")):
+                        break
+                    r_, w_ = frw(ij_)
+                    if n_ in r_ or n_ in w_:
+                        break
+                if kb_ is not None:
+                    ins = ins[:k_] + ins[k_ + 1:kb_] + [ins[k_]] + ins[kb_:]
+            k_ += 1
     addr_index = {i.address: k for k, i in enumerate(ins)}
     ivec_loads_ = {}
     if "noicvt" not in knobs:
@@ -2295,7 +2325,8 @@ def gen_function(a, ins):
                 tgt_ = imm(br_.op_str)
                 def skip_moves_(jj_, end_=None):
                     while jj_ < len(ins) and (end_ is None or ins[jj_].address < end_) and (ins[jj_].mnemonic in ("mov", "fmov") or (
-                            ins[jj_].mnemonic in ("str", "ldr", "stur", "ldur") and "nosqrtspill" not in knobs and re.fullmatch(r"[qds]\d+, \[(sp|x29)(, #-?(0x[0-9a-f]+|\d+))?\]", ins[jj_].op_str))):
+                            ins[jj_].mnemonic in ("str", "ldr", "stur", "ldur") and "nosqrtspill" not in knobs and re.fullmatch(r"[qds]\d+, \[(sp|x29)(, #-?(0x[0-9a-f]+|\d+))?\]", ins[jj_].op_str)) or (
+                            ins[jj_].mnemonic in ("stp", "ldp") and "nosqrtpair" not in knobs and re.fullmatch(r"([qds])\d+, \1\d+, \[(sp|x29)(, #-?(0x[0-9a-f]+|\d+))?\]", ins[jj_].op_str))):
                         jj_ += 1
                     return jj_
                 def is_sqrtf_(i_, mn_):
@@ -2314,7 +2345,12 @@ def gen_function(a, ins):
                     for n2 in list(regs):
                         if isinstance(n2, int) and n2 < 19:
                             regs[n2] = None
-                    regs["f"] = {n3: v3 for n3, v3 in regs["f"].items() if 8 <= n3 <= 15}
+                    kept_ = set()
+                    if "nosqrtpair" not in knobs:
+                        for i_ in ins[k + 2:addr_index[tgt_]]:
+                            if i_.mnemonic in ("ldr", "ldp", "ldur") and re.search(r"\[(sp|x29)\b", i_.op_str):
+                                kept_ |= {int(r2_[1:]) for r2_ in re.findall(r"\b[qds]\d+\b", i_.op_str.split("[")[0])}
+                    regs["f"] = {n3: v3 for n3, v3 in regs["f"].items() if 8 <= n3 <= 15 or n3 in kept_}
                     regs["f"][fd] = r_
                     regs["fw"] = {fd} if fd < 8 else set()
                     written = set()
