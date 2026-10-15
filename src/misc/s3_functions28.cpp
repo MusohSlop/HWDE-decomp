@@ -1,5 +1,7 @@
 // Hand fixes of generated source (third session): the generator's code with the original's statement order where a
-// class boundary moves a store. Names are placeholders after the address and offset. Status: matching/README.md.
+// class boundary moves a store or an address is taken early. Names are placeholders after the address and offset. Status: matching/README.md.
+
+extern "C" void* memset(void*, int, unsigned long);
 
 void* callee_217d64(int);        // 0x7100217d64
 void callee_33bbb4(long, int, int);        // 0x710033bbb4
@@ -382,4 +384,306 @@ int call_4c8b04(Arg4c8b04_0* p0) {
         p0->field_a8 = nullptr;
     }
     return callee_4a3d34(p0);
+}
+
+void callee_46404(long);        // 0x7100046404
+void callee_46440(long);        // 0x7100046440
+void callee_46480(long);        // 0x7100046480
+void callee_7572c(long);        // 0x710007572c
+void callee_7b288(long);        // 0x710007b288
+void callee_7b584(long);        // 0x710007b584
+void callee_99ad0(void*);        // 0x7100099ad0
+int callee_170c58();        // 0x7100170c58
+
+struct Arg7b5b0_0 {
+    long field_0;                // +0
+    unsigned char pad8[0x208];
+    long field_210;                // +210
+    long field_218;                // +218
+    long field_220;                // +220
+    long field_228;                // +228
+    long field_230;                // +230
+    long field_238;                // +238
+    long field_240;                // +240
+    long field_248;                // +248
+    unsigned char pad250[0x40];
+    void* field_290;               // +290
+    unsigned short field_298;      // +298
+    unsigned char field_29a;       // +29a
+    unsigned char pad29b[0x1];
+    int field_29c;                 // +29c
+    long field_2a0;                // +2a0
+    long field_2a8;                // +2a8
+    int field_2b0;                 // +2b0
+    int field_2b4;                 // +2b4
+    int field_2b8;                 // +2b8
+    long field_2bc __attribute__((packed, aligned(4)));                // +2bc
+    int field_2c4;                 // +2c4
+    void* field_2c8;               // +2c8
+    void* field_2d0;               // +2d0
+    int field_2d8;                 // +2d8
+    int field_2dc;                 // +2dc
+    int field_2e0;                 // +2e0
+    int field_2e4;                 // +2e4
+    long field_2e8;                // +2e8
+    void* field_2f0;               // +2f0
+    void* field_2f8;               // +2f8
+    void* field_300;               // +300
+    long field_308;                // +308
+    long field_310;                // +310
+    int field_318;                 // +318
+    void* field_31c __attribute__((packed, aligned(4)));               // +31c
+    unsigned short field_324;      // +324
+    unsigned char field_326;       // +326
+    unsigned char pad327[0x1];
+    unsigned short field_328;      // +328
+    unsigned char field_32a;       // +32a
+    unsigned char pad32b[0x1];
+    int field_32c;                 // +32c
+    long field_330;                // +330
+    long field_338;                // +338
+    int field_340;                 // +340
+    int field_344;                 // +344
+    int field_348;                 // +348
+    long field_34c __attribute__((packed, aligned(4)));                // +34c
+    int field_354;                 // +354
+    void* field_358;               // +358
+    void* field_360;               // +360
+    int field_368;                 // +368
+    int field_36c;                 // +36c
+    int field_370;                 // +370
+    int field_374;                 // +374
+    long field_378;                // +378
+    void* field_380;               // +380
+    void* field_388;               // +388
+    void* field_390;               // +390
+    long field_398;                // +398
+    long field_3a0;                // +3a0
+    int field_3a8;                 // +3a8
+    void* field_3ac __attribute__((packed, aligned(4)));               // +3ac
+    unsigned short field_3b4;      // +3b4
+    unsigned char field_3b6;       // +3b6
+    unsigned char pad3b7[0x1];
+    long field_3b8;                // +3b8
+    unsigned char pad3c0[0x4];
+    int field_3c4;                 // +3c4
+    void* field_3c8;               // +3c8
+    int field_3d0;                 // +3d0
+    int field_3d4;                 // +3d4
+    int field_3d8;                 // +3d8
+    long field_3dc __attribute__((packed, aligned(4)));                // +3dc
+    int field_3e4;                 // +3e4
+    void* field_3e8;               // +3e8
+    void* field_3f0;               // +3f0
+    void* field_3f8;               // +3f8
+    void* field_400;               // +400
+    int field_408;                 // +408
+    unsigned char pad40c[0x40];
+    int field_44c;                 // +44c
+    int field_450;                 // +450
+    unsigned char field_454;       // +454
+    unsigned char field_455;       // +455
+    unsigned short field_456;      // +456
+    int field_458;                 // +458
+    int field_45c;                 // +45c
+    void* field_460;               // +460
+    int field_468;                 // +468
+    unsigned short field_46c;      // +46c
+    unsigned char field_46e;       // +46e
+    unsigned char pad46f[0x1];
+    void* field_470;               // +470
+    void* field_478;               // +478
+    void* field_480;               // +480
+    void* field_488;               // +488
+    void* field_490;               // +490
+    void* field_498;               // +498
+    void* field_4a0;               // +4a0
+    unsigned char pad4a8[0x10];
+    void* field_4b8;               // +4b8
+    long field_4c0;                // +4c0
+    void* field_4c8;               // +4c8
+    void* field_4d0;               // +4d0
+    int field_4d8;                 // +4d8
+    int field_4dc;                 // +4dc
+    int field_4e0;                 // +4e0
+    unsigned short field_4e4;      // +4e4
+    unsigned char pad4e6[0x2];
+    int field_4e8;                 // +4e8
+    int field_4ec;                 // +4ec
+    long field_4f0;                // +4f0
+    int field_4f8;                 // +4f8
+    unsigned char pad4fc[0xc];
+    void* field_508;               // +508
+    void* field_510;               // +510
+    void* field_518;               // +518
+    long field_520;                // +520
+    int field_528;                 // +528
+    long field_52c __attribute__((packed, aligned(4)));                // +52c
+    long field_534 __attribute__((packed, aligned(4)));                // +534
+    int field_53c;                 // +53c
+    unsigned char pad540[0x8];
+    int field_548;                 // +548
+    int field_54c;                 // +54c
+};
+// Reached through the GOT slot at 0x7100c219e0.
+extern int gGlobalc219e0_7b5b0;
+// Reached through the GOT slot at 0x7100c22208.
+extern unsigned char gGlobalc22208_7b5b0[];
+
+// 0x710007b5b0: two addresses taken early, as irsearch's minimised order has them: +2bc before the 0xff stores (so
+// MemCpyOpt's memset of them goes after it) and +3c0's before the global is read.
+int call_7b5b0(Arg7b5b0_0* p0) {
+    callee_99ad0(p0);
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc22208_7b5b0) + 0x10);
+    callee_46404(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x158));
+    callee_46404(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x15c));
+    callee_46404(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x160));
+    callee_46404(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x164));
+    callee_46404(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x168));
+    callee_46404(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x16c));
+    callee_46404(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x170));
+    callee_46404(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x174));
+    callee_46404(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x178));
+    callee_46404(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x17c));
+    callee_7b288(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x180));
+    callee_7b288(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x1a0));
+    callee_7b288(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x1c0));
+    callee_7b288(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x1e0));
+    long a15 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x250);
+    memset(reinterpret_cast<void*>(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x200)), 0, 0x50);
+    callee_7572c(a15);
+    p0->field_29c = 0;
+    p0->field_29a = 0;
+    p0->field_298 = 0;
+    p0->field_290 = nullptr;
+    p0->field_2b0 = -1;
+    p0->field_2a8 = -1;
+    p0->field_2a0 = -1;
+    long* a2bc = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x2bc);
+    p0->field_2b4 = 0;
+    p0->field_2b8 = 0;
+    *a2bc = -1;
+    p0->field_2c4 = -1;
+    p0->field_2d8 = 0;
+    p0->field_2d0 = nullptr;
+    p0->field_2c8 = nullptr;
+    p0->field_2dc = -1;
+    long a3c0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x3c0);
+    int v18 = gGlobalc219e0_7b5b0;
+    p0->field_2e0 = v18;
+    p0->field_2e4 = 0;
+    p0->field_2e8 = -1;
+    p0->field_300 = nullptr;
+    p0->field_2f8 = nullptr;
+    p0->field_2f0 = nullptr;
+    p0->field_318 = -1;
+    p0->field_310 = -1;
+    p0->field_308 = -1;
+    p0->field_326 = 0;
+    p0->field_324 = 0;
+    p0->field_31c = nullptr;
+    p0->field_328 = 0;
+    p0->field_32a = 0;
+    p0->field_32c = 0;
+    p0->field_340 = -1;
+    p0->field_338 = -1;
+    p0->field_330 = -1;
+    p0->field_344 = 0;
+    p0->field_348 = 0;
+    p0->field_34c = -1;
+    p0->field_370 = v18;
+    p0->field_354 = -1;
+    p0->field_368 = 0;
+    p0->field_360 = nullptr;
+    p0->field_358 = nullptr;
+    p0->field_36c = -1;
+    p0->field_374 = 0;
+    p0->field_378 = -1;
+    p0->field_390 = nullptr;
+    p0->field_388 = nullptr;
+    p0->field_380 = nullptr;
+    p0->field_3a8 = -1;
+    p0->field_3a0 = -1;
+    p0->field_398 = -1;
+    p0->field_3b6 = 0;
+    p0->field_3b4 = 0;
+    p0->field_3ac = nullptr;
+    p0->field_3b8 = -1;
+    callee_46404(a3c0);
+    p0->field_3c4 = 0;
+    p0->field_3c8 = nullptr;
+    p0->field_3d0 = -1;
+    p0->field_3d4 = 0;
+    p0->field_3d8 = 0;
+    p0->field_3dc = -1;
+    p0->field_3e4 = -1;
+    p0->field_400 = nullptr;
+    p0->field_3f8 = nullptr;
+    p0->field_3f0 = nullptr;
+    p0->field_3e8 = nullptr;
+    p0->field_408 = -1;
+    callee_7b584(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x40c));
+    callee_46440(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x440));
+    callee_46404(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x448));
+    p0->field_44c = -1;
+    p0->field_450 = 0;
+    p0->field_454 = 1;
+    p0->field_455 = 0;
+    p0->field_456 = 0;
+    p0->field_458 = -1;
+    p0->field_45c = -1;
+    p0->field_460 = nullptr;
+    p0->field_468 = -1;
+    p0->field_46c = 0;
+    p0->field_46e = 0;
+    p0->field_4a0 = nullptr;
+    p0->field_498 = nullptr;
+    p0->field_490 = nullptr;
+    p0->field_488 = nullptr;
+    p0->field_480 = nullptr;
+    p0->field_478 = nullptr;
+    p0->field_470 = nullptr;
+    callee_46480(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x4a8));
+    callee_46480(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x4b0));
+    p0->field_4c0 = -0x100000000;
+    p0->field_4b8 = nullptr;
+    p0->field_4d8 = 0;
+    p0->field_4d0 = nullptr;
+    p0->field_4c8 = nullptr;
+    p0->field_4dc = -1;
+    p0->field_4e0 = 0;
+    p0->field_4e4 = 0xffff;
+    p0->field_4e8 = -1;
+    p0->field_4ec = 0;
+    p0->field_4f0 = static_cast<unsigned long>(static_cast<unsigned int>(-1));
+    p0->field_4f8 = 0;
+    p0->field_518 = nullptr;
+    p0->field_510 = nullptr;
+    p0->field_508 = nullptr;
+    p0->field_520 = -1;
+    p0->field_528 = -1;
+    callee_46480(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x540));
+    p0->field_548 = 0;
+    int c26 = callee_170c58();
+    p0->field_248 = -1;
+    p0->field_54c = c26;
+    p0->field_240 = -1;
+    p0->field_238 = -1;
+    p0->field_230 = -1;
+    p0->field_228 = -1;
+    p0->field_220 = -1;
+    p0->field_218 = -1;
+    p0->field_210 = -1;
+    p0->field_400 = reinterpret_cast<void*>(-1);
+    p0->field_3f8 = reinterpret_cast<void*>(-1);
+    p0->field_3f0 = reinterpret_cast<void*>(-1);
+    p0->field_490 = nullptr;
+    p0->field_488 = nullptr;
+    p0->field_480 = nullptr;
+    p0->field_478 = nullptr;
+    p0->field_470 = nullptr;
+    p0->field_53c = -1;
+    p0->field_534 = -1;
+    p0->field_52c = -1;
+    return c26;
 }
