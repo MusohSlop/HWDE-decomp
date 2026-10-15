@@ -19099,7 +19099,60 @@
     "_Z13callee_20c154ib": "0x710020c154",
     "_Z13callee_255f08v": "0x7100255f08",
     "_Z13callee_256a70l": "0x7100256a70",
-    "_Z13callee_32118cPviiiffffff": "0x710032118c"
+    "_Z13callee_32118cPviiiffffff": "0x710032118c",
+    "gLocal741ce0_34056c": "0x7100741ce0",
+    "gLocal741cf2_34056c": "0x7100741cf2",
+    "gLocal7d5bd7_34056c": "0x71007d5bd7",
+    "gLocal7d8d3a_34056c": "0x71007d8d3a",
+    "gLocal7d92d0_34056c": "0x71007d92d0",
+    "gLocal7d9d39_34056c": "0x71007d9d39",
+    "gLocal7da277_34056c": "0x71007da277",
+    "gLocal7da3c1_34056c": "0x71007da3c1",
+    "gLocal7da41e_34056c": "0x71007da41e",
+    "gLocal7da427_34056c": "0x71007da427",
+    "gLocal7da432_34056c": "0x71007da432",
+    "gLocal7da43e_34056c": "0x71007da43e",
+    "gLocal7da450_34056c": "0x71007da450",
+    "gLocal7db1b1_3a4c6c": "0x71007db1b1",
+    "gLocal7db1ba_3a4c6c": "0x71007db1ba",
+    "gLocal7db1c5_3a4c6c": "0x71007db1c5",
+    "gLocal7db1da_3a4c6c": "0x71007db1da",
+    "gLocal7db1e2_3a4c6c": "0x71007db1e2",
+    "gLocal7db1f0_3a4c6c": "0x71007db1f0",
+    "got:gGlobalc216f8_cde34": "0x7100c216f8",
+    "got:gGlobalc21db0_2bfda4": "0x7100c21db0",
+    "got:gGlobalc21db0_346b90": "0x7100c21db0",
+    "got:gGlobalc21df0_34056c": "0x7100c21df0",
+    "got:gGlobalc22910_cde34": "0x7100c22910",
+    "got:gGlobalc22950_cde34": "0x7100c22950",
+    "got:gGlobalc22958_cde34": "0x7100c22958",
+    "got:gGlobalc22a00_2bfda4": "0x7100c22a00",
+    "got:gGlobalc22a00_34056c": "0x7100c22a00",
+    "got:gGlobalc22a00_346b90": "0x7100c22a00",
+    "got:gGlobalc22a00_3a4c6c": "0x7100c22a00",
+    "got:gGlobalc22bf0_34056c": "0x7100c22bf0",
+    "got:gGlobalc22c00_3a4c6c": "0x7100c22c00",
+    "got:gGlobalc22c38_34056c": "0x7100c22c38",
+    "got:gGlobalc22da8_3a4c6c": "0x7100c22da8",
+    "got:gGlobalc22f00_2bfda4": "0x7100c22f00",
+    "got:gGlobalc22f00_34056c": "0x7100c22f00",
+    "got:gGlobalc22f00_346b90": "0x7100c22f00",
+    "got:gGlobalc22f00_3a4c6c": "0x7100c22f00",
+    "got:gGlobalc22f68_3a4c6c": "0x7100c22f68",
+    "got:gGlobalc2af18_34056c": "0x7100c2af18",
+    "_Z13callee_2d660cPv": "0x71002d660c",
+    "_Z13callee_3ce218l": "0x71003ce218",
+    "_ZN11Built316a64C1Ev": "0x7100316a64",
+    "_ZN9Obj3005f0C1Ei": "0x71003005f0",
+    "got:_ZTV11Class2fb5c0": "0x7100c2ac38",
+    "_ZN16PanelBase_316a64C2Ev": "0x7100316a64",
+    "_Z14callee2_39e154li": "0x710039e154",
+    "_Z14callee2_38f958Pv": "0x710038f958",
+    "_Z14callee2_1e22e4Pvi": "0x71001e22e4",
+    "_Z14callee2_20341cii": "0x710020341c",
+    "_Z14callee2_37cd30lfff": "0x710037cd30",
+    "_Z14callee5_1e2360PvS_iS_": "0x71001e2360",
+    "_Z14callee5_1e2360PvliS_": "0x71001e2360"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -28320,7 +28373,16 @@
         "_ZN11Class1f5118C2Ev": "0x71001f5118",
         "_Z11call_35b928P11Arg35b928_0i": "0x710035b928",
         "_Z11call_5252f0P11Arg5252f0_0": "0x71005252f0",
-        "_Z10call_c6fe4P10Argc6fe4_0": "0x71000c6fe4"
+        "_Z10call_c6fe4P10Argc6fe4_0": "0x71000c6fe4",
+        "_Z11call_392d44P11Arg392d44_0": "0x7100392d44",
+        "_ZN11Class2fb5c0C2Ev": "0x71002fb5c0",
+        "_Z11call_365c90P11Arg365c90_0Pv": "0x7100365c90",
+        "_Z11call_391fbcP11Arg391fbc_0": "0x7100391fbc",
+        "_Z11call_390210P11Arg390210_0": "0x7100390210",
+        "_Z11call_28b238P11Arg28b238_0": "0x710028b238",
+        "_Z11call_30eadcP11Arg30eadc_0": "0x710030eadc",
+        "_Z11call_397750P11Arg397750_0Pv": "0x7100397750",
+        "_Z11call_3e0624P11Arg3e0624_0": "0x71003e0624"
       }
     },
     "misc/variant_functions74.cpp": {
@@ -29000,6 +29062,18 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s3_functions12.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z10call_6b650P10Arg6b650_0": "0x710006b650",
+        "_Z10call_d4d40P10Argd4d40_0": "0x71000d4d40",
+        "_Z11call_30a47cP11Arg30a47c_0": "0x710030a47c",
+        "_Z11call_30ddf8P11Arg30ddf8_0": "0x710030ddf8"
       }
     }
   }
