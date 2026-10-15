@@ -28165,7 +28165,8 @@
         "_Z10call_37420P10Arg37420_0": "0x7100037420",
         "_ZN11Class1f5118C2Ev": "0x71001f5118",
         "_Z11call_35b928P11Arg35b928_0i": "0x710035b928",
-        "_Z11call_5252f0P11Arg5252f0_0": "0x71005252f0"
+        "_Z11call_5252f0P11Arg5252f0_0": "0x71005252f0",
+        "_Z10call_c6fe4P10Argc6fe4_0": "0x71000c6fe4"
       }
     },
     "misc/variant_functions74.cpp": {

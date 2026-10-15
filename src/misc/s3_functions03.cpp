@@ -5844,3 +5844,89 @@ int call_5252f0(Arg5252f0_0* p0) {
     }
     return callee_5c3ac8(p0);
 }
+
+int callee_46194(long);        // 0x7100046194
+void callee_46240(long);        // 0x7100046240
+
+struct Argc6fe4_0 {
+    volatile long field_0;                // +0
+    void* field_8;               // +8
+    int field_10;                 // +10
+    unsigned char pad14[0xc];
+    void* field_20;               // +20
+    void* field_28;               // +28
+    void* field_30;               // +30
+    void* field_38;               // +38
+    void* field_40;               // +40
+    void* field_48;               // +48
+    void* field_50;               // +50
+    void* field_58;               // +58
+    unsigned char pad60[0x20];
+    int field_80;                 // +80
+    unsigned char pad84[0xc];
+    void* field_90;               // +90
+    void* field_98;               // +98
+    int field_a0;                 // +a0
+    unsigned char pada4[0xc];
+    void* field_b0;               // +b0
+    void* field_b8;               // +b8
+    unsigned short field_c0;      // +c0
+};
+
+struct Globalc216f8_c6fe4 {
+    unsigned char pad0[0x30];
+    void* field_30;               // +30
+    void* field_38;               // +38
+};
+
+struct Globalc216a8_c6fe4 {
+    void* field_0;               // +0
+    void* field_8;               // +8
+};
+// Reached through the GOT slot at 0x7100c219e0.
+extern int gGlobalc219e0_c6fe4;
+// Reached through the GOT slot at 0x7100c216f8.
+extern Globalc216f8_c6fe4 gGlobalc216f8_c6fe4;
+// Reached through the GOT slot at 0x7100c216a8.
+extern Globalc216a8_c6fe4 gGlobalc216a8_c6fe4;
+// Reached through the GOT slot at 0x7100c22878.
+extern unsigned char gGlobalc22878_c6fe4[];
+
+// 0x71000c6fe4: the vtable field volatile, so its store stays in source order (voltry)
+int call_c6fe4(Argc6fe4_0* p0) {
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc22878_c6fe4) + 0x10);
+    p0->field_8 = nullptr;
+    int v0 = gGlobalc219e0_c6fe4;
+    p0->field_10 = v0;
+    void* v1 = gGlobalc216f8_c6fe4.field_38;
+    p0->field_28 = v1;
+    void* v2 = gGlobalc216f8_c6fe4.field_30;
+    p0->field_20 = v2;
+    void* v3 = gGlobalc216f8_c6fe4.field_38;
+    p0->field_38 = v3;
+    void* v4 = gGlobalc216f8_c6fe4.field_30;
+    p0->field_30 = v4;
+    void* v5 = gGlobalc216f8_c6fe4.field_38;
+    p0->field_48 = v5;
+    void* v6 = gGlobalc216f8_c6fe4.field_30;
+    p0->field_40 = v6;
+    void* v7 = gGlobalc216a8_c6fe4.field_8;
+    p0->field_58 = v7;
+    void* v8 = gGlobalc216a8_c6fe4.field_0;
+    p0->field_50 = v8;
+    callee_46240(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x60));
+    callee_46240(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x68));
+    int c11 = callee_46194(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x70));
+    p0->field_80 = 0;
+    void* v12 = gGlobalc216a8_c6fe4.field_8;
+    p0->field_98 = v12;
+    void* v13 = gGlobalc216a8_c6fe4.field_0;
+    p0->field_90 = v13;
+    p0->field_a0 = 0;
+    void* v14 = gGlobalc216f8_c6fe4.field_38;
+    p0->field_b8 = v14;
+    void* v15 = gGlobalc216f8_c6fe4.field_30;
+    p0->field_b0 = v15;
+    p0->field_c0 = 0;
+    return c11;
+}

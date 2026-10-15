@@ -14,6 +14,7 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
   scratch file and diffs one function against the original: instruction diff count (difflib, registers included)
   and the differing runs. Symbols come from `units.json`, from SYMJSON (gen.py's `SYMOUT` format) and from
   `--map`; undefined names that end in `_<hex address>` (as the generator's placeholders do) map to that address.
+  A mangled free function's name is cut at its length prefix first, so a parameter code after the address (`callee_33840cl`) is not read as part of it (rank.py does the same).
   Reports unresolved relocations; it prints `MATCH` only for identical bytes. The object file goes to DIR
   (default `build/s3`), never next to the source.
 - `permtry.py TEMPLATE ADDR SYM [--sym SYMJSON] [--map ...] [--sep SEP] [--work DIR] --slot KEY=a|b|...` fills
