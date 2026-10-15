@@ -20082,6 +20082,12 @@
     "_ZN10Part3192f0D1Ev": "0x71003192f0",
     "_ZN10Part310454D1Ev": "0x7100310454",
     "_ZN10Part3843f0D1Ev": "0x71003843f0",
+    "got:_ZTV15PanelBase2defc0": "0x7100c2abb0",
+    "got:_ZTV11Panel2e8c64": "0x7100c2abe0",
+    "_ZN14SlotPool2dee48C1Ev": "0x71002dee48",
+    "_ZN10Part287efcC1Ev": "0x7100287efc",
+    "_ZN10Part2dd3d4C1Ei": "0x71002dd3d4",
+    "_ZN10Part379e44C1Ev": "0x7100379e44",
     "_ZN12Base3e82b0_8C2Ev": "0x71003e82b0",
     "got:_ZTV11Class3edc2c": "0x7100c2b6d0",
     "got:_ZTV11Owner554bbc": "0x7100c2d3b0",
@@ -31259,6 +31265,11 @@
         "_ZN11Class37adf4C2Ev": "0x710037adf4",
         "_ZN11Class2dbe5cC2Ev": "0x71002dbe5c",
         "_ZN11Class3edc2cC2Ev": "0x71003edc2c"
+      }
+    },
+    "misc/s3_functions33.cpp": {
+      "functions": {
+        "_ZN11Panel2e8c64C2EPv": "0x71002e8c64"
       }
     },
     "misc/s5_functions04.cpp": {
