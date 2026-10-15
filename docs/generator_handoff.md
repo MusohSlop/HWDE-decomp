@@ -235,7 +235,18 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   whose result is used as an int or of unknown width declares the same `void*` return and truncates
   (`static_cast<int>(reinterpret_cast<long>(...))`), instead of failing on "callee ret" as a second overload;
 - a pointer passed to an import's const pointer parameter is cast to it (knob `noconstarg`): `void*` does not
-  convert to `const char*` for strcmp/strlen implicitly.
+  convert to `const char*` for strcmp/strlen implicitly;
+- an inline spin-lock acquire is `while (!__sync_bool_compare_and_swap(&lock, 0, v)) {}` (knob `nospinlock`):
+  AtomicExpand's LL/SC loop `b L1 / L0: clrex / L1: ldaxr t, [b] / cbnz t, L0 / stlxr s, v, [b] / cbnz s, L1` becomes
+  one pseudo instruction before any analysis, so the loop scans never see its back edges (49b448 compiles to the
+  same bytes from that line). The variant that yields while it spins (`bl` and `dmb` inside, 49c9dc) is not this;
+- a loop entered at its condition, `b C / H: body / C: condition / b.cc H`, is a while loop (knob `nowhile`): Clang
+  rotates it to a guarded do/while and block placement folds the guard into the latch test (`while`, `for` and
+  `if` + do/while all give 5d5558's bytes). It is generated as the guarded loop: the condition block once as the guard,
+  then the do/while from the header, with the registers live after it merged from both paths;
+- a field before the pointer it is reached through (container-of, `[x19, #-8]!`) is read through a byte pointer
+  moved back by the offset (knob `nonegoff`); a negative offset from a byte-offset base or a computed address joins
+  that offset.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
