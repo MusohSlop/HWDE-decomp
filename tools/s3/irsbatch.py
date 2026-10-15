@@ -1,12 +1,14 @@
-"""irsbatch.py: run tools/s5/irsearch.py --groups over a list of near misses, one after another.
+"""irsbatch.py: run tools/s5/irsearch.py (--groups, or its plain mode with --plain) over a list of near misses,
+one after another.
 
-usage: irsbatch.py LIST [--iters N] --work DIR
+usage: irsbatch.py LIST [--iters N] [--loads-free] [--plain] --work DIR
 
 LIST has one function per line (blank lines and # comments skipped):
-    ADDR CPP [SYMS] [FUNC] [NAME=ADDR ...]
+    ADDR CPP [SYMS] [FUNC] [NAME=ADDR ...] [@BLOCK]
 CPP is the scratch source (relative to matching/); irsearch.py emits its IR itself, with -g and use-list order kept.
 SYMS is a converter/rank .json whose gsyms and imports become --map arguments ('-' for none). FUNC is the mangled
-name ('-' or left out: the one defined function whose name contains ADDR). NAME=ADDR adds a --map.
+name ('-' or left out: the one defined function whose name contains ADDR). NAME=ADDR adds a --map; @BLOCK picks the
+block to reorder (irsearch.py --block; default the largest).
 Each function works in DIR/ADDR (its log in DIR/ADDR/log.txt); a match is copied to DIR/irs_match_ADDR.ll.
 One summary line per function: start score, best score, exit. Exit 0 when any function matched, else 1.
 Made to run unattended through bgsearch.py (idle priority); irsearch.py is the fifth session's tool, used as is.
@@ -30,7 +32,10 @@ def find_func(cpp, addr, work, man, cc):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("list"); ap.add_argument("--iters", default="3000"); ap.add_argument("--work", required=True)
+    ap.add_argument("--loads-free", action="store_true", help="passed on to irsearch.py: loads reorder among themselves")
+    ap.add_argument("--plain", action="store_true", help="irsearch.py's plain mode (single instructions) instead of --groups")
     a = ap.parse_args()
+    passthrough = ([] if a.plain else ["--groups"]) + (["--loads-free"] if a.loads_free else [])
     man = json.load(open(os.path.join(M, "data", "units.json"), encoding="utf-8-sig"))
     cc = os.path.join(os.path.dirname(M), man["compiler"])
     matched = False
@@ -39,9 +44,10 @@ def main():
         if not f:
             continue
         addr, cpp = f[0], f[1]
-        syms = f[2] if len(f) > 2 and "=" not in f[2] else "-"
-        func = f[3] if len(f) > 3 and "=" not in f[3] else "-"
+        syms = f[2] if len(f) > 2 and "=" not in f[2] and not f[2].startswith("@") else "-"
+        func = f[3] if len(f) > 3 and "=" not in f[3] and not f[3].startswith("@") else "-"
         extra = [x for x in f[2:] if "=" in x]
+        block = [x[1:] for x in f[2:] if x.startswith("@")]
         work = os.path.join(a.work, addr)
         os.makedirs(work, exist_ok=True)
         if func == "-":
@@ -56,9 +62,12 @@ def main():
         args = []
         for x in maps + extra:
             args += ["--map", x]
+        if block:
+            args += ["--block", block[0]]
         with open(os.path.join(work, "log.txt"), "w", encoding="utf-8") as log:
             r = subprocess.run([sys.executable, "-B", "-I", os.path.join(M, "tools", "s5", "irsearch.py"),
-                                os.path.join(M, cpp), func, addr, *args, "--groups", "--iters", a.iters, "--work", work],
+                                os.path.join(M, cpp), func, addr, *args, *passthrough, "--iters", a.iters,
+                                "--work", work],
                                cwd=M, stdout=log, stderr=subprocess.STDOUT)
         o = open(os.path.join(work, "log.txt"), encoding="utf-8", errors="replace").read()
         st = re.search(r"^start (\(.*\))", o, re.M)

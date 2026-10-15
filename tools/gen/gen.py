@@ -372,52 +372,170 @@ def gen_function(a, ins):
                 if n_ in r_ or n_ in w_ or ij_.mnemonic in ("bl", "blr", "b", "br", "ret") or ij_.mnemonic.startswith("b."):
                     break
     copy_skip_, copy_emit_ = set(), {}
+    stack_min_, stack_al_ = {}, {}     # stack structs: the size and alignment their block copies need
     valinit_imp_ = set()
     if "nostructcopy" not in knobs:
-        MEMC_ = re.compile(r"([wxqds])(\d+), \[(x\d+)(?:, #(-?0x[0-9a-f]+|-?\d+))?\]$")
+        MEMC_ = re.compile(r"([wxqds])(\d+), \[(x\d+%s)(?:, #(-?0x[0-9a-f]+|-?\d+)|, (x\d+))?\]$"
+                           % ("" if "nostackcopy" in knobs else "|sp"))
+        starts_c_ = sorted({imm(i_.op_str.split(",")[2]) for i_ in ins if i_.mnemonic == "add"
+                            and re.fullmatch(r"x(\d+), sp, #(0x[0-9a-f]+|\d+)", i_.op_str) and not i_.op_str.startswith("x29")}
+                           | {0 for i_ in ins if i_.mnemonic == "mov" and re.fullmatch(r"x\d+, sp", i_.op_str)
+                              and not i_.op_str.startswith("x29")})
         SZC_ = {"w": 4, "x": 8, "q": 16, "d": 8, "s": 4}
         def is_br_(i_):
             return i_.mnemonic in ("bl", "blr", "b", "br", "ret") or i_.mnemonic.startswith(("b.", "cbz", "cbnz", "tbz", "tbnz"))
         def flush_(groups_):
-            for (bs_, bd_, dl_), g_ in groups_.items():
-                if len(g_) < 2:
+            for (bsk_, bdk_, dl_), g_ in groups_.items():
+                bs_, bd_ = bsk_[0], bdk_[0]
+                def stk_ok_(g2_):
+                    # a stack side lies in one addressed stack object
+                    r0_ = min(so_ for so_, _, _, _ in g2_)
+                    r1_ = max(so_ + sz_ for so_, sz_, _, _ in g2_)
+                    for b_, sh_ in ((bs_, 0), (bd_, dl_)):
+                        if b_ == "sp" and (not any(s_ <= r0_ + sh_ for s_ in starts_c_)
+                                           or any(r0_ + sh_ < s_ < r1_ + sh_ for s_ in starts_c_)):
+                            return False
+                    return True
+                def vok_(g2_):
+                    # both bases hold the versions the pieces used where the copy is emitted
+                    v_ = vsnap_.get(min(ks2_ for _, _, _, ks2_ in g2_), {})
+                    return v_.get(bs_, 0) == bsk_[1] and v_.get(bd_, 0) == bdk_[1]
+                if len(g_) < 2 and not ("copy1" in knobs and g_[0][1] >= 8):
                     continue
                 ivs_ = sorted((so_, so_ + sz_) for so_, sz_, _, _ in g_)
                 lo_, hi_ = ivs_[0][0], ivs_[0][1]
                 ok_ = True
+                runs_ = [[lo_, hi_]]
                 for s0_, s1_ in ivs_[1:]:
                     if s0_ > hi_:
                         ok_ = False
-                        break
+                        runs_.append([s0_, s1_])
+                    else:
+                        runs_[-1][1] = max(runs_[-1][1], s1_)
                     hi_ = max(hi_, s1_)
-                if not ok_ or hi_ - lo_ < 12:
+                if not ok_ and "nocopystride" not in knobs and len(runs_) >= 2:
+                    # records with gaps: equal runs at one stride, each copied with the same pieces
+                    C_, S_ = runs_[0][1] - runs_[0][0], runs_[1][0] - runs_[0][0]
+                    pats_ = {}
+                    for so_, sz_, _, _ in g_:
+                        pats_.setdefault((so_ - lo_) // S_, []).append(((so_ - lo_) % S_, sz_))
+                    if C_ >= 12 and all(r1_ - r0_ == C_ for r0_, r1_ in runs_) \
+                            and all(runs_[j_ + 1][0] - runs_[j_][0] == S_ for j_ in range(len(runs_) - 1)) \
+                            and len(pats_) == len(runs_) and len({tuple(sorted(v_)) for v_ in pats_.values()}) == 1 \
+                            and len(next(iter(pats_.values()))) >= 2:
+                        al_ = 16
+                        for so_, sz_, _, _ in g_:
+                            for x_ in (so_ - lo_, so_ + dl_):
+                                while al_ > 1 and x_ % al_:
+                                    al_ //= 2
+                        ks_ = [kk_ for _, _, kl_, ks2_ in g_ for kk_ in (kl_, ks2_)]
+                        if not vok_(g_) or not stk_ok_(g_):
+                            continue
+                        copy_skip_.update(ks_)
+                        copy_emit_[min(ks2_ for _, _, _, ks2_ in g_)] = (bs_, bd_, lo_, lo_ + dl_, C_, len(runs_), al_, S_)
+                    continue
+                if not ok_ or hi_ - lo_ < (8 if "copy1" in knobs else 12):
                     continue
                 total_ = hi_ - lo_
                 pieces_ = sorted((so_ - lo_, sz_) for so_, sz_, _, _ in g_)
-                R_ = total_
-                for cand_ in range(max(sz_ for _, sz_ in pieces_), total_):
-                    if total_ % cand_:
-                        continue
-                    recs_ = {}
-                    good_ = True
-                    for rel_, sz_ in pieces_:
-                        if rel_ // cand_ != (rel_ + sz_ - 1) // cand_:
-                            good_ = False
-                            break
-                        recs_.setdefault(rel_ // cand_, []).append((rel_ % cand_, sz_))
-                    if good_ and len(recs_) == total_ // cand_ and len({tuple(sorted(v_)) for v_ in recs_.values()}) == 1 \
-                            and len(next(iter(recs_.values()))) >= 2:
-                        R_ = cand_
-                        break
+                def rec_of_(ps_, tot_):
+                    for cand_ in range(max(sz_ for _, sz_ in ps_), tot_):
+                        if tot_ % cand_:
+                            continue
+                        recs_ = {}
+                        good_ = True
+                        for rel_, sz_ in ps_:
+                            if rel_ // cand_ != (rel_ + sz_ - 1) // cand_:
+                                good_ = False
+                                break
+                            recs_.setdefault(rel_ // cand_, []).append((rel_ % cand_, sz_))
+                        if good_ and len(recs_) == tot_ // cand_ and len({tuple(sorted(v_)) for v_ in recs_.values()}) == 1 \
+                                and len(next(iter(recs_.values()))) >= 2:
+                            return cand_
+                    return None
+                R_, h_, e_ = rec_of_(pieces_, total_), 0, total_
+                if R_ is None and "nocopycut" not in knobs:
+                    # fields copied before or after a run of records (a count, then the array) stay fields
+                    cuts_ = [c_ for c_ in sorted({r_ for r_, _ in pieces_} | {total_}) if not any(r_ < c_ < r_ + s_ for r_, s_ in pieces_)]
+                    best_ = None
+                    for h2_ in [c_ for c_ in cuts_ if c_ < total_][:4]:
+                        for e2_ in sorted([c_ for c_ in cuts_ if c_ > h2_], reverse=True)[:4]:
+                            ps_ = [(r_ - h2_, s_) for r_, s_ in pieces_ if h2_ <= r_ < e2_]
+                            if (h2_ or e2_ < total_) and e2_ - h2_ >= 12 and ps_:
+                                R2_ = rec_of_(ps_, e2_ - h2_)
+                                if R2_ is None:
+                                    continue
+                                # Clang copies a record largest pieces first: prefer the cut whose records start so
+                                rec0_ = sorted((r_, s_) for r_, s_ in ps_ if r_ < R2_)
+                                canon_ = all(rec0_[j_][1] >= rec0_[j_ + 1][1] for j_ in range(len(rec0_) - 1))
+                                sc_ = (e2_ - h2_, canon_, -h2_)
+                                if best_ is None or sc_ > best_[0]:
+                                    best_ = (sc_, R2_, h2_, e2_)
+                    if best_ is not None:
+                        _, R_, h_, e_ = best_
+                if R_ is None:
+                    R_ = total_
+                g_ = [p_ for p_ in g_ if h_ <= p_[0] - lo_ < e_]
+                lo_, total_ = lo_ + h_, e_ - h_
                 al_ = 16
                 for so_, sz_, _, _ in g_:
                     for x_ in (so_ - lo_, so_ + dl_):
                         while al_ > 1 and x_ % al_:
                             al_ //= 2
                 ks_ = [kk_ for _, _, kl_, ks2_ in g_ for kk_ in (kl_, ks2_)]
+                if not vok_(g_) or not stk_ok_(g_):
+                    continue
                 first_st_ = min(ks2_ for _, _, _, ks2_ in g_)
                 copy_skip_.update(ks_)
-                copy_emit_[first_st_] = (bs_, bd_, lo_, lo_ + dl_, R_, total_ // R_, al_)
+                copy_emit_[first_st_] = (bs_, bd_, lo_, lo_ + dl_, R_, total_ // R_, al_, R_)
+        res_c_, vsnap_, ver_ = {}, {}, {}
+        addk_, constk_ = {}, {}
+        ADDI_ = re.compile(r"(x\d+), (x\d+), #(0x[0-9a-f]+|\d+)(?:, lsl #(\d+))?$")
+        MOVR_ = re.compile(r"(x\d+), (x\d+)$")
+        MOVI_ = re.compile(r"[wx](\d+), #(0x[0-9a-f]+|\d+)$")
+        MOVK_ = re.compile(r"[wx](\d+), #(0x[0-9a-f]+|\d+)(?:, lsl #(\d+))?$")
+        for k_, i_ in enumerate(ins):
+            if is_br_(i_):
+                addk_, constk_ = {}, {}
+                continue
+            m_ = MEMC_.match(i_.op_str) if i_.mnemonic in ("ldr", "ldur", "str", "stur") else None
+            if m_:
+                b_, o_ = m_.group(3), int(m_.group(4), 0) if m_.group(4) else 0
+                if m_.group(5) and m_.group(5) not in constk_:
+                    b_ = None
+                elif m_.group(5):
+                    o_ += constk_[m_.group(5)]
+                if b_ in addk_:
+                    b_, o2_ = addk_[b_]
+                    o_ += o2_
+                if b_ is not None and (b_ == m_.group(3) or "nocopybase" not in knobs):
+                    res_c_[k_] = (b_, o_)
+                vsnap_[k_] = dict(ver_)
+            new_ = None
+            ma_ = ADDI_.match(i_.op_str) if i_.mnemonic == "add" else (MOVR_.match(i_.op_str) if i_.mnemonic == "mov" else None)
+            if ma_:
+                r_, o3_ = addk_.get(ma_.group(2), (ma_.group(2), 0))
+                if r_ != ma_.group(1):
+                    new_ = (ma_.group(1), (r_, o3_ + ((int(ma_.group(3), 0) << int(ma_.group(4) or 0)) if i_.mnemonic == "add" else 0)))
+            mk_ = MOVK_.match(i_.op_str) if i_.mnemonic == "movk" else None
+            newc_ = None
+            if mk_ and "x" + mk_.group(1) in constk_:
+                sh_ = int(mk_.group(3)) if mk_.group(3) else 0
+                newc_ = (constk_["x" + mk_.group(1)] & ~(0xffff << sh_)) | (int(mk_.group(2), 0) << sh_)
+            w4_ = {"x%d" % w_ for w_ in rw(i_)[1]}
+            for w_ in w4_:
+                ver_[w_] = ver_.get(w_, 0) + 1
+            for w_ in w4_:
+                addk_.pop(w_, None); constk_.pop(w_, None)
+            for d_ in [d_ for d_, (r_, _) in addk_.items() if r_ in w4_]:
+                addk_.pop(d_)
+            if new_ is not None:
+                addk_[new_[0]] = new_[1]
+            if newc_ is not None:
+                constk_["x" + mk_.group(1)] = newc_
+            mm_ = MOVI_.match(i_.op_str) if i_.mnemonic == "mov" else None
+            if mm_:
+                constk_["x" + mm_.group(1)] = int(mm_.group(2), 0)
         groups_ = {}
         written_c_ = set()
         for k_, i_ in enumerate(ins):
@@ -425,14 +543,16 @@ def gen_function(a, ins):
                 flush_(groups_); groups_ = {}; written_c_ = set()
                 continue
             m_ = MEMC_.match(i_.op_str) if i_.mnemonic in ("ldr", "ldur") else None
-            if m_ and m_.group(3) not in written_c_:
+            if m_ and k_ in res_c_ and (res_c_[k_][0] not in written_c_ or "nocopyver" not in knobs):
                 rk_, rn_ = m_.group(1), m_.group(2)
-                so_ = int(m_.group(4), 0) if m_.group(4) else 0
+                rb_, so_ = res_c_[k_]
                 rpat_ = re.compile(r"\b[%s]%s\b" % ("wx" if rk_ in "wx" else "qdsvbh", rn_))
                 for j_ in range(k_ + 1, min(len(ins), k_ + 8)):
                     ij_ = ins[j_]
                     mj_ = MEMC_.match(ij_.op_str) if ij_.mnemonic in ("str", "stur") else None
-                    if mj_ and mj_.group(1) == rk_ and mj_.group(2) == rn_ and mj_.group(3) not in written_c_:
+                    if mj_ and mj_.group(1) == rk_ and mj_.group(2) == rn_ and j_ in res_c_ \
+                            and (res_c_[j_][0] not in written_c_ or "nocopyver" not in knobs) \
+                            and (res_c_[j_][0] == "sp" or not any(int(res_c_[j_][0][1:]) in rw(ins[jw_])[1] for jw_ in range(k_, j_))):
                         # the value must not be read again before it is overwritten
                         dead_ = True
                         for jj_ in range(j_ + 1, len(ins)):
@@ -447,8 +567,9 @@ def gen_function(a, ins):
                             if int(rn_) in w2_:
                                 break
                         if dead_:
-                            do_ = int(mj_.group(4), 0) if mj_.group(4) else 0
-                            groups_.setdefault((m_.group(3), mj_.group(3), do_ - so_), []).append((so_, SZC_[rk_], k_, j_))
+                            rd_, do_ = res_c_[j_]
+                            groups_.setdefault(((rb_, vsnap_[k_].get(rb_, 0)), (rd_, vsnap_[j_].get(rd_, 0)), do_ - so_), []) \
+                                .append((so_, SZC_[rk_], k_, j_))
                         break
                     if rpat_.search(ij_.op_str) or is_br_(ij_):
                         break
@@ -500,6 +621,54 @@ def gen_function(a, ins):
         wp_ = re.compile(r"\bw%s\b" % rn_)
         hi_ = False
         ok_ = True
+        hif_ = False
+        if "nopairflow" not in knobs:
+            todo_, seen_p_ = [k_ + 1], set()
+            while todo_ and ok_:
+                j_ = todo_.pop()
+                while j_ < len(ins) and j_ not in seen_p_ and len(seen_p_) < 200:
+                    seen_p_.add(j_)
+                    ij_ = ins[j_]
+                    ops_j_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", ij_.op_str)]
+                    if ij_.mnemonic in ("lsr", "asr") and len(ops_j_) == 3 and xp_.fullmatch(ops_j_[1]) and ops_j_[2] in ("#0x20", "#32"):
+                        hi_ = True
+                        if "noibits" not in knobs and j_ + 1 < len(ins) and ins[j_ + 1].mnemonic == "fmov" \
+                                and ins[j_ + 1].op_str.endswith(", w" + ops_j_[0][1:]):
+                            hif_ = True
+                        if xp_.fullmatch(ops_j_[0]):
+                            break
+                        j_ += 1; continue
+                    if ij_.mnemonic == "ubfx" and len(ops_j_) == 4 and xp_.fullmatch(ops_j_[1]) and ops_j_[2] in ("#0x20", "#32") \
+                            and ops_j_[3] in ("#0x20", "#32"):
+                        hi_ = True
+                        if "noibits" not in knobs and j_ + 1 < len(ins) and ins[j_ + 1].mnemonic == "fmov" \
+                                and ins[j_ + 1].op_str.endswith(", w" + ops_j_[0][1:]):
+                            hif_ = True
+                        if xp_.fullmatch(ops_j_[0]):
+                            break
+                        j_ += 1; continue
+                    reads_ = ops_j_[1:] if ops_j_ and not ij_.mnemonic.startswith(("st", "cb", "tb", "cmp", "cmn", "tst")) else ops_j_
+                    if any(xp_.search(o_) for o_ in reads_):
+                        ok_ = False
+                        break
+                    if ops_j_ and (xp_.fullmatch(ops_j_[0]) or wp_.fullmatch(ops_j_[0])) \
+                            and not ij_.mnemonic.startswith(("st", "cb", "tb", "cmp", "cmn", "tst")):
+                        break  # redefined
+                    if ij_.mnemonic in ("ret", "br", "bl", "blr"):
+                        break
+                    isb_ = ij_.mnemonic == "b" or ij_.mnemonic.startswith("b.") or ij_.mnemonic in ("cbz", "cbnz", "tbz", "tbnz")
+                    tg_ = imm(ij_.op_str.split(", ")[-1]) if isb_ and ij_.op_str.split(", ")[-1].startswith("#") else None
+                    if ij_.mnemonic == "b":
+                        if tg_ not in addr_index:
+                            break
+                        j_ = addr_index[tg_]; continue
+                    if ij_.mnemonic.startswith("b.") or ij_.mnemonic in ("cbz", "cbnz", "tbz", "tbnz"):
+                        if tg_ in addr_index:
+                            todo_.append(addr_index[tg_])
+                    j_ += 1
+            if ok_ and hi_ and not hif_:
+                pair_loads_.add(k_)
+            continue
         for j_ in range(k_ + 1, min(len(ins), k_ + 40)):
             ij_ = ins[j_]
             ops_j_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", ij_.op_str)]
@@ -2399,12 +2568,24 @@ def gen_function(a, ins):
                 k += 1; continue
             if k in copy_skip_:
                 if k in copy_emit_:
-                    bs_, bd_, slo_, dlo_, R_, n_, al_ = copy_emit_[k]
-                    sv_ = use(regs, bs_) if regs.get(regname(bs_)[0]) is not None else None
-                    dv_ = use(regs, bd_) if regs.get(regname(bd_)[0]) is not None else None
+                    bs_, bd_, slo_, dlo_, R_, n_, al_, st_ = copy_emit_[k]
+                    def stk_base_(o_):
+                        s0_ = stack_obj(o_)
+                        sn0_ = struct_for(("stackobj", s0_))
+                        stack_min_[sn0_] = max(stack_min_.get(sn0_, 0), o_ - s0_ + (n_ - 1) * st_ + R_)
+                        stack_al_[sn0_] = max(stack_al_.get(sn0_, 1), al_)
+                        return ("stackaddr", s0_), o_ - s0_
+                    if bs_ == "sp":
+                        sv_, slo_ = stk_base_(slo_)
+                    else:
+                        sv_ = use(regs, bs_) if regs.get(regname(bs_)[0]) is not None else None
+                    if bd_ == "sp":
+                        dv_, dlo_ = stk_base_(dlo_)
+                    else:
+                        dv_ = use(regs, bd_) if regs.get(regname(bd_)[0]) is not None else None
                     if sv_ is None or dv_ is None:
                         raise Fail("copy base")
-                    items.append(("blkcopy", dv_, dlo_, sv_, slo_, R_, n_, al_))
+                    items.append(("blkcopy", dv_, dlo_, sv_, slo_, R_, n_, al_, st_))
                 k += 1; continue
             ml1_ = re.fullmatch(r"\{v(\d+)\.([sd])\}\[(\d)\], (\[x\d+\])(?:, #(0x[0-9a-f]+|\d+))?", i.op_str) if m in ("ld1", "st1") and "nold1" not in knobs else None
             if ml1_ and not (m == "st1" and ml1_.group(2) == "d") and not (ml1_.group(2) == "d" and ml1_.group(3) != "0"):
@@ -2550,6 +2731,9 @@ def gen_function(a, ins):
                         structs[vt_[1]][vt_[2]] = ("float", None)
                         vars_[iv_[1]] = ("load", vt_[1], vt_[2])
                         regs["f"][fd] = iv_
+                    elif "noibits" not in knobs and iv_[0] not in ("hi", "vpart", "undef", "fparam"):
+                        # the float whose bits an integer value holds (a union passed or returned as integers)
+                        regs["f"][fd] = ("ibits", iv_)
                     else:
                         raise Fail("fmov form")
                 else:
@@ -3739,7 +3923,7 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] in ("vins", "vcomb"):
             kids = [v[1], v[2]]
-        if v[0] == "fbits":
+        if v[0] in ("fbits", "ibits"):
             kids = [v[1]]
         if v[0] == "vecuv":
             kids = [v[1]]
@@ -3823,6 +4007,10 @@ def gen_function(a, ins):
                 b_, c_ = prune_merges(it[2])
                 changed = changed or c_
                 it = ("if", it[1], b_)
+            elif it[0] == "loop" and "noloopprune" not in knobs:
+                b_, c_ = prune_merges(it[2])
+                changed = changed or c_
+                it = (it[0], it[1], b_) + tuple(it[3:])
             out_.append(it)
         return out_, changed
     for _ in range(4):
@@ -3910,6 +4098,8 @@ def gen_function(a, ins):
     def vtype(v):
         if v[0] == "fbits":
             return "unsigned int"
+        if v[0] == "ibits":
+            return "float"
         if v[0] == "hi" or (v[0] == "var" and v[1] in PAIRS_) or v[0] == "undef":
             return "long"
         if v[0] == "fundef":
@@ -3938,7 +4128,7 @@ def gen_function(a, ins):
             st = stack_obj(v[1]); sn = stackobjs.get(st)
             if sn is None:
                 raise Fail("unused stack object")
-            if set(structs[sn]) == {0} and v[1] == st:
+            if set(structs[sn]) == {0} and v[1] == st and sn not in stack_min_:
                 return structs[sn][0][0] + "*"
             if v[1] == st:
                 return f"{sn}*"
@@ -4095,7 +4285,7 @@ def gen_function(a, ins):
             return f"reinterpret_cast<{en}*>({expr(base[1])})[{expr(base[2])}].field_{off:x}"
         if base[0] == "stackobj":
             sn = stackobjs[base[1]]
-            if set(structs[sn]) == {0}:
+            if set(structs[sn]) == {0} and sn not in stack_min_:
                 return f"local_{hx_(base[1])}"
             return f"local_{hx_(base[1])}.field_{off:x}"
         if base[0] == "retobj":
@@ -4128,6 +4318,8 @@ def gen_function(a, ins):
         if v[0] == "vconst":
             return "(Vec4f){" + ", ".join(expr(("fconst", x_)) for x_ in v[1]) + "}"
         if v[0] == "vlane":
+            if v[1][0] != "var":
+                return f"({expr(v[1], False)})[{v[2]}]"
             return f"{expr(v[1], False)}[{v[2]}]"
         if v[0] == "vparam":
             return f"p{v[1]}.v"
@@ -4160,6 +4352,8 @@ def gen_function(a, ins):
             return f"vins({expr(v[1])}, {expr(v[2])}, {v[3]})"
         if v[0] == "fbits":
             return f"[&] {{ unsigned int b_; float f_ = {expr(v[1])}; __builtin_memcpy(&b_, &f_, 4); return b_; }}()"
+        if v[0] == "ibits":
+            return f"[&] {{ unsigned int b_ = static_cast<unsigned int>({fit(expr(v[1]), vtype(v[1]), 'long')}); float f_; __builtin_memcpy(&f_, &b_, 4); return f_; }}()"
         if v[0] == "vecuv":
             return f"{expr(v[1])}.v"
         if v[0] == "vpart" and "novcomb" not in knobs:
@@ -4867,7 +5061,7 @@ def gen_function(a, ins):
                 else:
                     outl.append(f"{pad}for (long i = 0; i < {n_:#x}; ++i) {db_}[i] = {v_:#x};")
             elif it[0] == "blkcopy":
-                _, dv_, dlo_, sv_, slo_, R_, n_, al_ = it
+                _, dv_, dlo_, sv_, slo_, R_, n_, al_, st_ = it
                 bn_ = f"Blk{R_:x}_{al_}_{a:x}"
                 blk_types_.add((R_, al_))
                 def baddr_(b_, o_):
@@ -4875,6 +5069,8 @@ def gen_function(a, ins):
                     return f"({bs_} + {o_:#x})" if o_ else bs_
                 if n_ == 1:
                     outl.append(f"{pad}*reinterpret_cast<{bn_}*>({baddr_(dv_, dlo_)}) = *reinterpret_cast<const {bn_}*>({baddr_(sv_, slo_)});")
+                elif st_ != R_:
+                    outl.append(f"{pad}for (long i = 0; i < {n_}; ++i) *reinterpret_cast<{bn_}*>({baddr_(dv_, dlo_)} + i * {st_:#x}) = *reinterpret_cast<const {bn_}*>({baddr_(sv_, slo_)} + i * {st_:#x});")
                 else:
                     outl.append(f"{pad}for (long i = 0; i < {n_}; ++i) reinterpret_cast<{bn_}*>({baddr_(dv_, dlo_)})[i] = reinterpret_cast<const {bn_}*>({baddr_(sv_, slo_)})[i];")
             elif it[0] == "store" and vu_of_(it[1], it[2]) is not None:
@@ -5290,7 +5486,7 @@ def gen_function(a, ins):
     # clang 3.9 gives the first declared local the highest address: stackdesc declares them from the top down
     for st in sorted(stackobjs, reverse="stackdesc" in knobs):
         sn = stackobjs[st]
-        if set(structs[sn]) == {0}:
+        if set(structs[sn]) == {0} and sn not in stack_min_:
             decl_lines.append(f"    {structs[sn][0][0]} local_{hx_(st)};")
         else:
             decl_lines.append(f"    {sn} local_{hx_(st)};")
@@ -5340,7 +5536,7 @@ def gen_function(a, ins):
     for sn in order:
         if sn in gobjs and set(structs[sn]) <= {0}:
             continue
-        if sn in stackobjs.values() and set(structs[sn]) <= {0}:
+        if sn in stackobjs.values() and set(structs[sn]) <= {0} and sn not in stack_min_:
             continue
         if sn in elemsizes:
             fl, pos = [], 0
@@ -5419,6 +5615,9 @@ def gen_function(a, ins):
             fl.extend(bf_lines_(sn, off, t)) if (sn, off) in bitfields_ and t in BFW_ else \
                 fl.append(f"    {t} field_{off:x}{pack_(ct, off)};{' ' * max(1, 20 - len(t))}// +{off:x}")
             pos = off + SIZE[ct]
+        if sn in stack_min_ and pos < stack_min_[sn]:
+            fl.append(f"    unsigned char pad{pos:x}[0x{stack_min_[sn] - pos:x}];")
+            pos = stack_min_[sn]
         if "stackpad" in knobs and stackobjs and sn == stackobjs[max(stackobjs)]:
             local_ = None
             for i_ in ins[:8]:
@@ -5439,7 +5638,8 @@ def gen_function(a, ins):
         if sn == RETN_ and sret_:
             # a user-declared copy makes the type non-trivial, so it is returned through x8 whatever its size
             fl = [f"    {sn}() {{}}", f"    {sn}(const {sn}&);"] + fl
-        sdefs.append(f"struct {sn} {{\n" + "\n".join(fl) + "\n};\n")
+        al2_ = f"__attribute__((aligned({stack_al_[sn]}))) " if stack_al_.get(sn, 1) > 1 else ""
+        sdefs.append(f"struct {al2_}{sn} {{\n" + "\n".join(fl) + "\n};\n")
     sigs = {}
     for t, (args, sig) in list(callees.items()):
         if import_of(t):
@@ -5479,12 +5679,22 @@ for size, a in sorted(U, key=lambda x: x[1]):
             try:
                 text, sigs, gsyms = gen_function(a, ins)
             except Fail as e_:
-                if not ("merge types" in str(e_) and "Vec4f" in str(e_) and "float" in str(e_)
+                kn_ = KNOB_MAP.get(a, DEFAULT_KNOBS)
+                if str(e_) in ("field clash", "overlap") and not {"copy1", "nocopy1", "nostructcopy"} & set(kn_):
+                    # a field typed by a copy clashes: single-piece copies as block copies
+                    KNOB_MAP[a] = set(kn_) | {"copy1"}
+                    try:
+                        text, sigs, gsyms = gen_function(a, ins)
+                    except Fail:
+                        KNOB_MAP[a] = set(kn_)
+                        raise e_
+                elif not ("merge types" in str(e_) and "Vec4f" in str(e_) and "float" in str(e_)
                         and "vlanemerge" not in KNOB_MAP.get(a, DEFAULT_KNOBS) and "novlanemerge" not in KNOB_MAP.get(a, DEFAULT_KNOBS)):
                     raise
-                # a vector and a scalar merged in one float register: the vector side is lane 0
-                KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | {"vlanemerge"}
-                text, sigs, gsyms = gen_function(a, ins)
+                else:
+                    # a vector and a scalar merged in one float register: the vector side is lane 0
+                    KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | {"vlanemerge"}
+                    text, sigs, gsyms = gen_function(a, ins)
         except Fail:
             if not (ARITY_USED[0] or PAIR_USED[0] or HOIST_USED[0] or TRIVIAL_USED[0]):
                 raise

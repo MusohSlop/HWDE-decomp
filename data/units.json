@@ -19251,6 +19251,39 @@
     "got:_ZTV11Table534010": "0x7100c2d2b0",
     "got:_ZTV11Group5d4040": "0x7100c2dc88",
     "_ZN14ItemNode5d4040nwEm": "0x71005d4380",
+    "gLocal73cc7c_7500": "0x710073cc7c",
+    "gLocal73cc84_8494": "0x710073cc84",
+    "got:gGlobalc216a8_8494": "0x7100c216a8",
+    "got:gGlobalc216e8_153cf4": "0x7100c216e8",
+    "got:gGlobalc216e8_15ad38": "0x7100c216e8",
+    "got:gGlobalc216f8_8494": "0x7100c216f8",
+    "got:gGlobalc21db0_1f1908": "0x7100c21db0",
+    "got:gGlobalc22bd8_15d668": "0x7100c22bd8",
+    "got:gGlobalc23458_220c64": "0x7100c23458",
+    "got:gGlobalc23460_220c64": "0x7100c23460",
+    "_Z13callee_148068lPvS_iihiif": "0x7100148068",
+    "_Z13callee_148994ihi": "0x7100148994",
+    "_Z13callee_148fd8if": "0x7100148fd8",
+    "_Z13callee_14f640llh": "0x710014f640",
+    "_Z13callee_14f728llhi": "0x710014f728",
+    "_Z13callee_14fcf4llPvh": "0x710014fcf4",
+    "_Z13callee_14ff98llhPvi": "0x710014ff98",
+    "_Z13callee_153bbclPvS_ii": "0x7100153bbc",
+    "_Z13callee_15e1bcPvS_S_S_ii": "0x710015e1bc",
+    "_Z13callee_17792cli": "0x710017792c",
+    "got:_ZTV9Obj56e698": "0x7100c2d540",
+    "got:_ZTV10Base56e698": "0x7100c2d458",
+    "got:gHeap56e698": "0x7100c2d3e8",
+    "got:_ZTV12Screen3c5cc0": "0x7100c2b480",
+    "_ZN12Screen3c5cc05closeEv": "0x71003c5d8c",
+    "got:_ZTV13Channel5244a0": "0x7100c2d168",
+    "got:gFreeHook_c2c010": "0x7100c2c010",
+    "got:_ZTV10Page39ef38": "0x7100c2b2c8",
+    "got:_ZTV10Page3a164c": "0x7100c2b2c0",
+    "got:_ZTV12Screen3ab2bc": "0x7100c2b318",
+    "got:_ZTV16ScreenBase3ab2bc": "0x7100c2b2d0",
+    "_ZN12Player37cd6cD1Ev": "0x710037f568",
+    "_ZN12Player37cd6c4stopEv": "0x710037cd6c",
     "kAdvWholeMapLayout": "0x71007d703e",
     "kAdvWholeMapDrcLayout": "0x71007d7052",
     "kAdvWallHeadwindLayout": "0x71007d706a",
@@ -19364,26 +19397,32 @@
     "_ZN8AdvBoard11update_viewEv": "0x710029f47c",
     "_Z10apply_iconP11EffectGroupP12LayoutHandlePvPK8IconRect": "0x71001f7fe4",
     "_ZN13EffectManager11create_nodeEP8NodeSlotiPKc": "0x71001e2360",
-    "gLocal73cc7c_7500": "0x710073cc7c",
-    "gLocal73cc84_8494": "0x710073cc84",
-    "got:gGlobalc216a8_8494": "0x7100c216a8",
-    "got:gGlobalc216e8_153cf4": "0x7100c216e8",
-    "got:gGlobalc216e8_15ad38": "0x7100c216e8",
-    "got:gGlobalc216f8_8494": "0x7100c216f8",
-    "got:gGlobalc21db0_1f1908": "0x7100c21db0",
-    "got:gGlobalc22bd8_15d668": "0x7100c22bd8",
-    "got:gGlobalc23458_220c64": "0x7100c23458",
-    "got:gGlobalc23460_220c64": "0x7100c23460",
-    "_Z13callee_148068lPvS_iihiif": "0x7100148068",
-    "_Z13callee_148994ihi": "0x7100148994",
-    "_Z13callee_148fd8if": "0x7100148fd8",
-    "_Z13callee_14f640llh": "0x710014f640",
-    "_Z13callee_14f728llhi": "0x710014f728",
-    "_Z13callee_14fcf4llPvh": "0x710014fcf4",
-    "_Z13callee_14ff98llhPvi": "0x710014ff98",
-    "_Z13callee_153bbclPvS_ii": "0x7100153bbc",
-    "_Z13callee_15e1bcPvS_S_S_ii": "0x710015e1bc",
-    "_Z13callee_17792cli": "0x710017792c"
+    "got:gGlobalc21d78_d04c4": "0x7100c21d78",
+    "got:gGlobalc22748_b60f0": "0x7100c22748",
+    "got:gGlobalc2ae00_31d204": "0x7100c2ae00",
+    "got:gGlobalc2d4d8_564a00": "0x7100c2d4d8",
+    "_Z13callee_31de28l": "0x710031de28",
+    "_Z13callee_31dfe4l": "0x710031dfe4",
+    "_Z13callee_325b48l": "0x7100325b48",
+    "_Z13callee_325d10l": "0x7100325d10",
+    "got:_ZTV12Screen3a149c": "0x7100c2b2e0",
+    "got:_ZTV12Screen3ab044": "0x7100c2b310",
+    "got:_ZTV12Screen3ab454": "0x7100c2b320",
+    "got:_ZTV10Menu365dc4": "0x7100c2b008",
+    "got:_ZTV10Menu367498": "0x7100c2b010",
+    "_ZN10Part367498D1Ev": "0x710036b06c",
+    "got:_ZTV11Pages3485e8": "0x7100c2af38",
+    "got:_ZTV11NodeBase348": "0x7100c2af28",
+    "_ZN10Base3aab84D1Ev": "0x71003aab84",
+    "_ZN10Slot349480D1Ev": "0x7100349480",
+    "got:_ZTV12Screen34840c": "0x7100c2af60",
+    "got:_ZTV11Pages3487c0": "0x7100c2af30",
+    "got:_ZTV11Table38fc44": "0x7100c2b188",
+    "got:_ZTV10Deck38fc44": "0x7100c2b190",
+    "got:_ZTV14DeckBase38fc44": "0x7100c2b168",
+    "got:_ZTV10Card38fc44": "0x7100c2b198",
+    "got:_ZTV14CardBase38fc44": "0x7100c2b158",
+    "got:_ZTV11Table533118": "0x7100c2d298"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29350,7 +29389,8 @@
         "_ZN15OwnedHeap5c49fcC2EP6RefObj": "0x71005c49fc",
         "_ZN12Worker5f7984C2Ev": "0x71005f7984",
         "_ZN9Mid2d4f14D2Ev": "0x71002d4f14",
-        "_ZN10Node5959d4C2EPKc": "0x7100595930"
+        "_ZN10Node5959d4C2EPKc": "0x7100595930",
+        "_ZN11Table533118C2Ei": "0x7100533118"
       }
     },
     "misc/s4_298094.cpp": {
@@ -29390,14 +29430,6 @@
         "_ZN11Group5d4040C2EP14Resource5d4040P13Factory5d4040": "0x71005d4040"
       }
     },
-    "misc/s4_29b5f8.cpp": {
-      "functions": {
-        "_ZN8AdvBoard10initializeEv": "0x710029b5f8"
-      },
-      "map": {
-        ".rodata": "0x71007f8a30"
-      }
-    },
     "misc/variant_functions89.cpp": {
       "functions": {
         "_Z10call_15344P10Arg15344_0": "0x7100015344",
@@ -29409,6 +29441,74 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s3_functions17.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z10call_a3fc0P10Arga3fc0_0": "0x71000a3fc0"
+      }
+    },
+    "misc/s3_functions19.cpp": {
+      "functions": {
+        "_ZN9Obj56e698D2Ev": "0x710056e698",
+        "_ZN12Screen3c5cc0D2Ev": "0x71003c5cc0",
+        "_ZN13Channel5244a0D2Ev": "0x71005244a0",
+        "_ZN10Page39ef38D2Ev": "0x710039ef38",
+        "_ZN10Page3a164cD2Ev": "0x71003a164c",
+        "_ZN12Screen3ab2bcD2Ev": "0x71003ab2bc",
+        "_ZN12Screen3a149cD2Ev": "0x71003a149c",
+        "_ZN12Screen3ab044D2Ev": "0x71003ab044",
+        "_ZN12Screen3ab454D2Ev": "0x71003ab454",
+        "_ZN10Menu365dc4D2Ev": "0x7100365dc4",
+        "_ZN11Board34dd88D2Ev": "0x710034dd88",
+        "_ZN10Menu367498D2Ev": "0x7100367498"
+      }
+    },
+    "misc/s4_29b5f8.cpp": {
+      "map": {
+        ".rodata": "0x71007f8a30"
+      },
+      "functions": {
+        "_ZN8AdvBoard10initializeEv": "0x710029b5f8"
+      }
+    },
+    "misc/s3_functions18.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z10call_510c8P10Arg510c8_0": "0x71000510c8",
+        "_Z11call_5c6df0P11Arg5c6df0_0": "0x71005c6df0"
+      }
+    },
+    "misc/s3_functions20.cpp": {
+      "functions": {
+        "_ZN11Pages3485e8D2Ev": "0x71003485e8",
+        "_ZN12Screen34840cD2Ev": "0x710034840c",
+        "_ZN11Table38fc44D2Ev": "0x710038fc44"
+      }
+    },
+    "misc/s2_functions29.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z11call_399c58P11Arg399c58_0": "0x7100399c58",
+        "_Z11call_3db95cl": "0x71003db95c",
+        "_Z11call_3dcac8Pv": "0x71003dcac8",
+        "_Z11call_3dcb24Pv": "0x71003dcb24",
+        "_Z11call_3dd5bcPv": "0x71003dd5bc",
+        "_Z11call_3dd8e0l": "0x71003dd8e0",
+        "_Z11call_3de800l": "0x71003de800",
+        "_Z11call_444528P11Arg444528_0": "0x7100444528",
+        "_Z11call_5f8f4cPv": "0x71005f8f4c",
+        "_Z11call_5f940cPv": "0x71005f940c"
       }
     }
   }

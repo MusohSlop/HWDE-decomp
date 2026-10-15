@@ -231,14 +231,27 @@ PlayerHud::PlayerHud(int mode) {
     memset(list.items, 0, sizeof(list.items));
 }
 
-// 0x7100101ae4: near miss, 13 instructions off, 1 with registers abstracted: y0 and h0 swap callee-saved registers and
-// the four half sizes are multiplied in another order.
+// 0x7100101ae4: near miss, 6 instructions off, 0 with registers abstracted: w1 and x1 swap callee-saved registers
+// (and with them the order of view_b's two subtractions).
 PlayerHud::PlayerHud(int mode, float x0, float y0, float w0, float h0, float x1, float y1, float w1, float h1) {
-    // The corners first: it gives the eight parameters' callee-saved registers the original's order but for w1/x1.
-    float ax = x0 - w0 * 0.5f;
-    float ay = y0 - h0 * 0.5f;
-    float bx = x1 - w1 * 0.5f;
-    float by = y1 - h1 * 0.5f;
+    // The views are set before the other fields (the original's schedule), from the half sizes and the corners
+    // computed first; by before bx gives h1 and y1 the original's callee-saved registers.
+    float hw0 = w0 * 0.5f;
+    float hh0 = h0 * 0.5f;
+    float hw1 = w1 * 0.5f;
+    float hh1 = h1 * 0.5f;
+    float ax = x0 - hw0;
+    float ay = y0 - hh0;
+    float by = y1 - hh1;
+    float bx = x1 - hw1;
+    view_a.width = w0;
+    view_a.height = h0;
+    view_a.x = ax;
+    view_a.y = ay;
+    view_b.width = w1;
+    view_b.height = h1;
+    view_b.x = bx;
+    view_b.y = by;
     player = mode;
     first = mode == 0;
     value28 = 0;
@@ -247,14 +260,6 @@ PlayerHud::PlayerHud(int mode, float x0, float y0, float w0, float h0, float x1,
     value60 = 0;
     rect44 = HudRect();
     flag12 = 0;
-    view_a.width = w0;
-    view_a.height = h0;
-    view_b.width = w1;
-    view_b.height = h1;
-    view_a.x = ax;
-    view_a.y = ay;
-    view_b.x = bx;
-    view_b.y = by;
     list.count = 0;
     memset(counts, 0, sizeof(counts));
     ptr5f980 = nullptr;

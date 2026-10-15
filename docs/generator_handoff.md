@@ -168,7 +168,29 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - struct copies (knob `nostructcopy`): a run of load/store pieces whose loaded values are only stored, between two
   (non-stack) bases at one delta and covering 12 or more contiguous bytes in straight-line code, is one struct
   assignment of `struct alignas(A) BlkR_A_FUNC { unsigned char b[R]; }`, or a loop over the records when the pieces
-  repeat a record pattern (Clang expands both into the same pieces); the pieces no longer type fields.
+  repeat a record pattern (Clang expands both into the same pieces); the pieces no longer type fields. The pieces'
+  bases may be computed (`add xD, xR, #imm`, `mov`, and register offsets set by `mov`/`movk`; knob `nocopybase`);
+  pieces that make equal runs at a constant stride with gaps between them are a loop copying one member per record
+  (`d.names[i].name = s.names[i].name`, a 29-byte member at a 0x20 stride; knob `nocopystride`); and when the run
+  only repeats a record pattern after a leading or before a trailing field, that field stays a field (a count
+  before its array; knob `nocopycut`, which prefers the cut whose records start with their largest piece); a
+  copy's bases are told apart by register versions (knob `nocopyver`), so a copy from a pointer loaded in the same
+  block (a vector copied before its w is set) is found too, and emitted where both bases still hold those values;
+- single-piece copies (knob `copy1`, used when a function fails with a field clash or an overlap; `nocopy1` turns the
+  retry off): an 8- or 16-byte value loaded and only stored at a constant delta is a block copy, so a constructor's
+  16-byte member copy or a two-float member read as 8 bytes does not type the fields;
+- copies to and from stack locals (knob `nostackcopy`): a copy whose stack side lies in one addressed stack object is
+  a block copy into (or out of) that local, whose struct is made as large as the copied range and aligned as the
+  pieces show, its fields typed only by the other accesses (a vector copied into a local, its w set, the local
+  passed on);
+- unused merges in loop bodies are pruned like those in straight code (knob `noloopprune`): a call in a conditional
+  in a loop left s0 merged with the incoming s0, and the unused merge failed with "merge types: int|float";
+- a 64-bit load split into two neighbouring fields is found along the control flow (knob `nopairflow`): the scan
+  for the high half follows branches and jumps instead of stopping at the first return in the layout;
+- float bits from an integer register (knob `noibits`): `fmov sN, wM` of any integer value (a union of floats
+  returned or passed in x registers, the high half of an 8-byte value) is the float its low 32 bits hold, through
+  `__builtin_memcpy` in a lambda; a 64-bit load whose high half goes to a float register stays one load (an int and
+  a float of a struct copied as one 8-byte value);
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
