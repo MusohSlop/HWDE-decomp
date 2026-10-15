@@ -4176,3 +4176,73 @@ int call_3182bc(Arg3182bc_0* p0) {
     reinterpret_cast<void (*)(long, long)>(v0)(reinterpret_cast<long>(h60), m30);
     return callee_316aa4(p0);
 }
+
+int callee_46440(long);        // 0x7100046440
+
+struct Arg354_0 {
+    long field_0;                // +0
+    int field_8;                 // +8
+    int field_c;                 // +c
+    int field_10;                 // +10
+    unsigned char pad14[0x4];
+    void* field_18;               // +18
+    unsigned char pad20[0x8];
+    void* field_28;               // +28
+    void* field_30;               // +30
+    int field_38;                 // +38
+};
+// Reached through the GOT slot at 0x7100c21658.
+extern unsigned char gGlobalc21658_354[];
+// Reached through the GOT slot at 0x7100c21668.
+extern unsigned char gGlobalc21668_354[];
+
+// 0x7100000354: stores in the original's order (ordtry)
+int call_354(Arg354_0* p0, int p1) {
+    p0->field_8 = p1;
+    p0->field_c = -1;
+    p0->field_10 = 0;
+    p0->field_18 = nullptr;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc21658_354) + 0x10);
+    int c0 = callee_46440(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x20));
+    p0->field_38 = 0;
+    p0->field_28 = nullptr;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc21668_354) + 0x10);
+    p0->field_30 = nullptr;
+    return c0;
+}
+
+int callee_5f37e8(long);        // 0x71005f37e8
+
+struct Arg5c238c_0 {
+    long field_0;                // +0
+    int field_8;                 // +8
+    unsigned char padc[0x4];
+    void* field_10;               // +10
+    void* field_18;               // +18
+    void* field_20;               // +20
+    long field_28;                // +28
+    unsigned char pad30[0x28];
+    void* field_58;               // +58
+    unsigned char field_60;       // +60
+    unsigned char pad61[0x7];
+    void* field_68;               // +68
+};
+// Reached through the GOT slot at 0x7100c2db50.
+extern unsigned char gGlobalc2db50_5c238c[];
+// Reached through the GOT slot at 0x7100c2db58.
+extern unsigned char gGlobalc2db58_5c238c[];
+
+// 0x71005c238c: stores in the original's order (ordtry)
+int call_5c238c(Arg5c238c_0* p0, void* p1, void* p2, void* p3) {
+    p0->field_8 = 0;
+    p0->field_10 = p1;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2db50_5c238c) + 0x10);
+    p0->field_18 = p2;
+    p0->field_20 = p3;
+    int c0 = callee_5f37e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x28));
+    p0->field_58 = nullptr;
+    p0->field_60 = 0;
+    p0->field_28 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2db58_5c238c) + 0x10);
+    p0->field_68 = reinterpret_cast<void*>(p0);
+    return c0;
+}

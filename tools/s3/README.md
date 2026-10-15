@@ -94,8 +94,11 @@ well.
   its entry (loops run their iterations), records the vtable store, each handle (the handle vtable store, then
   the release call through it) and each member destructor call with its `this` offset, and lays them out by offset
   (handles destroyed in a loop become an array of slots of the loop's stride). The handle class it uses is in
-  `dtor_prelude.h`. Prints `name` and `maps` like ctor2class; exits 1 when the function does other things
-  (`31a47c`, `3ba38c`).
+  `dtor_prelude.h` (`--no-prelude` leaves it out and names the part types after the function, for a unit that
+  has the prelude). A call on `this` before anything is destroyed becomes a method called in the body, a release
+  through `br` ends it, and a run of member destructor calls whose last address is kept in a register is an array.
+  Prints `name` and `maps` like ctor2class; exits 1 when the function does other things (`31a47c`, `3ba38c`,
+  `2e2dcc`, `299de0`).
 - `genfix.py IN.cpp OUT.cpp [loops] [panes] [handles]` rewrites generated source in place of a class: element
   loops as placement `new T[N]`, the 0x180-byte pane allocation (operator new `0x71005d4380`, `PaneBase`
   constructor, vtable GOT `0x7100c22f68`, three null fields) as `new PanelPane` from `event/layout_panes.h`, and
