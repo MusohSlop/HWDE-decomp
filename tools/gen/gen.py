@@ -4359,7 +4359,8 @@ def gen_function(a, ins):
     for p_, h_ in ESHIFT_.items():
         structs[loopelem[p_]] = {o_ - h_: v_ for o_, v_ in structs[loopelem[p_]].items()}
     decl_lines = []
-    for st in sorted(stackobjs):
+    # clang 3.9 gives the first declared local the highest address: stackdesc declares them from the top down
+    for st in sorted(stackobjs, reverse="stackdesc" in knobs):
         sn = stackobjs[st]
         if set(structs[sn]) == {0}:
             decl_lines.append(f"    {structs[sn][0][0]} local_{hx_(st)};")

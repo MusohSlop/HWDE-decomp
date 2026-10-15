@@ -58,3 +58,6 @@ voidret
 voidret+sink
 voidret+callinline
 loadfirst
+stackdesc
+stackdesc+voidret
+stackdesc+sink
