@@ -2,11 +2,11 @@
 //   build/s4/adiff.py, --name _ZN7AdvUnit6decideEv and docs/s4_wip/294378.json (its .rodata 0x71007f8554 holds the
 //   main 70-entry jump table and the nested switch's 10-entry one right after it). can_move (0x7100298094) and
 //   can_warp (0x7100298390) from this file are matched in src/misc/s4_298094.cpp.
-// State: 12,608 B, 1,169 instructions off with registers abstracted (branch targets counted). can_move is only
+// State: 12,368 B, 1,080 instructions off with registers abstracted (branch targets counted). can_move is only
 //   declared here: defined in the same file, LLVM stops passing this to it (it never reads it) while the original
-//   passes this at every call, so can_move was in another unit. The case groups 9/f/45, c/16/31, 20/3a/44, 25/30/3c
-//   and 26/3e/42 start where the original's do; from case 1 on ours drifts (case 2 jumps into case c's chain where
-//   the original has its own, case 18 shares case 10's code, about 520 B more before the return). What is right:
+//   passes this at every call, so can_move was in another unit. Cases 9/f/45, c/16/31, 20/3a/44, 25/30/3c,
+//   26/3e/42, 1, 2, 3 and 4 now start within 0x20 bytes of the original's; from case 5 on ours drifts (case 18's
+//   code lands at the end, +2ff4 against the original's +128c; 276 B more in all). What is right:
 //   - the cell is an int (c - 1 with nsw lets the inlined neighbour tests fold for constant offsets; unsigned,
 //     nothing folds and the function is 4.6 KB larger); the neighbour test is can_move's own helper (adjacent,
 //     returning unsigned char), which already gives the original's code for step(c - 0x10, c - 0x20) in case 8;
@@ -14,15 +14,22 @@
 //     whose select lets BranchFolding share the tails (the original's shared blocks at 297180, 29713c, 297244 and
 //     296e8c), and go(dir) (if (ready() && !blocked()) return dir; return 4;), which keeps its own branches;
 //     the choice per call site below comes from a greedy search (build/s4/pickgreedy.py) and is only a start;
-//   - case 2 reads game_mode() before testing c == 0x25 (the original's call comes first).
+//   - case 2: GameState* now = get_game()->state(); if (c == 0x25 && now->mode == 2 && map == 0x6c) gives the
+//     original's separate c test, then the mode load and a cmp/ccmp pair, and a branch to a distant pick(3);
+//   - case c/16/31 does its own left test and then continues in case 2's chain (goto right): the original keeps
+//     both left tests and shares the rest in case 2's code. With two full chains (1,169) our tail merging keeps
+//     case c's copy and sends case 2 into it; with case 2 falling through into case c's chain (1,079, 12,292 B)
+//     there is one left test only. Moving whole cases around in the source changes nothing (same code).
 // Still different: the order of the first neighbour test of a chain: the original tests the column first
 //   ((c & 0xf) != 0) and then c and c - 1 against 0xb0 as separate branches; ours computes the two range tests as
 //   an or, branches on the column, then on the or. Writing the left/right steps out (column first) did not help.
-//   ready (0x7100297f34) is 2 off: the panel is loaded in the entry block (MachineSink then moves the load and its
-//   address down but leaves the constants, as in the original); what remains is the index's zero extension, which
-//   InstCombine places after the second get_unit_database call. blocked (0x7100298178, the same load) is 46 off in
-//   its tail. The open() check converts the panel to a 64-bit index before its second call (one instruction at
-//   each of about 30 sites); the first neighbour test of case 9 tests the column first ((c & 0xf) != 0).
+//   The calls to blocked are often in shared tails in ours where the original has them inline, and the reverse
+//   (build/s4/callseq.py lists them). The original materializes case 2's 0x1bb7c offset before the c test (ours
+//   after it). ready (0x7100297f34) is 2 off: the panel is loaded in the entry block (MachineSink then moves the
+//   load and its address down but leaves the constants, as in the original); what remains is the index's zero
+//   extension, which InstCombine places after the second get_unit_database call. blocked (0x7100298178, the same
+//   load) is 46 off in its tail. The open() check converts the panel to a 64-bit index before its second call
+//   (one instruction at each of about 30 sites); the first neighbour test of case 9 tests the column first.
 
 // Adventure Mode: a board unit's movement choice (0x7100294378). By the unit's kind it tests the cells around it
 // (the eight-neighbour test of can_move, the unit tables' passability and the panels' blocking byte) and returns
@@ -225,13 +232,7 @@ int AdvUnit::decide() {
     case 0x31:
         if (can_move(c, c - 1) && can_move(c - 1, c - 2))
             return pick(3);
-        if (can_move(c, c + 1) && can_move(c + 1, c + 2))
-            return pick(2);
-        if (can_move(c, c - 0x10) && can_move(c - 0x10, c - 0x20))
-            return pick(1);
-        if (can_move(c, c + 0x10) && can_move(c + 0x10, c + 0x20))
-            return pick(0);
-        return 5;
+        goto right;  // the original's layout: this group's own left test, then case 2's chain
     case 0x20:
     case 0x3a:
     case 0x44:
@@ -284,11 +285,13 @@ int AdvUnit::decide() {
             return pick(0);
         return game_mode() == 9 ? 4 : 5;
     case 2: {
-        unsigned int now = game_mode();
-        if (c == 0x25 && map == 0x6c && now == 2)
+        GameState* now = get_game()->state();
+        if (c == 0x25 && now->mode == 2 && map == 0x6c)
             return pick(3);
+    }
         if (can_move(c, c - 1) && can_move(c - 1, c - 2))
             return pick(3);
+    right:
         if (can_move(c, c + 1) && can_move(c + 1, c + 2))
             return pick(2);
         if (can_move(c, c - 0x10) && can_move(c - 0x10, c - 0x20))
@@ -296,7 +299,6 @@ int AdvUnit::decide() {
         if (can_move(c, c + 0x10) && can_move(c + 0x10, c + 0x20))
             return pick(0);
         return 5;
-    }
     case 3:
         if (!can_move(c, c))
             return 5;

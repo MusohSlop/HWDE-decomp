@@ -19363,7 +19363,27 @@
     "_ZN8AdvBoard13update_platesEv": "0x710029ecf8",
     "_ZN8AdvBoard11update_viewEv": "0x710029f47c",
     "_Z10apply_iconP11EffectGroupP12LayoutHandlePvPK8IconRect": "0x71001f7fe4",
-    "_ZN13EffectManager11create_nodeEP8NodeSlotiPKc": "0x71001e2360"
+    "_ZN13EffectManager11create_nodeEP8NodeSlotiPKc": "0x71001e2360",
+    "gLocal73cc7c_7500": "0x710073cc7c",
+    "gLocal73cc84_8494": "0x710073cc84",
+    "got:gGlobalc216a8_8494": "0x7100c216a8",
+    "got:gGlobalc216e8_153cf4": "0x7100c216e8",
+    "got:gGlobalc216e8_15ad38": "0x7100c216e8",
+    "got:gGlobalc216f8_8494": "0x7100c216f8",
+    "got:gGlobalc21db0_1f1908": "0x7100c21db0",
+    "got:gGlobalc22bd8_15d668": "0x7100c22bd8",
+    "got:gGlobalc23458_220c64": "0x7100c23458",
+    "got:gGlobalc23460_220c64": "0x7100c23460",
+    "_Z13callee_148068lPvS_iihiif": "0x7100148068",
+    "_Z13callee_148994ihi": "0x7100148994",
+    "_Z13callee_148fd8if": "0x7100148fd8",
+    "_Z13callee_14f640llh": "0x710014f640",
+    "_Z13callee_14f728llhi": "0x710014f728",
+    "_Z13callee_14fcf4llPvh": "0x710014fcf4",
+    "_Z13callee_14ff98llhPvi": "0x710014ff98",
+    "_Z13callee_153bbclPvS_ii": "0x7100153bbc",
+    "_Z13callee_15e1bcPvS_S_S_ii": "0x710015e1bc",
+    "_Z13callee_17792cli": "0x710017792c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29376,6 +29396,19 @@
       },
       "map": {
         ".rodata": "0x71007f8a30"
+      }
+    },
+    "misc/variant_functions89.cpp": {
+      "functions": {
+        "_Z10call_15344P10Arg15344_0": "0x7100015344",
+        "_Z10call_44828P10Arg44828_0": "0x7100044828",
+        "_Z11call_11a374P11Arg11a374_0": "0x710011a374",
+        "_Z11call_20b5c0l": "0x710020b5c0",
+        "_Z11call_2470e8P11Arg2470e8_0Pvi": "0x71002470e8"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
       }
     }
   }
