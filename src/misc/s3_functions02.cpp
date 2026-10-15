@@ -1723,3 +1723,213 @@ Class35f6e8::Class35f6e8()
     float v285 = v284->field_48;
     callee2_1e4570(v282, v285);
 }
+
+void callee_1ef52c(long);        // 0x71001ef52c
+int callee2_1f0140(long);        // 0x71001f0140
+void callee_1f16ec(long);        // 0x71001f16ec
+void callee_5d2744(long);        // 0x71005d2744
+
+struct Arg118e44_0 {
+    unsigned char field_0;       // +0
+    unsigned char pad1[0x7];
+    int field_8;                 // +8
+    unsigned char padc[0xc];
+    int field_18;                 // +18
+    unsigned char pad1c[0x1a5fc];
+    void* field_1a618;               // +1a618
+    unsigned char pad1a620[0x10];
+    void* field_1a630;               // +1a630
+    void* field_1a638;               // +1a638
+    void* field_1a640;               // +1a640
+    void* field_1a648;               // +1a648
+    unsigned char pad1a650[0x26f20];
+    int field_41570;                 // +41570
+    int field_41574;                 // +41574
+    int field_41578;                 // +41578
+    int field_4157c;                 // +4157c
+    int field_41580;                 // +41580
+    int field_41584;                 // +41584
+    int field_41588;                 // +41588
+    unsigned char pad4158c[0x44];
+    int field_415d0;                 // +415d0
+    unsigned char field_415d4;       // +415d4
+    unsigned char pad415d5[0x3];
+    int field_415d8;                 // +415d8
+    unsigned char field_415dc;       // +415dc
+    unsigned char pad415dd[0x3];
+    int field_415e0;                 // +415e0
+    unsigned char field_415e4;       // +415e4
+    unsigned char pad415e5[0x3];
+    int field_415e8;                 // +415e8
+    unsigned char field_415ec;       // +415ec
+    unsigned char pad415ed[0x17ab];
+    int field_42d98;                 // +42d98
+    unsigned char pad42d9c[0x50];
+    int field_42dec;                 // +42dec
+    int field_42df0;                 // +42df0
+    int field_42df4;                 // +42df4
+    int field_42df8;                 // +42df8
+    int field_42dfc;                 // +42dfc
+    int field_42e00;                 // +42e00
+    int field_42e04;                 // +42e04
+    int field_42e08;                 // +42e08
+    unsigned char pad42e0c[0x5a5];
+    unsigned char field_433b1;       // +433b1
+    unsigned char field_433b2;       // +433b2
+    unsigned char pad433b3[0x1];
+    int field_433b4;                 // +433b4
+    unsigned char pad433b8[0x4];
+    unsigned char field_433bc;       // +433bc
+    unsigned char pad433bd[0x3];
+    void* field_433c0;               // +433c0
+    unsigned char pad433c8[0x18];
+    void* field_433e0;               // +433e0
+    unsigned char field_433e8;       // +433e8
+    unsigned char pad433e9[0x8f];
+    void* field_43478;               // +43478
+    unsigned char field_43480;       // +43480
+};
+
+class LayoutSprite {
+public:
+    LayoutSprite();                                                      // 0x71001ef52c
+    unsigned char pad[0x48];
+};
+
+class LightResource {
+public:
+    LightResource();                                                     // 0x71005d2744
+    unsigned char pad[0x110];
+};
+
+// 0x7100118e44: a constructor: member arrays of sprites and frames, then the body, where four pointers at +1a630 are cleared as one 0x20-byte block (the original's stores of that block come out in reverse, as a memset's do).
+class Class118e44 {
+public:
+    Class118e44();
+
+    unsigned char pad0[0x20];
+    LayoutSprite a20[384];
+    LayoutSprite m6c20;
+    LayoutFrame a6c68[384];
+    LayoutSprite a13868[384];
+    LayoutSprite m1a468;
+    LayoutSprite m1a4b0;
+    LayoutSprite m1a4f8;
+    LayoutSprite m1a540;
+    LayoutSprite m1a588;
+    LayoutSprite m1a5d0;
+    unsigned char pad1a618[0x38];
+    LayoutFrame m1a650;
+    LayoutFrame m1a6d8;
+    LayoutFrame m1a760;
+    LayoutFrame m1a7e8;
+    unsigned char pad1a870[0x10];
+    LightResource m1a880;
+    LayoutSprite m1a990;
+    LayoutSprite m1a9d8;
+    LayoutSprite m1aa20;
+    LayoutSprite m1aa68;
+    LayoutSprite m1aab0;
+    LayoutSprite m1aaf8;
+    LayoutSprite m1ab40;
+    LayoutSprite m1ab88;
+    LayoutSprite m1abd0;
+    LayoutSprite m1ac18;
+    LayoutSprite m1ac60;
+    LayoutSprite m1aca8;
+    LayoutSprite m1acf0;
+    LayoutSprite m1ad38;
+    LayoutSprite m1ad80;
+    LayoutSprite m1adc8;
+    LayoutSprite m1ae10;
+    LayoutSprite m1ae58;
+    LayoutSprite m1aea0;
+    LayoutSprite m1aee8;
+    LayoutSprite m1af30;
+    LayoutSprite m1af78;
+    LayoutSprite a1afc0[2176];
+    LayoutSprite m413c0;
+    LayoutSprite m41408;
+    LayoutSprite m41450;
+    LayoutSprite m41498;
+    LayoutSprite m414e0;
+    LayoutSprite m41528;
+};
+
+Class118e44::Class118e44() {
+    Arg118e44_0* p0 = reinterpret_cast<Arg118e44_0*>(this);
+    long r52 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x415f0);
+    do {
+        callee_1ef52c(r52);
+        callee_1ef52c(r52 + 0x48);
+        callee_1ef52c(r52 + 0x90);
+        callee_1ef52c(r52 + 0xd8);
+        callee_1ef52c(r52 + 0x120);
+        r52 = r52 + 0x168;
+    } while (r52 != reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42c70));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42c80));
+    callee_1f16ec(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42cc8));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42ce8));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42d30));
+    callee_1f16ec(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42d78));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42da0));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42e10));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42e58));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42ea0));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42ee8));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42f30));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42f78));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x42fc0));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x43008));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x43050));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x43098));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x430e0));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x43128));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x43170));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x431b8));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x43200));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x43248));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x43290));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x432d8));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x43320));
+    callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x43368));
+    p0->field_433c0 = nullptr;
+    p0->field_433e0 = nullptr;
+    p0->field_433e8 = 0;
+    int c84 = callee2_1f0140(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x433f0));
+    p0->field_0 = 0;
+    p0->field_8 = 0;
+    p0->field_42d98 = 0;
+    p0->field_18 = 0;
+    p0->field_433b1 = 0;
+    p0->field_433b2 = 0;
+    p0->field_41570 = 0;
+    p0->field_41574 = 0;
+    p0->field_41578 = 0;
+    p0->field_41588 = 0;
+    p0->field_41584 = 0;
+    p0->field_433b4 = -1;
+    p0->field_4157c = 0;
+    p0->field_41580 = 0;
+    p0->field_415d0 = 0;
+    p0->field_415d4 = 1;
+    p0->field_415d8 = 0;
+    p0->field_415dc = 1;
+    p0->field_415e0 = 0;
+    p0->field_415e4 = 1;
+    p0->field_415e8 = 0;
+    p0->field_415ec = 1;
+    p0->field_42dec = 3;
+    p0->field_42df0 = 0;
+    p0->field_42df4 = 3;
+    p0->field_42df8 = 0;
+    p0->field_42dfc = 3;
+    p0->field_42e00 = 0;
+    p0->field_42e04 = 3;
+    p0->field_42e08 = 0;
+    p0->field_1a618 = nullptr;
+    __builtin_memset(&p0->field_1a630, 0, 0x20);
+    p0->field_433bc = 0;
+    p0->field_43480 = 0;
+    p0->field_43478 = nullptr;
+}
