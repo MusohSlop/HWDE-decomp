@@ -33,6 +33,9 @@ Run them with the project's Python, `python -B -I tools/s5/SCRIPT ...`, from `ma
   statement back toward the original order while neither distance grows and marks what stays moved (`*`); that
   list is what to change in the source. Without `--groups` it moves single instructions (finds schedule matches
   fast, but the orders rarely map back to source). Writes `gbest.ll`/`best.ll` and stops at a match (`match.ll`).
+  Try plain mode first on schedule- or allocation-only near misses: it closed s4's `29b5f8` (11 off, one block) in
+  seconds where `--groups` ran half an hour without gain, and diffing `match.ll` against the source block names
+  the statements to move; `--block LABEL` picks another block (the setup block of the model builders, `21d738`).
   Use it for schedule- or register-only near misses where the pre-RA scheduler keeps the IR order (check with
   `-mllvm -print-machineinstrs`: compare the input and output of "Machine Instruction Scheduler"). Give it the
   scratch `.cpp` and it emits the IR itself with the unit flags, `-g` and `-Xclang -emit-llvm-uselists`: both the
