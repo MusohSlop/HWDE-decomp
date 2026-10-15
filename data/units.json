@@ -16717,7 +16717,8 @@
     "_Z13callee_169aa0iiii": "0x7100169aa0",
     "_Z13callee_3e7a5ci": "0x71003e7a5c",
     "_Z13callee_3e7acciPvii": "0x71003e7acc",
-    "_Z13callee_3e7af0iPvii": "0x71003e7af0"
+    "_Z13callee_3e7af0iPvii": "0x71003e7af0",
+    "_Z11callee_25fcif": "0x71000025fc"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -25980,6 +25981,16 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s4_functions01.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z10call_f6fc0P10Argf6fc0_0": "0x71000f6fc0",
+        "_Z9call_1f00iP9Arg1f00_1": "0x7100001f00"
       }
     }
   }
