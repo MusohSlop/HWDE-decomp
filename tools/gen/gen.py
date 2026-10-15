@@ -76,13 +76,20 @@ def frw(i):
         return int(mm.group(1)) if mm else None
     return {num(r) for r in reads} - {None}, {num(r) for r in writes} - {None}
 
+RW_FIX = [True]
 def rw(i):
     reads, writes = i.regs_access()
     def num(r):
         n = i.reg_name(r)
         mm = re.fullmatch(r"[wx](\d+)", n)
         return int(mm.group(1)) if mm else None
-    return {num(r) for r in reads} - {None}, {num(r) for r in writes} - {None}
+    r_, w_ = {num(r) for r in reads} - {None}, {num(r) for r in writes} - {None}
+    if RW_FIX[0] and i.mnemonic in ("cmp", "cmn", "tst"):
+        # capstone reports the first operand of a compare as written; it is only read
+        mm = re.match(r"[wx](\d+)", i.op_str)
+        if mm:
+            w_.discard(int(mm.group(1))); r_.add(int(mm.group(1)))
+    return r_, w_
 
 class Fail(Exception):
     pass
@@ -242,6 +249,7 @@ VA_SAVES = {"q6, q7, [sp, #0x60]", "x6, x7, [sp, #0xb0]", "x4, x5, [sp, #0xa0]",
             "x0, x1, [sp, #0x80]", "q4, q5, [sp, #0x40]", "q2, q3, [sp, #0x20]", "q0, q1, [sp]"}
 def gen_function(a, ins):
     knobs = KNOB_MAP.get(a, DEFAULT_KNOBS)
+    RW_FIX[0] = "oldrw" not in knobs
     if ("novastub" not in knobs and len(ins) == 11 and (ins[0].mnemonic, ins[0].op_str) == ("sub", "sp, sp, #0xc0")
             and all(i_.mnemonic == "stp" for i_ in ins[1:9]) and {i_.op_str for i_ in ins[1:9]} == VA_SAVES
             and (ins[9].mnemonic, ins[9].op_str) == ("add", "sp, sp, #0xc0") and ins[10].mnemonic == "ret"):
