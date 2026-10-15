@@ -102,6 +102,7 @@ real classes.
 | `misc/variant_functions74.cpp` | variant search, seventy-fourth run (`nof2call` below `0x7100380000`) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions75.cpp` | variant search, seventy-fifth run (`stackdesc` over every generating, unmatched function below `0x7100380000`) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions76.cpp` | variant search, seventy-sixth run (arguments passed uninitialised) | as `misc/variant_functions26.cpp`; an argument passed uninitialised is a local `long uN` declared first |
+| `misc/variant_functions77.cpp` | variant search, seventy-seventh run (unsigned loop counters) | as `misc/variant_functions26.cpp` |
 | `misc/s2_functions1.cpp` | second session, first run over `0x7100380000` and up (the whole 4-byte constant pool, 16-byte vector constants from the literal pool) | as `misc/variant_functions26.cpp`; vector constants are `(Vec4f){...}` literals, mapped through `.rodata.cst16` |
 | `misc/s2_functions2.cpp` | second session, second run (float stack slots, `sqrtf`, float branches, indexed floats) | as `misc/s2_functions1.cpp` |
 | `misc/s2_functions3.cpp` | second session, third run (constant-store fields retyped, integer reads of two widths; only the newly generated functions) | as `misc/s2_functions1.cpp` |
