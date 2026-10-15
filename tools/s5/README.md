@@ -37,8 +37,14 @@ Run them with the project's Python, `python -B -I tools/s5/SCRIPT ...`, from `ma
   `-mllvm -print-machineinstrs`: compare the input and output of "Machine Instruction Scheduler"). Give it the
   scratch `.cpp` and it emits the IR itself with the unit flags, `-g` and `-Xclang -emit-llvm-uselists`: both the
   debug intrinsics and the use-list order change codegen in some functions (`3b4e98`: 6 off from source, 8 from IR
-  without `-g`, 7 without the use-lists), so its first score must equal what sbs.py reports. Loads, stores and calls
-  keep their relative order, so blocks made mostly of memory operations leave it little to move.
+  without `-g`, 7 without the use-lists), so its first score must equal what sbs.py reports; when clang cannot read
+  the `-g` IR back (it crashes on some, `761d8`) it falls back to IR without `-g` and says so. Loads, stores and calls
+  keep their relative order, so blocks made mostly of memory operations leave it little to move; `--loads-free` lets
+  loads move among themselves (stores and calls stay ordered), which is how local definitions read from memory can
+  be reordered in source (`4ce8e0`). `--minimize BEST.ll` moves single instructions back toward the source order
+  (`--strict`: the exact distance may not grow either); both minimizers accept only moves that reduce the number of
+  inverted pairs, so they always end. Multi-line instructions (`switch`) stay whole and terminators and phis stay
+  in place; orders that fail to compile are counted and reported at the end, the first kept as `irs_tmp.ll.fail`.
 
 ## Source patterns found by hand
 
