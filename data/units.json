@@ -20053,7 +20053,12 @@
     "got:_ZTV23SliderPanelOptionScreen": "0x7100c2b310",
     "got:_ZTV14DeckBase38dca4": "0x7100c2b168",
     "got:_ZTV9DeckPanel": "0x7100c2b180",
-    "got:_ZTV14DeckMenu38dca4": "0x7100c2b178"
+    "got:_ZTV14DeckMenu38dca4": "0x7100c2b178",
+    "kRangeBar": "0x71007db131",
+    "kRangeDigits": "0x71007db146",
+    "_Z12attach_digitP9PanelNodeP11EffectGroup": "0x71001f829c",
+    "_ZN9PanelNode16create_text_paneEv": "0x71001e4148",
+    "got:_ZTV16OptionSliderBase": "0x7100c2b2c0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -30238,7 +30243,8 @@
         "_ZN10Page39ec78C2Ev": "0x710039ec78",
         "_ZN10Page3940c4C2Ev": "0x71003940c4",
         "_ZN10Page3a4034C2Ev": "0x71003a4034",
-        "_ZN14DeckMenu38dca4C2EPv": "0x710038dca4"
+        "_ZN14DeckMenu38dca4C2EPv": "0x710038dca4",
+        "_ZN16OptionSliderBaseC2EiiiiiPKcS1_": "0x710039e2f4"
       }
     },
     "misc/s3_functions25.cpp": {
