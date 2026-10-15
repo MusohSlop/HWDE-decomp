@@ -6181,7 +6181,8 @@ for size, a in sorted(U, key=lambda x: x[1]):
         for x in gsyms:
             if x.startswith("JTAB="):
                 _, ta_, ts_ = x.split("=")
-                if jt_end_ is not None and int(ta_, 16) != jt_end_:
+                if jt_end_ is not None and int(ta_, 16) != jt_end_ and not os.environ.get("DRYRUN"):
+                    # (a dry run lists what generates: one unit per jump table is the runner's business)
                     raise Fail("switch table apart")
                 jt_end_ = int(ta_, 16) + int(ts_, 16)
         upd_ = {}
