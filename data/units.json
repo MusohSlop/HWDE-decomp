@@ -16467,7 +16467,24 @@
     "_Z13callee_1f280ciPvlS_": "0x71001f280c",
     "_Z13callee_1f2a04iPvlS_": "0x71001f2a04",
     "_Z13callee_301848Pviii": "0x7100301848",
-    "_Z13callee_13dcb8Pvijl": "0x710013dcb8"
+    "_Z13callee_13dcb8Pvijl": "0x710013dcb8",
+    "_ZN9Obj196bacC1Ev": "0x7100196bac",
+    "_ZN9Obj193e44C1Ev": "0x7100193e44",
+    "_ZN9Obj199168C1Ev": "0x7100199168",
+    "_ZN9Obj19be44C1Ev": "0x710019be44",
+    "_ZN9Obj193624C1Ev": "0x7100193624",
+    "_ZN9Obj1963c4C1Ev": "0x71001963c4",
+    "_ZN9Obj19b108C1Ev": "0x710019b108",
+    "_ZN9Obj194e44C1Ev": "0x7100194e44",
+    "_ZN9Obj196238C1Ev": "0x7100196238",
+    "_ZN9Obj1985a8C1Ev": "0x71001985a8",
+    "_ZN9Obj196804C1Ev": "0x7100196804",
+    "_ZN9Obj1a39a8C1Ev": "0x71001a39a8",
+    "_ZN9Obj18f14cC1Ev": "0x710018f14c",
+    "_ZN9Obj1a844cC1Ev": "0x71001a844c",
+    "_ZN9Obj19a524C1Ev": "0x710019a524",
+    "_ZN9Obj1a8510C1Ev": "0x71001a8510",
+    "_Z14callee2_1f8224PvS_": "0x71001f8224"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -25608,7 +25625,8 @@
         "_Z11call_384a50P11Arg384a50_0": "0x7100384a50",
         "_Z11call_3556b8P11Arg3556b8_0Pv": "0x71003556b8",
         "_ZN11Class35f6e8C2Ev": "0x710035f6e8",
-        "_ZN11Class118e44C2Ev": "0x7100118e44"
+        "_ZN11Class118e44C2Ev": "0x7100118e44",
+        "_ZN11Class369d3cC2Ev": "0x7100369d3c"
       }
     },
     "misc/variant_functions73.cpp": {
@@ -25693,6 +25711,15 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s3_functions04.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_ZN11Class187d78C2Ev": "0x7100187d78"
       }
     }
   }
