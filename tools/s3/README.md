@@ -89,6 +89,13 @@ well.
   original's vtable store post-increments (`str x8, [xN], #K`) to the run's second member: Clang folds into that
   store the newest `this`+K address with K under 256, which for single members is the last one under 256 and for
   an array the second element (`--no-post-arrays` keeps single members).
+- `dtor2class.py ADDR OUT.cpp [--name CLASS]` writes a destructor made of member destructor calls, layout handles
+  and a base destructor as a class, from the original's code alone (no generator): it emulates the function from
+  its entry (loops run their iterations), records the vtable store, each handle (the handle vtable store, then
+  the release call through it) and each member destructor call with its `this` offset, and lays them out by offset
+  (handles destroyed in a loop become an array of slots of the loop's stride). The handle class it uses is in
+  `dtor_prelude.h`. Prints `name` and `maps` like ctor2class; exits 1 when the function does other things
+  (`31a47c`, `3ba38c`).
 - `genfix.py IN.cpp OUT.cpp [loops] [panes] [handles]` rewrites generated source in place of a class: element
   loops as placement `new T[N]`, the 0x180-byte pane allocation (operator new `0x71005d4380`, `PaneBase`
   constructor, vtable GOT `0x7100c22f68`, three null fields) as `new PanelPane` from `event/layout_panes.h`, and

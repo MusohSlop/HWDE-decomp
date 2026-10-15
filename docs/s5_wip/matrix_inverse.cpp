@@ -12,8 +12,12 @@
 // arithmetic in the original's order; the difference is scheduling (the original makes the swizzles row by row
 // from row 0 and keeps one register for the constant-pool adrp; ours starts with row 1), 56 instructions off when
 // registers are abstracted. Mapping for tools/s5/sbs.py: --map .rodata.cst8=0x71007e2090 plus maps3e1538.txt
-// (the two GOT globals). A search over statement orders of the inverse (or of its swizzle lines) is the next step;
-// once one copy matches, the same inline should carry to the other 22.
+// (the two GOT globals). A search over 256 orders (transpose, swizzle lines by row or by kind, the cofactor
+// blocks, where the signs are applied, the operand order of the final products) found no match; the best, kept
+// below, is 49 off abstracted. What is left is how the constants are scheduled: the original loads each mask and
+// identity row right before its use with one adrp register (x10) rematerialized each time, ours hoists them all to
+// the top; so the source form of the swizzle or of the constants still differs. Once one copy matches, the same
+// inline should carry to the other 22.
 
 #include <arm_neon.h>
 
@@ -71,19 +75,18 @@ static inline XMMATRIX inverse(const XMMATRIX& m) {
     const float32x4_t sign1 = {1.0f, -1.0f, 1.0f, -1.0f};
     const float32x4_t sign2 = {-1.0f, 1.0f, -1.0f, 1.0f};
     XMMATRIX t = transpose(m);
-    XMVECTOR a1 = swizzle<1, 0, 0, 0>(t.r[0]);
-    XMVECTOR a2 = swizzle<2, 2, 1, 1>(t.r[0]);
-    XMVECTOR a3 = swizzle<3, 3, 3, 2>(t.r[0]);
-    XMVECTOR b1 = swizzle<1, 0, 0, 0>(t.r[1]);
-    XMVECTOR b2 = swizzle<2, 2, 1, 1>(t.r[1]);
-    XMVECTOR b3 = swizzle<3, 3, 3, 2>(t.r[1]);
-    XMVECTOR c1 = swizzle<1, 0, 0, 0>(t.r[2]);
-    XMVECTOR c2 = swizzle<2, 2, 1, 1>(t.r[2]);
-    XMVECTOR c3 = swizzle<3, 3, 3, 2>(t.r[2]);
     XMVECTOR d1 = swizzle<1, 0, 0, 0>(t.r[3]);
+    XMVECTOR c1 = swizzle<1, 0, 0, 0>(t.r[2]);
+    XMVECTOR b1 = swizzle<1, 0, 0, 0>(t.r[1]);
+    XMVECTOR a1 = swizzle<1, 0, 0, 0>(t.r[0]);
     XMVECTOR d2 = swizzle<2, 2, 1, 1>(t.r[3]);
+    XMVECTOR c2 = swizzle<2, 2, 1, 1>(t.r[2]);
+    XMVECTOR b2 = swizzle<2, 2, 1, 1>(t.r[1]);
+    XMVECTOR a2 = swizzle<2, 2, 1, 1>(t.r[0]);
     XMVECTOR d3 = swizzle<3, 3, 3, 2>(t.r[3]);
-
+    XMVECTOR c3 = swizzle<3, 3, 3, 2>(t.r[2]);
+    XMVECTOR b3 = swizzle<3, 3, 3, 2>(t.r[1]);
+    XMVECTOR a3 = swizzle<3, 3, 3, 2>(t.r[0]);
     XMVECTOR t1 = vsubq_f32(vmulq_f32(c2, d3), vmulq_f32(c3, d2));
     XMVECTOR t2 = vsubq_f32(vmulq_f32(c1, d3), vmulq_f32(c3, d1));
     XMVECTOR t3 = vsubq_f32(vmulq_f32(c1, d2), vmulq_f32(c2, d1));
@@ -91,7 +94,6 @@ static inline XMMATRIX inverse(const XMMATRIX& m) {
     XMVECTOR r1 = vfmaq_f32(vfmsq_f32(vmulq_f32(a1, t1), a2, t2), t3, a3);
     r0 = vmulq_f32(r0, sign1);
     r1 = vmulq_f32(r1, sign2);
-
     XMVECTOR u1 = vsubq_f32(vmulq_f32(a2, b3), vmulq_f32(a3, b2));
     XMVECTOR u2 = vsubq_f32(vmulq_f32(a1, b3), vmulq_f32(a3, b1));
     XMVECTOR u3 = vsubq_f32(vmulq_f32(a1, b2), vmulq_f32(a2, b1));
@@ -99,7 +101,6 @@ static inline XMMATRIX inverse(const XMMATRIX& m) {
     XMVECTOR r3 = vfmaq_f32(vfmsq_f32(vmulq_f32(c1, u1), c2, u2), u3, c3);
     r2 = vmulq_f32(r2, sign1);
     r3 = vmulq_f32(r3, sign2);
-
     XMVECTOR det = dot4(t.r[0], r0);
     XMVECTOR rcp = reciprocal(det);
     uint32x4_t zero = vceqq_f32(det, vdupq_n_f32(0.0f));

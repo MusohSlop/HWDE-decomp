@@ -73,3 +73,11 @@ Each with the functions it fixed; three or more make it a generator note.
 - A struct copied through the stack whose first piece sits in its own 16-byte aligned slot rather than in the gap
   next to a saved `d8`: the struct type is 16-byte aligned. `4bc6b8`.
 - `memcpy(dst, src, n)` with `src` computed before `dst`: evaluate `src` into a local first. `4bc6b8`.
+- A flag parameter inserted with `bfxil wN, wP, #0, #1` in one place and masked with `and wP, wP, #1` before a
+  branch merge in another (the merge then uses `orr`): the parameter is a byte (`unsigned char`) passed on as
+  `p & 1`, not a `bool`. `3bdbf0`.
+- A temporary stored right before each call that takes it by reference (after the callee's vtable slot is
+  loaded): build it in the call (`f(i, Color{...})`), not as a local declared before the call. `3bdbf0`.
+- String literals scattered across the string section (some merged with other modules' strings): declare each as
+  `extern const char kName_ADDR[] __attribute__((visibility("hidden")))` and map it, instead of one
+  `.rodata.str1.1` anchor. `3bdbf0` (41 strings).

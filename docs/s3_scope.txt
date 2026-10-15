@@ -458,3 +458,21 @@ d4d40
 5f8348
 5fbbb0
 5fce1c
+# Added 2026-10-15: the placement constructors split out of 425de0 that store a vtable into this.
+425e28
+425e64
+425f94
+425fd4
+42632c
+426368
+4263a0
+4263d8
+426418
+426458
+426494
+4264f4
+42652c
+426564
+42659c
+4265d4
+42660c

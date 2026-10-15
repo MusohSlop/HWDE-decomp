@@ -78,3 +78,94 @@ public:
 };
 
 Class5fbbb0::~Class5fbbb0() {}
+
+// The layout handle as destructors inline it: the vtable store, then release() through the vtable with the heap
+// of the owner at GOT 0x7100c21db0 (its vtable is in another unit, GOT 0x7100c22f00).
+struct HandleHeapOwner {
+    unsigned char pad0[0x2af8];
+    unsigned char* heap;            // +2af8
+};
+extern HandleHeapOwner* gHandleHeapOwner;
+
+inline void* handle_root_heap() { return gHandleHeapOwner ? gHandleHeapOwner->heap + 0x10 : nullptr; }
+
+struct DtorHandleState {
+    long id;
+    short a;
+    short b;
+};
+
+class DtorHandle : public DtorHandleState {
+public:
+    virtual ~DtorHandle() { release(handle_root_heap()); }
+    virtual void v10();
+    virtual void release(void* root);
+};
+
+class Base316aa4 {
+public:
+    virtual ~Base316aa4();          // 0x7100316aa4
+};
+
+struct Part37f568 { ~Part37f568(); unsigned char data[0x10]; };              // 0x710037f568
+
+struct HandleRun31a47c {
+    unsigned char pad0[0x24b8];
+    DtorHandle hs[5];               // +24b8
+};
+
+// 0x710031a47c (D2): 32 runs of five handles destroyed in a loop, between a member and the base destructor.
+class Class31a47c : public Base316aa4 {
+public:
+    ~Class31a47c();
+
+    unsigned char pad8[0x7e7b8 - 8];
+    HandleRun31a47c runs[32];       // +7e7b8
+    unsigned char padc8db8[0x8];
+    Part37f568 part;                // +c8dc0
+};
+
+Class31a47c::~Class31a47c() {}
+
+struct Part5d27b4 { ~Part5d27b4(); unsigned char data[0x10]; };              // 0x71005d27b4
+struct Part35ca18 { ~Part35ca18(); unsigned char data[0x10]; };              // 0x710035ca18
+struct Part379b04 { ~Part379b04(); unsigned char data[0x10]; };              // 0x7100379b04
+
+struct Slot70_3ba38c { unsigned char pad0[0x58]; DtorHandle h; };            // 0x70
+struct Slot5008_3ba38c { DtorHandle h; unsigned char pad18[0x5008 - 0x18]; };
+
+class Basec719c {
+public:
+    virtual ~Basec719c();           // 0x71003c719c
+};
+
+// 0x71003ba38c (D2): single handles and members, and two arrays of handle slots destroyed in loops.
+class Class3ba38c : public Basec719c {
+public:
+    ~Class3ba38c();
+
+    unsigned char pad8[0x560 - 8];
+    Part5d27b4 m560;
+    unsigned char pad570[0x6a0 - 0x570];
+    DtorHandle h6a0;
+    unsigned char pad6b8[0x700 - 0x6b8];
+    DtorHandle h700;
+    unsigned char pad718[0x760 - 0x718];
+    DtorHandle h760;
+    unsigned char pad778[0x830 - 0x778];
+    Part5d27b4 m830;
+    unsigned char pad840[0xc70 - 0x840];
+    DtorHandle hc70, hc88, hca0, hcb8;
+    unsigned char padcd0[0x11678 - 0xcd0];
+    Slot70_3ba38c slots70[32];      // +11678
+    unsigned char pad12478[0x124b8 - 0x12478];
+    Slot5008_3ba38c slots5008[32];  // +124b8
+    unsigned char padb25b8[0xb2798 - 0xb25b8];
+    Part35ca18 mb2798;
+    unsigned char padb27a8[0xb6be0 - 0xb27a8];
+    Part379b04 mb6be0;
+    unsigned char padb6bf0[0xb6cc0 - 0xb6bf0];
+    DtorHandle hb6cc0;
+};
+
+Class3ba38c::~Class3ba38c() {}
