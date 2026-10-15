@@ -1155,6 +1155,10 @@ def gen_function(a, ins):
                     vars_[vn_] = vt_ + (prev_[0],)
             structs[sn_][off_] = (wide_, None)
         return True
+    def spun_(a_, b_):
+        """An int and a float in one stack slot: the slot keeps its first type and the other access is a pun."""
+        return "nostackpun" not in knobs and a_ in ("int", "unsigned int", "float") and b_ in ("int", "unsigned int", "float") \
+            and "float" in (a_, b_)
     def retype_ok_(sn_, off_, prev_t, ct_):
         """A field typed only by 8-byte constant stores may become a narrower scalar."""
         return ((sn_, off_) in cstore_typed_ and prev_t in ("void*", "long") and not ct_.startswith("ARRAY:")
@@ -3045,7 +3049,7 @@ def gen_function(a, ins):
                     if prev and prev[0] != ct_ and retype_ok_(sn, off_ - st, prev[0], ct_):
                         structs[sn][off_ - st] = (ct_, None)
                         prev = structs[sn][off_ - st]
-                    if prev and prev[0] != ct_ and not vu_check_(sn, off_ - st, ct_):
+                    if prev and prev[0] != ct_ and not spun_(prev[0], ct_) and not vu_check_(sn, off_ - st, ct_):
                         raise Fail("stack field clash")
                     vu_check_(sn, off_ - st, ct_)
                     note_access_(sn, off_ - st, False)
@@ -3146,8 +3150,8 @@ def gen_function(a, ins):
                     if prev and prev[0] != ct and retype_ok_(sn, off_ - st, prev[0], ct):
                         structs[sn][off_ - st] = (ct, None)
                         prev = structs[sn][off_ - st]
-                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not vu_check_(sn, off_ - st, ct) \
-                            and not widen_field_(sn, off_ - st, prev, ct):
+                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not spun_(prev[0], ct) \
+                            and not vu_check_(sn, off_ - st, ct) and not widen_field_(sn, off_ - st, prev, ct):
                         raise Fail("stack field clash")
                     vu_check_(sn, off_ - st, ct)
                     note_access_(sn, off_ - st, False)
@@ -3169,8 +3173,8 @@ def gen_function(a, ins):
                 if prev and prev[0] != ct and retype_ok_(sn, sbase - st, prev[0], ct):
                     structs[sn][sbase - st] = (ct, None)
                     prev = structs[sn][sbase - st]
-                if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not vu_check_(sn, sbase - st, ct) \
-                        and not widen_field_(sn, sbase - st, prev, ct):
+                if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not spun_(prev[0], ct) \
+                        and not vu_check_(sn, sbase - st, ct) and not widen_field_(sn, sbase - st, prev, ct):
                     raise Fail("stack field clash")
                 vu_check_(sn, sbase - st, ct)
                 note_access_(sn, sbase - st, False)
@@ -3228,7 +3232,8 @@ def gen_function(a, ins):
                     if prev and prev[0] != ct and val[0] != "const" and retype_ok_(sn, off_ - st, prev[0], ct):
                         structs[sn][off_ - st] = (ct, None)
                         prev = structs[sn][off_ - st]
-                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not vu_check_(sn, off_ - st, ct):
+                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not spun_(prev[0], ct) \
+                            and not vu_check_(sn, off_ - st, ct):
                         raise Fail("stack field clash")
                     vu_check_(sn, off_ - st, ct)
                     structs[sn].setdefault(off_ - st, (ct, None))
