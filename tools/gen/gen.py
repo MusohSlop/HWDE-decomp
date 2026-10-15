@@ -385,7 +385,7 @@ def gen_function(a, ins):
                     # both bases hold the versions the pieces used where the copy is emitted
                     v_ = vsnap_.get(min(ks2_ for _, _, _, ks2_ in g2_), {})
                     return v_.get(bs_, 0) == bsk_[1] and v_.get(bd_, 0) == bdk_[1]
-                if len(g_) < 2:
+                if len(g_) < 2 and not ("copy1" in knobs and g_[0][1] >= 8):
                     continue
                 ivs_ = sorted((so_, so_ + sz_) for so_, sz_, _, _ in g_)
                 lo_, hi_ = ivs_[0][0], ivs_[0][1]
@@ -419,7 +419,7 @@ def gen_function(a, ins):
                         copy_skip_.update(ks_)
                         copy_emit_[min(ks2_ for _, _, _, ks2_ in g_)] = (bs_, bd_, lo_, lo_ + dl_, C_, len(runs_), al_, S_)
                     continue
-                if not ok_ or hi_ - lo_ < 12:
+                if not ok_ or hi_ - lo_ < (8 if "copy1" in knobs else 12):
                     continue
                 total_ = hi_ - lo_
                 pieces_ = sorted((so_ - lo_, sz_) for so_, sz_, _, _ in g_)
@@ -5587,12 +5587,22 @@ for size, a in sorted(U, key=lambda x: x[1]):
             try:
                 text, sigs, gsyms = gen_function(a, ins)
             except Fail as e_:
-                if not ("merge types" in str(e_) and "Vec4f" in str(e_) and "float" in str(e_)
+                kn_ = KNOB_MAP.get(a, DEFAULT_KNOBS)
+                if str(e_) in ("field clash", "overlap") and not {"copy1", "nocopy1", "nostructcopy"} & set(kn_):
+                    # a field typed by a copy clashes: single-piece copies as block copies
+                    KNOB_MAP[a] = set(kn_) | {"copy1"}
+                    try:
+                        text, sigs, gsyms = gen_function(a, ins)
+                    except Fail:
+                        KNOB_MAP[a] = set(kn_)
+                        raise e_
+                elif not ("merge types" in str(e_) and "Vec4f" in str(e_) and "float" in str(e_)
                         and "vlanemerge" not in KNOB_MAP.get(a, DEFAULT_KNOBS) and "novlanemerge" not in KNOB_MAP.get(a, DEFAULT_KNOBS)):
                     raise
-                # a vector and a scalar merged in one float register: the vector side is lane 0
-                KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | {"vlanemerge"}
-                text, sigs, gsyms = gen_function(a, ins)
+                else:
+                    # a vector and a scalar merged in one float register: the vector side is lane 0
+                    KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | {"vlanemerge"}
+                    text, sigs, gsyms = gen_function(a, ins)
         except Fail:
             if not (ARITY_USED[0] or PAIR_USED[0] or HOIST_USED[0] or TRIVIAL_USED[0]):
                 raise

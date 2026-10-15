@@ -176,6 +176,9 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   before its array; knob `nocopycut`, which prefers the cut whose records start with their largest piece); a
   copy's bases are told apart by register versions (knob `nocopyver`), so a copy from a pointer loaded in the same
   block (a vector copied before its w is set) is found too, and emitted where both bases still hold those values;
+- single-piece copies (knob `copy1`, used when a function fails with a field clash or an overlap; `nocopy1` turns the
+  retry off): an 8- or 16-byte value loaded and only stored at a constant delta is a block copy, so a constructor's
+  16-byte member copy or a two-float member read as 8 bytes does not type the fields;
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
