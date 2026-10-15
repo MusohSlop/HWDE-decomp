@@ -153,7 +153,16 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   members likewise (a Vec4f member whose lanes are also read or written as floats);
 - float rounding (knob `nofround`): `fcvtms`/`fcvtmu`, `fcvtps`/`fcvtpu`, `fcvtas`/`fcvtau` are the int conversion of
   `__builtin_floorf`/`ceilf`/`roundf`, `frintm`/`frintp`/`frinta`/`frintz` those calls and `__builtin_truncf`, and
-  `fnmul` is `-(a * b)`.
+  `fnmul` is `-(a * b)`;
+- sqrtf slow paths (knob `nosqrtpair`): register pairs saved around the `bl sqrtf` are skipped like single spills and
+  keep their values, and an `fcmp sD, sD` with independent instructions before its `b.vc` is moved down to it;
+- vectors from two x registers (knob `novcomb`): a call result's x0/x1 is a `VecU` return read as `.v`, other pairs
+  `vcombine_f32(vcreate_f32(lo), vcreate_f32(hi))`, and a lone vector half `vecu(v).l[h]`;
+- post-indexed float loads and stores (knob `nofpost`), and single-lane vector loads and stores (knob `nold1`):
+  `ld1 {vN.s}[k]` inserts a float field into a lane, `st1 {vN.s}[k]` stores one, `ld1 {vN.d}[0]` loads a low half;
+- a vector and a scalar merged in one float register (knob `vlanemerge`, used when a function fails with
+  "merge types: float|Vec4f"): the vector side is lane 0; the bits of a float used as an int (`fmov w, s` read
+  elsewhere) are an unsigned int through `__builtin_memcpy` in a lambda.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
