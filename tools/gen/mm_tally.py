@@ -116,8 +116,14 @@ def classify(built, sizes, image, md, base_map):
     mapping[".rodata.cst16"] = 0x73dff0
     data, sections, symbols, relocs = check_obj.read_elf(obj)
     for s in symbols:
-        mm = re.search(r"_([0-9a-f]{5,6})(?=[A-Z]|$|E|P|v|i|f)", s.name) if not s.is_section and s.shndx == 0 else None
-        if mm and s.name not in mapping:
+        if s.is_section or s.shndx != 0 or s.name in mapping:
+            continue
+        # the address suffix of a placeholder name, read from the identifier its _Z<length> prefix delimits (a
+        # parameter code right after it may itself be a hex letter or any lowercase letter)
+        ml = re.match(r"_Z(\d+)", s.name)
+        ident = s.name[ml.end():ml.end() + int(ml.group(1))] if ml else s.name
+        mm = re.search(r"_([0-9a-f]{4,8})$", ident)
+        if mm:
             mapping[s.name] = int(mm.group(1), 16)
     defined = [s.name for s in symbols if not s.is_section and s.shndx != 0 and s.size]
     out = []
