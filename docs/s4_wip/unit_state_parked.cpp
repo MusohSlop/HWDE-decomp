@@ -245,3 +245,239 @@ int unit_gauge_41b7c(short id, float* ratio, int* kind) {
     *ratio = (a->limit498 - gUnitLimitMin) / (gUnitLimitMax - gUnitLimitMin);
     return 1;
 }
+
+// c69a0 (UnitWatcher::pose_c69a0, 740 B; declare void pose_c69a0(void* target); in UnitWatcher), 2 off: the
+// quaternion's fmul operands come out in other registers (cz, cx, sy); a 64-form search over operand orders runs in
+// worktrees\s4_perm\c69a0.
+void sin_cos_fd70(float angle, float* s, float* c);                         // 0x710000fd70
+
+// A rotation from three half angles (x, y, z order).
+static inline void quat_from_half_angles(Vec4f* q, float hx, float hy, float hz) {
+    float sx, cx, sy, cy, sz, cz;
+    sin_cos_fd70(hx, &sx, &cx);
+    sin_cos_fd70(hy, &sy, &cy);
+    sin_cos_fd70(hz, &sz, &cz);
+    q->x = sx * cy * cz - cx * sy * sz;
+    q->y = cx * sy * cz + sx * cy * sz;
+    q->z = cy * cx * sz - sx * sy * cz;
+    q->w = cy * cx * cz + sx * sy * sz;
+}
+
+static inline void set_pose(void* target, int id, float sx, float sy, float sz, float hx, float hy, float hz, float px,
+                            float py, float pz) {
+    Vec4f s;
+    s.x = sx;
+    s.y = sy;
+    s.z = sz;
+    s.w = 0.0f;
+    Vec4f q;
+    Vec4f p;
+    p.x = px;
+    p.y = py;
+    p.z = pz;
+    p.w = 0.0f;
+    quat_from_half_angles(&q, hx, hy, hz);
+    set_track_46c68(target, id, 4, &s);
+    set_track_46c68(target, id, 7, &q);
+    set_track_46c68(target, id, 1, &p);
+}
+// 0x71000c69a0
+void UnitWatcher::pose_c69a0(void* target) {
+    UnitState* s = state;
+    Unit* u = s->unit;
+    UnitActor* a = 0;
+    IF_UNIT_STATE_ACTIVE(u->state()->id, a = u->actor());
+    if (item_rank_1fb810(s->unit->state()->item()) != 0x15) return;
+    if (!unit_can_7c5a8(a, 0xc)) return;
+    set_pose(target, 0x1f4, 1.0f, 0.8f, 0.7f, -0.785398185f, 0.0872664601f, 0.0f, 0.0f, -3.0f, 4.0f);
+    set_pose(target, 0x1f5, 1.5f, 1.0f, 1.0f, -0.0884881988f, 0.0f, 0.0f, 0.0f, 21.86f, -8.12f);
+}
+// 17860 (UnitAim::update, 816 B), about 50 off: a first draft. The original keeps this in x20, has a 0xb0 frame with
+// the second area at sp+0xc apart from the matrix at sp+0x10, and reads the place's y/z pair first in the second copy.
+extern "C" float sqrtf(float value);                                        // 0x71006008a0 (import)
+
+struct Vec3f {
+    float x, y, z;
+};
+struct UnitPlace {
+    unsigned char pad0[0x20];
+    Vec3f pos;                // +20
+};
+struct UnitMatrix {
+    float rows[12];
+    Vec3f pos;                // +30
+    float w;
+};
+unsigned int unit_count_453984();                                           // 0x7100453984
+unsigned char unit_area_4549dc(int id, int* area);                          // 0x71004549dc
+void unit_matrix_453bb8(UnitMatrix* out, int id);                           // 0x7100453bb8
+unsigned char keep_target_ce28(int area, int ref_area, bool closer);       // 0x710000ce28
+
+static inline float distance(const Vec3f& a, const Vec3f& b) {
+    float dx = a.x - b.x;
+    float dy = a.y - b.y;
+    float dz = a.z - b.z;
+    return sqrtf(dx * dx + dy * dy + dz * dz);
+}
+
+class UnitAim {
+public:
+    void update();
+
+    // The target's position: the unit's own if the id is out of range.
+    Vec3f target_pos(int id) {
+        Vec3f p = self->place()->pos;
+        if (id >= 0 && static_cast<unsigned int>(id) < unit_count_453984()) {
+            UnitMatrix m;
+            unit_matrix_453bb8(&m, id);
+            p = m.pos;
+        }
+        return p;
+    }
+
+    // The target to keep: the current one unless the new one is preferred.
+    __attribute__((always_inline)) int pick(int current, int target, float dist, int ref_area) {
+        int area;
+        Vec3f p = target_pos(current);
+        if (current >= 0 && static_cast<unsigned int>(current) < unit_count_453984() &&
+            unit_area_4549dc(current, &area)) {
+            float d = distance(p, self->place()->pos);
+            if (!keep_target_ce28(area, ref_area, dist < d)) return current;
+        }
+        return target;
+    }
+    Unit* owner;              // +00
+    Unit* self;               // +08
+    int target;               // +10
+};
+
+// 0x7100017860
+void UnitAim::update() {
+    int t = target;
+    int ref_area;
+    if (t >= 0 && static_cast<unsigned int>(t) < unit_count_453984()) {
+        if (!unit_area_4549dc(t, &ref_area)) return;
+    }
+    Vec3f p = target_pos(t);
+    float dist = distance(p, self->place()->pos);
+    UnitActor* a = owner->actor();
+    int current = a->target_c0;
+    if (current == t) return;
+    t = pick(current, t, dist, ref_area);
+    a->target_c0 = t;
+    a->flags50 |= 0x1000;
+    UnitActor* b = 0;
+    IF_UNIT_STATE_ACTIVE(self->state()->id, b = self->actor());
+    b->target_4f8 = pick(b->target_4f8, t, dist, ref_area);
+}
+
+// 2174c update: the side lookup returns int (now so in the header), and the 0xd2 test is the signed range
+// id >= 0 && id < 0xd2 on the short: that gives the original's mov w8, #0xffff; bfi; cmp with 0xd2fffe. Best so far, 2
+// off: "Unit* u = 0; if ((unsigned short)id <= 0x6d6 && id >= 0 && id < 0xd2) u = gUnitTable_c21690->unit(id);" keeps
+// the index as w0, sxth #3 but repeats the bound check; with units[id] the check is single but the index becomes
+// lsl/asr of a copy (3 off).
+
+// 1ac4c (Spawner::spawn, 920 B), 15 off: uses UnitTable::by_handle (header; the index check gives the bfi form, the
+// generation test is cmp x10, x8, lsr #16 here vs the original's ubfx x10, x8, #16, #16; cmp w10, w11); UnitState
+// value1a0/link1a0/item1a8 are in the header too. Left: that compare, block order around the 0xf/0x16 cases, the
+// fail path's 64-bit key load.
+struct SpawnKey {
+    int type;
+    int sub;
+};
+
+struct SpawnInfo {
+    unsigned char pad0[0x10];
+    unsigned char place[0x10];  // +10
+    union {
+        struct {
+            int type;         // +20
+            int sub;          // +24
+        };
+        SpawnKey key;         // +20
+    };
+    int value28;              // +28
+    unsigned char pad2c[4];
+    unsigned int handle;      // +30
+    unsigned char pad34[0xc];
+    int command;              // +40
+    int setting;              // +44
+    unsigned char slot;       // +48
+    unsigned char pad49[3];
+    float charge;             // +4c
+    bool start;               // +50
+    bool linked;              // +51
+};
+struct LinkedParts {
+    unsigned char pad0[0x4c];
+    short items[1];           // +4c
+};
+int spawn_kind_a070(int type);                                              // 0x710000a070
+void actor_setting_9dee8(UnitActor* actor, int setting);                    // 0x710009dee8
+void actor_command_86668(UnitActor* actor, int command);                    // 0x7100086668
+void actor_start_8162c(UnitActor* actor);                                   // 0x710008162c
+// Reached through the GOT slot at 0x7100c21a60.
+extern float gSpawnCharges[0x3c];
+
+class Spawner : public Unit {
+public:
+    void spawn(SpawnInfo* info);
+    Unit* create_1b134(int type, int sub, int kind);                        // 0x710001b134
+    void finish_185b0();                                                    // 0x71000185b0
+    void fail_1afe4(int type, short sub);                                   // 0x710001afe4
+    void init_187e0(int type, int sub, int kind, SpawnInfo* info, void* place);  // 0x71000187e0
+};
+
+// 0x710001ac4c
+void Spawner::spawn(SpawnInfo* info) {
+    if (info->linked) {
+        Unit* u = gUnitTable_c21690->by_handle(info->handle);
+        if (!u || (u->state()->kind & 4) || !gUnitTable_c21690->by_index(info->handle)) {
+            SpawnKey key = info->key;
+            fail_1afe4(key.type, key.sub);
+            return;
+        }
+    }
+    int kind = spawn_kind_a070(info->type);
+    Spawner* s = static_cast<Spawner*>(create_1b134(info->type, info->sub, kind));
+    if (!s) return;
+    s->init_187e0(info->type, info->sub, kind, info, info->place);
+    int type = info->type;
+    if (type >= 0xf) {
+        if (type == 0xf) {
+            UnitState* st = s->state();
+            st->value1a0 = info->value28;
+        } else if (!((type != 0x16) & (type != 0x17))) {
+            Unit* u = gUnitTable_c21690->by_handle(info->handle);
+            if (u && (u->state()->kind & 4)) u = 0;
+            if (u) u = gUnitTable_c21690->by_index(info->handle);
+            s->state()->link1a0 = u;
+            LinkedParts* parts = reinterpret_cast<LinkedParts*>(u->state()->info);
+            short item = parts->items[info->slot];
+            actor_setting_9dee8(s->actor(), info->setting);
+            UnitState* st1 = s->state();
+            if (static_cast<unsigned int>(item) <= 0x44b) st1->item1a8 = item;
+            unsigned int index = static_cast<short>(info->sub) - 0xd2;
+            UnitState* st = s->state();
+            float charge = info->charge;
+            if (index <= 0x3b) gSpawnCharges[index] = charge;
+            if (!(info->charge > 0.0f)) st->bits8 |= 0x100;
+        }
+    }
+    if (static_cast<unsigned int>(info->command) <= 0x3b) {
+        IF_UNIT_STATE_ACTIVE(s->state()->id, {
+            UnitActor* a = s->actor();
+            if (a) {
+                actor_command_86668(a, info->command);
+                unit_command_80bf8(a, info->command);
+            }
+        });
+    }
+    if (info->start) {
+        IF_UNIT_STATE_ACTIVE(s->state()->id, {
+            UnitActor* a = s->actor();
+            if (a) actor_start_8162c(a);
+        });
+    }
+    s->finish_185b0();
+}

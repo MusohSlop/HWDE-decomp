@@ -22046,7 +22046,25 @@
     "_Z13callee_3874c8Pvii": "0x71003874c8",
     "_Z13callee_39d938Pvl": "0x710039d938",
     "_Z13callee_4624c8lPv": "0x71004624c8",
-    "_Z13callee_4a2fb0PviiS_S_": "0x71004a2fb0"
+    "_Z13callee_4a2fb0PviiS_S_": "0x71004a2fb0",
+    "_Z12sin_cos_fd70fPfS_": "0x710000fd70",
+    "_Z18unit_matrix_453bb8P10UnitMatrixi": "0x7100453bb8",
+    "_Z16keep_target_ce28iib": "0x710000ce28",
+    "_Z16unit_area_4549dciPi": "0x71004549dc",
+    "_Z17unit_count_453984v": "0x7100453984",
+    "_Z16game_heap_4599b4v": "0x71004599b4",
+    "_ZN12RosterMember11value_527d8Ev": "0x71000527d8",
+    "_ZN12RosterMember11value_527fcEv": "0x71000527fc",
+    "_ZN10Scene5f79413prepare_60244Ev": "0x7100060244",
+    "_Z15spawn_kind_a070i": "0x710000a070",
+    "_Z19actor_setting_9dee8P9UnitActori": "0x710009dee8",
+    "_Z19actor_command_86668P9UnitActori": "0x7100086668",
+    "_Z17actor_start_8162cP9UnitActor": "0x710008162c",
+    "got:gSpawnCharges": "0x7100c21a60",
+    "_ZN7Spawner12create_1b134Eiii": "0x710001b134",
+    "_ZN7Spawner12finish_185b0Ev": "0x71000185b0",
+    "_ZN7Spawner10fail_1afe4Eis": "0x710001afe4",
+    "_ZN7Spawner10init_187e0EiiiP9SpawnInfoPv": "0x71000187e0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -32650,7 +32668,9 @@
     "misc/s4_5f794.cpp": {
       "functions": {
         "_ZN10Scene5f7945startILi0EEEvv": "0x710005f794",
-        "_ZN10Scene5f7945startILi1EEEvv": "0x7100060c2c"
+        "_ZN10Scene5f7945startILi1EEEvv": "0x7100060c2c",
+        "_ZN10Scene5f7947restartILi0EEEvv": "0x710006090c",
+        "_ZN10Scene5f7947restartILi1EEEvv": "0x7100061188"
       }
     },
     "misc/s4_20493c.cpp": {
@@ -32698,7 +32718,11 @@
     "misc/s4_4b76c.cpp": {
       "functions": {
         "_ZN8Registry4findILi0EEEP14RegistryObjecti": "0x710004b76c",
-        "_ZN8Registry4findILi1EEEP14RegistryObjecti": "0x7100075fd8"
+        "_ZN8Registry4findILi1EEEP14RegistryObjecti": "0x7100075fd8",
+        "_ZN8Registry11find_targetILi0EEEP14RegistryTargeti": "0x710004df50",
+        "_ZN8Registry11find_targetILi1EEEP14RegistryTargeti": "0x7100051eb0",
+        "_ZN17RegistryHost50c544findEi": "0x7100050c54",
+        "_ZN17RegistryHost50fb04findEi": "0x7100050fb0"
       }
     },
     "misc/s4_unit_state.cpp": {
@@ -32736,7 +32760,8 @@
         "_ZN8UnitPair4syncEv": "0x710005acb0",
         "_Z15side_rank_41990ij": "0x7100041990",
         "_ZN9UnitTable10give_211dcEsihhh": "0x71000211dc",
-        "_ZN13UnitSetupList5applyEv": "0x7100075434"
+        "_ZN13UnitSetupList5applyEv": "0x7100075434",
+        "_Z19any_side_busy_3e350v": "0x710003e350"
       }
     },
     "misc/s4_unit_state2.cpp": {
@@ -32834,6 +32859,17 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s4_1e4f1c.cpp": {
+      "functions": {
+        "_ZN7VectorAIP9DrawEntry13HeapAllocatorIS1_Ls46EEE19push_back_slow_pathERKS1_": "0x71001e4f1c"
+      }
+    },
+    "misc/s4_5d448.cpp": {
+      "functions": {
+        "_ZN14UnitRosterList6lookupILi0EEEiP4Unit": "0x710005d448",
+        "_ZN14UnitRosterList6lookupILi1EEEiP4Unit": "0x710005d4d0"
       }
     }
   }
