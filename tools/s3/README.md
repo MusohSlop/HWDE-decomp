@@ -18,6 +18,9 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
 - `permtry.py TEMPLATE ADDR SYM [--sym SYMJSON] [--map ...] --slot KEY=a|b|...` fills `{KEY}` placeholders of a
   template with every combination of options (`\n` for newlines) and runs try.py on each; stops at a match
   (written to `build/s3/perm_match.cpp`).
+- `blocks.py`, `ours.py` and `regiondiff.py` are for long functions: `blocks.py` lists the differing runs with their lengths,
+  `ours.py` writes our relocated disassembly in the original's address layout, and `regiondiff.py OURS.s ORIG.s START [END] [--abs]`
+  prints a side-by-side diff of one region (`--abs` hides register numbers).
 - `topotry.py SPEC.json` tries every order of a set of statements (with dependencies and chains that keep a
   relative order) in a template's `{REGION}`; for load and store order problems. The spec format is in the
   script's docstring.
@@ -48,6 +51,9 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
   loops as placement `new T[N]`, the 0x180-byte pane allocation (operator new `0x71005d4380`, `PaneBase`
   constructor, vtable GOT `0x7100c22f68`, three null fields) as `new PanelPane` from `event/layout_panes.h`, and
   layout-handle store groups as placement `new LayoutHandle` (through `handlify.py`).
+- `fixalign.py IN.cpp OUT.cpp` marks generated struct fields that sit at an offset their type would not get (a `long`
+  at `+...4`, which C++ pads to the next multiple of 8) as `__attribute__((packed))`, so they stay where the
+  generator meant.
 - `batchconv.py RANK.tsv OUT.tsv [--jobs N] [--knob K]` runs the generated version through genfix, ctor2class and
   ctor2class `--prefix` (each followed by genfix) for every generated function in a rank.py table, and copies
   matches to `build/s3/conv/match_ADDR.cpp` with their symbol file.
