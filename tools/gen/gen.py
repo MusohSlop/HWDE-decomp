@@ -4351,6 +4351,12 @@ def gen_function(a, ins):
                     return tb
                 if ta.endswith("*") and tb.endswith("*"):
                     return "void*"
+                if "float" in (ta, tb) and "nofqmerge" not in knobs:
+                    oth_ = t[1] if tb == "float" else t[2]
+                    if oth_[0] == "var" and vars_.get(oth_[1]) == "?":
+                        # the stale s0 of a call: the callee's float result
+                        vars_[oth_[1]] = "f"
+                        return "float"
                 if "float" in (ta, tb):
                     if os.environ.get("DBG"): print("DBG merge", t, vars_.get(t[1][1]) if t[1][0]=="var" else None, vars_.get(t[2][1]) if t[2][0]=="var" else None)
                     raise Fail(f"merge types: {ta}|{tb}")

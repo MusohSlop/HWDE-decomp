@@ -214,6 +214,8 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - a stored vtable pointer read back for a virtual call (knob `novptrlong`): field 0 typed long by the store of a
   vtable address is retyped too, and a store to field 0 of a class with virtual slots is written through the object
   pointer (`*reinterpret_cast<long*>(obj) = ...`), the class declaring no field 0;
+- an untyped call result merged with a float is a float (knob `nofqmerge`): the stale s0 of a call on one arm against
+  the incoming s0 typed the merge "int|float"; the call result is the callee's float result;
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
