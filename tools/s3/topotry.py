@@ -1,14 +1,19 @@
-"""topotry.py SPEC.json: try every topological order of statements into {REGION} of a template.
+"""topotry.py SPEC.json [--work DIR]: try every topological order of statements into {REGION} of a template.
 SPEC: {"template": path, "addr": hex, "name": sym, "sym": json or null, "maps": [...],
        "stmts": [[id, text, [deps]], ...], "chains": [[id, id, ...], ...] (keep these in this relative order),
-       "limit": N}
+       "limit": N, "work": DIR (optional, as --work)}
+A match is written to DIR/topo_match.cpp (DIR defaults to build/s3). Exit code 0 on a match, 1 without.
 """
 import os as _os
 M = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))  # the matching/ folder
 WORK = _os.path.join(M, "build", "s3")  # scratch files
-_os.makedirs(WORK, exist_ok=True)
 import sys, json, os, subprocess, re
 spec = json.load(open(sys.argv[1], encoding="utf-8-sig"))
+if "--work" in sys.argv:
+    WORK = os.path.abspath(sys.argv[sys.argv.index("--work") + 1])
+elif spec.get("work"):
+    WORK = os.path.abspath(spec["work"])
+os.makedirs(WORK, exist_ok=True)
 SP = os.path.dirname(os.path.abspath(__file__))
 src = open(spec["template"], encoding="utf-8").read()
 stmts = {s[0]: s for s in spec["stmts"]}
@@ -41,15 +46,17 @@ best = None
 for o in orders:
     t = src.replace("{REGION}", "".join(stmts[k][1] + "\n" for k in o))
     open(out, "w", encoding="utf-8", newline="\n").write(t)
-    r = subprocess.run([sys.executable, "-B", "-I", os.path.join(SP, "try.py"), out, spec["addr"], "--name", spec["name"], *maps, "--ctx", "0"],
-                       capture_output=True, text=True)
+    r = subprocess.run([sys.executable, "-B", "-I", os.path.join(SP, "try.py"), out, spec["addr"], "--name", spec["name"], *maps,
+                        "--ctx", "0", "--work", WORK], capture_output=True, text=True)
     m = re.search(r"instr diff count (\d+)", r.stdout)
     n = int(m.group(1)) if m else 9999
     if best is None or n < best[0]:
         best = (n, o)
         print(n, o, flush=True)
-    if "MATCH" in r.stdout:
+    if "MATCH" in r.stdout.split("\n"):
         open(os.path.join(WORK, "topo_match.cpp"), "w", encoding="utf-8", newline="\n").write(t)
         print("MATCH", o)
-        break
+        print("best", best)
+        sys.exit(0)
 print("best", best)
+sys.exit(1)

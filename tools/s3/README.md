@@ -10,20 +10,46 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
 
 ## Comparing one function
 
-- `try.py CPP ADDR [SYMJSON] [--name SYM] [--map NAME=ADDR ...] [--all] [--ctx N]` compiles one scratch file and
-  diffs one function against the original: instruction diff count (difflib, registers included) and the
-  differing runs. Symbols come from `units.json`, from SYMJSON (gen.py's `SYMOUT` format) and from `--map`;
-  undefined names that end in `_<hex address>` (as the generator's placeholders do) map to that address.
-  Reports unresolved relocations; it prints `MATCH` only for identical bytes.
-- `permtry.py TEMPLATE ADDR SYM [--sym SYMJSON] [--map ...] --slot KEY=a|b|...` fills `{KEY}` placeholders of a
-  template with every combination of options (`\n` for newlines) and runs try.py on each; stops at a match
-  (written to `build/s3/perm_match.cpp`).
+- `try.py CPP ADDR [SYMJSON] [--name SYM] [--map NAME=ADDR ...] [--all] [--ctx N] [--work DIR]` compiles one
+  scratch file and diffs one function against the original: instruction diff count (difflib, registers included)
+  and the differing runs. Symbols come from `units.json`, from SYMJSON (gen.py's `SYMOUT` format) and from
+  `--map`; undefined names that end in `_<hex address>` (as the generator's placeholders do) map to that address.
+  Reports unresolved relocations; it prints `MATCH` only for identical bytes. The object file goes to DIR
+  (default `build/s3`), never next to the source.
+- `permtry.py TEMPLATE ADDR SYM [--sym SYMJSON] [--map ...] [--sep SEP] [--work DIR] --slot KEY=a|b|...` fills
+  `{KEY}` placeholders of a template with every combination of options (`\n` for newlines) and runs try.py on
+  each; stops at a match (written to `DIR/perm_match.cpp`, exit code 0; 1 without a match).
+- `voltry.py CPP ADDR SYMJSON [--max K] [--work DIR]` marks struct fields of a generated source `volatile`, every
+  subset of up to K fields (default 2), and stops at a match (`DIR/vol_match.cpp`). AArch64's scheduler moves a
+  store past the function's other memory accesses only when it can prove them disjoint, never a volatile one, so
+  this finds stores the original keeps in source order (`5f80bc`, `5f37e8`).
 - `blocks.py`, `ours.py` and `regiondiff.py` are for long functions: `blocks.py` lists the differing runs with their lengths,
   `ours.py` writes our relocated disassembly in the original's address layout, and `regiondiff.py OURS.s ORIG.s START [END] [--abs]`
   prints a side-by-side diff of one region (`--abs` hides register numbers).
-- `topotry.py SPEC.json` tries every order of a set of statements (with dependencies and chains that keep a
-  relative order) in a template's `{REGION}`; for load and store order problems. The spec format is in the
-  script's docstring.
+- `topotry.py SPEC.json [--work DIR]` tries every order of a set of statements (with dependencies and chains that
+  keep a relative order) in a template's `{REGION}`; for load and store order problems. The spec format is in the
+  script's docstring; a match goes to `DIR/topo_match.cpp` (exit code 0).
+
+## Unattended searches
+
+`bgsearch.py` runs one of the searches above (permtry, topotry, voltry) detached through `tools/lowprio.py` (idle
+priority, one job, as `docs/second_session.md` asks of unattended searches), so it only uses spare CPU, with its
+own work folder under `build/s3_perm/NAME/` (ignored by git; nothing tracked is touched). At most two run at a
+time.
+
+```
+python -B -I tools/s3/bgsearch.py start 351428-vol voltry.py build/s3/h351428.cpp 351428 build/s3/h351428.json --max 3
+python -B -I tools/s3/bgsearch.py list          # NAME, pid, running or exit code, match file, last log line
+python -B -I tools/s3/bgsearch.py stop 351428-vol
+```
+
+`start` appends `--work build/s3_perm/NAME/work` to the search's arguments, writes its output to
+`build/s3_perm/NAME/log.txt`, its PID to `build/s3_perm/NAME/pid` and `build/s3_perm/pids.txt`, and its exit code
+to `build/s3_perm/NAME/exit.txt` when it ends (0: it found a match, in `NAME/work/perm_match.cpp`,
+`topo_match.cpp` or `vol_match.cpp`). A hit is only a candidate: put the source into its unit (addgen.py or by
+hand), register its symbols, and run `tools/check.py UNIT`, then the full `tools/check.py`, before committing it.
+Anything else unattended (a rank.py or batchconv.py batch) goes through `tools/lowprio.py --jobs 1 -- ...` as
+well.
 
 ## Ranking and the generator's source
 
@@ -49,7 +75,10 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
   `HandleState` base, then the vtable). With `--prefix` only the leading member initialisation becomes members
   and the rest of the function stays as the constructor body, run on the generated view of the object (`p0`).
   Prints the constructor's symbol and the `--map` arguments for the placeholder classes (`ObjNNN`, or the class
-  of a constructor already named in `units.json`).
+  of a constructor already named in `units.json`). A run of equal no-argument members becomes an array when the
+  original's vtable store post-increments (`str x8, [xN], #K`) to the run's second member: Clang folds into that
+  store the newest `this`+K address with K under 256, which for single members is the last one under 256 and for
+  an array the second element (`--no-post-arrays` keeps single members).
 - `genfix.py IN.cpp OUT.cpp [loops] [panes] [handles]` rewrites generated source in place of a class: element
   loops as placement `new T[N]`, the 0x180-byte pane allocation (operator new `0x71005d4380`, `PaneBase`
   constructor, vtable GOT `0x7100c22f68`, three null fields) as `new PanelPane` from `event/layout_panes.h`, and
@@ -60,6 +89,23 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
 - `batchconv.py RANK.tsv OUT.tsv [--jobs N] [--knob K]` runs the generated version through genfix, ctor2class and
   ctor2class `--prefix` (each followed by genfix) for every generated function in a rank.py table, and copies
   matches to `build/s3/conv/match_ADDR.cpp` with their symbol file.
+
+### Command-line contract of the converters
+
+The generator's `ctorclass` knob calls these three, so their interface stays fixed (changes are announced in the
+third session's reports). Paths may be absolute or relative to the caller's directory; the scripts find
+`units.json` and the original image from their own location. No prompts.
+
+- `ctor2class.py GEN.cpp ADDR OUT.cpp [--name CLASS] [--prefix] [--handle-got GOT] [--no-post-arrays]`: reads
+  gen.py's output for the function `call_ADDR` (ADDR in hex), writes OUT.cpp and exits 0, printing
+  `name SYMBOL` (the constructor's mangled name) and `maps --map NAME=ADDR ...` (symbols for the classes it
+  declared). Exits 1 without writing OUT.cpp when the function is missing or has statements it cannot convert
+  (listed after `UNHANDLED:`).
+- `genfix.py IN.cpp OUT.cpp [loops] [panes] [handles]` (all three when none is named): writes OUT.cpp (may be
+  IN.cpp) and exits 0, also when nothing changed; nonzero for an unknown fix name, unreadable input or a failed
+  handlify step.
+- `handlify.py IN.cpp OUT.cpp [GOT]` (GOT of the handle vtable, default `c22f00`): writes OUT.cpp and exits 0;
+  nonzero on failure.
 
 ## Adding a function to a unit
 

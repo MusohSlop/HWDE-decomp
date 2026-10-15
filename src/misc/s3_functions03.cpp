@@ -839,3 +839,112 @@ int call_33b748(Arg33b748_0* p0) {
     callee_339098(a0);
     return callee_339154(p0);
 }
+
+void callee_1f16ec(long);        // 0x71001f16ec
+int callee_1f69b8(long);        // 0x71001f69b8
+
+struct Arg1ec528_0 {
+    long field_0;                // +0
+    unsigned char pad8[0x166d0];
+    int field_166d8;                 // +166d8
+    unsigned char pad166dc[0x44];
+    void* field_16720;               // +16720
+    unsigned char pad16728[0x18];
+    void* field_16740;               // +16740
+    void* field_16748;               // +16748
+    unsigned char field_16750;       // +16750
+    unsigned char pad16751[0x3];
+    int field_16754;                 // +16754
+    int field_16758;                 // +16758
+    unsigned char field_1675c;       // +1675c
+    unsigned char pad1675d[0x3];
+    void* field_16760;               // +16760
+    int field_16768;                 // +16768
+    unsigned char pad1676c[0x1c];
+    void* field_16788;               // +16788
+    unsigned char field_16790;       // +16790
+    unsigned char pad16791[0x3];
+    int field_16794;                 // +16794
+    int field_16798;                 // +16798
+    unsigned char pad1679c[0x80];
+    unsigned short field_1681c;      // +1681c
+};
+
+struct Elem1ec528_r9 {
+    unsigned char pad0[0x88];
+};
+// Reached through the GOT slot at 0x7100c230e0.
+extern unsigned char gGlobalc230e0_1ec528[];
+
+// 0x71001ec528: the layout constructor's leading sprites as an array of nine, so the vtable store post-increments to the second sprite
+class Class1ec528 {
+public:
+    Class1ec528();
+    virtual void v00();
+
+    LayoutSprite a8[9];
+    LayoutFrame a290[128];
+    LayoutSprite m4690;
+};
+
+Class1ec528::Class1ec528() {
+    Arg1ec528_0* p0 = reinterpret_cast<Arg1ec528_0*>(this);
+    long r13 = 0;
+    do {
+        callee_1ef52c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x46d8) + r13);
+        r13 = r13 + 0x48;
+    } while (r13 != 0x12000);
+    p0->field_166d8 = 0;
+    callee_1f16ec(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x166e0));
+    callee_1f16ec(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x16700));
+    p0->field_16720 = nullptr;
+    p0->field_16760 = nullptr;
+    p0->field_16768 = 0;
+    p0->field_16750 = 0;
+    p0->field_16748 = nullptr;
+    p0->field_16740 = nullptr;
+    p0->field_1675c = 0;
+    p0->field_16754 = 0;
+    p0->field_16758 = 0;
+    int c17 = callee_1f69b8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x16770));
+    p0->field_16794 = 0;
+    p0->field_16798 = 0;
+    p0->field_1681c = 0;
+    p0->field_16790 = 0;
+    p0->field_16788 = nullptr;
+}
+
+struct Arg5f80bc_0 {
+    long field_0;                // +0
+    void* field_8;               // +8
+    volatile int field_10;                 // +10
+};
+// Reached through the GOT slot at 0x7100c2de10.
+extern unsigned char gGlobalc2de10_5f80bc[];
+
+// 0x71005f80bc: one field volatile: the original keeps its store after the vtable store
+void call_5f80bc(Arg5f80bc_0* p0) {
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2de10_5f80bc) + 0x10);
+    p0->field_8 = nullptr;
+    p0->field_10 = 0;
+}
+
+struct Arg5f37e8_0 {
+    long field_0;                // +0
+    void* field_8;               // +8
+    void* field_10;               // +10
+    int field_18;                 // +18
+    unsigned char pad1c[0xc];
+    volatile int field_28;                 // +28
+};
+// Reached through the GOT slot at 0x7100c2dde8.
+extern unsigned char gGlobalc2dde8_5f37e8[];
+
+// 0x71005f37e8: one field volatile: the original keeps its store after the vtable store
+void call_5f37e8(Arg5f37e8_0* p0) {
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2dde8_5f37e8) + 0x10);
+    p0->field_8 = nullptr;
+    p0->field_10 = nullptr;
+    p0->field_18 = 0;
+    p0->field_28 = 0;
+}
