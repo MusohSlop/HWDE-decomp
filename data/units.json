@@ -22079,7 +22079,12 @@
     "_ZN12LockedSource11data_49ba44Ev": "0x710049ba44",
     "_ZN12LockedSource12count_49ba4cEv": "0x710049ba4c",
     "_ZN11LockedFlags13finish_49c290EPc": "0x710049c290",
-    "got:_ZTV11LockedFlags": "0x7100c2cbb0"
+    "got:_ZTV11LockedFlags": "0x7100c2cbb0",
+    "_ZN9FrameItem10key_244838Ev": "0x7100244838",
+    "_ZN9FrameItem11next_2449a8Ei": "0x71002449a8",
+    "_ZN9FrameItem12apply_2431ccEi": "0x71002431cc",
+    "_ZN9FrameItem12apply_24393cEi": "0x710024393c",
+    "got:gKeyedFrame": "0x7100c21708"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -32911,6 +32916,13 @@
         "_Z7collectILi0EEvP8DrawPairjP10FrameArenaPP10DrawRecord": "0x71003db158",
         "_Z7collectILi1EEvP8DrawPairjP10FrameArenaPP10DrawRecord": "0x71003db330",
         "_Z7collectILi2EEvP8DrawPairjP10FrameArenaPP10DrawRecord": "0x71003db508"
+      }
+    },
+    "misc/s4_23dd14.cpp": {
+      "functions": {
+        "_ZN10KeyedFrame5applyILi0EEEvmi": "0x710023dd14",
+        "_ZN10KeyedFrame5applyILi1EEEvmi": "0x710023e0c0",
+        "_Z15find_frame_itemm": "0x7100241dcc"
       }
     }
   }
