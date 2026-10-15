@@ -2141,6 +2141,22 @@ def gen_function(a, ins):
                     regs["f"][fd] = ("fconst", 0.0)
                 elif re.fullmatch(r"s\d+", ops[1]):
                     regs["f"][fd] = fuse(regs["f"], ops[1])
+                elif re.fullmatch(r"w\d+", ops[1]) and "nofbits" not in knobs:
+                    iv_ = use(regs, ops[1])
+                    if iv_[0] == "fbits":
+                        regs["f"][fd] = iv_[1]
+                    elif iv_[0] == "const":
+                        import struct as _st
+                        regs["f"][fd] = ("fconst", _st.unpack("<f", _st.pack("<I", iv_[1] & 0xffffffff))[0])
+                    elif iv_[0] == "var" and isinstance(vars_.get(iv_[1]), tuple) and vars_[iv_[1]][0] == "load" \
+                            and structs[vars_[iv_[1]][1]].get(vars_[iv_[1]][2], ("",))[0] in ("int", "unsigned int"):
+                        # an int load that is really a float field
+                        vt_ = vars_[iv_[1]]
+                        structs[vt_[1]][vt_[2]] = ("float", None)
+                        vars_[iv_[1]] = ("load", vt_[1], vt_[2])
+                        regs["f"][fd] = iv_
+                    else:
+                        raise Fail("fmov form")
                 else:
                     raise Fail("fmov form")
                 regs.setdefault("fw", set()).add(fd) if fd < 8 else None
@@ -2852,6 +2868,8 @@ def gen_function(a, ins):
                     ct = STORE[mm] or ("long" if w == "x" else "int")
                     if mm == "str" and w == "x" and (val[0] in ("param", "var", "gotaddr", "local", "stackaddr") or (val[0] == "const" and val[1] == 0)):
                         ct = "void*"
+                    if val[0] == "fbits" and w == "w" and mm == "str":
+                        ct = "float"; val = val[1]
                     step = (8 if w == "x" else 4) * j
                     if idx is not None:
                         if pair:
@@ -3005,6 +3023,17 @@ def gen_function(a, ins):
                 elif m == "csinv":
                     y = ("bin", "^", y, ("const", -1, w), w, "eor")
                 regs[dn] = ("select", (flags, ops[3]), x, y, w)
+                if dn < 8: written.add(dn)
+            elif m == "fmov" and len(ops) == 2 and re.fullmatch(r"w\d+", ops[0]) and re.fullmatch(r"s\d+", ops[1]) \
+                    and "nofbits" not in knobs:
+                dn, w = regname(ops[0])
+                regs[dn] = ("fbits", fuse(regs["f"], ops[1]))
+                if dn < 8: written.add(dn)
+            elif m in ("eor", "and") and len(ops) == 3 and ops[2].startswith("#") and re.fullmatch(r"w\d+", ops[0]) \
+                    and (regs.get(regname(ops[1])[0]) or ("",))[0] == "fbits" \
+                    and (m, imm(ops[2]) & 0xffffffff) in (("eor", 0x80000000), ("and", 0x7fffffff)):
+                dn, w = regname(ops[0])
+                regs[dn] = ("fbits", ("funary", "fneg" if m == "eor" else "fabs", regs[regname(ops[1])[0]][1]))
                 if dn < 8: written.add(dn)
             elif m in BIN and len(ops) in (3, 4):
                 dn, w = regname(ops[0])
@@ -3401,6 +3430,8 @@ def gen_function(a, ins):
             return "long" if n in arith else "void*"
         return f"{p}*"
     def vtype(v):
+        if v[0] == "fbits":
+            raise Fail("float bits")
         if v[0] == "hi" or (v[0] == "var" and v[1] in PAIRS_) or v[0] == "undef":
             return "long"
         if v[0] == "retobj":
