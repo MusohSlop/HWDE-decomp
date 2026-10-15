@@ -4,13 +4,17 @@
 working:
 tried: 459ffc (1,920 B, in misc/text_format.cpp as a near miss, 2,168 B: the flag loop keeps its bool in the original and the length modifiers are kept as values; it writes the statics 45a850 needs)
 tried: 45b158 (2,464 B, 2,520 B here: padding loops solved by an explicit cap == 0 fill path; the sign mask, the a-f test and the frame size remain; docs/s5_wip/45b158.cpp)
-matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544
+matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544 3bd1d8 3beef0
 tried: 4abdcc (2,256 B, 2,252 B here, 110 instructions off abstracted: scheduling of the light loop and of the camera loads; docs/s5_wip/4abdcc.cpp)
 tried: 4b2e34 (4,600 B, not drafted: it inlines the NEON matrix inverse shared by 23 functions, reconstructed but not yet scheduled right; docs/s5_wip/matrix_inverse.cpp)
-tried: 3beef0 (1,596 B, 1,548 B here, 34 off abstracted: the four pane translate copies go through a 12-byte stack temporary in the original; docs/s5_wip/3beef0.cpp)
 tried: 3b0428 (1,800 B, 1,764 B here, 37 off abstracted: the second mode == 7 test is jump-threaded through the mode == 3 arm, the last loop's exit is not the original's sum of flags, one value spilled differently; docs/s5_wip/3b0428.cpp)
 tried: 423e04 (2,808 B, 61 off, same size: layout of the first test and of the shared tail, two byte loads merged; docs/s5_wip/423e04.cpp)
 tried: 3ccf84 (3,100 B, 24 off, same size: only the tail differs, the shared reset block and the keep-flag test; docs/s5_wip/3ccf84.cpp)
+tried: 3be490 (2,656 B, 2,624 B here, 16 off abstracted: the indexes derived from the loop index are sign-extended from 32 bits in the original, widened in ours; docs/s5_wip/3be490.cpp)
+tried: 3b4e98 (2,576 B, same size here, 6 off abstracted: scheduling in the extra item's setters; docs/s5_wip/3b4e98.cpp)
+tried: 3bf978 (3,060 B, 3,056 B here, 174 off abstracted: the rank-to-frame mapping and the slot reloads; docs/s5_wip/3bf978.cpp)
+tried: 3c2280 (4,044 B, same size here, 18 off abstracted: a bounds test's encoding, select and store scheduling; docs/s5_wip/3c2280.cpp)
+tried: 4ce8e0 (2,104 B, 2,112 B here, 23 off abstracted: register allocation of the stage pointers and offsets; docs/s5_wip/4ce8e0.cpp)
 # The NEON matrix-inverse family (main: s5 owns the shared inline and all 23 copies, any range or size), working:
 96e0c
 a6470
