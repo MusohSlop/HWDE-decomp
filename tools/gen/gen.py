@@ -1296,6 +1296,11 @@ def gen_function(a, ins):
                 if ct != "ARRAY:unsigned char":
                     structs[sn][off] = (ct, None)
                     prev = structs[sn][off]
+        if not ct.startswith("ARRAY:") and vu_check_(sn, off, ct):
+            prev = None if structs[sn].get(off) is None else structs[sn][off]
+            if prev and prev[0] != ct:
+                note_access_(sn, off, cstore)
+                return sn, base, off
         if prev and prev[0] != ct:
             groups = [{"long", "void*"}, {"unsigned char", "signed char"}, {"unsigned short", "short"}]
             pun_ = prev[0] in ("int", "unsigned int", "float") and ct in ("int", "unsigned int", "float") and "float" in (prev[0], ct) and "nopun" not in knobs
@@ -4823,13 +4828,20 @@ def gen_function(a, ins):
                 else:
                     ml.append(f"    virtual void slot_{k2}();")
             fl, pos = [], 8
+            vu_end_ = -1
             for off, (ct, child) in sorted(structs[sn].items()):
                 if off == 0:
+                    continue
+                if off < vu_end_:
                     continue
                 if off < pos:
                     raise Fail("overlap")
                 if off > pos:
                     fl.append(f"    unsigned char pad{pos:x}[0x{off - pos:x}];")
+                if (sn, off) in vu_slots_:
+                    fl.append(f"    VecU field_{off:x};               // +{off:x}")
+                    pos = vu_end_ = off + 16
+                    continue
                 if ct.startswith("ARRAY:"):
                     et_ = f"{child}*" if child else ct[6:]
                     fl.append(f"    {et_} field_{off:x}[1]{pack_(ct, off)};{' ' * max(1, 17 - len(et_))}// +{off:x}")
