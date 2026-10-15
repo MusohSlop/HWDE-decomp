@@ -19232,7 +19232,8 @@
     "_Z13callee_4c7b90PvS_fff": "0x71004c7b90",
     "_Z11callee_fd70PvS_fDv4_fffffff": "0x710000fd70",
     "_Z13callee_3c5f70lii": "0x71003c5f70",
-    "_Z13callee_455c38lfffff": "0x7100455c38"
+    "_Z13callee_455c38lfffff": "0x7100455c38",
+    "kCornerPlanes_a9aea8": "0x7100a9aea8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29143,7 +29144,8 @@
       },
       "functions": {
         "_ZN11Light5a3ce06updateEv": "0x71005a3ce0",
-        "_ZN9Obj3e15386updateEi": "0x71003e1538"
+        "_ZN9Obj3e15386updateEi": "0x71003e1538",
+        "_Z22frustum_corners_5f9facPK11Plane5f9facP13__Float32x4_t": "0x71005f9fac"
       }
     },
     "misc/s3_functions13.cpp": {
