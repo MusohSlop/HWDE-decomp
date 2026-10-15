@@ -4,7 +4,7 @@
 working:
 tried: 459ffc (1,920 B, in misc/text_format.cpp as a near miss, 2,168 B: the flag loop keeps its bool in the original and the length modifiers are kept as values; it writes the statics 45a850 needs)
 tried: 45b158 (2,464 B, 2,520 B here: padding loops solved by an explicit cap == 0 fill path; the sign mask, the a-f test and the frame size remain; docs/s5_wip/45b158.cpp)
-matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544
+matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544 3bd1d8
 tried: 4abdcc (2,256 B, 2,252 B here, 110 instructions off abstracted: scheduling of the light loop and of the camera loads; docs/s5_wip/4abdcc.cpp)
 tried: 4b2e34 (4,600 B, not drafted: it inlines the NEON matrix inverse shared by 23 functions, reconstructed but not yet scheduled right; docs/s5_wip/matrix_inverse.cpp)
 tried: 3beef0 (1,596 B, 1,548 B here, 34 off abstracted: the four pane translate copies go through a 12-byte stack temporary in the original; docs/s5_wip/3beef0.cpp)

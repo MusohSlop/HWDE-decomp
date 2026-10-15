@@ -45,9 +45,17 @@ extern const char kLineZds07_7db9b2[] __attribute__((visibility("hidden")));
 extern const char kLineZds08_7db9be[] __attribute__((visibility("hidden")));
 extern const char kLineDlc02_7db93a[] __attribute__((visibility("hidden")));
 extern const char kLineDlc03_7db946[] __attribute__((visibility("hidden")));
+extern const char kArwU_7d5b66[] __attribute__((visibility("hidden")));
+extern const char kArwL_7d5b6c[] __attribute__((visibility("hidden")));
+extern const char kArwR_7d5b72[] __attribute__((visibility("hidden")));
+extern const char kArwD_7d5b78[] __attribute__((visibility("hidden")));
 
 struct Color3bdbf0 {
     unsigned char r, g, b, a;
+};
+
+struct Float3_3bdbf0 {
+    float x, y, z;
 };
 
 struct Pane3bdbf0 {
@@ -64,10 +72,16 @@ struct Pane3bdbf0 {
     virtual void slot_10();
     virtual void slot_11();
     virtual Pane3bdbf0* find_pane(const char* name, bool recursive);
-    unsigned char pad8[0x50];
+    unsigned char pad8[0x28];
+    Float3_3bdbf0 translate;          // +30
+    unsigned char pad3c[0x1c];
     unsigned char flags;              // +58
 
     void set_visible(bool visible) { flags = (flags & ~1) | (visible & 1); }
+    void set_translate(const Float3_3bdbf0& t) {
+        translate = t;
+        flags |= 0x10;
+    }
 };
 
 struct Layout3bdbf0 {
@@ -83,18 +97,177 @@ static inline void set_white(Pane3bdbf0* pane) {
 }
 
 struct Menu3bdbf0 {
-    unsigned char pad0[0x4f0];
-    unsigned char field_4f0[2];       // +4f0
-    unsigned char pad4f2[0x1e];
-    unsigned char field_510[2];       // +510
-    unsigned char pad512[0x35];
-    unsigned char field_547;          // +547
+    unsigned char pad0[0x3c];
+    int slot_kind[32];                // +3c
+    unsigned char padbc[0x420];
+    unsigned char has[32];            // +4dc
+    unsigned char owned[32];          // +4fc
+    unsigned char pad51c[0x20];
+    int stage;                        // +53c
+    unsigned char pad540[7];
+    unsigned char all_open;           // +547
     unsigned char pad548[0x2b8];
     Layout3bdbf0* layout;             // +800
+    unsigned char pad808[0xb6420];
+    int kinds[32];                    // +b6c28
 
     Pane3bdbf0* find(const char* name) { return layout->root->find_pane(name, true); }
+    // The two forms of the same test: the first tests the stage's flag first, the second the all-open flag (so
+    // in a run of them the all-open load is shared and every test after it is threaded on its value).
+    bool is_open(int i) { return has[i] && (all_open || owned[i]); }
+    bool can_go(int i) { return all_open ? has[i] != 0 : has[i] && owned[i]; }
+    void update_arrows();
     void show_line(int line, unsigned char visible);
 };
+
+// A stage id to its slot: ids from 0x20 (DLC stages 200 to 232 and 100) are shifted down, then two ranges swap.
+static inline int stage_slot(int id) {
+    if (id >= 0x20) {
+        if (static_cast<unsigned>(id - 200) <= 0x20 || id == 100) {
+            id -= 0x44;
+        } else {
+            id = 0;
+        }
+        // Written negated: the +5 arm is the else block, so the compare stays "< 9" and is reversed only by block
+        // placement (cmp #9; b.hs), not "> 8".
+        if (!(id >= 18 && id <= 26)) {
+            if (id >= 27 && id <= 31) {
+                id -= 9;
+            }
+        } else {
+            id += 5;
+        }
+    }
+    return id;
+}
+
+// The same remapping, for the kind table: a stage index below 0x20 is remapped too.
+static inline int kind_slot(unsigned id) {
+    int s = id;
+    if (id >= 0x20) {
+        if (static_cast<unsigned>(id - 200) <= 0x20 || id == 100) {
+            s = id - 0x44;
+        } else {
+            s = 0;
+        }
+    }
+    if (!(s >= 18 && s <= 26)) {
+        if (s >= 27 && s <= 31) {
+            s -= 9;
+        }
+    } else {
+        s += 5;
+    }
+    return s;
+}
+
+// 0x71003bd1d8: places the four arrow panes and shows those that lead to an open stage from the current one.
+void Menu3bdbf0::update_arrows() {
+    find(kArwL_7d5b6c)->set_visible(false);
+    find(kArwR_7d5b72)->set_visible(false);
+    find(kArwU_7d5b66)->set_visible(false);
+    find(kArwD_7d5b78)->set_visible(false);
+    float z = find(kArwU_7d5b66)->translate.z;
+    find(kArwU_7d5b66)->set_translate(Float3_3bdbf0{-200.0f, 230.0f, z});
+    z = find(kArwD_7d5b78)->translate.z;
+    find(kArwD_7d5b78)->set_translate(Float3_3bdbf0{-200.0f, -250.0f, z});
+
+    int slot = stage_slot(stage);
+    int cur = static_cast<unsigned>(slot) < 0x20 ? slot_kind[slot] : -1;
+    if (is_open(20) || is_open(24)) {
+        if (cur == 4 || cur == 5) {
+            kinds[4] = 7;
+            kinds[5] = 7;
+        }
+    } else {
+        kinds[4] = 2;
+        kinds[5] = 2;
+    }
+    if (is_open(21) || is_open(25)) {
+        if (cur == 8 || cur == 9) {
+            kinds[8] = 8;
+            kinds[9] = 8;
+        }
+    } else {
+        kinds[8] = 2;
+        kinds[9] = 2;
+    }
+
+    switch (kinds[kind_slot(cur)]) {
+    case 1:
+        if (can_go(4) || can_go(6) || can_go(25) || can_go(8)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 2:
+        if (can_go(3)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(10)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        if (can_go(20) || can_go(24)) {
+            find(kArwU_7d5b66)->set_visible(true);
+        }
+        if (can_go(21) || can_go(25)) {
+            find(kArwD_7d5b78)->set_visible(true);
+        }
+        break;
+    case 3:
+        if (can_go(10)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(13)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 4:
+        if (can_go(13)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(16)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 5:
+        if (can_go(16)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(23)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 6:
+        find(kArwL_7d5b6c)->set_visible(true);
+        break;
+    case 7:
+        if (can_go(24)) {
+            find(kArwU_7d5b66)->set_visible(true);
+        }
+        if (can_go(6) || can_go(8) || can_go(21) || can_go(25)) {
+            find(kArwD_7d5b78)->set_visible(true);
+        }
+        if (can_go(3)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(10)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 8:
+        find(kArwU_7d5b66)->set_visible(true);
+        if (can_go(3)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(10)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 9:
+        find(kArwD_7d5b78)->set_visible(true);
+        break;
+    }
+}
 
 // 0x71003bdbf0: shows or hides the line panes of LINE (1 to 31) of a layout. VISIBLE is a byte whose bit 0 is
 // used (the original masks it where it computes the DLC lines' flag, so the shared tail uses orr there and bfxil
@@ -167,7 +340,7 @@ void Menu3bdbf0::show_line(int line, unsigned char visible) {
         find(kLine300Dlc_7db8d2)->set_visible(visible & 1);
         find(kLine04Dlc_7db8e0)->set_visible(visible & 1);
         find(kLine700Dlc_7db8ec)->set_visible(visible & 1);
-        bool shown = field_547 ? (visible & 1) : (field_4f0[0] ? field_510[0] != 0 : false);
+        bool shown = all_open ? (visible & 1) : (has[20] ? owned[20] != 0 : false);
         find(kLineDlc02_7db93a)->set_visible(shown);
         break;
     }
@@ -175,7 +348,7 @@ void Menu3bdbf0::show_line(int line, unsigned char visible) {
         find(kLine302Dlc_7db8fa)->set_visible(visible & 1);
         find(kLine06Dlc_7db908)->set_visible(visible & 1);
         find(kLine702Dlc_7db914)->set_visible(visible & 1);
-        bool shown = field_547 ? (visible & 1) : (field_4f0[1] ? field_510[1] != 0 : false);
+        bool shown = all_open ? (visible & 1) : (has[21] ? owned[21] != 0 : false);
         find(kLineDlc03_7db946)->set_visible(shown);
         break;
     }

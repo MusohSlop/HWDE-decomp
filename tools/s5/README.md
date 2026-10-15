@@ -86,3 +86,10 @@ Each with the functions it fixed; three or more make it a generator note.
 - String literals scattered across the string section (some merged with other modules' strings): declare each as
   `extern const char kName_ADDR[] __attribute__((visibility("hidden")))` and map it, instead of one
   `.rodata.str1.1` anchor. `3bdbf0` (41 strings).
+- A range test `sub; cmp #9; b.hs else` with the then-arm placed first, where ours has `cmp #8; b.hi`: the original's
+  branch went to the then-arm at instruction selection (else was the next block) and block placement reversed it;
+  write the test negated with the then-arm as the else block, `if (!(x >= 18 && x <= 26)) { ... } else { x += 5; }`.
+  `3bd1d8` (twice).
+- A run of "flag and (all or owned)" tests where the original loads the all flag once at the top and duplicates
+  the rest on its value (each test after it threaded): the helper tests the all flag first,
+  `all ? has[i] != 0 : has[i] && owned[i]`; the form `has[i] && (all || owned[i])` reloads it per test. `3bd1d8`.

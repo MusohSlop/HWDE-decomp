@@ -18057,7 +18057,11 @@
     "_ZN10Part135e00C1Ev": "0x7100135e00",
     "_ZN10Part140b9cC1Ev": "0x7100140b9c",
     "_ZN10Part15e580C1Ev": "0x710015e580",
-    "_ZN9Sub15aa9cC1Ev": "0x710015aa9c"
+    "_ZN9Sub15aa9cC1Ev": "0x710015aa9c",
+    "kArwU_7d5b66": "0x71007d5b66",
+    "kArwL_7d5b6c": "0x71007d5b6c",
+    "kArwR_7d5b72": "0x71007d5b72",
+    "kArwD_7d5b78": "0x71007d5b78"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -27675,12 +27679,13 @@
     },
     "misc/s5_functions02.cpp": {
       "map": {
-        ".rodata": "0x7100804428",
+        ".rodata": "0x7100804404",
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0",
         ".rodata.cst32": "0x710073df90"
       },
       "functions": {
+        "_ZN10Menu3bdbf013update_arrowsEv": "0x71003bd1d8",
         "_ZN10Menu3bdbf09show_lineEih": "0x71003bdbf0",
         "_ZN11Scene4485444initEv": "0x7100448544"
       }
