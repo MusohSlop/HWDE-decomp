@@ -1,7 +1,7 @@
 # Fifth session (branch matching-s5): hand-matching of non-constructor functions over 1,500 bytes at 0x380000 and
 # above, and the giants of that range. Generator runs should skip every address listed here.
 # working: functions being hand-matched now; matched: functions matched on matching-s5; tried: parked, with reason.
-working:
+working: 4eab78 4ebc2c 4eccf0 4eddb4 4eee68 (the vector five, handed over by main from s2: one template; 4eab78 drafted, 97 off abstracted, docs/s5_wip/4eab78.cpp)
 tried: 459ffc (1,920 B, in misc/text_format.cpp as a near miss, 2,168 B: the flag loop keeps its bool in the original and the length modifiers are kept as values; it writes the statics 45a850 needs)
 tried: 45b158 (2,464 B, 2,520 B here: padding loops solved by an explicit cap == 0 fill path; the sign mask, the a-f test and the frame size remain; docs/s5_wip/45b158.cpp)
 matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544 3bd1d8 3beef0 5a3ce0 3e1538 5f9fac
