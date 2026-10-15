@@ -238,7 +238,9 @@ the first read of it inside an if moves in front of that if and of the loads tha
 sinks back into the if, the GOT address stays in a callee-saved register for the later reads, as s3 found in
 destructors that read a manager global at the top) and `volstores` (a field written by a single constant store of
 4 bytes or less, next to another such field, is volatile: the original keeps adjacent constant stores apart that
-Clang would merge, as s3 found for 347fe4 and 3a4034; volatile also keeps loads apart, so it is only a knob set).
+Clang would merge, as s3 found for 347fe4 and 3a4034; volatile also keeps loads apart, so it is only a knob set) and
+`dstfirst` (with `sink`: a load used as a store's destination stays a local where it was loaded instead of being
+inlined at the store, whose right side would be evaluated first; s5's rule for 5a5b64 and its template copies).
 Functions whose generated source would exceed 2 MB
 are skipped (forking at every branch can grow a function's source exponentially).
 

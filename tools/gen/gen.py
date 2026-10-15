@@ -4327,6 +4327,23 @@ def gen_function(a, ins):
         if "noscalarlane" not in knobs and v_[0] not in ("fconst", "fparam") and vtype(v_) == "Vec4f":
             return f"{expr(v_, False)}[0]"
         return expr(v_, top_)
+    sdst_cache_ = []
+    def store_dsts_():
+        """Variables used as the base of a store (destinations)."""
+        if not sdst_cache_:
+            acc_ = set()
+            def walk_(its_):
+                for it_ in its_:
+                    if not isinstance(it_, tuple) or not it_:
+                        continue
+                    if it_[0] in ("store", "storei") and len(it_) > 3 and isinstance(it_[3], tuple) and it_[3][0] == "var":
+                        acc_.add(it_[3][1])
+                    for x_ in it_:
+                        if isinstance(x_, list):
+                            walk_(x_)
+            walk_(items)
+            sdst_cache_.append(acc_)
+        return sdst_cache_[0]
     def iexpr_(v_):
         """An index: a pointer-typed value goes through reinterpret_cast<long>."""
         e_ = expr(v_)
@@ -5093,7 +5110,8 @@ def gen_function(a, ins):
                     continue
                 outl.append(f"{pad}{acc(base, off)}[{iexpr_(iv)}] = {fit(expr(val), vtype(val), ftype(sn, off))};")
                 continue
-            if it[0] == "let" and "sink" in knobs and use_count.get(it[1], 0) == 1 and not (isinstance(vars_[it[1]], str) and vars_[it[1]] in structs):
+            if it[0] == "let" and "sink" in knobs and use_count.get(it[1], 0) == 1 and not (isinstance(vars_[it[1]], str) and vars_[it[1]] in structs) \
+                    and not ("dstfirst" in knobs and it[1] in store_dsts_()):
                 lt0 = vars_[it[1]]
                 if not (isinstance(lt0, tuple) and len(lt0) > 3 and lt0[3] != ftype(it[2], it[3])):
                     inline_map[it[1]] = acc(it[4], it[3])

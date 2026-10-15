@@ -66,3 +66,4 @@ readarity+voidret
 vptrfirst
 gotfirst
 volstores
+sink+dstfirst
