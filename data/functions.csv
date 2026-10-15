@@ -8449,7 +8449,7 @@ Address,Quality,Size,Name
 0x710029b370,O,484,_Z11call_29b370P11Arg29b370_0
 0x710029b554,O,80,_Z23create_singleton_29b554v
 0x710029b5a4,O,84,_Z17destroy_adv_boardv
-0x710029b5f8,U,9224,FUN_710029b5f8
+0x710029b5f8,O,9224,_ZN8AdvBoard10initializeEv
 0x710029da00,O,212,_ZN19AnimationSet_29da004stopEv
 0x710029dad4,O,28,_Z11call_29dad4P11Arg29dad4_0i
 0x710029daf0,U,332,FUN_710029daf0
