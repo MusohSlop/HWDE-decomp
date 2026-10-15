@@ -4,9 +4,9 @@
 working:
 tried: 459ffc (1,920 B, in misc/text_format.cpp as a near miss, 2,168 B: the flag loop keeps its bool in the original and the length modifiers are kept as values; it writes the statics 45a850 needs)
 tried: 45b158 (2,464 B, 2,520 B here: padding loops solved by an explicit cap == 0 fill path; the sign mask, the a-f test and the frame size remain; docs/s5_wip/45b158.cpp)
-matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544 3bd1d8 3beef0
+matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544 3bd1d8 3beef0 5a3ce0 3e1538
 tried: 4abdcc (2,256 B, 2,252 B here, 110 instructions off abstracted: scheduling of the light loop and of the camera loads; docs/s5_wip/4abdcc.cpp)
-tried: 4b2e34 (4,600 B, not drafted: it inlines the NEON matrix inverse shared by 23 functions, reconstructed but not yet scheduled right; docs/s5_wip/matrix_inverse.cpp)
+tried: 4b2e34 (4,600 B, not drafted: it inlines the NEON matrix inverse, now include/misc/matrix_inverse.h)
 tried: 3b0428 (1,800 B, 1,764 B here, 37 off abstracted: the second mode == 7 test is jump-threaded through the mode == 3 arm, the last loop's exit is not the original's sum of flags, one value spilled differently; docs/s5_wip/3b0428.cpp)
 tried: 423e04 (2,808 B, 61 off, same size: layout of the first test and of the shared tail, two byte loads merged; docs/s5_wip/423e04.cpp)
 tried: 3ccf84 (3,100 B, 24 off, same size: only the tail differs, the shared reset block and the keep-flag test; docs/s5_wip/3ccf84.cpp)
@@ -15,14 +15,15 @@ tried: 3b4e98 (2,576 B, same size here, 6 off abstracted: scheduling in the extr
 tried: 3bf978 (3,060 B, 3,056 B here, 174 off abstracted: the rank-to-frame mapping and the slot reloads; docs/s5_wip/3bf978.cpp)
 tried: 3c2280 (4,044 B, same size here, 18 off abstracted: a bounds test's encoding, select and store scheduling; docs/s5_wip/3c2280.cpp)
 tried: 4ce8e0 (2,104 B, 2,112 B here, 23 off abstracted: register allocation of the stage pointers and offsets; docs/s5_wip/4ce8e0.cpp)
-# The NEON matrix-inverse family (main: s5 owns the shared inline and all 23 copies, any range or size), working:
+# The NEON matrix-inverse family (main: s5 owns the shared inline and all 23 copies, any range or size; the inline is
+# include/misc/matrix_inverse.h, 5a3ce0 and 3e1538 matched on it; 1e26f8 and 5f4418 are a look-at instead: two
+# normalisations and cross products on other swizzle controls), working:
 96e0c
 a6470
 1e26f8
 2212c4
 242070
 3d0ca4
-3e1538
 3e6aa8
 3f4b2c
 41ff58
@@ -31,7 +32,6 @@ a6470
 489450
 4b2e34
 54e330
-5a3ce0
 5acba4
 5ad154
 5b5c1c

@@ -7,7 +7,8 @@ and that no conditional branch inside the entry reaches (an unconditional b to a
 the next function), where either a prologue starts (a pre-indexed store of callee-saved
 registers or of x29/x30 to the stack, or sub sp, sp, #N) or a bl elsewhere in the image calls it. A split is
 proposed only when every piece decodes completely and ends in ret, b or br. Points that already start another
-entry end the entry there instead of making a new one. OUT.tsv lists every proposal (entry, size, pieces); with
+entry end the entry there instead of making a new one. An entry whose last instruction starts a prologue right
+after a ret or branch is cut one word short: that word begins the next, unlisted function. OUT.tsv lists every proposal (entry, size, pieces); with
 --apply the entries are replaced by their pieces (named FUN_<address>, unmatched). Matched entries are never
 touched.
 """
@@ -77,6 +78,18 @@ def main():
                 continue
             if pro or cur.address in called or cur.address in starts:
                 cuts.append(cur.address)
+        # an entry whose last instruction starts a prologue right after a ret or branch ends one word early: that
+        # word is the first of the next (unlisted) function
+        last_, prev_ = ins[-1], ins[-2] if len(ins) > 1 else None
+        if prev_ is not None and prev_.mnemonic in ("ret", "b", "br") and \
+                ((last_.mnemonic in ("stp", "str") and prologue.search(last_.op_str)) or
+                 (last_.mnemonic == "sub" and last_.op_str.startswith("sp, sp, #"))):
+            n -= 4
+            ins = ins[:-1]
+            cuts = [c_ for c_ in cuts if c_ < a + n]
+            if not cuts:
+                proposals[a] = (n + 4, [(a, n)])
+                continue
         if not cuts:
             continue
         bounds = [a] + cuts + [a + n]
@@ -88,8 +101,8 @@ def main():
             if len(pi) * 4 != sz or pi[-1].mnemonic not in ("ret", "b", "br"):
                 ok = False
                 break
-        if ok and (len(pieces) > 1 or pieces[0][1] != n):
-            proposals[a] = (n, pieces)
+        if ok and (len(pieces) > 1 or pieces[0][1] != n or int(r[2]) != n):
+            proposals[a] = (int(r[2]), pieces)
     with open(out, "w", encoding="utf-8") as f:
         for a, (n, pieces) in sorted(proposals.items()):
             f.write("%x\t%d\t%s\n" % (a, n, " ".join("%x:%d" % p for p in pieces)))
