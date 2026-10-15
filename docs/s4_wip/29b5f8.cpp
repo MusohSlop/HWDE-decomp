@@ -1,7 +1,7 @@
 // 0x710029b5f8 AdvBoard::initialize (9,224 B), fourth session, parked. Build: this file alone with try.py (or
 //   build/s4/adiff.py), --name _ZN8AdvBoard10initializeEv and the symbol file docs/s4_wip/29b5f8.json (the GOT name
 //   tables, the 94 strings and the new callee names; its .rodata 0x71007f8a30 holds the two jump tables).
-// State: 9,224 B (the original's size), 12 instructions off counting branch targets. What is right:
+// State: 9,224 B (the original's size), 11 instructions off counting branch targets. What is right:
 //   - create_window_animation returns a WindowAnimation* that the board stores into LayoutAnimation* members, and
 //     the stops right after a create (signboards, moon_clash) are written inline: the original keeps their second
 //     null check (LVI cannot see the null through the base conversion; a static inline helper is threaded on its own
@@ -10,13 +10,14 @@
 //     computes this+i*8 again in each block (LSR expands each use in its own block when the address values differ).
 //   - the adv_text_lv loop walks the plates with their own pointer (the latch then steps the level offset first).
 //   - view_left is volatile, so of the four default stores only top and right merge (the original's 64-bit store).
-// Still different: (1) the moves loop: our JumpThreading sends the "i == 8 && mode == 4" failure edge through the
-//   latch straight to the loop exit (LVI knows i == 8 there); the original branches to the latch. short, long,
-//   unsigned, do-while, an else-continue and a pointer for tv.moves did not change it. (2) the view defaults (11):
+//   - the moves loop reads the mode into a local before each test (unsigned int mode = get_game()->state()->mode;
+//     if (i == 8 && mode == 4)): with the field read in the condition, our JumpThreading sent the failure edge
+//     through the latch straight to the loop exit.
+// Still different: the view defaults (11):
 //   the original materializes &top, 7, the top/right constant and &bottom before the hide store and &left after the
 //   cell load (x24, x22, x25, x23), ours &left first; all 120 orders of the four stores and the cell read, with and
-//   without the volatile, and a packed view_left (stops every merge) were no better. (2) is scheduling only, a
-//   candidate for s5's IR statement search (tools/s5/irsearch.py); (1) is a control-flow difference.
+//   without the volatile, and a packed view_left (stops every merge) were no better. It is scheduling only, a
+//   candidate for s5's IR statement search (tools/s5/irsearch.py).
 
 // Adventure Mode board: AdvBoard::initialize (0x710029b5f8), which loads the board's layouts (the whole map on
 // the TV and the DRC, the player marker, the DLC counters and timers, network plates and the result windows),
@@ -677,13 +678,13 @@ void AdvBoard::initialize() {
     for (int i = 0; i < 9; ++i) {
         tv.moves[i] = tv.node->create_animation(kArrowMoveAnims[i], true);
         drc.moves[i] = drc.node->create_animation(kArrowMoveAnims[i], true);
-        GameState* state = get_game()->state();
-        if (i == 7 && state->mode == 3) {
+        unsigned int mode = get_game()->state()->mode;
+        if (i == 7 && mode == 3) {
             start_animation(tv.moves[i], rate);
             start_animation(drc.moves[i], rate);
         }
-        state = get_game()->state();
-        if (i == 8 && state->mode == 4) {
+        mode = get_game()->state()->mode;
+        if (i == 8 && mode == 4) {
             start_animation(tv.moves[i], rate);
             start_animation(drc.moves[i], rate);
         }
