@@ -20001,7 +20001,17 @@
     "gLayout347fe4": "0x71007da6b2",
     "gAnimIn347fe4": "0x710073fffb",
     "gAnimLoop347fe4": "0x710074056c",
-    "gPane347fe4": "0x71007da6c3"
+    "gPane347fe4": "0x71007da6c3",
+    "_ZN10Page39e154C1Ei": "0x710039e154",
+    "_ZN10Slot349480C1Ev": "0x7100341048",
+    "gLayout348": "0x71007d878a",
+    "gAnim348": "0x71007d8905",
+    "gPaneA348": "0x71007d8916",
+    "gPaneB348": "0x7100740dcf",
+    "_ZN10Page39e1549set_titleEPKc": "0x710039dfc4",
+    "_ZN10Page39e1548set_textEPKc": "0x710039dff0",
+    "_ZN7Unlocks6flag_aEv": "0x71002249a0",
+    "_ZN7Unlocks6flag_bEv": "0x71002249a8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -30078,7 +30088,9 @@
         "_ZN11Pages3485e8D2Ev": "0x71003485e8",
         "_ZN12Screen34840cD2Ev": "0x710034840c",
         "_ZN11Table38fc44D2Ev": "0x710038fc44",
-        "_ZN12Screen34840cC2Ev": "0x7100347fe4"
+        "_ZN12Screen34840cC2Ev": "0x7100347fe4",
+        "_ZN11Pages3485e8C2EP12Screen34840ci": "0x7100342c60",
+        "_ZN11Pages3487c0C2EP12Screen34840c": "0x7100342498"
       }
     },
     "misc/s2_functions29.cpp": {
