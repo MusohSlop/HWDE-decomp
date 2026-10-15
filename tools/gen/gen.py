@@ -3391,6 +3391,9 @@ def gen_function(a, ins):
         return r[0] == "var" and r[1] not in tails_ and isinstance(vars_.get(r[1]), tuple) and vars_[r[1]][0] == "load"
     void_ok = (len(rtypes) > 1 and any(r is not None and r[0] == "var" and r[1] in tails_ for r in returns0)
                and all(incidental(r) or (r[0] == "var" and r[1] in tails_ and vars_.get(r[1]) in ("?", "w", "x")) for r in returns0))
+    if "voidret" in knobs and returns0:
+        # a variant: the function returns nothing and x0 at each ret is incidental
+        void_ok = True
     if void_ok:
         def devoid(its):
             out_ = []
