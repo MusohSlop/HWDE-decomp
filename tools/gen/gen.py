@@ -1210,6 +1210,37 @@ def gen_function(a, ins):
         raise Fail("index ext")
     returns = []
     calls_by_target_ = {}
+    call_k_ = [None]
+    def farg_count_(k_):
+        """One more than the highest float register written in the straight-line code before instruction k_ and not
+        read after its last write."""
+        seen_read_, args_ = set(), set()
+        decided_ = set()
+        for j_ in range(k_ - 1, -1, -1):
+            i_ = ins[j_]
+            mj_ = i_.mnemonic
+            if mj_ in ("bl", "blr", "b", "br", "ret", "cbz", "cbnz", "tbz", "tbnz") or mj_.startswith("b."):
+                break
+            r_, w_ = frw(i_)
+            for n_ in w_:
+                if n_ < 8 and n_ not in decided_:
+                    decided_.add(n_)
+                    if n_ not in seen_read_:
+                        args_.add(n_)
+            seen_read_ |= r_
+        return max(args_) + 1 if args_ else 0
+    def s0_read_next_(k_):
+        """s0 is read before it is written after instruction k_ (up to the next call, jump or return)."""
+        for j_ in range(k_ + 1, len(ins)):
+            i_ = ins[j_]
+            if i_.mnemonic in ("bl", "blr", "b", "br", "ret"):
+                return False
+            r_, w_ = frw(i_)
+            if 0 in r_:
+                return True
+            if 0 in w_:
+                return False
+        return False
     def call(regs, written, target, items, tail):
         fw = regs.get("fw", set())
         nf = max(fw) + 1 if fw else 0
@@ -1234,6 +1265,10 @@ def gen_function(a, ins):
                     pwidth[v[1]] = "x"
             args.append(v)
         fargs = []
+        ck_ = call_k_[0]
+        call_k_[0] = None
+        if "nofargscan" not in knobs and ck_ is not None and any(regs["f"].get(k) is None for k in range(nf)):
+            nf = min(nf, farg_count_(ck_))
         for k in range(nf):
             v = regs["f"].get(k)
             if v is None:
@@ -1613,6 +1648,8 @@ def gen_function(a, ins):
                         tv = vars_.get(x[1])
                         if tv in ("?", "w", "x") and x[1].startswith("c"):
                             return True
+                        if tv == "f" and x[1].startswith("c") and "novcallf" not in knobs:
+                            return True
                         if isinstance(tv, tuple) and tv[0] == "merge":
                             return weak_int(tv[1]) and weak_int(tv[2])
                     return False
@@ -1649,6 +1686,7 @@ def gen_function(a, ins):
                 return items
             if m == "b" and imm(ops[0]) not in addr_index:
                 t = imm(ops[0])
+                call_k_[0] = k
                 r = call(regs, written, t, items, True)
                 items.append(("return", r))
                 returns.append(r)
@@ -1656,6 +1694,7 @@ def gen_function(a, ins):
             if m == "b":
                 k = addr_index[imm(ops[0])]; continue
             if m == "bl":
+                call_k_[0] = k
                 r = call(regs, written, imm(ops[0]), items, False)
                 for n in list(regs):
                     if isinstance(n, int) and n < 19:
@@ -2468,6 +2507,8 @@ def gen_function(a, ins):
                     regs["f"] = {n3: v3 for n3, v3 in regs["f"].items() if 8 <= n3 <= 15}
                     regs["fw"] = set()
                     regs[0] = ("var", name)
+                    if "novcallf" not in knobs and s0_read_next_(k):
+                        regs["f"][0] = ("var", name)
                     written = set()
                     flags = None
                     k += 1; continue
@@ -2502,6 +2543,8 @@ def gen_function(a, ins):
                     regs["f"] = {n3: v3 for n3, v3 in regs["f"].items() if 8 <= n3 <= 15}
                     regs["fw"] = set()
                     regs[0] = ("var", name)
+                    if "novcallf" not in knobs and s0_read_next_(k):
+                        regs["f"][0] = ("var", name)
                     written = set()
                     flags = None
                     k += 1; continue
@@ -2529,6 +2572,8 @@ def gen_function(a, ins):
                 regs["f"] = {n3: v3 for n3, v3 in regs["f"].items() if 8 <= n3 <= 15}
                 regs["fw"] = set()
                 regs[0] = ("var", name)
+                if "novcallf" not in knobs and s0_read_next_(k):
+                    regs["f"][0] = ("var", name)
                 written = set()
                 flags = None
                 k += 1; continue
