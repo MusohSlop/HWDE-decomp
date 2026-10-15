@@ -25244,6 +25244,14 @@
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
       }
+    },
+    "misc/s3_functions01.cpp": {
+      "functions": {
+        "_ZN17LayoutSpriteTableC2Ev": "0x710030be50",
+        "_ZN14LayoutFrameSetC2Ev": "0x71003b9ccc",
+        "_ZN16LayoutFramePanelC2Ev": "0x7100325e64",
+        "_ZN16LayoutFrameBoardC2Ev": "0x710028ee38"
+      }
     }
   }
 }
