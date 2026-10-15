@@ -20062,6 +20062,13 @@
     "_ZN12SubInit31364C1Ev": "0x7100031364",
     "_ZN12SubInit313644initEv": "0x7100031378",
     "got:_ZTV13PoolSet0d04c4": "0x7100c21d78",
+    "kRecordLayout": "0x71007da88e",
+    "kRecordAnimA": "0x7100740004",
+    "kRecordAnimB": "0x710074053d",
+    "kRecordPane": "0x71007da89e",
+    "kRecordFormatA": "0x71007da8ae",
+    "kRecordText": "0x71007da8b5",
+    "kRecordFormatB": "0x71007da8bf",
     "_Z13callee_1ec94cl": "0x71001ec94c",
     "_Z13callee_1ec974l": "0x71001ec974",
     "_Z13callee_1ec974li": "0x71001ec974",
@@ -29886,7 +29893,8 @@
         ".rodata.cst16": "0x710073dff0"
       },
       "functions": {
-        "_ZN21ChallengeRecordScreenC2Eb": "0x71003447f0"
+        "_ZN21ChallengeRecordScreenC2Eb": "0x71003447f0",
+        "_ZN11RecordPanelC2Ev": "0x710035c070"
       }
     },
     "misc/s2_functions26.cpp": {

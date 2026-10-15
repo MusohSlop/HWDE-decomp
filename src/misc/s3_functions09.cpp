@@ -102,7 +102,8 @@ public:
     unsigned char pad5a;
     unsigned char : 2;
     unsigned char align : 2;  // +5b bits 2-3
-    unsigned char : 4;
+    unsigned char : 2;
+    unsigned char valign : 2; // +5b bits 6-7
     unsigned char pad5c[0x104];
 
     void set_visible(bool on) { visible = on; }
@@ -432,4 +433,91 @@ ChallengeRecordScreen::ChallengeRecordScreen(bool flag_)
     }
     for (int i = 0; i < 15; i++)
         texts[i]->alpha59 = 0;
+}
+void format_text(char* dest, const char* format, ...);                      // 0x710045a77c
+struct Game;
+Game* fetch_204728();                                                       // 0x7100204728
+unsigned char game_has_flag(Game* game, int flag);                          // 0x71002026fc
+
+extern const char kRecordLayout[] __attribute__((visibility("hidden")));       // 0x71007da88e
+extern const char kRecordAnimA[] __attribute__((visibility("hidden")));        // 0x7100740004
+extern const char kRecordAnimB[] __attribute__((visibility("hidden")));        // 0x710074053d
+extern const char kRecordPane[] __attribute__((visibility("hidden")));         // 0x71007da89e
+extern const char kRecordFormatA[] __attribute__((visibility("hidden")));      // 0x71007da8ae
+extern const char kRecordText[] __attribute__((visibility("hidden")));         // 0x71007da8b5
+extern const char kRecordFormatB[] __attribute__((visibility("hidden")));      // 0x71007da8bf
+
+// 0x710035c070: a record panel: its layout and four animations, a copy of its pane when the game's flag 0x2d is set,
+// and one or two texts formatted from messages.
+class RecordPanel {
+public:
+    RecordPanel();
+
+    int i0;                           // +00
+    LightEffectNode* layout;          // +08
+    EffectGroup* copy;                // +10
+    LayoutAnimation* anims[4];        // +18
+    TrackLightTarget lines_a[64];     // +38
+    TrackLightTarget lines_b[64];     // +2238
+    PanelPane* text_a;                // +4438
+    PanelPane* text_b;                // +4440
+};
+
+static inline void move_x(EffectGroup* group, float dx) {
+    group->offset30 += dx;
+    group->flags58 |= 0x10;
+}
+
+RecordPanel::RecordPanel() : i0(0), layout(nullptr), copy(nullptr) {
+    gEffectManager->create_node(&layout, 0x41e5, kRecordLayout);
+    anims[0] = layout->create_animation_3770(kInAnim, false);
+    anims[1] = layout->create_animation_3770(kRecordAnimA, false);
+    anims[2] = layout->create_animation_3770(kRecordAnimB, false);
+    anims[3] = layout->create_animation_3770(kOutAnim, false);
+    EffectGroup* pane = layout->group->find(kRecordPane, 1);
+    if (game_has_flag(fetch_204728(), 0x2d)) {
+        copy = pane->duplicate(gResourceLoader->layout->root);
+        pane->parent->add(copy);
+        move_x(copy, -326.0f);
+    }
+    char text[64];
+    format_text(text, kRecordFormatA, message_text(0xa0));
+    TextRenderer* renderer = gTextRenderer;
+    {
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = 30.0f;
+        size.y = 30.0f;
+        renderer->set_area(&pos, &size, 0x5d, 0x4e, 0);
+        renderer->value20bc9 = 1;
+        renderer->value20bca = 1;
+        renderer->value20b8c = 0x3b;
+        renderer->align = 2;
+        renderer->value20b9c = 1;
+        int count = renderer->draw(lines_a, text, 0x40, 1, 0xff, 0.0f, 0.0f);
+        text_a = new PanelPane;
+        text_a->valign = 2;
+        pane->find(kRecordText, 1)->add(text_a);
+        set_pane_lines(text_a, lines_a, count);
+        text_a->set_visible(count > 0);
+    }
+    if (game_has_flag(fetch_204728(), 0x2d)) {
+        format_text(text, kRecordFormatB, message_text(0x11a));
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = 30.0f;
+        size.y = 30.0f;
+        renderer->set_area(&pos, &size, 0x5d, 0x4e, 0);
+        renderer->value20bc9 = 1;
+        renderer->value20bca = 1;
+        renderer->value20b8c = 0x3b;
+        renderer->align = 2;
+        renderer->value20b9c = 1;
+        int count = renderer->draw(lines_b, text, 0x40, 1, 0xff, 0.0f, 0.0f);
+        text_b = new PanelPane;
+        text_b->valign = 2;
+        copy->find(kRecordText, 1)->add(text_b);
+        set_pane_lines(text_b, lines_b, count);
+        text_b->set_visible(count > 0);
+    }
 }
