@@ -2343,6 +2343,11 @@ def gen_function(a, ins):
                 pwidth[pn_] = want_
                 regs[dn] = ("param", pn_)
                 if dn < 8: written.add(dn)
+            elif ("nospillpair" not in knobs and sbase is not None and (m in LOAD or m == "ldur")
+                    and not any(s0 <= sbase for s0 in starts) and ("spill", sbase) in regs):
+                dn, w = regname(ops[0])
+                regs[dn] = regs[("spill", sbase)]
+                if dn < 8: written.add(dn)
             elif sbase is not None and (m in LOAD or m == "ldur"):
                 dn, w = regname(ops[0])
                 mm2 = "ldr" if m == "ldur" else m
@@ -2364,6 +2369,22 @@ def gen_function(a, ins):
                 letbase[name] = sv
                 regs[dn] = ("var", name)
                 if dn < 8: written.add(dn)
+            elif ("nospillpair" not in knobs and sbase is not None and m in ("stp", "str", "stur")
+                    and all(re.fullmatch(r"[wx](\d+|zr)", o_) for o_ in ops[:2 if m == "stp" else 1])
+                    and (m == "stp" or ops[0][1:] == "zr")
+                    and not any(s0 <= sbase + (8 if ops[0][0] == "x" else 4) * (m == "stp") for s0 in starts)):
+                step_ = 8 if ops[0][0] == "x" else 4
+                for j_, rr_ in enumerate(ops[:2] if m == "stp" else ops[:1]):
+                    n_, w_ = regname(rr_)
+                    regs[("spill", sbase + j_ * step_)] = use(regs, rr_) if n_ is not None else ("const", 0, w_)
+            elif ("nospillpair" not in knobs and sbase is not None and m == "ldp" and len(ops) == 3
+                    and all(re.fullmatch(r"[wx]\d+", o_) for o_ in ops[:2])
+                    and ("spill", sbase) in regs and ("spill", sbase + (8 if ops[0][0] == "x" else 4)) in regs):
+                step_ = 8 if ops[0][0] == "x" else 4
+                for j_, rr_ in enumerate(ops[:2]):
+                    dn, w = regname(rr_)
+                    regs[dn] = regs[("spill", sbase + j_ * step_)]
+                    if dn < 8: written.add(dn)
             elif sbase is not None and (m in STORE or m == "stur") and m != "stp" and not any(s0 <= sbase for s0 in starts) \
                     and regname(ops[0])[0] is not None:
                 regs[("spill", sbase)] = use(regs, ops[0])
