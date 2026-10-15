@@ -3,7 +3,10 @@
 usage: irsearch.py LL FUNC ADDR [--map NAME=ADDR ...] [--block LABEL] [--iters N] [--seed S] [--work DIR]
                    [--start ORDER.ll] [--fix-mem]
 
-LL is clang's -S -emit-llvm output for a scratch file (the optimizer has already run). The function's numbered values
+LL is clang's -S -emit-llvm output for a scratch file (the optimizer has already run), made with the unit flags
+including -g and with -Xclang -emit-llvm-uselists: both the debug intrinsics and the use-list order change codegen
+in some functions (3b4e98: 6 instructions off from source, 8 from IR without -g, 7 without the use-lists), so check
+that the first score equals what sbs.py gives for the source. The function's numbered values
 are renamed (%12 -> %v12, so any order stays valid IR) and the chosen block (default: the one with the most
 instructions) is reordered at random, one instruction or one operand tree at a time, keeping SSA order and the
 relative order of loads, stores and calls with side effects. Each order is compiled with the optimizer disabled
@@ -93,7 +96,7 @@ def is_mem(l):
     if " load " in s or s.startswith("store ") or " = load " in s:
         return True
     if " call " in s or s.startswith("call ") or s.startswith("tail call "):
-        return not re.search(r"@llvm\.(aarch64\.neon|fma|fabs|sqrt|copysign|minnum|maxnum)", s)
+        return not re.search(r"@llvm\.(aarch64\.neon|fma|fabs|sqrt|copysign|minnum|maxnum|dbg)", s)
     return False
 
 
@@ -119,9 +122,12 @@ class Block:
         for a, b in zip(mem, mem[1:]):
             self.deps[b].add(a)
         self.users = [set() for _ in range(n)]
+        self.real_users = [set() for _ in range(n)]  # without the debug intrinsics that describe the value
         for i, d in enumerate(self.deps):
             for j in d:
                 self.users[j].add(i)
+                if "@llvm.dbg." not in instrs[i]:
+                    self.real_users[j].add(i)
         self.term = n - 1
 
     def valid(self, order):
@@ -133,7 +139,7 @@ class Block:
         t, todo = {i}, [i]
         while todo:
             for d in self.deps[todo.pop()]:
-                if d not in t and d >= self.fixed_head and len(self.users[d]) == 1 and not is_mem(self.instrs[d]):
+                if d not in t and d >= self.fixed_head and len(self.real_users[d]) == 1 and not is_mem(self.instrs[d]):
                     t.add(d)
                     todo.append(d)
         return t
@@ -181,6 +187,13 @@ def main():
     _ab = lambda s: re.sub(r"#0x7100[0-9a-f]+|#0x[0-9a-f]{5,}", "#ADDR", re.sub(r"\b([xwqsdvbh])(\d+|zr)\b", r"\1", s))
     oa = [_ab(x) for x in oi]
 
+    if a.ll.endswith(".cpp"):  # emit the IR as the unit compile sees it: -g, use-list order kept
+        ll = os.path.join(work, os.path.splitext(os.path.basename(a.ll))[0] + ".ll")
+        r = subprocess.run([cc, *man["flags"], "-I", os.path.join(M, "include"), "-S", "-emit-llvm", "-Xclang",
+                            "-emit-llvm-uselists", a.ll, "-o", ll], capture_output=True, text=True)
+        if r.returncode:
+            sys.exit(r.stderr[-2000:])
+        a.ll = ll
     text = open(a.start or a.ll, encoding="utf-8").read().split("\n")
     d0 = next(k for k, l in enumerate(text) if l.startswith("define ") and ("@" + a.func + "(") in l)
     d1 = next(k for k in range(d0, len(text)) if text[k] == "}")
@@ -190,6 +203,9 @@ def main():
     body = rename(text[d0 + 1: d1])
     if body and not NAMED.match(body[0]):
         body.insert(0, "v%d:" % nargs)  # the entry block's implicit number
+    # use-list orders (-Xclang -emit-llvm-uselists) close the body; they stay there, whatever the order
+    uselists = [l for l in body if l.strip().startswith("uselistorder")]
+    body = [l for l in body if not l.strip().startswith("uselistorder")]
     tail = text[d1:]
     blocks = split_blocks(body)
     if a.block:
@@ -207,6 +223,7 @@ def main():
             if lab is not None:
                 out.append(lab)
             out.extend([blk.instrs[x] for x in order] if k == bi else ins)
+        out.extend(uselists)
         out.extend(tail)
         return "\n".join(out)
 
@@ -277,11 +294,13 @@ def group_search(a, blk, score, emit, work, rnd):
     # (so a statement stays one contiguous run, as a source statement's instructions are)
     owner = {}
     groups = []
+    is_dbg = lambda x: "@llvm.dbg." in blk.instrs[x]
     i = blk.term - 1
     while i >= blk.fixed_head:
         t = blk.tree(i)
         k = i - 1
-        while k >= blk.fixed_head and k in t and not is_mem(blk.instrs[k]):
+        # debug intrinsics between a statement's instructions belong to it (they move with it in the source)
+        while k >= blk.fixed_head and (k in t or is_dbg(k)) and not is_mem(blk.instrs[k]):
             k -= 1
         g = list(range(k + 1, i + 1))
         for x in g:
@@ -301,7 +320,7 @@ def group_search(a, blk, score, emit, work, rnd):
         for j in d:
             gusers[j].add(gi)
     def independent_calls(g):
-        c = [x for x in g if " call " in blk.instrs[x]]
+        c = [x for x in g if " call " in blk.instrs[x] and not is_dbg(x)]
         if len(c) != 2:
             return False
         seen, todo = set(), [c[1]]
@@ -320,7 +339,7 @@ def group_search(a, blk, score, emit, work, rnd):
         for gi in gorder:
             g = list(groups[gi])
             if gi in flips:
-                c = [x for x in g if " call " in blk.instrs[x]]
+                c = [x for x in g if " call " in blk.instrs[x] and not is_dbg(x)]
                 # put the second call (and what only it feeds) first
                 g = [c[1]] + [x for x in g if x != c[1]]
             out.extend(g)
@@ -402,7 +421,7 @@ def group_minimize(a, blk, groups, owner, gdeps, calls, flat, score, emit, work)
             continue
         seen.add(gi)
         gorder.append(gi)
-        c = [y for y in groups[gi] if " call " in blk.instrs[y]]
+        c = [y for y in groups[gi] if " call " in blk.instrs[y] and "@llvm.dbg." not in blk.instrs[y]]
         if gi in calls and order.index(c[1]) < order.index(c[0]):
             flips.add(gi)
     cur = score(flat(gorder, flips))
