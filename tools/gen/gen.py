@@ -1040,7 +1040,7 @@ def gen_function(a, ins):
         """A 128-bit float vector value (Vec4f)."""
         if v is None:
             return False
-        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg", "vparam", "vins", "vundef"):
+        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg", "vparam", "vins", "vundef", "vcomb", "vecuv"):
             return True
         if v[0] == "var":
             tv_ = vars_.get(v[1])
@@ -2142,6 +2142,12 @@ def gen_function(a, ins):
                             regs["f"][fn_] = ("vparam", lo_[1])
                         elif lo_[0] == "vpart" and xv_[0] == "vpart" and lo_[1] == xv_[1] and lo_[2] == 0 and xv_[2] == 1:
                             regs["f"][fn_] = lo_[1]
+                        elif "novcomb" not in knobs and lo_[0] == "var" and xv_ == ("hi", lo_[1]) and vars_.get(lo_[1]) in ("?", "VecU"):
+                            # a call returning a 16-byte vector in x0 and x1
+                            vars_[lo_[1]] = "VecU"
+                            regs["f"][fn_] = ("vecuv", lo_)
+                        elif "novcomb" not in knobs and lo_[0] not in ("vpart", "hi") and xv_[0] not in ("vpart", "hi"):
+                            regs["f"][fn_] = ("vcomb", lo_, xv_)
                         else:
                             raise Fail("vector halves")
                     if fn_ < 8: regs.setdefault("fw", set()).add(fn_)
@@ -3430,8 +3436,10 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] in ("vlane", "vecu", "vpart", "udiv", "urem", "sdiv", "srem", "udiv64", "urem64", "f2y"):
             kids = [v[1]]
-        if v[0] == "vins":
+        if v[0] in ("vins", "vcomb"):
             kids = [v[1], v[2]]
+        if v[0] == "vecuv":
+            kids = [v[1]]
         if v[0] == "vbin":
             kids = [v[2], v[3]]
         if v[0] in ("vneg", "vsplat"):
@@ -3587,10 +3595,12 @@ def gen_function(a, ins):
             return RETN_
         if v[0] in ("fparam", "fconst", "fbin", "funary", "i2f", "fselect", "vlane"):
             return "float"
-        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg", "vparam", "vins", "vundef"):
+        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg", "vparam", "vins", "vundef", "vcomb", "vecuv"):
             return "Vec4f"
         if v[0] == "vecu":
             return "VecU"
+        if v[0] == "vpart" and "novcomb" not in knobs:
+            return "long"
         if v[0] in ("udiv", "urem", "sdiv", "srem"):
             return "int"
         if v[0] in ("udiv64", "urem64"):
@@ -3672,6 +3682,8 @@ def gen_function(a, ins):
                 return "int"
             if t in ("long", "unsigned long", "short", "signed char", "unsigned short"):
                 return t
+            if t == "VecU":
+                return "VecU"
             if t in ("x", "void*", "?"):
                 return "void*" if t != "?" else "int"
             return f"{t}*"
@@ -3819,6 +3831,15 @@ def gen_function(a, ins):
             return s_ if top else f"({s_})"
         if v[0] == "vins":
             return f"vins({expr(v[1])}, {expr(v[2])}, {v[3]})"
+        if v[0] == "vecuv":
+            return f"{expr(v[1])}.v"
+        if v[0] == "vpart" and "novcomb" not in knobs:
+            return f"vecu({expr(v[1])}).l[{v[2]}]"
+        if v[0] == "vcomb":
+            def u64_(x_):
+                tx_ = vtype(x_)
+                return f"reinterpret_cast<unsigned long>({expr(x_)})" if tx_.endswith("*") else f"static_cast<unsigned long>({expr(x_)})"
+            return f"(Vec4f)vcombine_f32(vcreate_f32({u64_(v[1])}), vcreate_f32({u64_(v[2])}))"
         if v[0] == "vundef":
             return "vundef()"
         if v[0] == "vecu":
@@ -5126,7 +5147,7 @@ for mn in sorted(IMPORTS_USED):
         imp_lines.append(f'extern "C" {r_} {mn}({", ".join(ps_)});')
 cdecl_text = "\n".join(imp_lines) + "\n\n" + "\n".join(f"{rts} {nm}_{t:x}({', '.join(atypes)});{' ' * 8}// 0x71{t:08x}" for (t, atypes, nm), rts in sorted(CALLEES.items())
                        if not any(x.endswith("*") and x != "void*" for x in list(atypes) + [rts]))
-open(out, "w", encoding="utf-8", newline="\n").write(head + ("#include <arm_neon.h>\n\n" if any("float32x4_t" in d_ for d_ in defs) else "") + (VEC4_DECL if any("Vec4f" in d_ or "VecU" in d_ or "vins(" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + (PAIR16_DECL if any("Pair16" in d_ for d_ in defs) else "") + (VECU_DECL if any("VecU" in d_ for d_ in defs) else "") + (VINS_DECL if any("vins(" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))
+open(out, "w", encoding="utf-8", newline="\n").write(head + ("#include <arm_neon.h>\n\n" if any("float32x4_t" in d_ or "vcombine_f32" in d_ for d_ in defs) else "") + (VEC4_DECL if any("Vec4f" in d_ or "VecU" in d_ or "vins(" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + (PAIR16_DECL if any("Pair16" in d_ for d_ in defs) else "") + (VECU_DECL if any("VecU" in d_ for d_ in defs) else "") + (VINS_DECL if any("vins(" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))
 m = MATCHDIR
 if os.environ.get("SYMOUT"):
     json.dump({"unit": unit, "gsyms": sorted(GSYMS),
