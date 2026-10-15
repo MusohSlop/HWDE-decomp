@@ -94,7 +94,7 @@ well.
   constructor, vtable GOT `0x7100c22f68`, three null fields) as `new PanelPane` from `event/layout_panes.h`, and
   layout-handle store groups as placement `new LayoutHandle` (through `handlify.py`).
 - `onceptr.py IN.cpp OUT.cpp` computes a stored field's address once when the same `p0 + X` is passed on soon
-  after (`long* hX = ...; *hX = V; ... f(hX)`): one IR value, so Clang folds the store into a pre-indexed
+  after (`auto* hX = &p0->field_X; *hX = V; ... f(hX)`): one IR value, so Clang folds the store into a pre-indexed
   `str xA, [xB, #X]!` and passes `xB` on, as the original does where an inlined handle destructor stores its vtable
   and then releases itself (`37af54`, `34d974`, `2a6fd0` and seven more). Same contract as genfix.py; prints
   `onceptr N` (the number of rewrites).
