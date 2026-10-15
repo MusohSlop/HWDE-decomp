@@ -1227,6 +1227,7 @@ def gen_function(a, ins):
                         base = ("bytes", lhs, rhs)
         return base, off
     bytecast_fields_ = set()   # byte arrays made only by byte-offset accesses of wider values
+    arr_scalar_ = {}           # (struct, offset) -> element type of an array indexed through a scalar field
     vu_slots_ = set()          # (struct, offset) of 16-byte slots used as a vector and as lanes or halves
     VU_T_ = {"float": 4, "int": 4, "unsigned int": 4, "void*": 8, "long": 8}
     def vu_check_(sn_, o_, ct_):
@@ -1317,6 +1318,17 @@ def gen_function(a, ins):
         if prev and prev[0] != ct and not cstore and retype_ok_(sn, off, prev[0], ct):
             structs[sn][off] = (ct, None)
             prev = structs[sn][off]
+        if "noarrscalar" not in knobs and prev and prev[0] != ct and not bytecast and not prev[1] \
+                and (ct.startswith("ARRAY:") != prev[0].startswith("ARRAY:")):
+            # an array also accessed as a scalar at its start: the scalar keeps the field
+            el_ = (ct if ct.startswith("ARRAY:") else prev[0])[6:]
+            if el_ in SIZE and (sn, off) not in bytecast_fields_:
+                arr_scalar_[(sn, off)] = el_
+                if ct.startswith("ARRAY:"):
+                    note_access_(sn, off, cstore)
+                    return sn, base, off
+                structs[sn][off] = (ct, None)
+                prev = structs[sn][off]
         if "nobytearr" not in knobs:
             # a byte-offset access into a typed field: the field keeps (or takes) the other type
             if bytecast and prev and prev[0] != ct:
@@ -3601,6 +3613,19 @@ def gen_function(a, ins):
     for nm_, tv_ in list(vars_.items()):
         if isinstance(tv_, tuple) and tv_[0] == "merge" and nm_ not in fmerges_:
             merge_leaves_(("var", nm_), int_side_)
+    if arr_scalar_:
+        def arr_vars_(its):
+            for it_ in its:
+                if it_[0] == "leti" and len(it_) == 6 and (it_[2], it_[3]) in arr_scalar_ and isinstance(vars_.get(it_[1]), tuple) \
+                        and len(vars_[it_[1]]) == 3:
+                    vars_[it_[1]] = vars_[it_[1]] + (arr_scalar_[(it_[2], it_[3])],)
+                elif it_[0] == "if":
+                    arr_vars_(it_[2])
+                elif it_[0] == "diamond":
+                    arr_vars_(it_[3]); arr_vars_(it_[4])
+                elif it_[0] == "loop":
+                    arr_vars_(it_[2])
+        arr_vars_(items)
     callee_of_ = {}
     def calls_in_(its):
         for it_ in its:
@@ -4515,10 +4540,18 @@ def gen_function(a, ins):
                 continue
             if it[0] == "leti":
                 _, name, sn, off, base, iv = it[:6]
+                if (sn, off) in arr_scalar_:
+                    el_ = arr_scalar_[(sn, off)]
+                    outl.append(declare_line(pad, el_, name, f"reinterpret_cast<{el_}*>(&{acc(base, off)})[{expr(iv)}]"))
+                    continue
                 outl.append(declare_line(pad, ftype(sn, off), name, f"{acc(base, off)}[{expr(iv)}]"))
                 continue
             if it[0] == "storei":
                 _, sn, off, base, iv, val = it[:6]
+                if (sn, off) in arr_scalar_:
+                    el_ = arr_scalar_[(sn, off)]
+                    outl.append(f"{pad}reinterpret_cast<{el_}*>(&{acc(base, off)})[{expr(iv)}] = {fit(expr(val), vtype(val), el_)};")
+                    continue
                 outl.append(f"{pad}{acc(base, off)}[{expr(iv)}] = {fit(expr(val), vtype(val), ftype(sn, off))};")
                 continue
             if it[0] == "let" and "sink" in knobs and use_count.get(it[1], 0) == 1 and not (isinstance(vars_[it[1]], str) and vars_[it[1]] in structs):
