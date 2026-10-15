@@ -382,6 +382,15 @@ def gen_function(a, ins):
                             and re.fullmatch(r"x(\d+), sp, #(0x[0-9a-f]+|\d+)", i_.op_str) and not i_.op_str.startswith("x29")}
                            | {0 for i_ in ins if i_.mnemonic == "mov" and re.fullmatch(r"x\d+, sp", i_.op_str)
                               and not i_.op_str.startswith("x29")})
+        fp_c_ = None
+        for i_ in ins[:8]:
+            if i_.mnemonic == "mov" and i_.op_str == "x29, sp":
+                fp_c_ = 0
+            elif i_.mnemonic == "add" and i_.op_str.startswith("x29, sp, #"):
+                fp_c_ = imm(i_.op_str.split(",")[2])
+        if fp_c_ is not None and "nofpcopy" not in knobs and "nostackcopy" not in knobs:
+            starts_c_ = sorted(set(starts_c_) | {fp_c_ - imm(i_.op_str.split(",")[2]) for i_ in ins if i_.mnemonic == "sub"
+                                                 and re.fullmatch(r"x(\d+), x29, #(0x[0-9a-f]+|\d+)", i_.op_str)})
         SZC_ = {"w": 4, "x": 8, "q": 16, "d": 8, "s": 4}
         def is_br_(i_):
             return i_.mnemonic in ("bl", "blr", "b", "br", "ret") or i_.mnemonic.startswith(("b.", "cbz", "cbnz", "tbz", "tbnz"))
@@ -509,7 +518,13 @@ def gen_function(a, ins):
                 if b_ in addk_:
                     b_, o2_ = addk_[b_]
                     o_ += o2_
-                if b_ is not None and (b_ == m_.group(3) or "nocopybase" not in knobs):
+                if b_ == "x29" and "nofpcopy" not in knobs:
+                    # the frame pointer: a stack offset, or no base
+                    if fp_c_ is not None and "nostackcopy" not in knobs:
+                        b_, o_ = "sp", fp_c_ + o_
+                    else:
+                        b_ = None
+                if b_ is not None and (b_ == m_.group(3) or b_ == "sp" or "nocopybase" not in knobs):
                     res_c_[k_] = (b_, o_)
                 vsnap_[k_] = dict(ver_)
             new_ = None
