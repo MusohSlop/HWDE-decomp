@@ -102,6 +102,49 @@ def rw(i):
 class Fail(Exception):
     pass
 
+class SpinPseudo_:
+    """One instruction standing for an LL/SC compare-exchange loop (kind "spinlock_") or a piece of it ("nop_")."""
+    def __init__(self, kind, first, ld=None, st=None):
+        self._first, self._ld, self._st = first, ld, st
+        self.mnemonic = kind
+        self.address = first.address
+        if kind == "spinlock_":
+            lops_ = [o_.strip() for o_ in ld.op_str.split(",")]
+            sops_ = [o_.strip() for o_ in st.op_str.split(",")]
+            self.spin = (sops_[2].strip("[]"), sops_[1], lops_[0], sops_[0])   # base, value, loaded, status
+            self.op_str = ", ".join(self.spin)
+        else:
+            self.op_str = ""
+    def regs_access(self):
+        if self.mnemonic != "spinlock_":
+            return [], []
+        r1, w1 = self._ld.regs_access()
+        r2, w2 = self._st.regs_access()
+        return list(r1) + list(r2), list(w1) + list(w2)
+    def reg_name(self, r):
+        return self._ld.reg_name(r)
+    def __getattr__(self, n):
+        return getattr(self._first, n)
+
+def spin_rewrite_(ins):
+    out_ = list(ins)
+    for k_ in range(1, len(ins) - 4):
+        b_, cl_, ld_, c1_, st_, c2_ = ins[k_ - 1:k_ + 5]
+        if not (cl_.mnemonic == "clrex" and ld_.mnemonic in ("ldaxr", "ldxr") and st_.mnemonic in ("stlxr", "stxr")
+                and c1_.mnemonic == "cbnz" and c2_.mnemonic == "cbnz" and b_.mnemonic == "b"):
+            continue
+        lops_ = [o_.strip() for o_ in ld_.op_str.split(",")]
+        sops_ = [o_.strip() for o_ in st_.op_str.split(",")]
+        c1o_ = [o_.strip() for o_ in c1_.op_str.split(",")]
+        c2o_ = [o_.strip() for o_ in c2_.op_str.split(",")]
+        if not (imm(b_.op_str) == ld_.address and c1o_[0] == lops_[0] and imm(c1o_[1]) == cl_.address
+                and c2o_[0] == sops_[0] and imm(c2o_[1]) == ld_.address and lops_[1] == sops_[2]):
+            continue
+        out_[k_ - 1] = SpinPseudo_("spinlock_", b_, ld_, st_)
+        for j_ in range(k_, k_ + 5):
+            out_[j_] = SpinPseudo_("nop_", ins[j_])
+    return out_
+
 def imm(s):
     return int(s.strip().lstrip("#"), 0)
 
@@ -349,6 +392,8 @@ def gen_function(a, ins):
                 if kb_ is not None:
                     ins = ins[:k_] + ins[k_ + 1:kb_] + [ins[k_]] + ins[kb_:]
             k_ += 1
+    if "nospinlock" not in knobs:
+        ins = spin_rewrite_(ins)
     addr_index = {i.address: k for k, i in enumerate(ins)}
     ivec_loads_ = {}
     if "noicvt" not in knobs:
@@ -1584,6 +1629,14 @@ def gen_function(a, ins):
         if base is None:
             raise Fail("undefined base")
         base, off = fold(base, off)
+        if off < 0 and "nonegoff" not in knobs and base[0] in ("param", "var", "local", "gotaddr", "stackobj"):
+            base = ("bytes", base, ("const", off, "x")); off = 0
+        elif off < 0 and "nonegoff" not in knobs and base[0] == "bytes":
+            # a byte offset already: the field's offset joins it
+            base = ("bytes", base[1], ("bin", "-", base[2], ("const", -off, "x"), "x", "sub")); off = 0
+        elif off < 0 and "nonegoff" not in knobs and "noaddrbase" not in knobs and base[0] == "bin" and base[1] == "+":
+            # a computed address (noaddrbase): the field's offset joins it
+            base = ("bin", "-", base, ("const", -off, "x"), "x", "sub"); off = 0
         if off < 0:
             raise Fail("negative offset")
         if base[0] == "sub" and SIZE.get(ct) != base[4]:
@@ -2074,6 +2127,17 @@ def gen_function(a, ins):
             if region and stop is not None and k > stop and k != alt:
                 if "noloopjoin" in knobs or not (ins[k].mnemonic == "ret" or returns_straight(k)):
                     raise Fail("escaped region")
+            if m == "nop_":
+                k += 1; continue
+            if m == "spinlock_" and not (stop is not None and k == stop):
+                bs_, vs_, ts_, ss_ = i.spin
+                sn, base, off2 = field(regs, bs_, 0, "long" if ts_.startswith("x") else "int")
+                val_ = use(regs, vs_)
+                if val_[0] == "ext" and val_[2][0] == "const":
+                    val_ = ("const", val_[2][1], ts_[0])    # a 32-bit mov of the constant, read as 64 bits
+                items.append(("spin", sn, off2, base, val_, ts_[0]))
+                regs[regname(ts_)[0]] = None; regs[regname(ss_)[0]] = None
+                k += 1; continue
             if stop is not None and k == stop and not region:
                 if m.startswith("b."):
                     if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))):
@@ -2343,6 +2407,56 @@ def gen_function(a, ins):
                 items.append(("return", r))
                 returns.append(r)
                 return items
+            wl_ = (next((L_ for H_, L_ in loop_info if H_ == k + 1), None)
+                   if m == "b" and "nowhile" not in knobs and imm(ops[0]) in addr_index and (k + 1) not in in_loop else None)
+            if wl_ is not None and k + 1 < addr_index[imm(ops[0])] <= wl_ and ins[wl_].mnemonic != "b":
+                H, L, C = k + 1, wl_, addr_index[imm(ops[0])]
+                ltg_ = {}
+                g_items_ = walk(C, copyregs(regs), flags, set(written), depth + 1, stop=L, latch=ltg_)
+                if "cnd" not in ltg_ or ltg_["cnd"] is None:
+                    raise Fail("while guard")
+                items.extend(g_items_)
+                gregs_ = ltg_["regs"]
+                lt2_ = {}
+                l_items_ = walk(H, copyregs(gregs_), None, set(ltg_["written"]), depth + 1, stop=L + 1, latch=lt2_, region=True)
+                if "regs" not in lt2_:
+                    raise Fail("while exit")
+                lregs_ = lt2_["regs"]
+                live_i, live_f = live_at(L + 1, any(H_ <= L + 1 <= L_ for H_, L_ in loop_info))
+                merged = copyregs(gregs_)
+                decls_, asg_l_, asg_g_ = [], [], []
+                keys = sorted([(n, None) for n in set(gregs_) | set(lregs_) if isinstance(n, int)]
+                              + [(n, "f") for n in set(gregs_["f"]) | set(lregs_["f"])], key=lambda k_: (k_[1] or "", k_[0]))
+                for n, kind in keys:
+                    a_ = (gregs_["f"] if kind else gregs_).get(n)
+                    b_ = (lregs_["f"] if kind else lregs_).get(n)
+                    if a_ == b_:
+                        continue
+                    if a_ is None or b_ is None or n not in (live_f if kind else live_i) \
+                            or any((x_ or ("",))[0] == "hi" for x_ in (a_, b_)):
+                        (merged["f"] if kind else merged)[n] = None
+                        continue
+                    name = f"m{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("merge", b_, a_)
+                    if kind:
+                        fmerges_.add(name)
+                    decls_.append((name, b_))
+                    asg_l_.append((name, b_)); asg_g_.append((name, a_))
+                    (merged["f"] if kind else merged)[n] = ("var", name)
+                for n in [n for n in set(gregs_) | set(lregs_) if isinstance(n, tuple) and n[0] == "spill"]:
+                    if gregs_.get(n) != lregs_.get(n):
+                        merged[n] = None
+                if decls_:
+                    items.append(("diamond", ltg_["cnd"], decls_, l_items_ + [("assign", n_, v_) for n_, v_ in asg_l_],
+                                  [("assign", n_, v_) for n_, v_ in asg_g_]))
+                else:
+                    items.append(("if", ltg_["cnd"], l_items_))
+                regs = merged
+                regs["fw"] = set()
+                flags = None
+                written = set(ltg_["written"]) & set(lt2_.get("written", set()))
+                k = L + 1
+                continue
             if m == "b" and CONT_.get(k) == addr_index[imm(ops[0])] and addr_index[imm(ops[0])] in in_loop:
                 items.append(("cont", copyregs(regs), addr_index[imm(ops[0])]))
                 return items
@@ -4028,6 +4142,8 @@ def gen_function(a, ins):
                 mark_items(it[3]); mark_items(it[4])
             elif it[0] == "assign":
                 mark(it[2])
+            elif it[0] == "spin":
+                mark(it[3]); mark(it[4])
             elif it[0] == "contassign":
                 for n_, v_ in it[1]:
                     mark(v_)
@@ -4311,6 +4427,8 @@ def gen_function(a, ins):
             return f"{base[1]}[{IDX_[base[1]]}].field_{off - ESHIFT_.get(base[1], 0):x}"
         if base[0] == "bytes":
             sn_ = bytekinds[base]
+            if base[2][0] == "const" and base[2][1] < 0:
+                return f"reinterpret_cast<{sn_}*>(reinterpret_cast<unsigned char*>({expr(base[1])}) - {hex(-base[2][1])})->field_{off:x}"
             return f"reinterpret_cast<{sn_}*>(reinterpret_cast<unsigned char*>({expr(base[1])}) + {expr(base[2], 'noaddrparen' in knobs)})->field_{off:x}"
         if base[0] == "bin" and base in bytekinds:
             sn_ = bytekinds[base]
@@ -4835,6 +4953,8 @@ def gen_function(a, ins):
                 count_items(it[3]); count_items(it[4])
             elif it[0] == "assign":
                 count(it[2])
+            elif it[0] == "spin":
+                count(it[3]); count(it[4])
             elif it[0] == "contassign":
                 for n_, v_ in it[1]:
                     count(v_)
@@ -5357,6 +5477,13 @@ def gen_function(a, ins):
                 outl.append(f"{pad}}}")
                 if hoist_:
                     outl[if_at_:if_at_] = [f"{pad}\x04{typ}\x05{name}" for typ, name in hoist_stack.pop()]
+            elif it[0] == "spin":
+                _, sn, off, base, val, w_ = it
+                ft_ = ftype(sn, off)
+                want_ = "long" if w_ == "x" else "int"
+                ptr_ = f"&{acc(base, off)}" if ft_ == want_ else f"reinterpret_cast<{want_}*>(&{acc(base, off)})"
+                outl.append(f"{pad}while (!__sync_bool_compare_and_swap({ptr_}, 0, {fit(expr(val), vtype(val), want_)})) {{")
+                outl.append(f"{pad}}}")
             elif it[0] == "contassign":
                 if len(it[1]) > 1:
                     for n_, v_ in it[1]:
