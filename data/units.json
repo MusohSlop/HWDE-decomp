@@ -26988,7 +26988,9 @@
         "_Z11call_306044P11Arg306044_0": "0x7100306044",
         "_Z11call_5df2e8P11Arg5df2e8_0PvS1_ffi": "0x71005df2e8",
         "_Z11call_2d2498P11Arg2d2498_0": "0x71002d2498",
-        "_Z11call_3182bcP11Arg3182bc_0": "0x71003182bc"
+        "_Z11call_3182bcP11Arg3182bc_0": "0x71003182bc",
+        "_Z8call_354P8Arg354_0i": "0x7100000354",
+        "_Z11call_5c238cP11Arg5c238c_0PvS1_S1_": "0x71005c238c"
       }
     },
     "misc/variant_functions74.cpp": {
