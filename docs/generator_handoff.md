@@ -224,7 +224,15 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   are byte-identical);
 - the registers merged at a join are taken in ascending order (knob `nosortjoin`): the set mixed register numbers
   with string and tuple keys, so its order, and with it the merged variables' names and declaration order, changed
-  with Python's per-process hash seed (96d38 generated two ways run to run).
+  with Python's per-process hash seed (96d38 generated two ways run to run);
+- a computed address the array forms do not take (a sum of a pointer, indexes and offsets, `bin` in the failure
+  census, 485 of the 515 "base kind" failures) is a base of its own (knob `noaddrbase`): a placeholder struct
+  `AddrFUNC_N` reached through a cast of the address expression;
+- a callee whose result is used as a pointer at one call returns `void*` at every call (knob `noretunify`): a call
+  whose result is used as an int or of unknown width declares the same `void*` return and truncates
+  (`static_cast<int>(reinterpret_cast<long>(...))`), instead of failing on "callee ret" as a second overload;
+- a pointer passed to an import's const pointer parameter is cast to it (knob `noconstarg`): `void*` does not
+  convert to `const char*` for strcmp/strlen implicitly.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,

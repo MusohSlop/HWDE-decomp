@@ -1282,6 +1282,11 @@ def gen_function(a, ins):
             if cur in structs:
                 return cur
             raise Fail("var base")
+        if v[0] == "bin" and v[1] in ("+", "-", "|") and "noaddrbase" not in knobs:
+            if v not in bytekinds:
+                bytekinds[v] = f"Addr{a:x}_{len(bytekinds)}"
+                structs[bytekinds[v]] = {}
+            return bytekinds[v]
         raise Fail("base kind")
     def use(regs, r):
         n, w = regname(r)
@@ -4285,6 +4290,12 @@ def gen_function(a, ins):
         if base[0] == "bytes":
             sn_ = bytekinds[base]
             return f"reinterpret_cast<{sn_}*>(reinterpret_cast<unsigned char*>({expr(base[1])}) + {expr(base[2], 'noaddrparen' in knobs)})->field_{off:x}"
+        if base[0] == "bin" and base in bytekinds:
+            sn_ = bytekinds[base]
+            e_ = expr(base)
+            if vtype(base).endswith("*"):
+                return f"reinterpret_cast<{sn_}*>({e_})->field_{off:x}"
+            return f"reinterpret_cast<{sn_}*>(static_cast<long>({e_}))->field_{off:x}"
         if base[0] == "select":
             sn_ = bytekinds[base]
             a_ = f"reinterpret_cast<{sn_}*>({expr(base[2])})->field_{off:x}"
