@@ -4502,3 +4502,82 @@ int call_392abc(Arg392abc_0* p0) {
     callee_391fbc(a0);
     return callee_38f958(p0);
 }
+
+int callee_23e1bc(void*, void*);        // 0x710023e1bc
+
+struct Arg2424b0_0 {
+    long field_0;                // +0
+    void* field_8;               // +8
+    int field_10;                 // +10
+    volatile unsigned short field_14;      // +14
+    unsigned short field_16;      // +16
+    volatile unsigned short field_18;      // +18
+    unsigned char pad1a[0x6];
+    void* field_20;               // +20
+    void* field_28;               // +28
+    unsigned char pad30[0x8];
+    void* field_38;               // +38
+    void* field_40;               // +40
+    void* field_48;               // +48
+    void* field_50;               // +50
+    void* field_58;               // +58
+    unsigned char pad60[0x40];
+    int field_a0;                 // +a0
+    unsigned char field_a4;       // +a4
+};
+
+class Node2424b0_v4 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+    virtual void slot_4();
+    virtual void slot_5();
+    virtual void slot_6();
+    virtual void slot_7();
+    virtual void slot_8();
+    virtual void slot_9();
+    virtual void slot_10();
+    virtual void slot_11();
+    virtual int slot_12(void*);
+};
+
+struct Node2424b0_v3 {
+    unsigned char pad0[0x29db8];
+    Node2424b0_v4* field_29db8;      // +29db8
+};
+// Reached through the GOT slot at 0x7100c21708.
+extern Node2424b0_v3* gGlobalc21708_2424b0;
+// Reached through the GOT slot at 0x7100c21758.
+extern void* gGlobalc21758_2424b0;
+// Reached through the GOT slot at 0x7100c2a4f0.
+extern unsigned char gGlobalc2a4f0_2424b0[];
+
+// 0x71002424b0: two volatile fields where the original keeps those stores in source order (voltry)
+int call_2424b0(Arg2424b0_0* p0) {
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2a4f0_2424b0) + 0x10);
+    Node2424b0_v3* v0 = gGlobalc21708_2424b0;
+    int c1 = callee_23e1bc(v0, p0);
+    void* v2 = gGlobalc21758_2424b0;
+    p0->field_18 = 0xffff;
+    p0->field_a0 = 0;
+    p0->field_a4 = 0;
+    p0->field_20 = nullptr;
+    p0->field_28 = nullptr;
+    p0->field_50 = nullptr;
+    p0->field_58 = nullptr;
+    p0->field_8 = v2;
+    p0->field_14 = 0;
+    p0->field_16 = 0;
+    p0->field_40 = nullptr;
+    p0->field_48 = nullptr;
+    p0->field_38 = nullptr;
+    p0->field_10 = -1;
+    if (p0 == 0) {
+        return c1;
+    }
+    Node2424b0_v3* v3 = gGlobalc21708_2424b0;
+    Node2424b0_v4* v4 = v3->field_29db8;
+    return v4->slot_12(p0);
+}
