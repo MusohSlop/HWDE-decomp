@@ -269,9 +269,12 @@ def candidates():
     alo = int(os.environ.get("RV_ADDR_LO", "0"), 16); ahi = int(os.environ.get("RV_ADDR_HI", "ffffffff"), 16)
     found = {int(r[0], 16) - 0x7100000000 for r in rows if r[1] == "U" and lo <= int(r[2]) <= hi
              and alo <= int(r[0], 16) - 0x7100000000 < ahi} - taken
-    if os.environ.get("RV_SKIP") and os.path.exists(os.environ["RV_SKIP"]):
-        # addresses another session is hand-matching (hex image offsets or full 0x71... addresses)
-        for tok in re.findall(r"\b(?:0x)?([0-9a-f]{4,10})\b", open(os.environ["RV_SKIP"], encoding="utf-8-sig").read().lower()):
+    for skipf in [f_ for f_ in os.environ.get("RV_SKIP", "").split(";") if f_.strip()]:
+        # addresses other sessions are hand-matching (hex image offsets or full 0x71... addresses); a file that does
+        # not exist yet is skipped
+        if not os.path.exists(skipf.strip()):
+            continue
+        for tok in re.findall(r"\b(?:0x)?([0-9a-f]{4,10})\b", open(skipf.strip(), encoding="utf-8-sig").read().lower()):
             v_ = int(tok, 16)
             found.discard(v_ - 0x7100000000 if v_ >= 0x7100000000 else v_)
     if os.environ.get("RV_ONLY"):

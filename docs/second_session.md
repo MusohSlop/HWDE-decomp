@@ -38,8 +38,8 @@ other session can port it.
 
 ## CPU
 
-The PC has 16 logical cores. Band runs: the main session uses `RV_JOBS=6`, the second session `RV_JOBS=6` and the
-third session `RV_JOBS=2`, leaving two cores for single compiles, checks and the desktop. Only one session runs a full near-miss probe or a whole-band
+The PC has 16 logical cores. Compile jobs: the main session `RV_JOBS=6`, the second session `RV_JOBS=6`, the third
+session 2, the fourth and fifth sessions 1 each. Only one session runs a full near-miss probe or a whole-band
 rerun at a time; say so in the report before starting one.
 
 ## Merge procedure (main session only)
@@ -65,8 +65,10 @@ rerun at a time; say so in the report before starting one.
 A third session works the same way from `F:\Claude Decomps\project1\worktrees\s3` on branch `matching-s3`, set up
 with the same recipe (junctions to `.tools` and the decompressed image, nothing else linked or copied).
 
-- It hand-matches every unmatched function over 1,500 bytes in both address ranges, the giants over 6,000 bytes
-  included (those at the highest effort). Functions on the second session's near-miss list stay with the second
+- It hand-matches the constructor- and destructor-shaped functions (a vtable store to `this`) at any size in both
+  address ranges, the giants among them included (`3447f0` and `311824` are constructor-shaped, so they are the third
+  session's), and the bucket-sort group `38868`, `3e1dec`, `441e94`, `3e350c`. Its full census is
+  `matching/docs/s3_scope.txt` in its worktree. Functions on the second session's near-miss list stay with the second
   session.
 - Order: functions that generate but mismatch first, closest first; then the ones that do not generate; then the
   giants.
@@ -74,11 +76,26 @@ with the same recipe (junctions to `.tools` and the decompressed image, nothing 
   and second sessions.
 - New units: `misc/s3_functionsNN.cpp`. CPU: `RV_JOBS=2`.
 - It keeps `matching/docs/s3_claims.txt` in its worktree, listing the addresses it is working on and has matched.
-  Generator runs of the other two sessions skip those: `tools/gen/run_bands.py` drops every address in the file
-  named by `RV_SKIP` (hex image offsets or full `0x71...` addresses, any separators), so both other sessions run
-  with `RV_SKIP=F:\Claude Decomps\project1\worktrees\s3\matching\docs\s3_claims.txt`.
+  Generator runs skip every hand-matching session's claims: `tools/gen/run_bands.py` drops every address in the
+  files named by `RV_SKIP` (several files separated by `;`; hex image offsets or full `0x71...` addresses, any
+  separators; a file that does not exist yet is skipped), so the main and second sessions run with
+  `RV_SKIP=F:\Claude Decomps\project1\worktrees\s3\matching\docs\s3_claims.txt;F:\Claude Decomps\project1\worktrees\s4\matching\docs\s4_claims.txt;F:\Claude Decomps\project1\worktrees\s5\matching\docs\s5_claims.txt`.
 - It reports its commits to the coordinator, and the main session merges `matching-s3` with the procedure above.
   A function matched on both sides keeps `master`'s copy: before the units merge, its entry is dropped from the
   branch's `units.json` and its definition from the branch's unit.
 
-Neither session pushes anything.
+## Fourth and fifth sessions (hand matching)
+
+Two more hand-matching sessions work the same way: the fourth from `worktrees\s4` on branch `matching-s4`, the fifth
+from `worktrees\s5` on branch `matching-s5`.
+
+- The fourth session hand-matches the unmatched functions over 1,500 bytes below `0x7100380000` that are not
+  constructor-shaped, the giants there included; the fifth does the same from `0x7100380000` up.
+- Both skip the second session's near-miss list and the third session's `s3_scope.txt`.
+- New units: `misc/s4_functionsNN.cpp` and `misc/s5_functionsNN.cpp`. Each keeps `matching/docs/sN_claims.txt` in its
+  own worktree, and the generator runs skip those through `RV_SKIP` as above.
+- Neither edits `matching/tools/gen/*`, `tools/check.py` or `tools/check_obj.py`.
+- The main session merges `matching-s4` and `matching-s5` like the other branches; a function matched on both sides
+  keeps `master`'s copy.
+
+No session pushes anything.

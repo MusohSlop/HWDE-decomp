@@ -32,6 +32,9 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
   per function: class (as mm_tally), instruction diffs with and without registers, size difference, first
   differing pair, or the generator's failure reason. Use at most two jobs here.
 - `vtscan.py OUT.tsv` lists unmatched functions that store a vtable (GOT load, `+0x10`) into `this`.
+- `diffsig.py BATCH.tsv [MAXN]` prints, for each function of a batchconv.py table at most MAXN instructions off, the
+  differing instructions of its best variant with registers abstracted, one line per function, to group near
+  misses by cause.
 - `callers.py ADDR...` lists the `b`/`bl` sites that reach each address. `shapefind.py ADDR [QUALITY]` lists
   functions of the same size and instruction shape (registers and immediates abstracted).
 

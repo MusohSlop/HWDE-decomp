@@ -981,6 +981,40 @@ def gen_function(a, ins):
                 fparams.add(v[1])
             return v
         raise Fail("lane of scalar")
+    fmerges_ = set()    # merges in float registers: their untyped call results are floats once the merge is used
+    def fmerge_side_(x_, seen_=None):
+        """'f' for a float value, 'q' for an untyped call result (or a merge of them), 'i' for an int or pointer."""
+        if x_[0] != "var":
+            return "f"
+        t_ = vars_.get(x_[1])
+        if t_ == "?":
+            return "q"
+        if t_ in ("f", "Vec4f", "Float2", "VecU"):
+            return "f"
+        if isinstance(t_, str):
+            return "i"
+        if isinstance(t_, tuple) and t_[0] == "merge":
+            seen_ = seen_ or set()
+            if x_[1] in seen_:
+                return "f"
+            seen_.add(x_[1])
+            s_ = {fmerge_side_(t_[1], seen_), fmerge_side_(t_[2], seen_)}
+            return "i" if "i" in s_ else ("q" if s_ == {"q"} else "f")
+        if isinstance(t_, tuple) and t_[0] == "load":
+            ct_ = t_[3] if len(t_) > 3 else structs[t_[1]][t_[2]][0]
+            return "f" if ct_ in ("float", "Vec4f", "ARRAY:float", "ARRAY:Vec4f") else "i"
+        return "f"
+    def floatize_(x_, seen_=None):
+        if x_[0] != "var":
+            return
+        t_ = vars_.get(x_[1])
+        if t_ == "?":
+            vars_[x_[1]] = "f"
+        elif isinstance(t_, tuple) and t_[0] == "merge":
+            seen_ = seen_ or set()
+            if x_[1] not in seen_:
+                seen_.add(x_[1])
+                floatize_(t_[1], seen_); floatize_(t_[2], seen_)
     def f2_type_(x_):
         if x_ is not None and x_[0] == "f2y":
             if vars_.get(x_[1][1]) not in ("?", "f", "Float2"):
@@ -1837,6 +1871,13 @@ def gen_function(a, ins):
                         if a_ is None or b_ is None or (kind != "s" and n not in (live_f if kind else live_i)):
                             (merged["f"] if kind == "f" else merged)[n] = None
                             continue
+                        if kind == "f" and "nofmerge" not in knobs:
+                            # a float register holds floats: an untyped call result merged there is one, and an
+                            # int or pointer side (or a call result merged in a general register at this join too)
+                            # is the stale s0 of an int call
+                            if "i" in (fmerge_side_(a_), fmerge_side_(b_)):
+                                merged["f"][n] = None
+                                continue
                         if any(x_[0] == "f2y" and vars_.get(x_[1][1]) not in ("?", "f", "Float2") for x_ in (a_, b_)):
                             # the .y of an int call result: not a float pair, so not carried over the join
                             (merged["f"] if kind == "f" else merged)[n] = None
@@ -1844,6 +1885,8 @@ def gen_function(a, ins):
                         name = f"m{counter[0]}"; counter[0] += 1
                         vars_[name] = ("merge", a_, b_)
                         f2_type_(a_); f2_type_(b_)
+                        if kind == "f":
+                            fmerges_.add(name)
                         decls_.append((name, a_))
                         assigns1.append((name, a_)); assigns2.append((name, b_))
                         (merged["f"] if kind == "f" else merged)[n] = ("var", name)
@@ -2343,6 +2386,11 @@ def gen_function(a, ins):
                 pwidth[pn_] = want_
                 regs[dn] = ("param", pn_)
                 if dn < 8: written.add(dn)
+            elif ("nospillpair" not in knobs and sbase is not None and (m in LOAD or m == "ldur")
+                    and not any(s0 <= sbase for s0 in starts) and ("spill", sbase) in regs):
+                dn, w = regname(ops[0])
+                regs[dn] = regs[("spill", sbase)]
+                if dn < 8: written.add(dn)
             elif sbase is not None and (m in LOAD or m == "ldur"):
                 dn, w = regname(ops[0])
                 mm2 = "ldr" if m == "ldur" else m
@@ -2364,6 +2412,22 @@ def gen_function(a, ins):
                 letbase[name] = sv
                 regs[dn] = ("var", name)
                 if dn < 8: written.add(dn)
+            elif ("nospillpair" not in knobs and sbase is not None and m in ("stp", "str", "stur")
+                    and all(re.fullmatch(r"[wx](\d+|zr)", o_) for o_ in ops[:2 if m == "stp" else 1])
+                    and (m == "stp" or ops[0][1:] == "zr")
+                    and not any(s0 <= sbase + (8 if ops[0][0] == "x" else 4) * (m == "stp") for s0 in starts)):
+                step_ = 8 if ops[0][0] == "x" else 4
+                for j_, rr_ in enumerate(ops[:2] if m == "stp" else ops[:1]):
+                    n_, w_ = regname(rr_)
+                    regs[("spill", sbase + j_ * step_)] = use(regs, rr_) if n_ is not None else ("const", 0, w_)
+            elif ("nospillpair" not in knobs and sbase is not None and m == "ldp" and len(ops) == 3
+                    and all(re.fullmatch(r"[wx]\d+", o_) for o_ in ops[:2])
+                    and ("spill", sbase) in regs and ("spill", sbase + (8 if ops[0][0] == "x" else 4)) in regs):
+                step_ = 8 if ops[0][0] == "x" else 4
+                for j_, rr_ in enumerate(ops[:2]):
+                    dn, w = regname(rr_)
+                    regs[dn] = regs[("spill", sbase + j_ * step_)]
+                    if dn < 8: written.add(dn)
             elif sbase is not None and (m in STORE or m == "stur") and m != "stp" and not any(s0 <= sbase for s0 in starts) \
                     and regname(ops[0])[0] is not None:
                 regs[("spill", sbase)] = use(regs, ops[0])
@@ -3164,6 +3228,57 @@ def gen_function(a, ins):
         items[:] = items_
         used.clear(); arith.clear(); arith |= arith0
         mark_items(items)
+    # values that also reach a used merge outside the float registers (a call result is in x0 and s0) stay as
+    # they are
+    def merge_leaves_(x_, acc_):
+        if not isinstance(x_, tuple) or x_[0] != "var" or x_[1] in acc_:
+            return acc_
+        acc_.add(x_[1])
+        tv_ = vars_.get(x_[1])
+        if isinstance(tv_, tuple) and tv_[0] == "merge":
+            merge_leaves_(tv_[1], acc_); merge_leaves_(tv_[2], acc_)
+        return acc_
+    int_side_ = set()
+    for nm_, tv_ in list(vars_.items()):
+        if isinstance(tv_, tuple) and tv_[0] == "merge" and nm_ not in fmerges_:
+            merge_leaves_(("var", nm_), int_side_)
+    callee_of_ = {}
+    def calls_in_(its):
+        for it_ in its:
+            if it_[0] == "call":
+                callee_of_[it_[1]] = it_[2]
+            elif it_[0] == "if":
+                calls_in_(it_[2])
+            elif it_[0] == "diamond":
+                calls_in_(it_[3]); calls_in_(it_[4])
+            elif it_[0] == "loop":
+                calls_in_(it_[2])
+    calls_in_(items)
+    # the float merges connected to a used one (sharing values) are typed together
+    fl_all_ ={n_: merge_leaves_(("var", n_), set()) for n_ in fmerges_} if "nofmerge" not in knobs else {}
+    done_ = set()
+    for start_ in sorted(set(fl_all_) & used):
+        if start_ in done_:
+            continue
+        comp_, members_ = set(fl_all_[start_]), {start_}
+        grew_ = True
+        while grew_:
+            grew_ = False
+            for n_, lv_ in fl_all_.items():
+                if n_ not in members_ and (lv_ & comp_):
+                    members_.add(n_); comp_ |= lv_; grew_ = True
+        done_ |= members_
+        if comp_ & int_side_:
+            continue
+        if any(isinstance(vars_.get(x_), str) and vars_.get(x_) not in ("?", "f") for x_ in comp_):
+            continue
+        # a callee whose result is an int at another call keeps its type
+        if any(x_ in callee_of_ and any(callee_of_.get(y_) == callee_of_[x_] and y_ not in comp_ and vars_.get(y_) != "f"
+                                       for y_ in callee_of_) for x_ in comp_):
+            continue
+        for x_ in sorted(comp_):
+            if vars_.get(x_) == "?":
+                vars_[x_] = "f"
     def ptype(n):
         p = pwidth.get(n, "x")
         if p == "VecU":
