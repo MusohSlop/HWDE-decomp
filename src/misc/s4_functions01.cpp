@@ -1,5 +1,7 @@
 // Large functions matched by hand, starting from generated source (fourth session). Struct, field and callee names
 // are placeholders after the address and offset, as in the generated units. Status: matching/README.md.
+// new[] here calls the imported operator new[] (the PLT stub at 0x7100600880), not the game's own at 0x71003ccc34;
+// the unit's map in data/units.json points _Znam at the stub.
 
 int callee_db3d8(void*, long, int);        // 0x71000db3d8
 void callee_f7a24(void*);        // 0x71000f7a24
@@ -3255,4 +3257,654 @@ void Class28b710::initialize() {
     copy = node2->group->find(kGroupDup_28b710, 1)->duplicate(gResourceLoader->layout->root);
     group58->add(copy);
     node2->group->find(kGroupDup_28b710, 1)->flags58 &= ~1;
+}
+
+class MemStream {
+public:
+    MemStream();                                                             // 0x710053d304
+    virtual ~MemStream();
+    virtual void v10();
+    virtual void v18();
+    virtual int read(void* dst, void* unused, int size);                     // +20
+    unsigned char open(void* data, long offset, int size);                   // 0x710053d360
+    void close();                                                            // 0x710053d388
+
+    unsigned char pad8[0x18];
+};
+
+struct Header_d89b0 {
+    unsigned char b[0x10];
+};
+
+struct Rec_d89b0 {
+    unsigned char head[8];           // +0
+    unsigned char field_8;            // +8
+    unsigned char field_9;            // +9
+    unsigned short field_a;           // +a
+    unsigned short field_c;           // +c
+    unsigned short field_e;           // +e
+    unsigned char field_10;           // +10
+    unsigned char field_11;           // +11
+    unsigned short field_12;          // +12
+    unsigned char field_14;           // +14
+    unsigned char field_15;           // +15
+    unsigned short field_16;          // +16
+    unsigned char field_18;           // +18
+    unsigned char field_19;           // +19
+    unsigned char field_1a;           // +1a
+    unsigned char field_1b;           // +1b
+    unsigned char field_1c;           // +1c
+    unsigned char field_1d;           // +1d
+    unsigned short field_1e;          // +1e
+    unsigned short field_20;          // +20
+    unsigned char field_22;           // +22
+    unsigned char field_23;           // +23
+    unsigned short field_24;          // +24
+    unsigned short field_26;          // +26
+    unsigned short field_28;          // +28
+    unsigned char field_2a;           // +2a
+    unsigned char field_2b;           // +2b
+    unsigned char field_2c;           // +2c
+    unsigned char field_2d;           // +2d
+    unsigned char field_2e;           // +2e
+    unsigned char field_2f;           // +2f
+    unsigned short field_30;          // +30
+    unsigned char field_32;           // +32
+    unsigned char field_33;           // +33
+    unsigned short field_34;          // +34
+    unsigned short field_36;          // +36
+    unsigned short field_38;          // +38
+    unsigned short field_3a;          // +3a
+    unsigned short field_3c;          // +3c
+    unsigned char field_3e;           // +3e
+    unsigned char field_3f;           // +3f
+    unsigned short field_40;          // +40
+    unsigned short field_42;          // +42
+    unsigned short field_44;          // +44
+    unsigned char field_46;           // +46
+    unsigned char field_47;           // +47
+    unsigned short field_48;          // +48
+    unsigned short field_4a;          // +4a
+    unsigned short field_4c;          // +4c
+    unsigned short field_4e;          // +4e
+    unsigned short field_50;          // +50
+    unsigned char field_52;           // +52
+    unsigned char field_53;           // +53
+    unsigned char field_54;           // +54
+    unsigned char field_55;           // +55
+    unsigned short field_56;          // +56
+    unsigned short field_58;          // +58
+    unsigned short field_5a;          // +5a
+    unsigned short field_5c;          // +5c
+    unsigned char field_5e;           // +5e
+    unsigned char field_5f;           // +5f
+    int field_60;                     // +60
+    unsigned short field_64;          // +64
+    unsigned short field_66;          // +66
+    unsigned char field_68;           // +68
+    unsigned char field_69;           // +69
+    unsigned char field_6a;           // +6a
+    unsigned char field_6b;           // +6b
+    unsigned char field_6c;           // +6c
+    unsigned char field_6d;           // +6d
+    unsigned short field_6e;          // +6e
+    unsigned short field_70;          // +70
+    unsigned short field_72;          // +72
+    unsigned char field_74;           // +74
+    unsigned char field_75;           // +75
+    unsigned char field_76;           // +76
+    unsigned char field_77;           // +77
+    unsigned char field_78;           // +78
+    unsigned char field_79;           // +79
+    unsigned char field_7a;           // +7a
+    unsigned char field_7b;           // +7b
+    unsigned short field_7c;          // +7c
+    unsigned short field_7e;          // +7e
+    char field_80[0x40];              // +80
+    unsigned char field_c0;           // +c0
+    unsigned char field_c1;           // +c1
+    unsigned char field_c2;           // +c2
+    unsigned char field_c3;           // +c3
+    unsigned char field_c4;           // +c4
+    unsigned char field_c5;           // +c5
+    unsigned short field_c6;          // +c6
+    unsigned char field_c8;           // +c8
+    unsigned char field_c9;           // +c9
+    unsigned char field_ca;           // +ca
+    unsigned char field_cb;           // +cb
+    unsigned short field_cc;          // +cc
+    unsigned short field_ce;          // +ce
+    unsigned char field_d0;           // +d0
+    unsigned char field_d1;           // +d1
+    unsigned short field_d2;          // +d2
+    unsigned char field_d4;           // +d4
+    unsigned char field_d5;           // +d5
+    unsigned char field_d6;           // +d6
+    unsigned char field_d7;           // +d7
+    unsigned short field_d8;          // +d8
+    unsigned char field_da;           // +da
+    unsigned char field_db;           // +db
+    unsigned short field_dc;          // +dc
+    unsigned char field_de;           // +de
+    unsigned char field_df;           // +df
+    unsigned char field_e0;           // +e0
+    unsigned char field_e1;           // +e1
+    unsigned char field_e2;           // +e2
+    unsigned char field_e3;           // +e3
+    unsigned short field_e4;          // +e4
+    unsigned short field_e6;          // +e6
+    unsigned short field_e8;          // +e8
+    unsigned short field_ea;          // +ea
+    unsigned short field_ec;          // +ec
+    unsigned short field_ee;          // +ee
+    void* target;                    // +f0
+    unsigned char field_f8;           // +f8
+    unsigned char field_f9;           // +f9
+    unsigned short field_fa;          // +fa
+    unsigned char field_fc;           // +fc
+    unsigned char field_fd;           // +fd
+    unsigned short field_fe;          // +fe
+    unsigned short field_100;         // +100
+    unsigned short field_102;         // +102
+    unsigned char pad104[0xc];
+};
+static_assert(sizeof(Rec_d89b0) == 0x110, "record size");
+static_assert(__builtin_offsetof(Rec_d89b0, target) == 0xf0, "target");
+
+struct Pool_d89b0 {
+    unsigned char pad0[8];
+    Rec_d89b0* free;                 // +8
+};
+
+struct List_d89b0 {
+    Rec_d89b0** items;               // +0
+    unsigned short capacity;         // +8
+    unsigned short count;            // +a
+};
+
+struct Ctx_d89b0 {
+    void* data;                      // +0
+    int size;                        // +8
+    int count;                       // +c
+    unsigned int limit;              // +10
+    unsigned char pad14[4];
+    Pool_d89b0* pool;                // +18
+    List_d89b0* list;                // +20
+    void* table;                     // +28
+};
+
+void callee_4ca98(Rec_d89b0*);                                               // 0x710004ca98
+void* callee_4df50(void*, int);                                              // 0x710004df50
+
+// 0x71000d89b0: a record loader: a memory stream whose virtual read is called through a pointer (on the local object itself Clang calls it directly), one read per field in field order, the target id read into a local and resolved afterwards
+bool call_d89b0(Ctx_d89b0* p0) {
+    MemStream memory;
+    MemStream* stream = &memory;
+    if (!stream->open(p0->data, 0, p0->size)) {
+        return false;
+    }
+    Pool_d89b0* pool = p0->pool;
+    int count = p0->count;
+    unsigned int limit = p0->limit;
+    void* table = p0->table;
+    Header_d89b0 header;
+    stream->read(&header, nullptr, sizeof(header));
+    while (count != 0) {
+        Rec_d89b0* rec = pool->free;
+        if (rec != nullptr) {
+            pool->free = *reinterpret_cast<Rec_d89b0**>(rec);
+        }
+        callee_4ca98(rec);
+        stream->read(rec->head, nullptr, sizeof(rec->head));
+        stream->read(&rec->field_8, nullptr, sizeof(rec->field_8));
+        stream->read(&rec->field_9, nullptr, sizeof(rec->field_9));
+        stream->read(&rec->field_a, nullptr, sizeof(rec->field_a));
+        stream->read(&rec->field_c, nullptr, sizeof(rec->field_c));
+        stream->read(&rec->field_e, nullptr, sizeof(rec->field_e));
+        stream->read(&rec->field_10, nullptr, sizeof(rec->field_10));
+        stream->read(&rec->field_11, nullptr, sizeof(rec->field_11));
+        stream->read(&rec->field_12, nullptr, sizeof(rec->field_12));
+        stream->read(&rec->field_14, nullptr, sizeof(rec->field_14));
+        stream->read(&rec->field_15, nullptr, sizeof(rec->field_15));
+        stream->read(&rec->field_16, nullptr, sizeof(rec->field_16));
+        stream->read(&rec->field_18, nullptr, sizeof(rec->field_18));
+        stream->read(&rec->field_19, nullptr, sizeof(rec->field_19));
+        stream->read(&rec->field_1a, nullptr, sizeof(rec->field_1a));
+        stream->read(&rec->field_1b, nullptr, sizeof(rec->field_1b));
+        stream->read(&rec->field_1c, nullptr, sizeof(rec->field_1c));
+        stream->read(&rec->field_1d, nullptr, sizeof(rec->field_1d));
+        stream->read(&rec->field_1e, nullptr, sizeof(rec->field_1e));
+        stream->read(&rec->field_20, nullptr, sizeof(rec->field_20));
+        stream->read(&rec->field_22, nullptr, sizeof(rec->field_22));
+        stream->read(&rec->field_23, nullptr, sizeof(rec->field_23));
+        stream->read(&rec->field_24, nullptr, sizeof(rec->field_24));
+        stream->read(&rec->field_26, nullptr, sizeof(rec->field_26));
+        stream->read(&rec->field_28, nullptr, sizeof(rec->field_28));
+        stream->read(&rec->field_2a, nullptr, sizeof(rec->field_2a));
+        stream->read(&rec->field_2b, nullptr, sizeof(rec->field_2b));
+        stream->read(&rec->field_2c, nullptr, sizeof(rec->field_2c));
+        stream->read(&rec->field_2d, nullptr, sizeof(rec->field_2d));
+        stream->read(&rec->field_2e, nullptr, sizeof(rec->field_2e));
+        stream->read(&rec->field_2f, nullptr, sizeof(rec->field_2f));
+        stream->read(&rec->field_30, nullptr, sizeof(rec->field_30));
+        stream->read(&rec->field_32, nullptr, sizeof(rec->field_32));
+        stream->read(&rec->field_33, nullptr, sizeof(rec->field_33));
+        stream->read(&rec->field_34, nullptr, sizeof(rec->field_34));
+        stream->read(&rec->field_36, nullptr, sizeof(rec->field_36));
+        stream->read(&rec->field_38, nullptr, sizeof(rec->field_38));
+        stream->read(&rec->field_3a, nullptr, sizeof(rec->field_3a));
+        stream->read(&rec->field_3c, nullptr, sizeof(rec->field_3c));
+        stream->read(&rec->field_3e, nullptr, sizeof(rec->field_3e));
+        stream->read(&rec->field_3f, nullptr, sizeof(rec->field_3f));
+        stream->read(&rec->field_40, nullptr, sizeof(rec->field_40));
+        stream->read(&rec->field_42, nullptr, sizeof(rec->field_42));
+        stream->read(&rec->field_44, nullptr, sizeof(rec->field_44));
+        stream->read(&rec->field_46, nullptr, sizeof(rec->field_46));
+        stream->read(&rec->field_47, nullptr, sizeof(rec->field_47));
+        stream->read(&rec->field_48, nullptr, sizeof(rec->field_48));
+        stream->read(&rec->field_4a, nullptr, sizeof(rec->field_4a));
+        stream->read(&rec->field_4c, nullptr, sizeof(rec->field_4c));
+        stream->read(&rec->field_4e, nullptr, sizeof(rec->field_4e));
+        stream->read(&rec->field_50, nullptr, sizeof(rec->field_50));
+        stream->read(&rec->field_52, nullptr, sizeof(rec->field_52));
+        stream->read(&rec->field_53, nullptr, sizeof(rec->field_53));
+        stream->read(&rec->field_54, nullptr, sizeof(rec->field_54));
+        stream->read(&rec->field_55, nullptr, sizeof(rec->field_55));
+        stream->read(&rec->field_56, nullptr, sizeof(rec->field_56));
+        stream->read(&rec->field_58, nullptr, sizeof(rec->field_58));
+        stream->read(&rec->field_5a, nullptr, sizeof(rec->field_5a));
+        stream->read(&rec->field_5c, nullptr, sizeof(rec->field_5c));
+        stream->read(&rec->field_5e, nullptr, sizeof(rec->field_5e));
+        stream->read(&rec->field_5f, nullptr, sizeof(rec->field_5f));
+        stream->read(&rec->field_60, nullptr, sizeof(rec->field_60));
+        stream->read(&rec->field_64, nullptr, sizeof(rec->field_64));
+        stream->read(&rec->field_66, nullptr, sizeof(rec->field_66));
+        stream->read(&rec->field_68, nullptr, sizeof(rec->field_68));
+        stream->read(&rec->field_69, nullptr, sizeof(rec->field_69));
+        stream->read(&rec->field_6a, nullptr, sizeof(rec->field_6a));
+        stream->read(&rec->field_6b, nullptr, sizeof(rec->field_6b));
+        stream->read(&rec->field_6c, nullptr, sizeof(rec->field_6c));
+        stream->read(&rec->field_6d, nullptr, sizeof(rec->field_6d));
+        stream->read(&rec->field_6e, nullptr, sizeof(rec->field_6e));
+        stream->read(&rec->field_70, nullptr, sizeof(rec->field_70));
+        stream->read(&rec->field_72, nullptr, sizeof(rec->field_72));
+        stream->read(&rec->field_74, nullptr, sizeof(rec->field_74));
+        stream->read(&rec->field_75, nullptr, sizeof(rec->field_75));
+        stream->read(&rec->field_76, nullptr, sizeof(rec->field_76));
+        stream->read(&rec->field_77, nullptr, sizeof(rec->field_77));
+        stream->read(&rec->field_78, nullptr, sizeof(rec->field_78));
+        stream->read(&rec->field_79, nullptr, sizeof(rec->field_79));
+        stream->read(&rec->field_7a, nullptr, sizeof(rec->field_7a));
+        stream->read(&rec->field_7b, nullptr, sizeof(rec->field_7b));
+        stream->read(&rec->field_7c, nullptr, sizeof(rec->field_7c));
+        stream->read(&rec->field_7e, nullptr, sizeof(rec->field_7e));
+        stream->read(&rec->field_80, nullptr, sizeof(rec->field_80));
+        stream->read(&rec->field_c0, nullptr, sizeof(rec->field_c0));
+        stream->read(&rec->field_c1, nullptr, sizeof(rec->field_c1));
+        stream->read(&rec->field_c2, nullptr, sizeof(rec->field_c2));
+        stream->read(&rec->field_c3, nullptr, sizeof(rec->field_c3));
+        stream->read(&rec->field_c4, nullptr, sizeof(rec->field_c4));
+        stream->read(&rec->field_c5, nullptr, sizeof(rec->field_c5));
+        stream->read(&rec->field_c6, nullptr, sizeof(rec->field_c6));
+        stream->read(&rec->field_c8, nullptr, sizeof(rec->field_c8));
+        stream->read(&rec->field_c9, nullptr, sizeof(rec->field_c9));
+        stream->read(&rec->field_ca, nullptr, sizeof(rec->field_ca));
+        stream->read(&rec->field_cb, nullptr, sizeof(rec->field_cb));
+        stream->read(&rec->field_cc, nullptr, sizeof(rec->field_cc));
+        stream->read(&rec->field_ce, nullptr, sizeof(rec->field_ce));
+        stream->read(&rec->field_d0, nullptr, sizeof(rec->field_d0));
+        stream->read(&rec->field_d1, nullptr, sizeof(rec->field_d1));
+        stream->read(&rec->field_d2, nullptr, sizeof(rec->field_d2));
+        stream->read(&rec->field_d4, nullptr, sizeof(rec->field_d4));
+        stream->read(&rec->field_d5, nullptr, sizeof(rec->field_d5));
+        stream->read(&rec->field_d6, nullptr, sizeof(rec->field_d6));
+        stream->read(&rec->field_d7, nullptr, sizeof(rec->field_d7));
+        stream->read(&rec->field_d8, nullptr, sizeof(rec->field_d8));
+        stream->read(&rec->field_da, nullptr, sizeof(rec->field_da));
+        stream->read(&rec->field_db, nullptr, sizeof(rec->field_db));
+        stream->read(&rec->field_dc, nullptr, sizeof(rec->field_dc));
+        stream->read(&rec->field_de, nullptr, sizeof(rec->field_de));
+        stream->read(&rec->field_df, nullptr, sizeof(rec->field_df));
+        stream->read(&rec->field_e0, nullptr, sizeof(rec->field_e0));
+        stream->read(&rec->field_e1, nullptr, sizeof(rec->field_e1));
+        stream->read(&rec->field_e2, nullptr, sizeof(rec->field_e2));
+        stream->read(&rec->field_e3, nullptr, sizeof(rec->field_e3));
+        stream->read(&rec->field_e4, nullptr, sizeof(rec->field_e4));
+        stream->read(&rec->field_e6, nullptr, sizeof(rec->field_e6));
+        stream->read(&rec->field_e8, nullptr, sizeof(rec->field_e8));
+        stream->read(&rec->field_ea, nullptr, sizeof(rec->field_ea));
+        stream->read(&rec->field_ec, nullptr, sizeof(rec->field_ec));
+        stream->read(&rec->field_ee, nullptr, sizeof(rec->field_ee));
+        int id = 0;
+        stream->read(&id, nullptr, sizeof(id));
+        stream->read(&rec->field_f8, nullptr, sizeof(rec->field_f8));
+        stream->read(&rec->field_f9, nullptr, sizeof(rec->field_f9));
+        stream->read(&rec->field_fa, nullptr, sizeof(rec->field_fa));
+        stream->read(&rec->field_fc, nullptr, sizeof(rec->field_fc));
+        stream->read(&rec->field_fd, nullptr, sizeof(rec->field_fd));
+        stream->read(&rec->field_fe, nullptr, sizeof(rec->field_fe));
+        stream->read(&rec->field_100, nullptr, sizeof(rec->field_100));
+        stream->read(&rec->field_102, nullptr, sizeof(rec->field_102));
+        List_d89b0* list = p0->list;
+        list->items[list->count++] = rec;
+        if (id != -1 && (rec->head[6] & 0x20)) {
+            if (static_cast<unsigned int>(id) < limit) {
+                rec->target = callee_4df50(table, id);
+            }
+        } else {
+            rec->target = nullptr;
+        }
+        count--;
+    }
+    stream->close();
+    return true;
+}
+
+struct Arena_d98e0 {
+    unsigned char* base;             // +0
+    unsigned long used;              // +8
+    unsigned long capacity;          // +10
+
+    void* alloc(unsigned long size) {
+        unsigned long offset = used;
+        unsigned long end = offset + size;
+        if (end > capacity) {
+            return nullptr;
+        }
+        used = end;
+        return base + offset;
+    }
+};
+
+struct Ctx_d98e0 {
+    void* data;                      // +0
+    int size;                        // +8
+    unsigned char padc[4];
+    Pool_d89b0* pool;                // +10
+    Arena_d98e0* arena;              // +18
+    List_d89b0* list;                // +20
+};
+
+// 0x71000d98e0: the same record loader with the record count taken from the header and the item list carved from an arena; the byte count is a local computed before the arena is loaded
+unsigned int call_d98e0(Ctx_d98e0* p0) {
+    MemStream memory;
+    MemStream* stream = &memory;
+    if (!stream->open(p0->data, 0, p0->size)) {
+        return 0;
+    }
+    Header_d89b0 header;
+    stream->read(&header, nullptr, sizeof(header));
+    unsigned int n = *reinterpret_cast<unsigned int*>(header.b);
+    unsigned long bytes = n * sizeof(void*);
+    Arena_d98e0* arena = p0->arena;
+    if (arena->capacity - arena->used < bytes) {
+        return 0;
+    }
+    Pool_d89b0* pool = p0->pool;
+    List_d89b0* list = p0->list;
+    Rec_d89b0** items = static_cast<Rec_d89b0**>(arena->alloc(bytes));
+    list->items = items;
+    list->capacity = n;
+    for (unsigned int i = 0; i < list->capacity; i++) {
+        list->items[i] = nullptr;
+    }
+    for (unsigned int count = n; count != 0; count--) {
+        Rec_d89b0* rec = pool->free;
+        if (rec != nullptr) {
+            pool->free = *reinterpret_cast<Rec_d89b0**>(rec);
+        }
+        callee_4ca98(rec);
+        stream->read(rec->head, nullptr, sizeof(rec->head));
+        stream->read(&rec->field_8, nullptr, sizeof(rec->field_8));
+        stream->read(&rec->field_9, nullptr, sizeof(rec->field_9));
+        stream->read(&rec->field_a, nullptr, sizeof(rec->field_a));
+        stream->read(&rec->field_c, nullptr, sizeof(rec->field_c));
+        stream->read(&rec->field_e, nullptr, sizeof(rec->field_e));
+        stream->read(&rec->field_10, nullptr, sizeof(rec->field_10));
+        stream->read(&rec->field_11, nullptr, sizeof(rec->field_11));
+        stream->read(&rec->field_12, nullptr, sizeof(rec->field_12));
+        stream->read(&rec->field_14, nullptr, sizeof(rec->field_14));
+        stream->read(&rec->field_15, nullptr, sizeof(rec->field_15));
+        stream->read(&rec->field_16, nullptr, sizeof(rec->field_16));
+        stream->read(&rec->field_18, nullptr, sizeof(rec->field_18));
+        stream->read(&rec->field_19, nullptr, sizeof(rec->field_19));
+        stream->read(&rec->field_1a, nullptr, sizeof(rec->field_1a));
+        stream->read(&rec->field_1b, nullptr, sizeof(rec->field_1b));
+        stream->read(&rec->field_1c, nullptr, sizeof(rec->field_1c));
+        stream->read(&rec->field_1d, nullptr, sizeof(rec->field_1d));
+        stream->read(&rec->field_1e, nullptr, sizeof(rec->field_1e));
+        stream->read(&rec->field_20, nullptr, sizeof(rec->field_20));
+        stream->read(&rec->field_22, nullptr, sizeof(rec->field_22));
+        stream->read(&rec->field_23, nullptr, sizeof(rec->field_23));
+        stream->read(&rec->field_24, nullptr, sizeof(rec->field_24));
+        stream->read(&rec->field_26, nullptr, sizeof(rec->field_26));
+        stream->read(&rec->field_28, nullptr, sizeof(rec->field_28));
+        stream->read(&rec->field_2a, nullptr, sizeof(rec->field_2a));
+        stream->read(&rec->field_2b, nullptr, sizeof(rec->field_2b));
+        stream->read(&rec->field_2c, nullptr, sizeof(rec->field_2c));
+        stream->read(&rec->field_2d, nullptr, sizeof(rec->field_2d));
+        stream->read(&rec->field_2e, nullptr, sizeof(rec->field_2e));
+        stream->read(&rec->field_2f, nullptr, sizeof(rec->field_2f));
+        stream->read(&rec->field_30, nullptr, sizeof(rec->field_30));
+        stream->read(&rec->field_32, nullptr, sizeof(rec->field_32));
+        stream->read(&rec->field_33, nullptr, sizeof(rec->field_33));
+        stream->read(&rec->field_34, nullptr, sizeof(rec->field_34));
+        stream->read(&rec->field_36, nullptr, sizeof(rec->field_36));
+        stream->read(&rec->field_38, nullptr, sizeof(rec->field_38));
+        stream->read(&rec->field_3a, nullptr, sizeof(rec->field_3a));
+        stream->read(&rec->field_3c, nullptr, sizeof(rec->field_3c));
+        stream->read(&rec->field_3e, nullptr, sizeof(rec->field_3e));
+        stream->read(&rec->field_3f, nullptr, sizeof(rec->field_3f));
+        stream->read(&rec->field_40, nullptr, sizeof(rec->field_40));
+        stream->read(&rec->field_42, nullptr, sizeof(rec->field_42));
+        stream->read(&rec->field_44, nullptr, sizeof(rec->field_44));
+        stream->read(&rec->field_46, nullptr, sizeof(rec->field_46));
+        stream->read(&rec->field_47, nullptr, sizeof(rec->field_47));
+        stream->read(&rec->field_48, nullptr, sizeof(rec->field_48));
+        stream->read(&rec->field_4a, nullptr, sizeof(rec->field_4a));
+        stream->read(&rec->field_4c, nullptr, sizeof(rec->field_4c));
+        stream->read(&rec->field_4e, nullptr, sizeof(rec->field_4e));
+        stream->read(&rec->field_50, nullptr, sizeof(rec->field_50));
+        stream->read(&rec->field_52, nullptr, sizeof(rec->field_52));
+        stream->read(&rec->field_53, nullptr, sizeof(rec->field_53));
+        stream->read(&rec->field_54, nullptr, sizeof(rec->field_54));
+        stream->read(&rec->field_55, nullptr, sizeof(rec->field_55));
+        stream->read(&rec->field_56, nullptr, sizeof(rec->field_56));
+        stream->read(&rec->field_58, nullptr, sizeof(rec->field_58));
+        stream->read(&rec->field_5a, nullptr, sizeof(rec->field_5a));
+        stream->read(&rec->field_5c, nullptr, sizeof(rec->field_5c));
+        stream->read(&rec->field_5e, nullptr, sizeof(rec->field_5e));
+        stream->read(&rec->field_5f, nullptr, sizeof(rec->field_5f));
+        stream->read(&rec->field_60, nullptr, sizeof(rec->field_60));
+        stream->read(&rec->field_64, nullptr, sizeof(rec->field_64));
+        stream->read(&rec->field_66, nullptr, sizeof(rec->field_66));
+        stream->read(&rec->field_68, nullptr, sizeof(rec->field_68));
+        stream->read(&rec->field_69, nullptr, sizeof(rec->field_69));
+        stream->read(&rec->field_6a, nullptr, sizeof(rec->field_6a));
+        stream->read(&rec->field_6b, nullptr, sizeof(rec->field_6b));
+        stream->read(&rec->field_6c, nullptr, sizeof(rec->field_6c));
+        stream->read(&rec->field_6d, nullptr, sizeof(rec->field_6d));
+        stream->read(&rec->field_6e, nullptr, sizeof(rec->field_6e));
+        stream->read(&rec->field_70, nullptr, sizeof(rec->field_70));
+        stream->read(&rec->field_72, nullptr, sizeof(rec->field_72));
+        stream->read(&rec->field_74, nullptr, sizeof(rec->field_74));
+        stream->read(&rec->field_75, nullptr, sizeof(rec->field_75));
+        stream->read(&rec->field_76, nullptr, sizeof(rec->field_76));
+        stream->read(&rec->field_77, nullptr, sizeof(rec->field_77));
+        stream->read(&rec->field_78, nullptr, sizeof(rec->field_78));
+        stream->read(&rec->field_79, nullptr, sizeof(rec->field_79));
+        stream->read(&rec->field_7a, nullptr, sizeof(rec->field_7a));
+        stream->read(&rec->field_7b, nullptr, sizeof(rec->field_7b));
+        stream->read(&rec->field_7c, nullptr, sizeof(rec->field_7c));
+        stream->read(&rec->field_7e, nullptr, sizeof(rec->field_7e));
+        stream->read(&rec->field_80, nullptr, sizeof(rec->field_80));
+        stream->read(&rec->field_c0, nullptr, sizeof(rec->field_c0));
+        stream->read(&rec->field_c1, nullptr, sizeof(rec->field_c1));
+        stream->read(&rec->field_c2, nullptr, sizeof(rec->field_c2));
+        stream->read(&rec->field_c3, nullptr, sizeof(rec->field_c3));
+        stream->read(&rec->field_c4, nullptr, sizeof(rec->field_c4));
+        stream->read(&rec->field_c5, nullptr, sizeof(rec->field_c5));
+        stream->read(&rec->field_c6, nullptr, sizeof(rec->field_c6));
+        stream->read(&rec->field_c8, nullptr, sizeof(rec->field_c8));
+        stream->read(&rec->field_c9, nullptr, sizeof(rec->field_c9));
+        stream->read(&rec->field_ca, nullptr, sizeof(rec->field_ca));
+        stream->read(&rec->field_cb, nullptr, sizeof(rec->field_cb));
+        stream->read(&rec->field_cc, nullptr, sizeof(rec->field_cc));
+        stream->read(&rec->field_ce, nullptr, sizeof(rec->field_ce));
+        stream->read(&rec->field_d0, nullptr, sizeof(rec->field_d0));
+        stream->read(&rec->field_d1, nullptr, sizeof(rec->field_d1));
+        stream->read(&rec->field_d2, nullptr, sizeof(rec->field_d2));
+        stream->read(&rec->field_d4, nullptr, sizeof(rec->field_d4));
+        stream->read(&rec->field_d5, nullptr, sizeof(rec->field_d5));
+        stream->read(&rec->field_d6, nullptr, sizeof(rec->field_d6));
+        stream->read(&rec->field_d7, nullptr, sizeof(rec->field_d7));
+        stream->read(&rec->field_d8, nullptr, sizeof(rec->field_d8));
+        stream->read(&rec->field_da, nullptr, sizeof(rec->field_da));
+        stream->read(&rec->field_db, nullptr, sizeof(rec->field_db));
+        stream->read(&rec->field_dc, nullptr, sizeof(rec->field_dc));
+        stream->read(&rec->field_de, nullptr, sizeof(rec->field_de));
+        stream->read(&rec->field_df, nullptr, sizeof(rec->field_df));
+        stream->read(&rec->field_e0, nullptr, sizeof(rec->field_e0));
+        stream->read(&rec->field_e1, nullptr, sizeof(rec->field_e1));
+        stream->read(&rec->field_e2, nullptr, sizeof(rec->field_e2));
+        stream->read(&rec->field_e3, nullptr, sizeof(rec->field_e3));
+        stream->read(&rec->field_e4, nullptr, sizeof(rec->field_e4));
+        stream->read(&rec->field_e6, nullptr, sizeof(rec->field_e6));
+        stream->read(&rec->field_e8, nullptr, sizeof(rec->field_e8));
+        stream->read(&rec->field_ea, nullptr, sizeof(rec->field_ea));
+        stream->read(&rec->field_ec, nullptr, sizeof(rec->field_ec));
+        stream->read(&rec->field_ee, nullptr, sizeof(rec->field_ee));
+        int id = 0;
+        stream->read(&id, nullptr, sizeof(id));
+        stream->read(&rec->field_f8, nullptr, sizeof(rec->field_f8));
+        stream->read(&rec->field_f9, nullptr, sizeof(rec->field_f9));
+        stream->read(&rec->field_fa, nullptr, sizeof(rec->field_fa));
+        stream->read(&rec->field_fc, nullptr, sizeof(rec->field_fc));
+        stream->read(&rec->field_fd, nullptr, sizeof(rec->field_fd));
+        stream->read(&rec->field_fe, nullptr, sizeof(rec->field_fe));
+        stream->read(&rec->field_100, nullptr, sizeof(rec->field_100));
+        stream->read(&rec->field_102, nullptr, sizeof(rec->field_102));
+        List_d89b0* items_list = p0->list;
+        items_list->items[items_list->count++] = rec;
+        rec->target = nullptr;
+    }
+    stream->close();
+    return n;
+}
+
+class OutStream {
+public:
+    OutStream();                                                             // 0x710053d454
+    virtual ~OutStream();                                                    // 0x710053d488
+    virtual void v10();
+    virtual int write(void* src, void* unused, int size);                    // +18
+    unsigned char open(void* data, long offset, int size);                   // 0x710053d4b0
+    void close();                                                            // 0x710053d4d8
+    unsigned long tell();                                                    // 0x710053d568
+
+    unsigned char pad8[0x18];
+};
+
+struct Ctx_da854 {
+    void* src;                       // +0
+    void* dst;                       // +8
+    int src_size;                    // +10
+    int dst_size;                    // +14
+};
+
+// 0x71000da854: copies a 32-bit archive into a 64-bit one, widening every offset; the truncated table size is declared right after the 64-bit one so that IndVarSimplify leaves the 64-bit shift above the header loop
+void call_da854(Ctx_da854* p0) {
+    MemStream input;
+    OutStream output;
+    MemStream* in = &input;
+    OutStream* out = &output;
+    if (in->open(p0->src, 0, p0->src_size)) {
+        if (out->open(p0->dst, 0, p0->dst_size)) {
+            unsigned int counts[6] = {};
+            int zero = 0;
+            unsigned int total = 0;
+            for (int i = 0; i < 6; i++) {
+                in->read(&counts[i], nullptr, sizeof(counts[i]));
+                out->write(&counts[i], nullptr, sizeof(counts[i]));
+                total += counts[i];
+            }
+            unsigned long table = total * sizeof(unsigned int);
+            int table32 = table;
+            for (int i = 0; i < 6; i++) {
+                int offset = 0;
+                in->read(&offset, nullptr, sizeof(offset));
+                offset += 0x18;
+                out->write(&offset, nullptr, sizeof(offset));
+                out->write(&zero, nullptr, sizeof(zero));
+            }
+            unsigned int* offsets = new unsigned int[total + 1];
+            for (unsigned int i = 0; i < total; i++) {
+                int offset = 0;
+                in->read(&offset, nullptr, sizeof(offset));
+                offsets[i] = offset + table32 + 0x18 + i * 0x10;
+                out->write(&offsets[i], nullptr, sizeof(offsets[i]));
+                out->write(&zero, nullptr, sizeof(zero));
+            }
+            offsets[total] = p0->src_size + table32 + total * 0x10 + 0x18;
+            unsigned int index = 0;
+            for (int k = 0; k < 6; k++) {
+                for (unsigned int j = 0; j < counts[k]; j++) {
+                    index++;
+                    int adjust = table + 0x18 + index * 0x10;
+                    int a;
+                    in->read(&a, nullptr, sizeof(a));
+                    out->write(&a, nullptr, sizeof(a));
+                    int b;
+                    in->read(&b, nullptr, sizeof(b));
+                    out->write(&b, nullptr, sizeof(b));
+                    int c;
+                    in->read(&c, nullptr, sizeof(c));
+                    out->write(&c, nullptr, sizeof(c));
+                    int d;
+                    in->read(&d, nullptr, sizeof(d));
+                    out->write(&d, nullptr, sizeof(d));
+                    int e;
+                    in->read(&e, nullptr, sizeof(e));
+                    out->write(&e, nullptr, sizeof(e));
+                    int f;
+                    in->read(&f, nullptr, sizeof(f));
+                    out->write(&f, nullptr, sizeof(f));
+                    int g;
+                    in->read(&g, nullptr, sizeof(g));
+                    g += adjust;
+                    out->write(&g, nullptr, sizeof(g));
+                    out->write(&zero, nullptr, sizeof(zero));
+                    int h;
+                    in->read(&h, nullptr, sizeof(h));
+                    h += adjust;
+                    out->write(&h, nullptr, sizeof(h));
+                    out->write(&zero, nullptr, sizeof(zero));
+                    int i;
+                    in->read(&i, nullptr, sizeof(i));
+                    out->write(&i, nullptr, sizeof(i));
+                    int ptr;
+                    in->read(&ptr, nullptr, sizeof(ptr));
+                    int l;
+                    in->read(&l, nullptr, sizeof(l));
+                    out->write(&l, nullptr, sizeof(l));
+                    ptr += adjust;
+                    out->write(&ptr, nullptr, sizeof(ptr));
+                    out->write(&zero, nullptr, sizeof(zero));
+                    int m;
+                    in->read(&m, nullptr, sizeof(m));
+                    m += adjust;
+                    out->write(&m, nullptr, sizeof(m));
+                    out->write(&zero, nullptr, sizeof(zero));
+                    int word = 0;
+                    while (out->tell() < offsets[index]) {
+                        in->read(&word, nullptr, sizeof(word));
+                        out->write(&word, nullptr, sizeof(word));
+                    }
+                }
+            }
+            delete[] offsets;
+            out->close();
+        }
+        in->close();
+    }
 }

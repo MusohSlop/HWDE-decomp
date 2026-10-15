@@ -17510,7 +17510,18 @@
     "kLayout2_28b710": "0x71007d629e",
     "kAnim_28b710": "0x71007d62ab",
     "kGroupDup_28b710": "0x71007d62b1",
-    "_ZN11Class28b71012finish_setupEv": "0x710028f4dc"
+    "_ZN11Class28b71012finish_setupEv": "0x710028f4dc",
+    "_ZN9MemStreamC1Ev": "0x710053d304",
+    "_ZN9MemStreamD1Ev": "0x710053d338",
+    "_ZN9MemStream4openEPvli": "0x710053d360",
+    "_ZN9MemStream5closeEv": "0x710053d388",
+    "_Z12callee_4ca98P9Rec_d89b0": "0x710004ca98",
+    "_Z12callee_4df50Pvi": "0x710004df50",
+    "_ZN9OutStreamC1Ev": "0x710053d454",
+    "_ZN9OutStreamD1Ev": "0x710053d488",
+    "_ZN9OutStream4openEPvli": "0x710053d4b0",
+    "_ZN9OutStream5closeEv": "0x710053d4d8",
+    "_ZN9OutStream4tellEv": "0x710053d568"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -26815,7 +26826,8 @@
     "misc/s4_functions01.cpp": {
       "map": {
         ".rodata.cst4": "0x710073b000",
-        ".rodata.cst16": "0x710073dff0"
+        ".rodata.cst16": "0x710073dff0",
+        "_Znam": "0x7100600880"
       },
       "functions": {
         "_Z10call_f6fc0P10Argf6fc0_0": "0x71000f6fc0",
@@ -26827,7 +26839,10 @@
         "_Z11call_20e224P12Table_20e224": "0x710020e224",
         "_Z11call_1f9a98P10This1f9a98": "0x71001f9a98",
         "_Z11call_19c9a4P9Obj19c9a4P10R24_19c9a4P10R68_19c9a4P10P10_19c9a4P10R6c_19c9a4P10R18_19c9a4PvP11B4d0_19c9a4": "0x710019c9a4",
-        "_ZN11Class28b71010initializeEv": "0x710028b710"
+        "_ZN11Class28b71010initializeEv": "0x710028b710",
+        "_Z10call_d89b0P9Ctx_d89b0": "0x71000d89b0",
+        "_Z10call_d98e0P9Ctx_d98e0": "0x71000d98e0",
+        "_Z10call_da854P9Ctx_da854": "0x71000da854"
       }
     },
     "misc/variant_ctor01.cpp": {
