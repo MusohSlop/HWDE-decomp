@@ -89,6 +89,10 @@ well.
   vtable/-1/0 store groups of the layout handle (GOT `0x7100c22f00`) become `LayoutHandle` members (the
   `HandleState` base, then the vtable). With `--prefix` only the leading member initialisation becomes members
   and the rest of the function stays as the constructor body, run on the generated view of the object (`p0`).
+  A no-argument call on `this` before the class's own vtable store becomes its polymorphic base (constructed
+  with C2; the members start where the next one does), the element-pointer loop with a byte count is a member
+  array too, and a store, memset or layout handle field (id, counters) set after a member at a higher offset
+  was constructed becomes a body statement in the original's order (initialisers run in declaration order).
   Prints the constructor's symbol and the `--map` arguments for the placeholder classes (`ObjNNN`, or the class
   of a constructor already named in `units.json`). A field at an offset its type would not get is declared
   `__attribute__((packed))` (and fixalign.py's packed fields are read). A run of equal no-argument members

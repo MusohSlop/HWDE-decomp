@@ -102,6 +102,17 @@ while i < len(body):
             m2 = calls[0]
             ev.append(("loop", int(m2.group(2) or "0", 16), int(m2.group(1), 16), int(m3.group(1), 16), elems[m.group(1)]))
             i = j + 1; continue
+        # the element pointer walking with a byte count: long rK = N; do { callee(rE + off); next_rE = rE + 1;
+        # next_rK = rK - size; ... } while (rK != 0);
+        mb = re.fullmatch(r"long (r\d+) = (?:static_cast<unsigned long>\(static_cast<unsigned int>\()?(0x[0-9a-f]+|\d+)\)*;", blk[0]) if blk else None
+        if mb and len(blk) >= 3 and blk[1] == "do {":
+            mc = re.fullmatch(r"(?:(?:int |long )?c\d+ = )?callee_([0-9a-f]+)\(reinterpret_cast<long>\(reinterpret_cast<unsigned char\*>\(%s\)(?: \+ 0x([0-9a-f]+))?\)\);" % m.group(2), blk[2])
+            mw = re.fullmatch(r"\} while \(%s != 0\);" % mb.group(1), body[j].strip()) if j < len(body) else None
+            others = [x for x in blk[3:] if not re.fullmatch(r"(?:Elem\w+\* )?next_r\d+ = r\d+ [+-] (?:0x[0-9a-f]+|\d+);|long next_r\d+ = r\d+ - (?:0x[0-9a-f]+|\d+);|r\d+ = next_r\d+;", x)]
+            if mc and mw and not others:
+                stride = elems[m.group(1)]
+                ev.append(("loop", int(mc.group(2) or "0", 16), int(mc.group(1), 16), int(mb.group(2), 0) // stride, stride))
+                i = j + 1; continue
     m = re.fullmatch(r"long (r\d+) = (?:p0|reinterpret_cast<long>\(reinterpret_cast<unsigned char\*>\(p0\) \+ 0x([0-9a-f]+)\));", l)
     if m and i + 9 < len(body):
         blk = [x.strip() for x in body[i + 1:i + 10]]
@@ -171,6 +182,30 @@ for e in ev:
             members[e[1]] = ["field", t, None, v]
 for h in handles:
     members[h] = ["handle"]
+# A store or memset after a member constructed at a higher offset cannot be an initialiser (those run in
+# declaration order): it is a body statement, kept in the original's order.
+body_late = []
+late_stmts = []   # in the original's order: (offset, statement or None for a member's own init)
+hi = -1
+for e in ev:
+    if e[0] in ("call", "loop") and not (e[0] == "call" and e[1] == 0 and not e[3]):
+        hi = max(hi, e[1])
+    elif e[0] in ("store", "memset") and e[1] in members and e[1] < hi and e[1] not in hcover:
+        body_late.append(e[1])
+        late_stmts.append((e[1], None))
+    elif e[0] == "store" and e[1] in hcover and e[1] < hi:
+        # a handle field set again in the body (its id at +8, its counters at +10/+12)
+        h = next(h for h in handles if e[1] in (h, h + 8, h + 0x10, h + 0x12))
+        fld = {8: "id", 0x10: "a", 0x12: "b"}.get(e[1] - h)
+        if fld:
+            late_stmts.append((e[1], f"h{h:x}.{fld} = {e[2]};"))
+# A no-argument call on this (+0) before the class's own vtable store is its polymorphic base's constructor (C2):
+# the members start where the base ends, at the next member's offset.
+base = None
+if vt_own and ev and ev[0][0] == "call" and ev[0][1] == 0 and not ev[0][3] and 0 in members and members[0][0] == "obj":
+    del members[0]
+    bsize = min((o for o in members if o > 0), default=8)
+    base = ("Base%x_%x" % (ev[0][2], bsize), ev[0][2], bsize)
 
 
 def post_index_offset():
@@ -266,12 +301,16 @@ public:
     virtual void release(void* root); // +18
 };
 """)
-out.append(f"class {name} {{\npublic:\n    {name}({'void* p1' if any(m[0]=='field' and m[3]=='p1' for m in members.values()) else ''});")
+if base:
+    out.append(f"class {base[0]} {{\npublic:\n    {base[0]}();{' ' * max(1, 66 - len(base[0]))}// 0x71{base[1]:08x}\n"
+               f"    virtual ~{base[0]}();\n    unsigned char pad8[{base[2] - 8:#x}];\n}};\n")
+    maps.append(f"_ZN{len(base[0])}{base[0]}C2Ev=0x71{base[1]:08x}")
+out.append(f"class {name}{' : public ' + base[0] if base else ''} {{\npublic:\n    {name}({'void* p1' if any(m[0]=='field' and m[3]=='p1' for m in members.values()) else ''});")
 if vt_own:
     out.append("    virtual void v00();")
     maps.append(f"got:_ZTV{len(name)}{name}=0x71{vt_own:08x}")
 out.append("")
-pos = 8 if vt_own else 0
+pos = base[2] if base else 8 if vt_own else 0
 inits = []
 body_stmts = []
 k = 0
@@ -295,7 +334,9 @@ while idx < len(offs_list):
         out.append(f"    LayoutHandle h{o:x};")
     elif mbr[0] == "zero":
         out.append(f"    unsigned char z{o:x}[{mbr[1]:#x}];")
-        if mbr[2] == "0":
+        if o in body_late:
+            pass
+        elif mbr[2] == "0":
             inits.append(f"z{o:x}()")
         else:
             body_stmts.append(f"__builtin_memset(z{o:x}, {mbr[2]}, sizeof(z{o:x}));")
@@ -304,10 +345,19 @@ while idx < len(offs_list):
         # a field at an offset its type would not get (an int pair stored as one long at +...4) stays there packed
         pk = " __attribute__((packed))" if msize(mbr) in (2, 4, 8) and o % msize(mbr) else ""
         out.append(f"    {t} f{o:x}{pk};" if not t.endswith("*") else f"    {t[:-1].strip()}* f{o:x}{pk};")
-        inits.append(f"f{o:x}({mbr[3]})")
+        if o not in body_late:
+            inits.append(f"f{o:x}({mbr[3]})")
     pos = o + msize(mbr)
     idx += 1
 out.append("};\n")
+for o, st in late_stmts:
+    mbr = members.get(o)
+    if st:
+        body_stmts.append(st)
+    elif mbr[0] == "zero":
+        body_stmts.append(f"__builtin_memset(z{o:x}, {mbr[2]}, sizeof(z{o:x}));")
+    elif mbr[0] == "field":
+        body_stmts.append(f"f{o:x} = {mbr[3]};")
 has_p1 = any(m[0] == "field" and m[3] == "p1" for m in members.values()) or (a.prefix and any(re.search(r"\bp1\b", x) for x in rest_body))
 if a.prefix and rest_body:
     pt = argstruct.group(1) + "*" if argstruct else "long"

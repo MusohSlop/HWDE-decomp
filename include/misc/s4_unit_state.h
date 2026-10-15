@@ -38,7 +38,7 @@ public:
     virtual void s050();
     virtual void s058();
     virtual void s060();
-    virtual void s068();
+    virtual int type();       // +68
     virtual void s070();
     virtual void s078();
     virtual void s080();
@@ -98,7 +98,7 @@ public:
     virtual void s230();
     virtual void s238();
     virtual void s240();
-    virtual void s248();
+    virtual int special();    // +248
     virtual void s250();
     virtual void s258();
     virtual void s260();
@@ -121,13 +121,13 @@ public:
     virtual void s2e8();
     virtual void s2f0();
     virtual void s2f8();
-    virtual void s300();
-    virtual void s308();
+    virtual float rate300();  // +300
+    virtual float rate308();  // +308
     virtual void s310();
     virtual void s318();
-    virtual void s320();
+    virtual struct UnitRef* unit_ref();  // +320
     virtual void s328();
-    virtual void s330();
+    virtual void set_scale(float scale);  // +330
     virtual void s338();
     virtual void s340();
     virtual void s348();
@@ -152,13 +152,23 @@ public:
     virtual void s3e0();
     virtual int item();       // +3e8
 
-    unsigned char kind;       // +08
-    unsigned char pad9[7];
+    union {
+        unsigned char kind;   // +08: bits 0-1 the side
+        unsigned long bits8;  // +08 read whole
+        struct {
+            unsigned char pad8;
+            unsigned char flags9; // +09
+            unsigned char pada[4];
+            unsigned char flags_e; // +0e
+        };
+    };
     int id;                   // +10
     unsigned char pad14[4];
     Unit* unit;               // +18
     unsigned char pad20[4];
     short unit_id;            // +24
+    unsigned char pad26[0x32];
+    struct UnitStateInfo* info;  // +58
 };
 
 class UnitActor {
@@ -212,6 +222,22 @@ public:
     virtual void a170();
     virtual void a178();
     virtual int command(int arg);  // +180
+    virtual void a188();
+    virtual void a190();
+    virtual void a198();
+    virtual void a1a0();
+    virtual void a1a8();
+    virtual void a1b0();
+    virtual void a1b8();
+    virtual void a1c0();
+    virtual void a1c8();
+    virtual void a1d0();
+    virtual void a1d8();
+    virtual void a1e0();
+    virtual void a1e8();
+    virtual void a1f0();
+    virtual void a1f8();
+    virtual int check_200(int arg);  // +200
 
     unsigned char pad8[0x2c];
     float reach;              // +34
@@ -219,8 +245,17 @@ public:
     unsigned long flags50;    // +50: flag bits, read as (flags50 >> n) & 1 into an int
     struct UnitParts* parts;  // +58
     unsigned char pad60[0x80];
-    short link;               // +e0
+    short links[0x3c];        // +e0
+    unsigned char pad158[0x304];
+    int value45c;             // +45c
+    unsigned char pad460[0x38];
+    float limit498;           // +498
+    int value49c;             // +49c
+    unsigned char pad4a0[0x44];
+    unsigned short shape4e4;  // +4e4
 };
+
+class UnitBody;
 
 class Unit {
 public:
@@ -229,11 +264,65 @@ public:
     virtual UnitActor* actor();  // +10
     virtual void v18();
     virtual void v20();
-    virtual void v28();
+    virtual UnitBody* body();    // +28
     virtual void v30();
     virtual void v38();
-    virtual void v40();
+    virtual class UnitView* view();  // +40
     virtual UnitState* state();  // +48
+};
+
+// What Unit::body() returns.
+class UnitBody {
+public:
+    virtual void b000();
+    virtual void b008();
+    virtual void b010();
+    virtual void b018();
+    virtual void b020();
+    virtual void b028();
+    virtual void b030();
+    virtual void b038();
+    virtual void b040();
+    virtual void b048();
+    virtual void b050();
+    virtual void b058();
+    virtual void b060();
+    virtual void b068();
+    virtual void b070();
+    virtual void b078();
+    virtual void b080();
+    virtual void b088();
+    virtual void b090();
+    virtual void b098();
+    virtual void b0a0();
+    virtual void b0a8();
+    virtual void b0b0();
+    virtual void b0b8();
+    virtual void b0c0();
+    virtual void b0c8();
+    virtual void b0d0();
+    virtual void b0d8();
+    virtual void b0e0();
+    virtual void b0e8();
+    virtual void b0f0();
+    virtual void b0f8();
+    virtual void b100();
+    virtual void b108();
+    virtual void b110();
+    virtual void b118();
+    virtual void b120();
+    virtual void b128();
+    virtual void b130();
+    virtual void b138();
+    virtual void b140();
+    virtual void b148();
+    virtual void b150();
+    virtual void b158();
+    virtual void b160();
+    virtual void b168();
+    virtual void b170();
+    virtual void b178();
+    virtual void link(UnitBody* other);  // +180
 };
 
 // The unit table: units by 16-bit id at +138, 0x6d7 of them.
@@ -242,6 +331,9 @@ struct UnitTable {
     Unit* units[0x6d7];       // +138
 
     Unit* unit(short id) { return static_cast<unsigned short>(id) <= 0x6d6 ? units[id] : 0; }
+    int give_211dc(short id, int item, unsigned char show, unsigned char notify, unsigned char quiet);
+    unsigned char has_22640(struct UnitRef* ref);                            // 0x7100022640
+    Unit* by_ref(struct UnitRef* ref);
     Unit* unit_at(long id) { return static_cast<unsigned long>(id) <= 0x6d6 ? units[id] : 0; }
 
     unsigned char pad37f0[0xf3b00 - 0x37f0];
@@ -251,3 +343,19 @@ struct UnitTable {
 };
 // Reached through the GOT slot at 0x7100c21690.
 extern UnitTable* gUnitTable_c21690;
+
+static inline Unit* find_unit(short id) { return gUnitTable_c21690->unit(id); }
+
+short side_unit_id_db3c(int side);                                          // 0x710000db3c
+
+// Whether the unit of a side can take an actor command.
+static inline int side_unit_can(int side, int cmd) {
+    Unit* u = find_unit(side_unit_id_db3c(side));
+    if (!u) return 0;
+    IF_UNIT_STATE_ACTIVE(u->state()->id, {
+        UnitActor* a = u->actor();
+        if (!a) return 0;
+        return static_cast<unsigned char>(a->command(cmd));
+    });
+    return 0;
+}
