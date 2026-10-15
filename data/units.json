@@ -20011,7 +20011,26 @@
     "_ZN10Page39e1549set_titleEPKc": "0x710039dfc4",
     "_ZN10Page39e1548set_textEPKc": "0x710039dff0",
     "_ZN7Unlocks6flag_aEv": "0x71002249a0",
-    "_ZN7Unlocks6flag_bEv": "0x71002249a8"
+    "_ZN7Unlocks6flag_bEv": "0x71002249a8",
+    "kShopAttackLayout": "0x71007daa41",
+    "kNumDefenseLayout": "0x71007d8009",
+    "kNumSpeedLayout": "0x71007d6191",
+    "kNumRangeLayout": "0x71007d61a1",
+    "kWinAttackIn": "0x71007d9f7d",
+    "kWinAttackOut": "0x71007d9f8b",
+    "kAttackLoopA": "0x71007daa55",
+    "kAttackLoopB": "0x71007daa62",
+    "kNumDefense": "0x7100740d82",
+    "kNumSpeed": "0x7100740db7",
+    "kNumRange": "0x7100740dc1",
+    "kTextTitle": "0x71007da00f",
+    "kTextCaption": "0x71007da028",
+    "kTextNote": "0x71007da038",
+    "kTextLeft": "0x71007daa70",
+    "kTextRight": "0x71007daa7d",
+    "kNumPosA": "0x71007daa8c",
+    "kNumPosB": "0x71007d61d0",
+    "kTextBottom": "0x71007d7e75"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29825,7 +29844,8 @@
       },
       "functions": {
         "_ZN13ShopExpScreenC2Ev": "0x7100363040",
-        "_ZN12OptionScreenC2EP11OptionOwner": "0x71003a60cc"
+        "_ZN12OptionScreenC2EP11OptionOwner": "0x71003a60cc",
+        "_ZN16ShopAttackScreenC2Ev": "0x7100364878"
       }
     },
     "misc/s2_functions27.cpp": {

@@ -140,7 +140,13 @@ public:
     float offset34;           // +34
     float offset38;           // +38
     unsigned char pad3c[0x1c];
-    unsigned char flags58;    // +58
+    union {
+        unsigned char flags58; // +58
+        struct {
+            unsigned char visible : 1;
+            unsigned char : 7;
+        };
+    };
     unsigned char alpha59;    // +59
     unsigned char pad5a;
     unsigned char : 2;
@@ -373,6 +379,180 @@ ShopExpScreen::ShopExpScreen()
     attack_up_list.setup(attack_up, attack_up_anim, 5);
 }
 
+extern const char kShopAttackLayout[] __attribute__((visibility("hidden")));    // 0x71007daa41
+extern const char kNumDefenseLayout[] __attribute__((visibility("hidden")));    // 0x71007d8009
+extern const char kNumSpeedLayout[] __attribute__((visibility("hidden")));      // 0x71007d6191
+extern const char kNumRangeLayout[] __attribute__((visibility("hidden")));      // 0x71007d61a1
+extern const char kWinAttackIn[] __attribute__((visibility("hidden")));         // 0x71007d9f7d
+extern const char kWinAttackOut[] __attribute__((visibility("hidden")));        // 0x71007d9f8b
+extern const char kAttackLoopA[] __attribute__((visibility("hidden")));         // 0x71007daa55
+extern const char kAttackLoopB[] __attribute__((visibility("hidden")));         // 0x71007daa62
+extern const char kNumDefense[] __attribute__((visibility("hidden")));          // 0x7100740d82
+extern const char kNumSpeed[] __attribute__((visibility("hidden")));            // 0x7100740db7
+extern const char kNumRange[] __attribute__((visibility("hidden")));            // 0x7100740dc1
+extern const char kTextTitle[] __attribute__((visibility("hidden")));           // 0x71007da00f
+extern const char kTextCaption[] __attribute__((visibility("hidden")));         // 0x71007da028
+extern const char kTextNote[] __attribute__((visibility("hidden")));            // 0x71007da038
+extern const char kTextLeft[] __attribute__((visibility("hidden")));            // 0x71007daa70
+extern const char kTextRight[] __attribute__((visibility("hidden")));           // 0x71007daa7d
+extern const char kNumPosA[] __attribute__((visibility("hidden")));             // 0x71007daa8c
+extern const char kNumPosB[] __attribute__((visibility("hidden")));             // 0x71007d61d0
+extern const char kTextBottom[] __attribute__((visibility("hidden")));          // 0x71007d7e75
+
+static inline void move_y(EffectGroup* group, float dy) {
+    group->offset34 += dy;
+    group->flags58 |= 0x10;
+}
+
+static inline void show_if(PanelPane* pane, int count) {
+    pane->visible = count != 0;
+}
+
+static inline void place_x(EffectGroup* group, float x) {
+    group->offset30 = x;
+    TrackVec2 yz = {};
+    *reinterpret_cast<TrackVec2*>(&group->offset34) = yz;
+    group->flags58 |= 0x10;
+}
+
+// 0x7100364878: the shop's attack screen (four number layouts with scroll lists, three text panes drawn from
+// messages, two plain ones and a layout handle).
+class ShopAttackScreen {
+public:
+    ShopAttackScreen();
+
+    LightEffectNode* layout;          // +00
+    LightEffectNode* attack;          // +08
+    LightEffectNode* defense;         // +10
+    LightEffectNode* speed;           // +18
+    LightEffectNode* range;           // +20
+    LayoutAnimation* anims[4];        // +28
+    LayoutAnimation* effects[3];      // +48
+    LayoutAnimation* number_anims[4]; // +60
+    EffectGroup* title;               // +80
+    EffectGroup* caption_pos;         // +88
+    EffectGroup* note;                // +90
+    EffectGroup* left;                // +98
+    EffectGroup* right;               // +a0
+    EffectGroup* num_pos_a;           // +a8
+    EffectGroup* num_pos_b;           // +b0
+    EffectGroup* bottom;              // +b8
+    TrackLightTarget lines[64];       // +c0
+    TrackLightTarget lines_b[64];     // +22c0
+    TrackLightTarget more_lines[128]; // +44c0
+    TrackLightTarget left_lines[32];  // +88c0
+    TrackLightTarget right_lines[32]; // +99c0
+    PanelPane* panes[5];              // +aac0
+    int title_lines;                  // +aae8
+    int caption_lines;                // +aaec
+    int note_lines;                   // +aaf0
+    int left_count;                   // +aaf4
+    int right_count;                  // +aaf8
+    ScrollList attack_list;           // +ab00
+    ScrollList defense_list;          // +aba0
+    ScrollList speed_list;            // +ac40
+    ScrollList range_list;            // +ace0
+    LayoutHandle handle;              // +ad80
+};
+
+ShopAttackScreen::ShopAttackScreen()
+    : layout(nullptr), attack(nullptr), defense(nullptr), speed(nullptr), range(nullptr), note(nullptr), left(nullptr),
+      right(nullptr), num_pos_a(nullptr), num_pos_b(nullptr), bottom(nullptr), title_lines(0), caption_lines(0),
+      note_lines(0), left_count(0), right_count(0) {
+    gEffectManager->create_node(&layout, 0x4203, kShopAttackLayout);
+    gEffectManager->create_node(&attack, 0x41e5, kNumAttackLayout);
+    gEffectManager->create_node(&defense, 0x41e5, kNumDefenseLayout);
+    gEffectManager->create_node(&speed, 0x41e5, kNumSpeedLayout);
+    gEffectManager->create_node(&range, 0x41e5, kNumRangeLayout);
+    attack->group->visible = false;
+    defense->group->visible = false;
+    speed->group->visible = false;
+    range->group->visible = false;
+    place_x(layout->group, 153.0f);
+    gEffectManager->sync();
+    anims[0] = layout->create_animation_3770(kWinAttackIn, true);
+    anims[1] = layout->create_animation_3770(kWinAttackOut, true);
+    anims[2] = layout->create_animation_3770(kAttackLoopA, true);
+    anims[3] = layout->create_animation_3770(kAttackLoopB, true);
+    effects[0] = layout->create_animation_3770(kEffectS, false);
+    effects[1] = layout->create_animation_3770(kEffectM, false);
+    effects[2] = layout->create_animation_3770(kEffectL, false);
+    gEffectManager->flush();
+    number_anims[0] = attack->create_animation_3770(kNumAttack, false);
+    number_anims[1] = defense->create_animation_3770(kNumDefense, false);
+    number_anims[2] = speed->create_animation_3770(kNumSpeed, false);
+    number_anims[3] = range->create_animation_3770(kNumRange, false);
+    title = layout->group->find(kTextTitle, 1);
+    caption_pos = layout->group->find(kTextCaption, 1);
+    note = layout->group->find(kTextNote, 1);
+    left = layout->group->find(kTextLeft, 1);
+    right = layout->group->find(kTextRight, 1);
+    num_pos_a = layout->group->find(kNumPosA, 1);
+    num_pos_b = layout->group->find(kNumPosB, 1);
+    bottom = layout->group->find(kTextBottom, 1);
+    num_pos_a->add(attack->group);
+    num_pos_a->add(defense->group);
+    num_pos_b->add(speed->group);
+    num_pos_b->add(range->group);
+    gEffectManager->sync();
+    attach_group(layout, caption_pos);
+    TextRenderer* renderer = gTextRenderer;
+    {
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = 28.0f;
+        size.y = 28.0f;
+        renderer->set_area(&pos, &size, 0x3c, 0x41, 0);
+        renderer->align = 2;
+        title_lines = renderer->draw(lines, message_text(0xa8), 0x40, 1, 0xff, 0.0f, 0.0f);
+    }
+    panes[0] = new PanelPane;
+    title->add(panes[0]);
+    move_y(panes[0], -2.0f);
+    panes[0]->align = 2;
+    set_pane_lines(panes[0], lines, title_lines);
+    show_if(panes[0], title_lines);
+    {
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = 28.0f;
+        size.y = 28.0f;
+        renderer->set_area(&pos, &size, 0x3c, 0x41, 0);
+        renderer->align = 2;
+        left_count = renderer->draw(left_lines, message_text(0x55), 0x20, 1, 0xff, 0.0f, 0.0f);
+    }
+    panes[3] = new PanelPane;
+    left->add(panes[3]);
+    move_y(panes[3], -2.0f);
+    panes[3]->align = 2;
+    set_pane_lines(panes[3], left_lines, left_count);
+    show_if(panes[3], left_count);
+    {
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = 28.0f;
+        size.y = 28.0f;
+        renderer->set_area(&pos, &size, 0x41, 0x4e, 0);
+        renderer->align = 2;
+        right_count = renderer->draw(right_lines, message_text(0x56), 0x20, 1, 0xff, 0.0f, 0.0f);
+    }
+    panes[4] = new PanelPane;
+    right->add(panes[4]);
+    panes[4]->align = 2;
+    set_pane_lines(panes[4], right_lines, right_count);
+    show_if(panes[4], right_count);
+    panes[2] = new PanelPane;
+    note->add(panes[2]);
+    panes[2]->align = 2;
+    panes[1] = new PanelPane;
+    caption_pos->add(panes[1]);
+    move_y(caption_pos, -2.0f);
+    panes[1]->align = 2;
+    attack_list.setup(attack, number_anims[0], 5);
+    defense_list.setup(defense, number_anims[1], 5);
+    speed_list.setup(speed, number_anims[2], 10);
+    range_list.setup(range, number_anims[3], 10);
+}
 static inline void move_x(EffectGroup* pane, float dx) {
     pane->offset30 += dx;
     pane->flags58 |= 0x10;
