@@ -17068,7 +17068,10 @@
     "got:gGlobalc21db0_356154": "0x7100c21db0",
     "got:gGlobalc22f00_356154": "0x7100c22f00",
     "_Z14callee2_1e26e0Pvl": "0x71001e26e0",
-    "_Z14callee2_1e2360PvS_iS_": "0x71001e2360"
+    "_Z14callee2_1e2360PvS_iS_": "0x71001e2360",
+    "_Z14callee2_1f8720l": "0x71001f8720",
+    "_Z14callee4_1e2218Pvli": "0x71001e2218",
+    "_Z14callee2_30fcc0l": "0x710030fcc0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -26268,7 +26271,12 @@
         "_Z11call_33b670P11Arg33b670_0": "0x710033b670",
         "_Z11call_377cb0P11Arg377cb0_0": "0x7100377cb0",
         "_Z11call_577514P11Arg577514_0": "0x7100577514",
-        "_Z10call_6b440P10Arg6b440_0": "0x710006b440"
+        "_Z10call_6b440P10Arg6b440_0": "0x710006b440",
+        "_Z11call_2fb9f0P11Arg2fb9f0_0": "0x71002fb9f0",
+        "_Z11call_349480P11Arg349480_0": "0x7100349480",
+        "_Z11call_306044P11Arg306044_0": "0x7100306044",
+        "_Z11call_5df2e8P11Arg5df2e8_0PvS1_ffi": "0x71005df2e8",
+        "_Z11call_2d2498P11Arg2d2498_0": "0x71002d2498"
       }
     },
     "misc/variant_functions74.cpp": {

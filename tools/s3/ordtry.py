@@ -1,8 +1,8 @@
-"""ordtry.py CPP ADDR SYMJSON [--name SYM] [--limit N] [--work DIR]: for a generated function whose body is
-straight-line (one statement per line, no branches or loops), try orders of its statements: calls keep their
+"""ordtry.py CPP ADDR SYMJSON [--name SYM] [--limit N] [--work DIR]: for a generated function, try orders of its
+straight-line statements (the whole body, or the statements before its first branch or loop): calls keep their
 order and the statements between two calls are permuted, a statement that uses a local after the one that sets
 it. Stops at a match (DIR/ord_match.cpp; DIR defaults to build/s3), at most N orders (default 5000). Exit code 0
-on a match, 1 without, 2 when the body is not straight-line.
+on a match, 1 without, 2 when there is nothing to permute.
 
 ordtry.py --list FILE [--limit N] [--work DIR]: the same for each line 'ADDR CPP SYMJSON [SYM]' of FILE; matches
 go to DIR/ord_match_ADDR.cpp. Exit code 0 when at least one matched."""
@@ -49,9 +49,16 @@ def search(cpp, addr, symjson, name, match_path):
     if not m:
         print(addr, "function not found", flush=True); return None
     body = m.group(2).split("\n")
-    if any(re.search(r"\b(if|do|while|for|switch)\b|[{}]", l) for l in body):
-        print(addr, "not straight-line", flush=True); return None
     tail = []
+    flow = next((k for k, l in enumerate(body) if re.search(r"\b(if|do|while|for|switch)\b|[{}]", l)), None)
+    if flow is not None:  # only the straight-line statements before the first branch or loop are permuted
+        if flow < 2:
+            print(addr, "no straight-line prefix", flush=True); return None
+        # declarations of locals the rest uses stay ahead of it
+        tail = body[flow:]
+        body = body[:flow]
+        while body and re.match(r"\s*[\w:<>\*\s]+\s+[a-z]\d+;$", body[-1]):
+            tail.insert(0, body.pop())
     while body and re.match(r"\s*return\b", body[-1]):
         tail.insert(0, body.pop())
     segs, cur = [], []

@@ -30,8 +30,8 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
   stores zero to as `float`, up to K at a time: Clang merges adjacent int stores into one wider store but not
   stores of different types, so a field that is a float in the original keeps its own `str wzr` (`3322ac`); a
   match goes to `DIR/float_match.cpp`.
-- `ordtry.py CPP ADDR SYMJSON [--limit N] [--work DIR]` (or `--list FILE`) tries orders of a straight-line
-  generated function's statements without a spec: calls keep their order, the statements between two calls are
+- `ordtry.py CPP ADDR SYMJSON [--limit N] [--work DIR]` (or `--list FILE`) tries orders of a generated function's
+  straight-line statements (the whole body, or those before its first branch or loop) without a spec: calls keep their order, the statements between two calls are
   permuted (a use after the statement that sets the local), up to N orders; a match goes to `DIR/ord_match.cpp`.
   Run it on the `fixalign.py` output for functions with misaligned 8-byte stores (`c5df8`, `1f18e8`).
 - `topotry.py SPEC.json [--work DIR]` tries every order of a set of statements (with dependencies and chains that
