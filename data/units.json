@@ -19439,7 +19439,30 @@
     "got:_ZTV12Screen3a7668": "0x7100c2b330",
     "_ZN11Class3a43c4D1Ev": "0x71003a43c4",
     "_ZN10Item3a57fcD1Ev": "0x71003a57fc",
-    "got:_ZTV13Channel57dc10": "0x7100c2d6f0"
+    "got:_ZTV13Channel57dc10": "0x7100c2d6f0",
+    "got:_ZTV12Screen304788": "0x7100c2acb0",
+    "_ZN9Cue1f8724D1Ev": "0x71001f8720",
+    "_ZN9Cue1f87244stopEv": "0x71001f8724",
+    "_ZN10Part33c82cD1Ev": "0x710033c82c",
+    "_ZN11ParentGroup6removeEP11EffectGroup": "0x71005da1b0",
+    "_ZN10Slot3047885clearEv": "0x7100301e78",
+    "got:_ZTV10Page39ec78": "0x7100c2b2c8",
+    "_ZN10Base3aab84C2EiiPKcS1_i": "0x710039d3fc",
+    "_ZN9PanelNode21create_animation_3770EPKcb": "0x71001e3770",
+    "gLayout39ec78": "0x71007db10c",
+    "gTitle39ec78": "0x71007d6079",
+    "gAnimIn39ec78": "0x710073fffb",
+    "gAnimLoop39ec78": "0x710074056c",
+    "gAnimSel39ec78": "0x71007db16e",
+    "gPaneA39ec78": "0x71007db11f",
+    "gPaneB39ec78": "0x71007db128",
+    "gPaneC39ec78": "0x71007db138",
+    "gPaneD39ec78": "0x71007db178",
+    "gAnimOut39ec78": "0x71007d6062",
+    "gAnimWait39ec78": "0x710074053d",
+    "gAnimOn39ec78": "0x71007d5b89",
+    "gAnimOff39ec78": "0x71007d5b94",
+    "gPaneE39ec78": "0x71007db187"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29547,6 +29570,36 @@
         "_Z11call_444528P11Arg444528_0": "0x7100444528",
         "_Z11call_5f8f4cPv": "0x71005f8f4c",
         "_Z11call_5f940cPv": "0x71005f940c"
+      }
+    },
+    "misc/s3_functions22.cpp": {
+      "functions": {
+        "_Z10call_7a304P10Arg7a304_0": "0x710007a304",
+        "_Z10call_99ad0P10Arg99ad0_0": "0x7100099ad0",
+        "_Z10call_aad64P10Argaad64_0": "0x71000aad64",
+        "_Z10call_c7cb8P10Argc7cb8_0": "0x71000c7cb8",
+        "_Z10call_c7fa0P10Argc7fa0_0": "0x71000c7fa0",
+        "_Z10call_c82e0P10Argc82e0_0": "0x71000c82e0",
+        "_Z10call_c851cP10Argc851c_0": "0x71000c851c",
+        "_Z10call_c88b4P10Argc88b4_0": "0x71000c88b4",
+        "_Z10call_c8990P10Argc8990_0": "0x71000c8990",
+        "_Z10call_c8d34P10Argc8d34_0": "0x71000c8d34",
+        "_Z11call_3e67a0P11Arg3e67a0_0": "0x71003e67a0",
+        "_Z11call_3ea29cP11Arg3ea29c_0": "0x71003ea29c"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s3_functions23.cpp": {
+      "functions": {
+        "_ZN12Screen304788D2Ev": "0x7100304788"
+      }
+    },
+    "misc/s3_functions24.cpp": {
+      "functions": {
+        "_ZN10Page39ec78C2Ev": "0x710039ec78"
       }
     }
   }
