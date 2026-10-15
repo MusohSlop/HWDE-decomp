@@ -1,0 +1,33 @@
+41368c (2,144 B), a vtable-less constructor offered by main (s5's range, dropped by s5). Third session's 30-minute
+trial, 2026-10-15: layout decoded from the original's stores, not taken (no source written). Not in s3_claims.txt.
+
+Object layout (offsets from this):
+  0x0000  0x48 bytes value-initialised (memset 0x48)
+  0x0048  int = 2, 0x4c int = 0, 0x50 long = 0
+  0x0060  nine records E of 0x3b0 bytes (16-byte aligned: a float4 at +0x380), initialised as a loop of four
+          (0x60..0xf20), one written out (0xf20) and a loop of four (0x12d0..0x2190); three members, or a peeled loop
+  0x2190  long = 0, 0x2198 int = 0
+  0x21a0  0x80 records R of 0x50 bytes: +0 and +0x10 and +0x20 a vector constant from 0x710073dff0, +0x30 long 0,
+          +0x38 int 0, +0x3c int -1, +0x40 int 0
+  0x49a0  0x80 bytes of 0xff (set in the same loop as R)
+  0x4a20  int = 0, 0x4a24 int = 0
+  0x4a30  two records G of 0x7d0 bytes: E at +0, E at +0x3b0, tail at +0x760 (+0x760..0x778 zero, +0x780 int 2,
+          +0x784..0x797 five ints -1, +0x798 int 0, +0x7a0..0x7b0 zero, +0x7c0 byte 1). s4's ctorlayout read these as
+          0x3e8-byte elements (half of 0x7d0).
+  0x59d0  a sub-object constructed out of line (0x71005c42b8)
+
+Record E (0x3b0): zeros over +0..0xb0 (with gaps at 0x28, 0x58, 0x78, 0x98), +0xc0..0xf4 zero, memset +0x100 (0x108),
++0x210..0x24c zero, memset +0x250 (0x44), +0x294/+0x298/+0x29c = 1.0f, +0x2a0..0x2b8 zero, memset +0x2bc (0x48),
++0x304/+0x308/+0x30c = 1.0f, +0x310..0x328 zero, +0x32c int 0, +0x330/+0x334 int -1, +0x338 int 0,
++0x340..0x368 zero, +0x370 1.0f, +0x374 0, +0x380 float4 (1,1,1,1) (kept on the stack across the loop),
++0x390 long 0, +0x398/+0x39c/+0x3a0 1.0f, +0x3a4 0, +0x3a8 20.0f, +0x3ac int 1. The repeated
+[memset][1.0f x3][zeros] groups look like one sub-struct used twice (data 0x44 and 0x48 bytes).
+
+Order in the code: the scalar fields above (all of them, high offsets included) are stored first, then the G loop,
+the 0x59d0 constructor call, the E records and the R loop. So the scalars and G and the sub-object are probably member
+initialisers (declaration order), and the E and R arrays are trivial types initialised in the body.
+
+Why it was not taken: the same record E gets its 1.0f pairs at +0x294 and +0x304 merged into one 8-byte store in the
+X-level loops (str x of 0x3f8000003f800000), but stored as three separate floats inside G. Which stores merge depends on
+LSR's address formulas (the DAG merges only stores with the same base node), and the G loop keeps one base for each
+of its sub-objects. Matching needs control of LSR across five loops, likely several hours.
