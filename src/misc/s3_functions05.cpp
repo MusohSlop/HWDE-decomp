@@ -169,3 +169,288 @@ public:
 };
 
 Class3ba38c::~Class3ba38c() {}
+
+struct Part379f30 { ~Part379f30(); unsigned char data[0x10]; };              // 0x7100379f30
+
+struct HandlePair2e2dcc { unsigned char pad0[0x8]; DtorHandle hs[2]; unsigned char pad38[0xb8]; };   // 0xf0
+
+// 0x71002e2dcc (D2): no vtable of its own; two arrays of 36 handle pairs destroyed in loops, two more handles and
+// three members (written by tools/s3/dtor2class.py).
+class Class2e2dcc {
+public:
+    ~Class2e2dcc();
+
+    unsigned char pad0[0x90];
+    HandlePair2e2dcc pairs90[36];   // +90
+    HandlePair2e2dcc pairs2250[36]; // +2250
+    DtorHandle h4410;               // +4410
+    DtorHandle h4428;               // +4428
+    unsigned char pad4440[0xc1f0 - 0x4440];
+    Part5d27b4 mc1f0;               // +c1f0
+    unsigned char padc200[0xc300 - 0xc200];
+    Part5d27b4 mc300;               // +c300
+    unsigned char padc310[0x17768 - 0xc310];
+    Part379f30 m17768;              // +17768
+};
+
+Class2e2dcc::~Class2e2dcc() {}
+
+// Objects of the layout root, released through its heap (GOT 0x7100c22a00).
+struct ObjLink {
+    unsigned char pad0[0x18];
+    void* owner;                    // +18
+};
+
+class LayoutObj {
+public:
+    virtual void v0();
+    virtual void destroy();         // +8
+    unsigned char pad8[0x10];
+    ObjLink* link;                  // +18
+};
+
+struct ObjHeap {
+    unsigned char pad0[0x68];
+    unsigned char list68[0x70];     // +68
+    unsigned char listd8[0x6e0];    // +d8
+    unsigned char lock7b8[0x8];     // +7b8
+};
+extern ObjHeap* gObjHeap;           // GOT 0x7100c22a00
+
+void heap_enter(ObjHeap* heap, void* lock, int id);       // 0x71001e2218
+void obj_detach(LayoutObj* obj, void* root);              // 0x71005d4408
+void heap_return(void* list, LayoutObj* obj);             // 0x71005c3774
+void link_drop(void* owner, ObjLink* link);               // 0x71005da1b0
+
+inline void release_linked(LayoutObj*& p) {
+    if (p) {
+        ObjLink* l = p->link;
+        if (l->owner)
+            link_drop(l->owner, l);
+        if (p) {
+            ObjHeap* heap = gObjHeap;
+            void* root = gHandleHeapOwner->heap + 0x10;
+            heap_enter(heap, heap->lock7b8, 0x4213);
+            obj_detach(p, root);
+            p->destroy();
+            heap_return(heap->listd8, p);
+            p = nullptr;
+        }
+    }
+}
+
+inline void release_obj(LayoutObj*& p) {
+    ObjHeap* heap = gObjHeap;
+    if (p) {
+        void* root = gHandleHeapOwner->heap + 0x10;
+        heap_enter(heap, heap->lock7b8, 0x4213);
+        obj_detach(p, root);
+        p->destroy();
+        heap_return(heap->listd8, p);
+        p = nullptr;
+    }
+}
+
+struct Elem2b349c {
+    ~Elem2b349c();                  // 0x71002b349c
+    unsigned char pad0[0x10];
+    LayoutObj* obj;                 // +10
+    unsigned char pad18[0x988 - 0x18];
+};
+
+struct Frame1f8720 {
+    ~Frame1f8720();                 // 0x71001f8720
+    void stop();                    // 0x71001f8724
+    unsigned char data[0xa0];
+};
+
+struct Sub2b25b0 {
+    void clear();                   // 0x71002b25b0
+    unsigned char data[0x20];
+};
+
+// 0x71002b4df0 (D2): a body that releases the objects of its six elements and two of its own (the inline release helpers
+// above), then its members: the elements, two handles, four frames and the handle at +a0 (released as a tail call).
+class Class2b4df0 {
+public:
+    virtual ~Class2b4df0();
+
+    unsigned char pad8[0x10];
+    LayoutObj* f18;                 // +18
+    LayoutObj* f20;                 // +20
+    unsigned char pad28[0xa0 - 0x28];
+    DtorHandle ha0;                 // +a0
+    unsigned char padb8[0x33c8 - 0xb8];
+    Sub2b25b0 s33c8;                // +33c8
+    Frame1f8720 frames[4];          // +33e8
+    unsigned char pad3668[0x3918 - 0x3668];
+    DtorHandle h3918;               // +3918
+    DtorHandle h3930;               // +3930
+    Elem2b349c elems[6];            // +3948
+};
+
+Class2b4df0::~Class2b4df0() {
+    for (int i = 0; i < 6; i++)
+        release_linked(elems[i].obj);
+    s33c8.clear();
+    release_obj(f18);
+    release_obj(f20);
+}
+
+inline void release_list68(LayoutObj*& p) {
+    ObjHeap* heap = gObjHeap;
+    if (p) {
+        void* root = gHandleHeapOwner->heap + 0x10;
+        obj_detach(p, root);
+        p->destroy();
+        heap_return(heap->list68, p);
+        p = nullptr;
+    }
+}
+
+inline void release_id(LayoutObj*& p, int id) {
+    ObjHeap* heap = gObjHeap;
+    if (p) {
+        void* root = gHandleHeapOwner->heap + 0x10;
+        heap_enter(heap, heap->lock7b8, id);
+        obj_detach(p, root);
+        p->destroy();
+        heap_return(heap->listd8, p);
+        p = nullptr;
+    }
+}
+
+struct Sub37f568 {
+    ~Sub37f568();                   // 0x710037f568
+    void stop();                    // 0x710037cd6c
+    unsigned char data[0x40];
+};
+
+struct Elem2bd8cc { ~Elem2bd8cc(); unsigned char data[0xe0]; };              // 0x71002bd8cc
+struct Elem2bfda4 { ~Elem2bfda4(); unsigned char data[0x188]; };             // 0x71002bfda4
+
+// 0x71002beea8 (D2): its two frames stopped and two objects unlinked in the body, a member stopped, three objects
+// released, then the members: the frames (two members, so each address is kept for both calls), the member, an
+// array of 32 elements and two handles.
+class Class2beea8 {
+public:
+    virtual ~Class2beea8();
+
+    unsigned char pad8[0x10];
+    LayoutObj* f18;                 // +18
+    LayoutObj* f20;                 // +20
+    LayoutObj* f28;                 // +28
+    unsigned char pad30[0xf8 - 0x30];
+    void* ownerf8;                  // +f8
+    void* owner100;                 // +100
+    unsigned char pad108[0x3d28 - 0x108];
+    DtorHandle h3d28;               // +3d28
+    DtorHandle h3d40;               // +3d40
+    Elem2bd8cc elems[32];           // +3d58
+    Sub37f568 s5958;                // +5958
+    Frame1f8720 fa;                 // +5998
+    Frame1f8720 fb;                 // +5a38
+};
+
+Class2beea8::~Class2beea8() {
+    fa.stop();
+    fb.stop();
+    if (f20)
+        link_drop(ownerf8, f20->link);
+    if (f28)
+        link_drop(owner100, f28->link);
+    s5958.stop();
+    release_id(f18, 0x4217);
+    release_list68(f20);
+    release_list68(f28);
+}
+
+// 0x71002c18c0 (D2): the same with other offsets, 32 larger elements and three handles.
+class Class2c18c0 {
+public:
+    virtual ~Class2c18c0();
+
+    unsigned char pad8[0x10];
+    LayoutObj* f18;                 // +18
+    LayoutObj* f20;                 // +20
+    LayoutObj* f28;                 // +28
+    unsigned char pad30[0x100 - 0x30];
+    void* owner100;                 // +100
+    void* owner108;                 // +108
+    unsigned char pad110[0x3d30 - 0x110];
+    DtorHandle h3d30;               // +3d30
+    DtorHandle h3d48;               // +3d48
+    DtorHandle h3d60;               // +3d60
+    Elem2bfda4 elems[32];           // +3d78
+    Sub37f568 s6e78;                // +6e78
+    Frame1f8720 fa;                 // +6eb8
+    Frame1f8720 fb;                 // +6f58
+};
+
+Class2c18c0::~Class2c18c0() {
+    fa.stop();
+    fb.stop();
+    if (f20)
+        link_drop(owner100, f20->link);
+    if (f28)
+        link_drop(owner108, f28->link);
+    s6e78.stop();
+    release_id(f18, 0x4217);
+    release_list68(f20);
+    release_list68(f28);
+}
+
+inline void release_in(LayoutObj*& p, int id) {
+    if (p) {
+        ObjHeap* heap = gObjHeap;
+        void* root = gHandleHeapOwner->heap + 0x10;
+        heap_enter(heap, heap->lock7b8, id);
+        obj_detach(p, root);
+        p->destroy();
+        heap_return(heap->listd8, p);
+        p = nullptr;
+    }
+}
+
+struct Elem2b81b4 {
+    ~Elem2b81b4();                  // 0x71002b81b4
+    unsigned char pad0[0x10];
+    LayoutObj* obj;                 // +10
+    unsigned char pad18[0x988 - 0x18];
+};
+
+struct Sub2b6e94 {
+    void clear();                   // 0x71002b6e94
+    unsigned char data[0x20];
+};
+
+// 0x71002b9f9c (D2): the shape of 2b4df0 with eleven elements, three released objects (the heap read inside each
+// check) and four handles.
+class Class2b9f9c {
+public:
+    virtual ~Class2b9f9c();
+
+    unsigned char pad8[0x10];
+    LayoutObj* f18;                 // +18
+    LayoutObj* f20;                 // +20
+    LayoutObj* f28;                 // +28
+    unsigned char pad30[0x33e0 - 0x30];
+    Sub2b6e94 s33e0;                // +33e0
+    Frame1f8720 frames[4];          // +3400
+    unsigned char pad3680[0x3c00 - 0x3680];
+    DtorHandle h3c00;               // +3c00
+    DtorHandle h3c18;               // +3c18
+    DtorHandle h3c30;               // +3c30
+    DtorHandle h3c48;               // +3c48
+    unsigned char pad3c60[0x8];
+    Elem2b81b4 elems[11];           // +3c68
+};
+
+Class2b9f9c::~Class2b9f9c() {
+    for (int i = 0; i < 11; i++)
+        release_linked(elems[i].obj);
+    s33e0.clear();
+    release_in(f18, 0x4213);
+    release_in(f20, 0x4213);
+    release_in(f28, 0x421c);
+}

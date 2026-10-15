@@ -53,6 +53,7 @@ for p_, i_ in ins.items():
     if (i_.mnemonic.startswith("b.") or i_.mnemonic in ("cbz", "cbnz", "b")) and t_ and int(t_.group(1), 16) <= p_:
         heads.add(int(t_.group(1), 16)); latches.add(p_); ranges.append((int(t_.group(1), 16), p_))
 it = 0
+it_head = {}   # iteration number -> its loop head
 LI = lambda: it if any(h <= pc <= l for h, l in ranges) else None   # the iteration number inside a loop
 while True:
     steps += 1
@@ -60,6 +61,7 @@ while True:
         fail("too many steps")
     if pc in heads:
         it += 1
+        it_head[it] = pc
     i = ins.get(pc)
     if i is None:
         fail("pc outside the function %#x" % pc)
@@ -226,7 +228,7 @@ while k < len(iters):
     run = [iters[k]]
     while k + len(run) < len(iters):
         nxt = sorted(loops[iters[k + len(run)]])
-        if len(nxt) != len(pat):
+        if len(nxt) != len(pat) or it_head.get(iters[k + len(run)]) != it_head.get(iters[k]):
             break
         d = [x - y for x, y in zip(nxt, pat)]
         if len(set(d)) != 1 or (len(run) > 1 and d[0] != stride):
@@ -255,31 +257,64 @@ for off, tgt, li in calls:
     members.append((off, f"Part{tgt:x} m{off:x};", None))
 taken = [(off, off + (sz or 1)) for off, decl, sz in members]
 loop_handles = {r: [(h, h + 0x18) for h in loops[r]] for run in loop_runs for r in run}
+floor = 8 if vt_own or base else 0
+infos = []
 for run in loop_runs:
     first = sorted(loops[run[0]])
     stride = abs(first[0] - sorted(loops[run[1]])[0])
-    n = len(run)
     lo = min(min(loops[r]) for r in run)
-    hs = sorted(first)
-    inner = len(hs)
-    span = hs[-1] - hs[0] + 0x18
-    if inner > 1 and any(hs[j + 1] - hs[j] != 0x18 for j in range(inner - 1)):
+    span = first[-1] - first[0] + 0x18
+    if len(first) > 1 and any(first[j + 1] - first[j] != 0x18 for j in range(len(first) - 1)):
         fail("handles in one iteration are not adjacent")
-    # the handles at the end of each slot, or at its start when that would overlap another member
-    for pos in (stride - span, 0):
-        rng = (lo - pos, lo - pos + stride * n)
-        others = taken + [x for r, hs_ in loop_handles.items() if r not in run for x in hs_]
-        if rng[0] >= 8 and not any(s < rng[1] and rng[0] < e for s, e in others):
-            break
-    else:
-        fail("no place for the slots of the loop at +%#x" % lo)
-    taken.append(rng)
-    sname = "Slot%x_%x" % (stride, addr)
+    infos.append({"run": run, "stride": stride, "n": len(run), "lo": lo, "inner": len(first), "span": span, "pos": None})
+
+
+def fits(placed, pos_of):
+    """Every array placed at its position: inside the object, clear of the other members, loop handles and arrays."""
+    rngs = []
+    for f in placed:
+        pos = pos_of(f)
+        r = (f["lo"] - pos, f["lo"] - pos + f["stride"] * f["n"])
+        if r[0] < floor:
+            return False
+        others = taken + [x for rr, hs_ in loop_handles.items() if rr not in f["run"] for x in hs_] + rngs
+        if any(s < r[1] and r[0] < e for s, e in others):
+            return False
+        rngs.append(r)
+    return True
+
+
+cands = lambda f: [f["stride"] - f["span"], 0] + list(range(8, f["stride"] - f["span"], 8))
+# arrays of the same slot shape first try one common position (the same slot type twice)
+shapes = {}
+for f in infos:
+    shapes.setdefault((f["stride"], f["inner"]), []).append(f)
+for group in shapes.values():
+    if len(group) > 1:
+        for pos in cands(group[0]):
+            if fits(group, lambda f, pos=pos: pos):
+                for f in group:
+                    f["pos"] = pos
+                break
+for f in sorted(infos, key=lambda f: -f["lo"]):
+    if f["pos"] is None:
+        for pos in cands(f):
+            if fits([f], lambda f_, pos=pos: pos):
+                f["pos"] = pos
+                break
+        else:
+            fail("no place for the slots of the loop at +%#x" % f["lo"])
+    taken.append((f["lo"] - f["pos"], f["lo"] - f["pos"] + f["stride"] * f["n"]))
+for f in infos:
+    stride, pos, span, inner = f["stride"], f["pos"], f["span"], f["inner"]
+    sname = "Slot%x_%x_%x" % (stride, pos, addr)
     hdecl = "DtorHandle h;" if inner == 1 else "DtorHandle hs[%d];" % inner
     tail = stride - pos - span
     body = (f"unsigned char pad0[{pos:#x}]; " if pos else "") + hdecl + (f" unsigned char pad{pos + span:x}[{tail:#x}];" if tail else "")
-    slot_types.append(f"struct {sname} {{ {body} }};{' ' * 4}// {stride:#x}")
-    members.append((lo - pos, f"{sname} slots{lo - pos:x}[{n}];", stride * n))
+    decl = f"struct {sname} {{ {body} }};{' ' * 4}// {stride:#x}"
+    if decl not in slot_types:
+        slot_types.append(decl)
+    members.append((f["lo"] - pos, f"{sname} slots{f['lo'] - pos:x}[{f['n']}];", stride * f["n"]))
 members.sort()
 out = []
 out.append(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "dtor_prelude.h"), encoding="utf-8").read().rstrip() + "\n")
@@ -288,8 +323,8 @@ for tgt in sorted(parts):
 out += slot_types
 if base:
     out.append(f"\nclass Base{base:x} {{\npublic:\n    virtual ~Base{base:x}();{' ' * 10}// 0x71{base:08x}\n}};")
-out.append(f"\nclass {cls_name}{' : public Base%x' % base if base else ''} {{\npublic:\n    {'' if base else 'virtual '}~{cls_name}();\n")
-pos = 8
+out.append(f"\nclass {cls_name}{' : public Base%x' % base if base else ''} {{\npublic:\n    {'virtual ' if vt_own and not base else ''}~{cls_name}();\n")
+pos = 8 if vt_own or base else 0
 for k, (off, decl, sz) in enumerate(members):
     if off < pos:
         fail("members overlap at +%#x" % off)
