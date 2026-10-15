@@ -7,8 +7,34 @@ tried: 45b158 (2,464 B, 2,520 B here: padding loops solved by an explicit cap ==
 matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544
 tried: 4abdcc (2,256 B, 2,252 B here, 110 instructions off abstracted: scheduling of the light loop and of the camera loads; docs/s5_wip/4abdcc.cpp)
 tried: 4b2e34 (4,600 B, not drafted: it inlines the NEON matrix inverse shared by 23 functions, reconstructed but not yet scheduled right; docs/s5_wip/matrix_inverse.cpp)
+tried: 3beef0 (1,596 B, 1,548 B here, 34 off abstracted: the four pane translate copies go through a 12-byte stack temporary in the original; docs/s5_wip/3beef0.cpp)
+tried: 3b0428 (1,800 B, 1,764 B here, 37 off abstracted: the second mode == 7 test is jump-threaded through the mode == 3 arm, the last loop's exit is not the original's sum of flags, one value spilled differently; docs/s5_wip/3b0428.cpp)
 tried: 423e04 (2,808 B, 61 off, same size: layout of the first test and of the shared tail, two byte loads merged; docs/s5_wip/423e04.cpp)
 tried: 3ccf84 (3,100 B, 24 off, same size: only the tail differs, the shared reset block and the keep-flag test; docs/s5_wip/3ccf84.cpp)
+# The NEON matrix-inverse family (main: s5 owns the shared inline and all 23 copies, any range or size), working:
+96e0c
+a6470
+1e26f8
+2212c4
+242070
+3d0ca4
+3e1538
+3e6aa8
+3f4b2c
+41ff58
+47f8ac
+482bc4
+489450
+4b2e34
+54e330
+5a3ce0
+5acba4
+5ad154
+5b5c1c
+5b6cbc
+5be884
+5f4418
+5f9fac
 # The rest of 3ccf84's unit (its globals only lay out right with the flag setters in the same unit), kept for it:
 3cdc04
 3cddbc
