@@ -2797,6 +2797,49 @@ def gen_function(a, ins):
         return out_
     if "argfirst" in knobs:
         items[:] = arg_first(items)
+    def load_first(its):
+        def refs_(obj, acc_):
+            if isinstance(obj, tuple):
+                if len(obj) == 2 and obj[0] == "var" and isinstance(obj[1], str):
+                    acc_.add(obj[1])
+                    return acc_
+                for x_ in obj:
+                    refs_(x_, acc_)
+            elif isinstance(obj, list):
+                for x_ in obj:
+                    refs_(x_, acc_)
+            return acc_
+        out_ = []
+        for it in its:
+            if it[0] == "if":
+                it = ("if", it[1], load_first(it[2]))
+            elif it[0] == "diamond":
+                it = (it[0], it[1], it[2], load_first(it[3]), load_first(it[4]))
+            elif it[0] == "loop":
+                it = (it[0], it[1], load_first(it[2])) + tuple(it[3:])
+            if it[0] in ("call", "vcall"):
+                k_ = len(out_)
+                while k_ > 0 and out_[k_ - 1][0] == "let":
+                    k_ -= 1
+                run_ = out_[k_:]
+                if len(run_) > 1:
+                    cu_ = refs_(it[3] if it[0] == "call" else (it[4], it[5]), set())
+                    late_ = [x_ for x_ in run_ if x_[1] not in cu_]
+                    early_ = [x_ for x_ in run_ if x_[1] in cu_]
+                    new_ = late_ + early_
+                    seen_, ok_ = set(), True
+                    names_ = {x_[1] for x_ in run_}
+                    for x_ in new_:
+                        if (refs_(x_[4], set()) & names_) - seen_:
+                            ok_ = False
+                            break
+                        seen_.add(x_[1])
+                    if ok_ and new_ != run_:
+                        out_[k_:] = new_
+            out_.append(it)
+        return out_
+    if "loadfirst" in knobs:
+        items[:] = load_first(items)
     def split_merged_stores():
         uses_ = {}
         def scan(its):
