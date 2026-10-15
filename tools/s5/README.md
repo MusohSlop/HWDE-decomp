@@ -56,7 +56,9 @@ Run them with the project's Python, `python -B -I tools/s5/SCRIPT ...`, from `ma
   loads move among themselves (stores and calls stay ordered), which is how local definitions read from memory can
   be reordered in source (`4ce8e0`). `--minimize BEST.ll` moves single instructions back toward the source order
   (`--strict`: the exact distance may not grow either); both minimizers accept only moves that reduce the number of
-  inverted pairs, so they always end. Multi-line instructions (`switch`) stay whole and terminators and phis stay
+  inverted pairs, so they always end; both read the order file's block without its comments and the use-list orders
+  after the last block's `ret` (a KeyError on `uselistorder` lines before, when the searched block was the last
+  one). Multi-line instructions (`switch`) stay whole and terminators and phis stay
   in place; orders that fail to compile are counted and reported at the end, the first kept as `irs_tmp.ll.fail`.
   Names ending in an address (`callee_X`, `kName_X`) and the functions of every unit resolve as in sbs.py (before
   this fix, each reference to such a name counted as a difference: 386 off where sbs.py says 117 on `3ba734`).
