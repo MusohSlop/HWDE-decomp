@@ -3492,7 +3492,8 @@ def gen_function(a, ins):
                             sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char", base=basev, bytecast=True)
                             iv = index_value(regs, idx, ext)
                             name = f"v{counter[0]}"; counter[0] += 1
-                            vars_[name] = ("load", sn, off2, ct)
+                            # a pointer read from the bytes of a field: untyped until used as a base
+                            vars_[name] = "x" if ct == "void*" and "nobyteptr" not in knobs else ("load", sn, off2, ct)
                             items.append(("leti", name, sn, off2, base, iv, ct))
                             regs[dn] = ("var", name)
                             if dn < 8: written.add(dn)
@@ -5237,6 +5238,10 @@ def gen_function(a, ins):
                 continue
             if it[0] == "leti" and len(it) > 6:
                 _, name, sn, off, base, iv, wt = it
+                if isinstance(vars_.get(name), str) and vars_[name] in structs:
+                    wt = f"{vars_[name]}*"
+                elif vars_.get(name) == "x" and name in arith:
+                    wt = "long"
                 bp_ = acc(base, off) if structs[sn].get(off, ("",))[0] == "ARRAY:unsigned char" else f"reinterpret_cast<unsigned char*>(&{acc(base, off)})"
                 outl.append(declare_line(pad, wt, name, f"*reinterpret_cast<{wt}*>(&{bp_}[{iexpr_(iv)}])") if "declare_line" in dir() else f"{pad}{wt} {name} = *reinterpret_cast<{wt}*>(&{bp_}[{iexpr_(iv)}]);")
                 continue
