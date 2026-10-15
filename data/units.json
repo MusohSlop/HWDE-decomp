@@ -18360,7 +18360,8 @@
     "_Z13callee_561230PvS_": "0x7100561230",
     "_Z13callee_5852bcPviS_fDv4_fS0_S0_S0_S0_S0_S0_": "0x71005852bc",
     "_Z13callee_5852bcPviS_ffffffff": "0x71005852bc",
-    "_ZN10LayoutLineC1Ev": "0x71001f1594"
+    "_ZN10LayoutLineC1Ev": "0x71001f1594",
+    "_ZN10BufferSlotC1Ev": "0x710003ce04"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -28098,6 +28099,15 @@
       "functions": {
         "_ZN9PlayerHudC2Ei": "0x71000ffdf8",
         "_ZN9PlayerHudC2Eiffffffff": "0x7100101ae4"
+      }
+    },
+    "misc/s3_functions10.cpp": {
+      "functions": {
+        "_ZN10RecordBankC2Ev": "0x71000193e8"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
       }
     }
   }
