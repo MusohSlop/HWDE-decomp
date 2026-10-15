@@ -2993,3 +2993,93 @@ void call_1f9a98(This1f9a98* p0) {
     callee_216f9c(callee_216d48());
     callee_20a4fc(callee_20a31c());
 }
+
+
+
+struct R24_19c9a4 {
+    unsigned char b[0x24];
+};
+
+struct R58_19c9a4 {
+    unsigned char b[0x58];
+};
+
+struct R68_19c9a4 {
+    unsigned char b[0x68];
+};
+
+struct P10_19c9a4 {
+    int v[4];
+};
+
+struct R6c_19c9a4 {
+    unsigned char b[0x6c];
+};
+
+struct V2_19c9a4 {
+    float x, y;
+};
+
+struct V3_19c9a4 {
+    float x, y, z;
+};
+
+struct R18_19c9a4 {
+    V2_19c9a4 a;                     // +0
+    int b;                           // +8
+    V3_19c9a4 c;                     // +c
+};
+
+struct B4d0_19c9a4 {
+    unsigned char b[0x4d0];
+};
+
+struct Obj19c9a4 {
+    R24_19c9a4 r24[3];               // +0
+    R58_19c9a4 objs[120];            // +6c
+    P10_19c9a4 pairs[64];            // +29ac
+    R6c_19c9a4 recs[24];             // +2dac
+    R18_19c9a4 a18[5];               // +37cc
+    R18_19c9a4 b18[15];              // +3844
+    B4d0_19c9a4 block;               // +39ac
+};
+
+void callee_19b6c4(R58_19c9a4*, R68_19c9a4*);                                // 0x710019b6c4
+
+// 0x710019c9a4: a copier with eight sources: memcpy records written with the source address taken first (as the original sets x1 before x0), a per-element call loop, 16-byte pairs, and {pair, int, triple} records copied member by member, the fifteen-record run as a range-based for so that Clang unrolls it fully
+void call_19c9a4(Obj19c9a4* p0, R24_19c9a4* p1, R68_19c9a4* p2, P10_19c9a4* p3, R6c_19c9a4* p4, R18_19c9a4* p5, void* p6, B4d0_19c9a4* p7) {
+    for (int i = 0; i < 3; i++) {
+        const void* s = &p1[i];
+        void* d = &p0->r24[i];
+        memcpy(d, s, sizeof(R24_19c9a4));
+    }
+    for (int i = 0; i < 120; i++) {
+        callee_19b6c4(&p0->objs[i], &p2[i]);
+    }
+    for (int i = 0; i < 64; i++) {
+        const P10_19c9a4& s = p3[i];
+        p0->pairs[i] = s;
+    }
+    for (int i = 0; i < 24; i++) {
+        const void* s = &p4[i];
+        void* d = &p0->recs[i];
+        memcpy(d, s, sizeof(R6c_19c9a4));
+    }
+    for (int i = 0; i < 5; i++) {
+        const R18_19c9a4& s = p5[i];
+        p0->a18[i].a = s.a;
+        p0->a18[i].b = s.b;
+        p0->a18[i].c = s.c;
+    }
+    Tmp218c18 tmp;
+    tmp.set(p6);
+    R18_19c9a4* d = static_cast<R18_19c9a4*>(tmp.data(0, 0));
+    const R18_19c9a4* s = d;
+    for (R18_19c9a4& r : p0->b18) {
+        r.a = s->a;
+        r.b = s->b;
+        r.c = s->c;
+        s++;
+    }
+    p0->block = *p7;
+}
