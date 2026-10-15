@@ -118,11 +118,21 @@ public:
     virtual ~Basec719c();        // 0x71003c719c
 };
 
-// 0x71003c5cc0 (D2): vtable GOT 0x7100c2b480; twelve slots.
+class DefaultHeap {
+public:
+    void release(void* ptr, int a, int b);                                   // 0x710045c2f4
+};
+DefaultHeap* get_default_heap();                                            // 0x710045c96c
+
+// 0x71003c5cc0 (D2) and 0x71003c5e74 (D0, deleted through the default heap): vtable GOT 0x7100c2b480; twelve slots.
 class Screen3c5cc0 : public Basec719c {
 public:
     virtual void anchor();
     ~Screen3c5cc0();
+    static void operator delete(void* ptr) {
+        if (ptr)
+            get_default_heap()->release(ptr, 1, 0);
+    }
     void close();                // 0x71003c5d8c
 
     unsigned char pad8[0x20];
@@ -497,3 +507,19 @@ public:
 };
 
 Menu367498::~Menu367498() { player.stop(); }
+
+// 0x71003aace4 (D2): vtable GOT 0x7100c2b2d8; six plain pages.
+class Screen3aace4 : public ScreenBase3ab2bc {
+public:
+    void anchor();
+    ~Screen3aace4();
+
+    Base3aab84 page_c0;          // +c0
+    Base3aab84 page_23e0;        // +23e0
+    Base3aab84 page_4700;        // +4700
+    Base3aab84 page_6a20;        // +6a20
+    Base3aab84 page_8d40;        // +8d40
+    Base3aab84 page_b060;        // +b060
+};
+
+Screen3aace4::~Screen3aace4() {}

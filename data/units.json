@@ -19422,7 +19422,19 @@
     "_ZN8AdvBoard11update_viewEv": "0x710029f47c",
     "_Z10apply_iconP11EffectGroupP12LayoutHandlePvPK8IconRect": "0x71001f7fe4",
     "_ZN13EffectManager11create_nodeEP8NodeSlotiPKc": "0x71001e2360",
-    "got:_ZTV11Table533118": "0x7100c2d298"
+    "got:_ZTV11Table533118": "0x7100c2d298",
+    "got:_ZTV13Channel574024": "0x7100c2d608",
+    "got:_ZTV13Channel5740a4": "0x7100c2d608",
+    "got:_ZTV13Channel526f68": "0x7100c2d1d8",
+    "got:_ZTV13Channel5274a0": "0x7100c2d1e0",
+    "_ZN13ChannelBase48D2Ev": "0x71005c3ac8",
+    "got:_ZTV13Channel497370": "0x7100c2cb78",
+    "got:_ZTV13Channel5743b4": "0x7100c2d610",
+    "got:_ZTV12Screen2d60f8": "0x7100c2aa88",
+    "got:_ZTV12Screen3aace4": "0x7100c2b2d8",
+    "got:_ZTV13Channel56fdb0": "0x7100c2d550",
+    "got:_ZTV10Grid40a68c": "0x7100c2b740",
+    "_ZN10Cell40a68cD1Ev": "0x710025b3ac"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29421,7 +29433,10 @@
         "_ZN12Screen2d4d84D2Ev": "0x71002d4d84",
         "_ZN12Screen2d4e4cD2Ev": "0x71002d4e4c",
         "_ZN11Table534010C2EPK11Entry534010ji": "0x7100534010",
-        "_ZN11Group5d4040C2EP14Resource5d4040P13Factory5d4040": "0x71005d4040"
+        "_ZN11Group5d4040C2EP14Resource5d4040P13Factory5d4040": "0x71005d4040",
+        "_ZN12Screen2d4e4cD0Ev": "0x71002d601c",
+        "_ZN12Screen2d4d84D0Ev": "0x71002d61d4",
+        "_ZN12Screen2d60f8D0Ev": "0x71002d60f8"
       }
     },
     "misc/s4_298094.cpp": {
@@ -29452,7 +29467,9 @@
         "_ZN12Screen3ab454D2Ev": "0x71003ab454",
         "_ZN10Menu365dc4D2Ev": "0x7100365dc4",
         "_ZN11Board34dd88D2Ev": "0x710034dd88",
-        "_ZN10Menu367498D2Ev": "0x7100367498"
+        "_ZN10Menu367498D2Ev": "0x7100367498",
+        "_ZN12Screen3c5cc0D0Ev": "0x71003c5e74",
+        "_ZN12Screen3aace4D2Ev": "0x71003aace4"
       }
     },
     "misc/s3_functions18.cpp": {
@@ -29491,6 +29508,18 @@
       },
       "functions": {
         "_ZN8AdvBoard10initializeEv": "0x710029b5f8"
+      }
+    },
+    "misc/s3_functions21.cpp": {
+      "functions": {
+        "_ZN13Channel574024D2Ev": "0x7100574024",
+        "_ZN13Channel5740a4D2Ev": "0x71005740a4",
+        "_ZN13Channel526f68D2Ev": "0x7100526f68",
+        "_ZN13Channel5274a0D2Ev": "0x71005274a0",
+        "_ZN13Channel497370D2Ev": "0x7100497370",
+        "_ZN13Channel5743b4D2Ev": "0x71005743b4",
+        "_ZN13Channel56fdb0D2Ev": "0x710056fdb0",
+        "_ZN10Grid40a68cD0Ev": "0x710040a68c"
       }
     }
   }
