@@ -9704,5 +9704,120 @@
    "total_units": 0,
    "complete_units": 0
   }
+ },
+ {
+  "timestamp": "2026-10-15T18:48:59Z",
+  "commit_sha": "fa2a5a9c98b5246d7c426756ffbe3b92e663a5d6",
+  "commit_message": "history: regenerate the ByteMatch history file (timestamp order)",
+  "measures": {
+   "fuzzy_match_percent": 17.29,
+   "total_code": 5590465,
+   "matched_code": 966356,
+   "matched_code_percent": 17.29,
+   "total_data": 0,
+   "matched_data": 0,
+   "matched_data_percent": 0,
+   "total_functions": 17366,
+   "matched_functions": 8096,
+   "matched_functions_percent": 46.62,
+   "complete_code": 0,
+   "complete_code_percent": 0,
+   "complete_data": 0,
+   "complete_data_percent": 0,
+   "total_units": 0,
+   "complete_units": 0
+  }
+ },
+ {
+  "timestamp": "2026-10-15T19:09:40Z",
+  "commit_sha": "f3f4be4ceabdfde116f0f8f3b8f4bd62bc801a80",
+  "commit_message": "Merge matching-s4 (3b42194)",
+  "measures": {
+   "fuzzy_match_percent": 17.34,
+   "total_code": 5590465,
+   "matched_code": 969456,
+   "matched_code_percent": 17.34,
+   "total_data": 0,
+   "matched_data": 0,
+   "matched_data_percent": 0,
+   "total_functions": 17366,
+   "matched_functions": 8113,
+   "matched_functions_percent": 46.72,
+   "complete_code": 0,
+   "complete_code_percent": 0,
+   "complete_data": 0,
+   "complete_data_percent": 0,
+   "total_units": 0,
+   "complete_units": 0
+  }
+ },
+ {
+  "timestamp": "2026-10-15T19:11:13Z",
+  "commit_sha": "90664768cffd0e9f225da7a48c388ade95256769",
+  "commit_message": "Merge matching-s5 (0d3ced9)",
+  "measures": {
+   "fuzzy_match_percent": 17.36,
+   "total_code": 5590465,
+   "matched_code": 970404,
+   "matched_code_percent": 17.36,
+   "total_data": 0,
+   "matched_data": 0,
+   "matched_data_percent": 0,
+   "total_functions": 17366,
+   "matched_functions": 8114,
+   "matched_functions_percent": 46.72,
+   "complete_code": 0,
+   "complete_code_percent": 0,
+   "complete_data": 0,
+   "complete_data_percent": 0,
+   "total_units": 0,
+   "complete_units": 0
+  }
+ },
+ {
+  "timestamp": "2026-10-15T19:12:46Z",
+  "commit_sha": "9d5d5b3fb02ffc68fdb7ce31e664cba939bb8bde",
+  "commit_message": "Merge matching-s3 (36004d8)",
+  "measures": {
+   "fuzzy_match_percent": 17.57,
+   "total_code": 5590465,
+   "matched_code": 982292,
+   "matched_code_percent": 17.57,
+   "total_data": 0,
+   "matched_data": 0,
+   "matched_data_percent": 0,
+   "total_functions": 17366,
+   "matched_functions": 8195,
+   "matched_functions_percent": 47.19,
+   "complete_code": 0,
+   "complete_code_percent": 0,
+   "complete_data": 0,
+   "complete_data_percent": 0,
+   "total_units": 0,
+   "complete_units": 0
+  }
+ },
+ {
+  "timestamp": "2026-10-15T19:14:22Z",
+  "commit_sha": "2842e21c0763c93d936b6d978098cc76b8e7c14b",
+  "commit_message": "Merge matching-s2 (5f20aab)",
+  "measures": {
+   "fuzzy_match_percent": 17.69,
+   "total_code": 5590465,
+   "matched_code": 989172,
+   "matched_code_percent": 17.69,
+   "total_data": 0,
+   "matched_data": 0,
+   "matched_data_percent": 0,
+   "total_functions": 17366,
+   "matched_functions": 8226,
+   "matched_functions_percent": 47.37,
+   "complete_code": 0,
+   "complete_code_percent": 0,
+   "complete_data": 0,
+   "complete_data_percent": 0,
+   "total_units": 0,
+   "complete_units": 0
+  }
  }
 ]
