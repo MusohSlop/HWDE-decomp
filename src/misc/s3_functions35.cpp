@@ -463,3 +463,170 @@ bool read_exactly(Reader5c8d* reader, void* buffer, unsigned long expected, unsi
 
 template bool read_exactly<0x30>(Reader5c8d*, void*, unsigned long, unsigned int);   // 0x71005c8dc4
 template bool read_exactly<0x18>(Reader5c8d*, void*, unsigned long, unsigned int);   // 0x71005c8e0c
+
+// 5fdbd0/5fee50: a value scaled from a source's count, plus an offset.
+class Source5fdb {
+public:
+    virtual void v00(); virtual void v08(); virtual void v10(); virtual void v18(); virtual void v20();
+    virtual void v28(); virtual void v30(); virtual void v38(); virtual void v40(); virtual void v48();
+    virtual void v50();
+    virtual int count();         // +58
+};
+
+template <int Copy>
+struct Scaled5fdb {
+    float value();
+
+    unsigned char pad0[0x10];
+    float scale;                 // +10
+    unsigned char pad14[0x14];
+    Source5fdb* source;          // +28
+    unsigned char pad30[0x14];
+    float offset;                // +44
+};
+
+template <int Copy>
+float Scaled5fdb<Copy>::value() {
+    float n = source ? static_cast<float>(source->count()) : 0.0f;
+    return n * scale + offset;
+}
+
+template float Scaled5fdb<0>::value();   // 0x71005fdbd0
+template float Scaled5fdb<1>::value();   // 0x71005fee50
+
+// 5d29fc/5de8b4: an entry of a circular list found by its name (up to 128 characters).
+struct Named5d29 {
+    Named5d29* prev;             // +00
+    Named5d29* next;             // +08
+    char name[0x80];             // +10
+    void* value;                 // +90
+};
+
+template <int Copy>
+struct NamedList5d29 : Named5d29 {
+    void* find(const char* key);
+};
+
+inline bool same_name(const char* a, const char* b) {
+    for (long i = 0; i < 0x80; ++i) {
+        if (a[i] != b[i])
+            return false;
+        if (!a[i])
+            return true;
+    }
+    return true;
+}
+
+template <int Copy>
+void* NamedList5d29<Copy>::find(const char* key) {
+    for (Named5d29* node = next; node != this; node = node->next) {
+        if (same_name(key, node->name))
+            return node->value;
+    }
+    return nullptr;
+}
+
+template void* NamedList5d29<0>::find(const char*);   // 0x71005d29fc
+template void* NamedList5d29<1>::find(const char*);   // 0x71005de8b4
+
+// 595cf4/595d44: every link of a chain accepts ARG.
+template <int Slot>
+class Link595c {
+public:
+    virtual void v00(); virtual void v08(); virtual void v10(); virtual void v18();
+    virtual unsigned char accept_a(void* arg);   // +20
+    virtual unsigned char accept_b(void* arg);   // +28
+
+    bool all_accept(void* arg);
+
+    Link595c* next;              // +08
+};
+
+template <int Slot>
+bool Link595c<Slot>::all_accept(void* arg) {
+    Link595c* link = this;
+    do {
+        if (!(Slot == 0 ? link->accept_a(arg) : link->accept_b(arg)))
+            return false;
+        link = link->next;
+    } while (link);
+    return true;
+}
+
+template bool Link595c<0>::all_accept(void*);   // 0x7100595cf4
+template bool Link595c<1>::all_accept(void*);   // 0x7100595d44
+
+// 5d0804/5d087c: a lazily created instance (a function-local static per copy).
+struct Instance5d08;
+Instance5d08* create_instance_5d08f8();                                     // 0x71005d08f8
+
+template <int Copy>
+Instance5d08** instance_slot() {
+    static Instance5d08* instance = create_instance_5d08f8();
+    return &instance;
+}
+
+template Instance5d08** instance_slot<0>();   // 0x71005d0804
+template Instance5d08** instance_slot<1>();   // 0x71005d087c
+
+// 5d2b18/5d2b74: every active entry of a circular list visited.
+template <int Copy>
+struct VisitorRef5d2b {
+    void visit(void (*callback)(void* part, void* entry, void* context), void* context);   // 0x71005fd004 + copy
+};
+template <int Copy>
+struct Entry5d2b {
+    Entry5d2b* prev;             // +00
+    Entry5d2b* next;             // +08
+    unsigned char pad10[0x80];
+    VisitorRef5d2b<Copy>* visitor;   // +90
+    bool active;                 // +98
+};
+
+template <int Copy>
+struct EntryList5d2b : Entry5d2b<Copy> {
+    void visit_all(void (*callback)(void*, void*, void*), void* context);
+};
+
+template <int Copy>
+void EntryList5d2b<Copy>::visit_all(void (*callback)(void*, void*, void*), void* context) {
+    for (Entry5d2b<Copy>* entry = this->next; entry != this; entry = entry->next) {
+        if (entry->active)
+            entry->visitor->visit(callback, context);
+    }
+}
+
+template void EntryList5d2b<0>::visit_all(void (*)(void*, void*, void*), void*);   // 0x71005d2b18
+template void EntryList5d2b<1>::visit_all(void (*)(void*, void*, void*), void*);   // 0x71005d2b74
+
+// 5ef678/5ef6dc: a value up to 30000 set on the inactive slot, with its state bits switched.
+struct Slot5ef6 {
+    unsigned short flags;        // +00
+    unsigned char pad2[0x3a];
+    unsigned int value;          // +3c
+    unsigned char pad40[0x90];
+};
+
+template <unsigned short Clear, unsigned short Set>
+struct Buffered5ef6 {
+    bool set(unsigned int value);
+
+    unsigned char pad0[0xdd0];
+    unsigned int current;        // +dd0
+    unsigned int paddd4;
+    Slot5ef6 slots[2];           // +dd8
+};
+
+template <unsigned short Clear, unsigned short Set>
+bool Buffered5ef6<Clear, Set>::set(unsigned int value) {
+    if (value > 30000)
+        return false;
+    unsigned int index = __atomic_load_n(&current, __ATOMIC_ACQUIRE) ^ 1;
+    __atomic_fetch_and(&slots[index].flags, static_cast<unsigned short>(~Clear), __ATOMIC_SEQ_CST);
+    __atomic_fetch_or(&slots[index].flags, Set, __ATOMIC_SEQ_CST);
+    slots[index].value = value;
+    return true;
+}
+
+template bool Buffered5ef6<8, 4>::set(unsigned int);   // 0x71005ef678
+template bool Buffered5ef6<4, 8>::set(unsigned int);   // 0x71005ef6dc

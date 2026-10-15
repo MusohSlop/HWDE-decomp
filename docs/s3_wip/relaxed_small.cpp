@@ -58,3 +58,87 @@ Limit5fdb<Copy>::Limit5fdb()
 template Limit5fdb<0>::Limit5fdb();   // 0x71005fdb84
 template Limit5fdb<1>::Limit5fdb();   // 0x71005fee04
 
+
+// 550d94/550de0 (76 B): 9 words; ours loads the motion pointer once before the branch (hoisted), the original
+// in each branch after storing the target.
+// ---- 550d94/550de0: one of two targets set (immediately, or as an offset from the current value).
+struct Vec3_550d {
+    float x, y, z;
+};
+struct Motion550d {
+    unsigned char pad0[0x40];
+    Vec3_550d vectors[2];        // +40
+    unsigned char pad58[0x80];
+    unsigned int current;        // +d8
+    unsigned char paddc[0x6c];
+    bool dirty[2];               // +148
+};
+struct Target550d {
+    float target;
+    float offset;
+};
+
+template <int I>
+struct Driver550d {
+    void set(float value, unsigned char now);
+
+    unsigned char pad0[0x1a4];
+    Target550d targets[2];       // +1a4
+    unsigned char pad1b4[0x1f4];
+    Motion550d* motion;          // +3a8
+};
+
+template <int I>
+void Driver550d<I>::set(float value, unsigned char now) {
+    if (targets[I].target == value)
+        return;
+    targets[I].target = value;
+    if (now) {
+        Motion550d* m = motion;
+        m->vectors[I].x = value;
+        m->dirty[m->current ^ 1] = true;
+    } else {
+        targets[I].offset = value - motion->vectors[I].x;
+    }
+}
+
+template void Driver550d<1>::set(float, unsigned char);   // 0x7100550d94
+template void Driver550d<0>::set(float, unsigned char);   // 0x7100550de0
+
+
+// 5064ec/506fb0 (88 B): the row is built as two 64-bit stores as in the original (a 16-byte union returned by
+// value), 17 words off in the order of the products; irsearch queued.
+// ---- 5064ec/506fb0: the second row of a rotation matrix from a quaternion.
+union Row5064 {
+    struct {
+        float x, y, z, w;
+    };
+    unsigned int bits[4];
+};
+struct Quat5064 {
+    float x, y, z, w;
+};
+struct Matrix5064 {
+    Row5064 rows[3];
+};
+
+inline Row5064 row_y(const Quat5064& q) {
+    float x2 = q.x + q.x;
+    float y2 = q.y + q.y;
+    float z2 = q.z + q.z;
+    Row5064 r;
+    r.x = x2 * q.y - z2 * q.w;
+    r.y = 1.0f - q.z * z2 - q.x * x2;
+    r.z = y2 * q.z + x2 * q.w;
+    r.w = 0.0f;
+    return r;
+}
+
+template <int Copy>
+void set_row_y(Matrix5064* m, const Quat5064* q) {
+    m->rows[1] = row_y(*q);
+}
+
+template void set_row_y<0>(Matrix5064*, const Quat5064*);   // 0x71005064ec
+template void set_row_y<1>(Matrix5064*, const Quat5064*);   // 0x7100506fb0
+
