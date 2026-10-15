@@ -16752,7 +16752,11 @@
     "_Z13callee_39c6d8P12Mode9_38e39c": "0x710039c6d8",
     "_Z13callee_39cc64P12Mode9_38e39ci": "0x710039cc64",
     "_Z13callee_3c745cP11Scene38e39ciii": "0x71003c745c",
-    "_Z13callee_3c750cP11Scene38e39c": "0x71003c750c"
+    "_Z13callee_3c750cP11Scene38e39c": "0x71003c750c",
+    "_Z13callee_45b158jjiiiii": "0x710045b158",
+    "_Z13callee_45baf8PKcjii": "0x710045baf8",
+    "_Z13callee_45bf78iPh": "0x710045bf78",
+    "_Z13callee_45c078PKci": "0x710045c078"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -26055,6 +26059,19 @@
       },
       "functions": {
         "_ZN11Scene38e39c8set_modeEii": "0x710038e39c"
+      }
+    },
+    "misc/text_format.cpp": {
+      "functions": {
+        "_Z12text_vformatPciPKcSt9__va_list": "0x7100459ffc",
+        "_Z15text_format_keyijii": "0x710045a850"
+      },
+      "map": {
+        ".rodata": "0x7100810f4c",
+        "_ZL8sTextCap": "0x7100cf0400",
+        "_ZL8sTextLen": "0x7100cf0404",
+        "_ZL8sTextPtr": "0x7100cf0408",
+        "_ZL10kSeparator": "0x7100811120"
       }
     }
   }
