@@ -17961,7 +17961,109 @@
     "_Z13callee_58f108PjP10Heap448544": "0x710058f108",
     "_Z13callee_58f2c0PviP11Light448544": "0x710058f2c0",
     "_Z13callee_58f37cPvP11Vec4_448544": "0x710058f37c",
-    "_Z13callee_5c2d40P10Heap448544Pviiii": "0x71005c2d40"
+    "_Z13callee_5c2d40P10Heap448544Pviiii": "0x71005c2d40",
+    "gLocal740512_1ee914": "0x7100740512",
+    "_Z12callee2_db3cv": "0x710000db3c",
+    "_Z13callee_197a28lt": "0x7100197a28",
+    "_Z13callee_1e00b4PvS_S_l": "0x71001e00b4",
+    "_Z13callee_1e30e8Pv": "0x71001e30e8",
+    "_Z13callee_1ee968PvS_i": "0x71001ee968",
+    "_Z13callee_217d2ci": "0x7100217d2c",
+    "_Z14callee2_218fc0lii": "0x7100218fc0",
+    "gLocalbe2098_456698": "0x7100be2098",
+    "gLocalbe2098_4567f4": "0x7100be2098",
+    "gLocalbe2098_45694c": "0x7100be2098",
+    "gLocalbe2098_456e40": "0x7100be2098",
+    "gLocalbe2098_4573b8": "0x7100be2098",
+    "got:gGlobalc216a8_3f2f48": "0x7100c216a8",
+    "got:gGlobalc216e8_41a8dc": "0x7100c216e8",
+    "got:gGlobalc216e8_421878": "0x7100c216e8",
+    "got:gGlobalc216e8_4280a8": "0x7100c216e8",
+    "got:gGlobalc216f8_4cbb20": "0x7100c216f8",
+    "got:gGlobalc216f8_4cc060": "0x7100c216f8",
+    "got:gGlobalc216f8_4ccdf0": "0x7100c216f8",
+    "got:gGlobalc216f8_5c9504": "0x7100c216f8",
+    "got:gGlobalc2b718_3ffab0": "0x7100c2b718",
+    "got:gGlobalc2cd10_4c4b10": "0x7100c2cd10",
+    "got:gGlobalc2cd10_4c51bc": "0x7100c2cd10",
+    "got:gGlobalc2cd10_4c55c0": "0x7100c2cd10",
+    "got:gGlobalc2cd10_4c6244": "0x7100c2cd10",
+    "got:gGlobalc2cd10_4c65ec": "0x7100c2cd10",
+    "got:gGlobalc2cd18_4c4b10": "0x7100c2cd18",
+    "got:gGlobalc2cd18_4c51bc": "0x7100c2cd18",
+    "got:gGlobalc2cd18_4c55c0": "0x7100c2cd18",
+    "got:gGlobalc2cd18_4c6244": "0x7100c2cd18",
+    "got:gGlobalc2cd18_4c65ec": "0x7100c2cd18",
+    "got:gGlobalc2cd20_4d60a0": "0x7100c2cd20",
+    "got:gGlobalc2ceb8_4dbfa8": "0x7100c2ceb8",
+    "got:gGlobalc2cf28_501ae4": "0x7100c2cf28",
+    "got:gGlobalc2cf70_501ae4": "0x7100c2cf70",
+    "got:gGlobalc2cf78_501ae4": "0x7100c2cf78",
+    "got:gGlobalc2d440_55ba54": "0x7100c2d440",
+    "got:gGlobalc2d448_55ba54": "0x7100c2d448",
+    "_Z12callee_3f8a4iff": "0x710003f8a4",
+    "_Z13callee_43fee8PvS_S_llDv4_f": "0x710043fee8",
+    "_Z13callee_4550c0iPvS_S_iiDv4_f": "0x71004550c0",
+    "_Z13callee_4a9fc4PvS_": "0x71004a9fc4",
+    "_Z13callee_4dc228PvS_lS_S_": "0x71004dc228",
+    "_Z13callee_4dc410PvS_lS_S_": "0x71004dc410",
+    "_Z13callee_4fdd70PvS_": "0x71004fdd70",
+    "_Z13callee_4ffd2cPvlDv4_fS0_S0_S0_S0_S0_S0_S0_": "0x71004ffd2c",
+    "_Z13callee_500b0cPvS_S_S_Dv4_fS0_S0_": "0x7100500b0c",
+    "_Z13callee_507044PvS_": "0x7100507044",
+    "_Z13callee_50d244PvS_S_Dv4_fS0_S0_": "0x710050d244",
+    "_Z13callee_50d7c4PvS_S_lDv4_fS0_S0_": "0x710050d7c4",
+    "_Z13callee_50e4a0PvS_S_S_Dv4_fS0_S0_": "0x710050e4a0",
+    "_Z13callee_50e8ccPvS_S_S_Dv4_fS0_S0_": "0x710050e8cc",
+    "_Z13callee_5ba4d4PvS_ll": "0x71005ba4d4",
+    "_Z13callee_41c644Pviii": "0x710041c644",
+    "gLocal8116f4_48f8b4": "0x71008116f4",
+    "gLocal81263c_4c7b90": "0x710081263c",
+    "gLocalb8c022_5d42f8": "0x7100b8c022",
+    "gLocalcf2750_4c7b90": "0x7100cf2750",
+    "got:gGlobalc21de8_54fe30": "0x7100c21de8",
+    "got:gGlobalc2cd28_4d5d30": "0x7100c2cd28",
+    "got:gGlobalc2d4f0_56b3c8": "0x7100c2d4f0",
+    "got:gGlobalc2dc90_5d42f8": "0x7100c2dc90",
+    "got:gGlobalc2dc98_5d42f8": "0x7100c2dc98",
+    "got:gGlobalc2dca0_5d42f8": "0x7100c2dca0",
+    "_Z13callee_54f750Pv": "0x710054f750",
+    "_Z13callee_550028PvS_S_iiiiiffff": "0x7100550028",
+    "gLocal73cc8c_9aa4": "0x710073cc8c",
+    "got:gGlobalc21690_416b0": "0x7100c21690",
+    "got:gGlobalc21698_15b708": "0x7100c21698",
+    "got:gGlobalc216e8_15b708": "0x7100c216e8",
+    "got:gGlobalc216f8_416b0": "0x7100c216f8",
+    "got:gGlobalc21880_11e0d4": "0x7100c21880",
+    "got:gGlobalc22bd8_15b708": "0x7100c22bd8",
+    "got:gGlobalc22cb0_15b708": "0x7100c22cb0",
+    "_Z11callee_ebe0ii": "0x710000ebe0",
+    "_Z12callee_11874PvS_S_S_bi": "0x7100011874",
+    "_Z13callee_13f828Pv": "0x710013f828",
+    "_Z13callee_148350l": "0x7100148350",
+    "_Z13callee_1586ecPvS_": "0x71001586ec",
+    "_Z13callee_163d48Pvilll": "0x7100163d48",
+    "_Z13callee_196474llif": "0x7100196474",
+    "_Z13callee_1a31ecPvi": "0x71001a31ec",
+    "_ZN10Elem132aecC1Ev": "0x7100132aec",
+    "_ZN10Elem13ea74C1Ev": "0x710013ea74",
+    "_ZN10Elem13bce4C1Ev": "0x710013bce4",
+    "_ZN10Part13e2b4C1Ev": "0x710013e2b4",
+    "_ZN10Part14a7dcC1Ev": "0x710014a7dc",
+    "_ZN10Part13dd18C1Ev": "0x710013dd18",
+    "_ZN10Part146f30C1Ev": "0x7100146f30",
+    "_ZN10Part157d68C1Ev": "0x7100157d68",
+    "_ZN10Part154468C1Ev": "0x7100154468",
+    "_ZN10Part135e00C1Ev": "0x7100135e00",
+    "_ZN10Part140b9cC1Ev": "0x7100140b9c",
+    "_ZN10Part15e580C1Ev": "0x710015e580",
+    "_ZN9Sub15aa9cC1Ev": "0x710015aa9c",
+    "_ZN10InfoMarkerC1Ev": "0x71001f18e8",
+    "_ZN9InfoGaugeC1Ev": "0x71001305e4",
+    "_ZN9InfoTimerC1Ev": "0x71000e05d4",
+    "_ZN12InfoMapPanelC1Ev": "0x71000e4ee0",
+    "_ZN11InfoIconSetC1Ev": "0x71000e510c",
+    "_ZN13InfoIconTableC1Ev": "0x71000e51c8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -27285,7 +27387,8 @@
         "_ZN11Class28b71010initializeEv": "0x710028b710",
         "_Z10call_d89b0P9Ctx_d89b0": "0x71000d89b0",
         "_Z10call_d98e0P9Ctx_d98e0": "0x71000d98e0",
-        "_Z10call_da854P9Ctx_da854": "0x71000da854"
+        "_Z10call_da854P9Ctx_da854": "0x71000da854",
+        "_ZN9Obj1451bcC2Ev": "0x71001451bc"
       }
     },
     "misc/variant_ctor01.cpp": {
@@ -27595,6 +27698,70 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/variant_functions84.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z10call_22558lsiPv": "0x7100022558",
+        "_Z10call_33b20l": "0x7100033b20",
+        "_Z10call_3f848v": "0x710003f848",
+        "_Z10call_3f8a4v": "0x710003f8a4",
+        "_Z10call_3fb48v": "0x710003fb48",
+        "_Z10call_414c8i": "0x71000414c8",
+        "_Z10call_41544v": "0x7100041544",
+        "_Z10call_415acPvi": "0x71000415ac",
+        "_Z10call_4301ci": "0x710004301c",
+        "_Z10call_43098iP10Arg43098_1": "0x7100043098",
+        "_Z10call_4338cPvP10Arg4338c_1": "0x710004338c",
+        "_Z10call_43444iP10Arg43444_1": "0x7100043444",
+        "_Z11call_1e00acPvS_S_l": "0x71001e00ac",
+        "_Z11call_1e30e0PvS_": "0x71001e30e0",
+        "_Z11call_1ee914P11Arg1ee914_0iii": "0x71001ee914"
+      }
+    },
+    "misc/s2_functions24.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z11call_3ffab0P11Arg3ffab0_0i": "0x71003ffab0",
+        "_Z11call_505188P11Arg505188_0P11Arg505188_1": "0x7100505188",
+        "_Z11call_50e440PvS_S_P11Arg50e440_3S_": "0x710050e440",
+        "_Z11call_50ec98P11Arg50ec98_0Pv": "0x710050ec98",
+        "_Z11call_50edb4PvS_P11Arg50edb4_2S_P11Arg50edb4_4": "0x710050edb4"
+      }
+    },
+    "misc/s2_functions25.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z11call_4d5d30P11Arg4d5d30_0P11Arg4d5d30_1": "0x71004d5d30",
+        "_Z11call_4f6320P11Arg4f6320_0P11Arg4f6320_1P11Arg4f6320_2ff": "0x71004f6320"
+      }
+    },
+    "misc/variant_functions85.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z10call_c8850P10Argc8850_0f": "0x71000c8850",
+        "_Z10call_c8cd0P10Argc8cd0_0f": "0x71000c8cd0"
+      }
+    },
+    "misc/s4_e25dc.cpp": {
+      "map": {
+        ".rodata.str1.1": "0x71007403e7"
+      },
+      "functions": {
+        "_ZN18InformationDisplayC2Ev": "0x71000e25dc"
       }
     }
   }
