@@ -1,24 +1,3 @@
-// 0x710029b5f8 AdvBoard::initialize (9,224 B), fourth session, parked. Build: this file alone with try.py (or
-//   build/s4/adiff.py), --name _ZN8AdvBoard10initializeEv and the symbol file docs/s4_wip/29b5f8.json (the GOT name
-//   tables, the 94 strings and the new callee names; its .rodata 0x71007f8a30 holds the two jump tables).
-// State: 9,224 B (the original's size), 11 instructions off counting branch targets. What is right:
-//   - create_window_animation returns a WindowAnimation* that the board stores into LayoutAnimation* members, and
-//     the stops right after a create (signboards, moon_clash) are written inline: the original keeps their second
-//     null check (LVI cannot see the null through the base conversion; a static inline helper is threaded on its own
-//     before it is inlined). Stops of reloaded members (ending) are threaded in both, so they keep the helper.
-//   - the weapon loop rereads the finish check and the rate through a plain pointer to the array: the original
-//     computes this+i*8 again in each block (LSR expands each use in its own block when the address values differ).
-//   - the adv_text_lv loop walks the plates with their own pointer (the latch then steps the level offset first).
-//   - view_left is volatile, so of the four default stores only top and right merge (the original's 64-bit store).
-//   - the moves loop reads the mode into a local before each test (unsigned int mode = get_game()->state()->mode;
-//     if (i == 8 && mode == 4)): with the field read in the condition, our JumpThreading sent the failure edge
-//     through the latch straight to the loop exit.
-// Still different: the view defaults (11):
-//   the original materializes &top, 7, the top/right constant and &bottom before the hide store and &left after the
-//   cell load (x24, x22, x25, x23), ours &left first; all 120 orders of the four stores and the cell read, with and
-//   without the volatile, and a packed view_left (stops every merge) were no better. It is scheduling only, a
-//   candidate for s5's IR statement search (tools/s5/irsearch.py).
-
 // Adventure Mode board: AdvBoard::initialize (0x710029b5f8), which loads the board's layouts (the whole map on
 // the TV and the DRC, the player marker, the DLC counters and timers, network plates and the result windows),
 // binds their animations and places the camera on the player's cell. Names are descriptive placeholders; the
@@ -390,6 +369,7 @@ public:
     unsigned char pad21bc0[4];
     float scroll_x;                   // +21bc4
     float scroll_y;                   // +21bc8
+    // view_left is volatile: of the four default stores only top and right merge (the original's 64-bit store).
     volatile int view_left;           // +21bcc
     int view_top;                     // +21bd0
     int view_right;                   // +21bd4
@@ -678,6 +658,8 @@ void AdvBoard::initialize() {
     for (int i = 0; i < 9; ++i) {
         tv.moves[i] = tv.node->create_animation(kArrowMoveAnims[i], true);
         drc.moves[i] = drc.node->create_animation(kArrowMoveAnims[i], true);
+        // The mode is read into a local before each test: read in the condition, JumpThreading sends the failure
+        // edge through the latch straight to the loop exit.
         unsigned int mode = get_game()->state()->mode;
         if (i == 7 && mode == 3) {
             start_animation(tv.moves[i], rate);
@@ -940,11 +922,13 @@ void AdvBoard::initialize() {
     }
     hide(icons->group->find(kAdvIconLock, 1));
     int cell = player.id;
-    view_left = 5;
-    view_top = 5;
-    view_right = 9;
-    view_bottom = 7;
+    // The column first and right stored before top: the four view addresses then take the original's callee-saved
+    // registers (bottom x22, right x23, top x24, left x25) and schedule.
     int column = cell % 16;
+    view_left = 5;
+    view_right = 9;
+    view_top = 5;
+    view_bottom = 7;
     int row = cell / 16;
     if ((cell & ~0xf) != 0x60 || static_cast<unsigned int>(column - 6) >= 3) {
         if (column <= 4) {

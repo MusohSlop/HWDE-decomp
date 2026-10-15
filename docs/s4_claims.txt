@@ -1,8 +1,8 @@
 # Fourth session (branch matching-s4): hand-matching of non-constructor functions over 1,500 bytes below
 # 0x7100380000, and the giants in that range. Generator runs should skip every address listed here.
 # working: functions being hand-matched now; matched: functions matched on matching-s4; tried: parked, with reason.
-working: 101ae4 2748d8 1c86d4 92abc 2a0f48 2a7b40 1e73c0 12141c 227b50
-matched: f6fc0 1f00 176ce0 11298c f1278 1a4b48 20e224 1f9a98 19c9a4 28b710 d89b0 d98e0 da854 1451bc e25dc ffdf8 298094 298390
+working: 101ae4 2748d8 1c86d4 92abc 2a0f48 2a7b40 12141c 227b50
+matched: f6fc0 1f00 176ce0 11298c f1278 1a4b48 20e224 1f9a98 19c9a4 28b710 d89b0 d98e0 da854 1451bc e25dc ffdf8 298094 298390 29b5f8
 tried: c0308 (1,536 B, 40 off with registers abstracted: Reassociate operand ranks in the slerp and quaternion-to-matrix products, the order of the axis and translation address phis; docs/s4_wip/c0308.cpp)
 tried: 3e934 (1,620 B, 79 off with registers abstracted: our 0x1c and default cases tail-merge their field stores, scheduling around the 3334 call; docs/s4_wip/3e934.cpp)
 tried: 111d24 (2,676 B, 5 off, 1 with registers abstracted: the trip count and the -1.0f constant of the reset loop come out in the other order; docs/s4_wip/111d24.cpp; now on main's generator queue)
@@ -10,5 +10,5 @@ tried: 1a5388 (1,648 B, 1 off: the records loop advances its destination pointer
 tried: 347928 (1,724 B, 43 off with registers abstracted: block placement of the lock branch and one more saved register; docs/s4_wip/347928.cpp)
 tried: 1179f0 (1,520 B, 8 words off, 0 with registers abstracted: three FP registers in the hit-rectangle block; docs/s4_wip/1179f0.cpp)
 tried: 31e3d0 (1,992 B, 11 off with registers abstracted: the sprite loop's induction variable and the second screen test; docs/s4_wip/31e3d0.cpp)
-tried: 29b5f8 (9,224 B giant, same size, 11 off counting branch targets, all in the view defaults' address scheduling (an irsearch candidate); docs/s4_wip/29b5f8.cpp with 29b5f8.json)
 tried: 294378 (12,092 B giant, AdvUnit::decide: 12,608 B, 1,169 off with registers abstracted: the shared ready/blocked tails (two forms of the may-go test) and the order of each chain's first neighbour test; its helpers can_move and can_warp are matched in misc/s4_298094.cpp; docs/s4_wip/294378.cpp with 294378.json)
+tried: 1e73c0 (8,468 B giant, TextRenderer::draw: set aside before writing source; its structure is described in docs/s4_wip/1e73c0.cpp)
