@@ -17051,7 +17051,12 @@
     "_Z13callee_382bb8PvS_ii": "0x7100382bb8",
     "_Z13callee_38383cPviiiS_S_S_ifff": "0x710038383c",
     "_Z13callee_44113cPv": "0x710044113c",
-    "_Z13callee_441a44Pv": "0x7100441a44"
+    "_Z13callee_441a44Pv": "0x7100441a44",
+    "_Z13callee_45b158jjiiiii": "0x710045b158",
+    "_Z13callee_45baf8PKcjii": "0x710045baf8",
+    "_Z13callee_45bf78iPh": "0x710045bf78",
+    "_Z13callee_45c078PKci": "0x710045c078",
+    "gFactories_bdf230": "0x7100bdf230"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -26378,7 +26383,8 @@
         ".rodata.cst16": "0x710073dff0"
       },
       "functions": {
-        "_Z11call_415f00P11State415f00PKS_S2_": "0x7100415f00"
+        "_Z11call_415f00P11State415f00PKS_S2_": "0x7100415f00",
+        "_Z13create_425de0iPv": "0x7100425de0"
       }
     },
     "misc/switches/switch_38e39c.cpp": {
@@ -26470,6 +26476,19 @@
       },
       "functions": {
         "_Z11call_3cc968v": "0x71003cc968"
+      }
+    },
+    "misc/text_format.cpp": {
+      "map": {
+        ".rodata": "0x7100810f4c",
+        "_ZL8sTextCap": "0x7100cf0400",
+        "_ZL8sTextLen": "0x7100cf0404",
+        "_ZL8sTextPtr": "0x7100cf0408",
+        "_ZL10kSeparator": "0x7100811120"
+      },
+      "functions": {
+        "_Z12text_vformatPciPKcSt9__va_list": "0x7100459ffc",
+        "_Z15text_format_keyijii": "0x710045a850"
       }
     }
   }
