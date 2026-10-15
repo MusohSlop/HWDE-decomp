@@ -371,6 +371,89 @@ def gen_function(a, ins):
                 r_, w_ = frw(ij_)
                 if n_ in r_ or n_ in w_ or ij_.mnemonic in ("bl", "blr", "b", "br", "ret") or ij_.mnemonic.startswith("b."):
                     break
+    copy_skip_, copy_emit_ = set(), {}
+    if "nostructcopy" not in knobs:
+        MEMC_ = re.compile(r"([wxqds])(\d+), \[(x\d+)(?:, #(-?0x[0-9a-f]+|-?\d+))?\]$")
+        SZC_ = {"w": 4, "x": 8, "q": 16, "d": 8, "s": 4}
+        def is_br_(i_):
+            return i_.mnemonic in ("bl", "blr", "b", "br", "ret") or i_.mnemonic.startswith(("b.", "cbz", "cbnz", "tbz", "tbnz"))
+        def flush_(groups_):
+            for (bs_, bd_, dl_), g_ in groups_.items():
+                if len(g_) < 2:
+                    continue
+                ivs_ = sorted((so_, so_ + sz_) for so_, sz_, _, _ in g_)
+                lo_, hi_ = ivs_[0][0], ivs_[0][1]
+                ok_ = True
+                for s0_, s1_ in ivs_[1:]:
+                    if s0_ > hi_:
+                        ok_ = False
+                        break
+                    hi_ = max(hi_, s1_)
+                if not ok_ or hi_ - lo_ < 12:
+                    continue
+                total_ = hi_ - lo_
+                pieces_ = sorted((so_ - lo_, sz_) for so_, sz_, _, _ in g_)
+                R_ = total_
+                for cand_ in range(max(sz_ for _, sz_ in pieces_), total_):
+                    if total_ % cand_:
+                        continue
+                    recs_ = {}
+                    good_ = True
+                    for rel_, sz_ in pieces_:
+                        if rel_ // cand_ != (rel_ + sz_ - 1) // cand_:
+                            good_ = False
+                            break
+                        recs_.setdefault(rel_ // cand_, []).append((rel_ % cand_, sz_))
+                    if good_ and len(recs_) == total_ // cand_ and len({tuple(sorted(v_)) for v_ in recs_.values()}) == 1 \
+                            and len(next(iter(recs_.values()))) >= 2:
+                        R_ = cand_
+                        break
+                al_ = 16
+                for so_, sz_, _, _ in g_:
+                    for x_ in (so_ - lo_, so_ + dl_):
+                        while al_ > 1 and x_ % al_:
+                            al_ //= 2
+                ks_ = [kk_ for _, _, kl_, ks2_ in g_ for kk_ in (kl_, ks2_)]
+                first_st_ = min(ks2_ for _, _, _, ks2_ in g_)
+                copy_skip_.update(ks_)
+                copy_emit_[first_st_] = (bs_, bd_, lo_, lo_ + dl_, R_, total_ // R_, al_)
+        groups_ = {}
+        written_c_ = set()
+        for k_, i_ in enumerate(ins):
+            if is_br_(i_):
+                flush_(groups_); groups_ = {}; written_c_ = set()
+                continue
+            m_ = MEMC_.match(i_.op_str) if i_.mnemonic in ("ldr", "ldur") else None
+            if m_ and m_.group(3) not in written_c_:
+                rk_, rn_ = m_.group(1), m_.group(2)
+                so_ = int(m_.group(4), 0) if m_.group(4) else 0
+                rpat_ = re.compile(r"\b[%s]%s\b" % ("wx" if rk_ in "wx" else "qdsvbh", rn_))
+                for j_ in range(k_ + 1, min(len(ins), k_ + 8)):
+                    ij_ = ins[j_]
+                    mj_ = MEMC_.match(ij_.op_str) if ij_.mnemonic in ("str", "stur") else None
+                    if mj_ and mj_.group(1) == rk_ and mj_.group(2) == rn_ and mj_.group(3) not in written_c_:
+                        # the value must not be read again before it is overwritten
+                        dead_ = True
+                        for jj_ in range(j_ + 1, len(ins)):
+                            ix_ = ins[jj_]
+                            if is_br_(ix_):
+                                dead_ = ix_.mnemonic not in ("ret", "b", "br") or True
+                                break
+                            r2_, w2_ = (frw(ix_) if rk_ not in "wx" else rw(ix_))
+                            if int(rn_) in r2_:
+                                dead_ = False
+                                break
+                            if int(rn_) in w2_:
+                                break
+                        if dead_:
+                            do_ = int(mj_.group(4), 0) if mj_.group(4) else 0
+                            groups_.setdefault((m_.group(3), mj_.group(3), do_ - so_), []).append((so_, SZC_[rk_], k_, j_))
+                        break
+                    if rpat_.search(ij_.op_str) or is_br_(ij_):
+                        break
+            r3_, w3_ = rw(i_)
+            written_c_ |= {"x%d" % w_ for w_ in w3_}
+        flush_(groups_)
     hoist_adds_ = set()
     for k_, i_ in enumerate(ins):
         ops_h_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", i_.op_str)]
@@ -2281,6 +2364,15 @@ def gen_function(a, ins):
                     regs[xn_] = ("vpart", vv_, 0 if ops[1][0] == "d" else 1)
                     if xn_ < 8: written.add(xn_)
                 k += 1; continue
+            if k in copy_skip_:
+                if k in copy_emit_:
+                    bs_, bd_, slo_, dlo_, R_, n_, al_ = copy_emit_[k]
+                    sv_ = use(regs, bs_) if regs.get(regname(bs_)[0]) is not None else None
+                    dv_ = use(regs, bd_) if regs.get(regname(bd_)[0]) is not None else None
+                    if sv_ is None or dv_ is None:
+                        raise Fail("copy base")
+                    items.append(("blkcopy", dv_, dlo_, sv_, slo_, R_, n_, al_))
+                k += 1; continue
             ml1_ = re.fullmatch(r"\{v(\d+)\.([sd])\}\[(\d)\], (\[x\d+\])(?:, #(0x[0-9a-f]+|\d+))?", i.op_str) if m in ("ld1", "st1") and "nold1" not in knobs else None
             if ml1_ and not (m == "st1" and ml1_.group(2) == "d") and not (ml1_.group(2) == "d" and ml1_.group(3) != "0"):
                 vn_, lk_, li_ = int(ml1_.group(1)), ml1_.group(2), int(ml1_.group(3))
@@ -3636,6 +3728,8 @@ def gen_function(a, ins):
                 mark(it[3]); mark(it[4])
             if it[0] == "copy8":
                 mark(it[1]); mark(it[3])
+            if it[0] == "blkcopy":
+                mark(it[1]); mark(it[3])
             if it[0] == "store":
                 mark(it[3]); mark(it[4])
             elif it[0] == "let":
@@ -4387,6 +4481,8 @@ def gen_function(a, ins):
                 count(it[3]); count(it[4])
             if it[0] == "copy8":
                 count(it[1]); count(it[3])
+            if it[0] == "blkcopy":
+                count(it[1]); count(it[3])
             if it[0] in ("let",):
                 count(it[4])
             elif it[0] == "leti":
@@ -4589,6 +4685,7 @@ def gen_function(a, ins):
         index_cache_[key_] = (ptrs, ix, newix, drop, cnd2)
         return index_cache_[key_]
     hoist_stack = []
+    blk_types_ = set()
     def declare_line(pad, typ, name, rhs):
         if hoist_stack:
             hoist_stack[-1].append((typ, name))
@@ -4723,6 +4820,17 @@ def gen_function(a, ins):
                         raise Fail("copy base")
                     return f"reinterpret_cast<unsigned char*>({bs_}) + {o_:#x}" if o_ else f"reinterpret_cast<unsigned char*>({bs_})"
                 outl.append(f"{pad}__builtin_memcpy({byte_addr_(it[1], it[2])}, {byte_addr_(it[3], it[4])}, 8);")
+            elif it[0] == "blkcopy":
+                _, dv_, dlo_, sv_, slo_, R_, n_, al_ = it
+                bn_ = f"Blk{R_:x}_{al_}_{a:x}"
+                blk_types_.add((R_, al_))
+                def baddr_(b_, o_):
+                    bs_ = f"reinterpret_cast<unsigned char*>({expr(b_)})"
+                    return f"({bs_} + {o_:#x})" if o_ else bs_
+                if n_ == 1:
+                    outl.append(f"{pad}*reinterpret_cast<{bn_}*>({baddr_(dv_, dlo_)}) = *reinterpret_cast<const {bn_}*>({baddr_(sv_, slo_)});")
+                else:
+                    outl.append(f"{pad}for (long i = 0; i < {n_}; ++i) reinterpret_cast<{bn_}*>({baddr_(dv_, dlo_)})[i] = reinterpret_cast<const {bn_}*>({baddr_(sv_, slo_)})[i];")
             elif it[0] == "store" and vu_of_(it[1], it[2]) is not None:
                 _, sn, off, base, val = it
                 u_ = vu_of_(sn, off)
@@ -5275,6 +5383,7 @@ def gen_function(a, ins):
 
     nparams = (max(pwidth) + 1) if pwidth else 0
     params = ", ".join([f"{ptype(n)} p{n}" for n in range(nparams) if pwidth.get(n) != "VecU_hi"] + [f"float f{n}" for n in range(max(fparams) + 1 if fparams else 0)])
+    sdefs += [f"struct alignas({al_}) Blk{R_:x}_{al_}_{a:x} {{\n    unsigned char b[{R_}];\n}};\n" for R_, al_ in sorted(blk_types_)]
     body = "\n".join(sdefs) + "\n".join(gdecls) + f"\n\n// 0x71{a:08x}\n{rtype} call_{a:x}({params}) {{\n" + "\n".join(lines) + "\n}\n"
     return body, sigs, gsyms + ["IMPORT=%s=%x" % (import_of(tt)[1], tt) for tt in callees if import_of(tt)] \
         + ["JTAB=%x=%x" % jt for jt in jtabs_]
