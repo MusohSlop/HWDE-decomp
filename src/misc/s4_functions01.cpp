@@ -3908,3 +3908,204 @@ void call_da854(Ctx_da854* p0) {
         in->close();
     }
 }
+
+class DefaultHeap {
+public:
+    void* allocate(unsigned int alignment, unsigned long size, int a, int b); // 0x710045c458
+};
+DefaultHeap* get_default_heap();                                            // 0x710045c96c
+int callee_170c58();                                                        // 0x7100170c58
+
+// Arrays are carved from the default heap; the heap takes the size as 32 bits.
+struct HeapTag_1451bc {};
+inline void* operator new[](unsigned long size, HeapTag_1451bc) {
+    return get_default_heap()->allocate(0x10, static_cast<unsigned int>(size), 1, 0);
+}
+
+// The same, cleared after allocation.
+struct ZeroHeapTag_1451bc {};
+inline void* operator new[](unsigned long size, ZeroHeapTag_1451bc) {
+    void* p = get_default_heap()->allocate(0x10, static_cast<unsigned int>(size), 1, 0);
+    memset(p, 0, size);
+    return p;
+}
+
+class Elem132aec {
+public:
+    Elem132aec();                                                           // 0x7100132aec
+    unsigned char data[0x120];
+};
+class Elem13ea74 {
+public:
+    Elem13ea74();                                                           // 0x710013ea74
+    unsigned char data[0x100];
+};
+class Elem13bce4 {
+public:
+    Elem13bce4();                                                           // 0x710013bce4
+    unsigned char data[0x638];
+};
+class Part13e2b4 {
+public:
+    Part13e2b4();                                                           // 0x710013e2b4
+    unsigned char data[0x58];
+};
+class Part14a7dc {
+public:
+    Part14a7dc();                                                           // 0x710014a7dc
+    unsigned char data[0x4bd0];
+};
+class Part13dd18 {
+public:
+    Part13dd18();                                                           // 0x710013dd18
+    unsigned char data[0x5000];
+};
+class Part146f30 {
+public:
+    Part146f30();                                                           // 0x7100146f30
+    unsigned char data[0xf30];
+};
+class Part157d68 {
+public:
+    Part157d68();                                                           // 0x7100157d68
+    unsigned char data[0x28];
+};
+class Part154468 {
+public:
+    Part154468();                                                           // 0x7100154468
+    unsigned char data[0x10];
+};
+class Part135e00 {
+public:
+    Part135e00();                                                           // 0x7100135e00
+    unsigned char data[0x18];
+};
+class Part140b9c {
+public:
+    Part140b9c();                                                           // 0x7100140b9c
+    unsigned char data[8];
+};
+class Part15e580 {
+public:
+    Part15e580();                                                           // 0x710015e580
+    unsigned char data[8];
+};
+class Sub15aa9c {
+public:
+    Sub15aa9c();                                                            // 0x710015aa9c
+    unsigned char data[0x180];
+};
+// Its implicit constructor is not trivial, so new[] constructs each element.
+struct Elem15aa9c {
+    Sub15aa9c sub;
+};
+
+struct Slot32_1451bc {
+    unsigned int next;               // +0
+    unsigned char pad4[0x1c];
+};
+
+struct Pair8_1451bc {
+    int a;
+    int b;
+};
+
+struct List0_1451bc {
+    void* ptr;                       // +0
+    int count;                       // +8
+    int used;                        // +c
+    int free;                        // +10
+    unsigned char flag;              // +14
+    unsigned char pad15[0x13];
+
+    List0_1451bc() : ptr(nullptr), count(0), used(0), free(0), flag(0) {}
+};
+
+struct Pool_1451bc {
+    void* ptr;                       // +0
+    unsigned int count;              // +8
+    unsigned int used;               // +c
+    unsigned int free;               // +10
+    unsigned int stride;             // +14
+    void* storage;                   // +18
+
+    Pool_1451bc() : ptr(nullptr), count(0), used(0), free(0), stride(0) {}
+};
+
+static inline void init_slots_1451bc(Pool_1451bc* pool, unsigned int count) {
+    Slot32_1451bc* slots = new (HeapTag_1451bc{}) Slot32_1451bc[count];
+    pool->storage = slots;
+    pool->stride = sizeof(Slot32_1451bc);
+    pool->ptr = slots;
+    pool->count = count;
+    pool->used = 0;
+    pool->free = count;
+    Slot32_1451bc* slot = slots;
+    for (unsigned int i = 0; i < count; i++) {
+        slot->next = i + 1;
+        slot++;
+    }
+}
+
+static inline void init_pair_1451bc(Pool_1451bc* pool, unsigned int count) {
+    unsigned int half = count * sizeof(int);
+    int* storage = reinterpret_cast<int*>(new (HeapTag_1451bc{}) Pair8_1451bc[count]);
+    pool->storage = storage;
+    pool->stride = half;
+    pool->ptr = storage;
+    pool->count = 2;
+    pool->used = 0;
+    pool->free = 2;
+    storage[0] = 1;
+    *reinterpret_cast<int*>(reinterpret_cast<unsigned char*>(storage) + half) = 2;
+}
+
+class Obj1451bc {
+public:
+    Obj1451bc();                                                            // 0x71001451bc
+
+    Elem132aec items[0xf6];          // +0
+    Elem13ea74 entries[0x12c];       // +114c0
+    Elem15aa9c* elems;               // +240c0
+    Elem13bce4 groups[24];           // +240c8
+    Part13e2b4 part2d608;            // +2d608
+    Part14a7dc part2d660;            // +2d660
+    Part13dd18 part32230;            // +32230
+    Part146f30 part37230;            // +37230
+    Part157d68 part38160;            // +38160
+    Part154468 part38188;            // +38188
+    Part135e00 part38198;            // +38198
+    Part140b9c part381b0;            // +381b0
+    Part15e580 part381b8;            // +381b8
+    int* values;                     // +381c0
+    List0_1451bc list381c8;          // +381c8
+    Pool_1451bc slots;               // +381f0
+    Pool_1451bc pair38210;           // +38210
+    Pool_1451bc pair38230;           // +38230
+    Pool_1451bc pair38250;           // +38250
+};
+static_assert(__builtin_offsetof(Obj1451bc, entries) == 0x114c0, "114c0");
+static_assert(__builtin_offsetof(Obj1451bc, groups) == 0x240c8, "240c8");
+static_assert(__builtin_offsetof(Obj1451bc, part2d608) == 0x2d608, "2d608");
+static_assert(__builtin_offsetof(Obj1451bc, part2d660) == 0x2d660, "2d660");
+static_assert(__builtin_offsetof(Obj1451bc, part32230) == 0x32230, "32230");
+static_assert(__builtin_offsetof(Obj1451bc, part37230) == 0x37230, "37230");
+static_assert(__builtin_offsetof(Obj1451bc, part38160) == 0x38160, "38160");
+static_assert(__builtin_offsetof(Obj1451bc, part381b8) == 0x381b8, "381b8");
+static_assert(__builtin_offsetof(Obj1451bc, values) == 0x381c0, "381c0");
+static_assert(__builtin_offsetof(Obj1451bc, slots) == 0x381f0, "381f0");
+static_assert(__builtin_offsetof(Obj1451bc, pair38250) == 0x38250, "38250");
+
+// 0x71001451bc: a constructor: member arrays built by their element constructors, five lists zeroed by their own
+// constructors, then storage from the default heap; the heap takes the byte count as 32 bits, the last two arrays
+// come from a clearing allocator (one memset over the full size before the element constructors), and the pair
+// lists are arrays of 8-byte pairs so the byte count stays one shift of the halved count
+Obj1451bc::Obj1451bc() {
+    init_slots_1451bc(&slots, callee_170c58() + 10);
+    init_pair_1451bc(&pair38210, static_cast<unsigned int>(callee_170c58()) >> 1);
+    init_pair_1451bc(&pair38230, static_cast<unsigned int>(callee_170c58()) >> 1);
+    init_pair_1451bc(&pair38250, callee_170c58());
+    unsigned int count = callee_170c58();
+    elems = new (ZeroHeapTag_1451bc{}) Elem15aa9c[count];
+    values = new (ZeroHeapTag_1451bc{}) int[count];
+}
