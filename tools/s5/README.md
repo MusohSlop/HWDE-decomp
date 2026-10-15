@@ -18,6 +18,16 @@ Run them with the project's Python, `python -B -I tools/s5/SCRIPT ...`, from `ma
   combination of a template's `{KEY}` options (`\n` for a newline, `||` between options that contain `|`) and
   prints each variant's abstract and exact instruction diffs and word diffs, best last; stops at a match
   (`build/s5/var/match.cpp`). Like s3's permtry.py, but it ranks all variants instead of stopping silently.
+- `vspec.py SPEC.py [--show K] [--keep] [--lev]` is `variants_cpp.py` driven by a Python spec file (BASE, ADDR, SYM,
+  MAPS and SLOTS as `(old_text, [options])` pairs), so options can hold any text, `||` included; prints each
+  combination's abstract, exact and word diffs and size, best last, and stops at a match (`WORK/match.cpp`).
+  Placeholder names resolve as in sbs.py. `--lev` ranks by edit distance (below).
+- `lev.py CPP ADDR SYM [--map ...] [--sbs [--regs]]` prints the edit distances (abstract and exact) between a scratch
+  function and the original; `sbs.py --lev` prints them too and aligns the side-by-side by edit distance. difflib's
+  longest-block matching (the counts of sbs.py and the variant tools) can pair a block with its duplicate elsewhere
+  in the function and then count a whole region as changed (`5efb3c`: two copies of an inlined command block; one
+  correct change moved difflib's count from 121 to 348 while the edit distance went down). Use the edit distance on
+  functions with repeated inline code.
 - `ranges.py CPP|LL FUNC` prints the live ranges as the greedy allocator sees them (after the pre-RA scheduler):
   each virtual register's first definition, last use and length in instructions, the ranges allocated first
   (spanning blocks, or longer than 64 instructions for FPR128/GPR64: longest first, ties to the lower vreg) and the
@@ -214,3 +224,47 @@ Each with the functions it fixed; three or more make it a generator note.
   helper's reference parameters are turned into values by ArgumentPromotion, and InstCombine puts the argument
   (less complex) on the right; write the test in the caller (or in a non-static inline function). The last load
   of a block in IR order takes the pre-indexed base (`ldr s0, [x22, #0x70]!`). `4f09dc` (parked, x4).
+- A chain of range tests (`x > -E && x < E && ... && z < E`) where the original keeps every compare a branch except
+  the last, which is a `cset` tested later with `cbnz`: a helper returning `int` with early returns (`if (!(...))
+  return 0; ... return z < E;`). The last compare's zext then sits in its own block with the compare, so SimplifyCFG
+  cannot speculate it into an `and` (a `bool` helper, a `&&` chain or per-pair helpers all fold the last pair into
+  `cset; cset; and`). `4eab78` (15 -> 10, parked).
+- A frame transform whose products keep the frame element first (`fmul s2, s2, s16`) after one `fneg` of the first
+  term: the negated components added (`f->x.x * -v.x + f->y.x * -v.y + f->z.x * -v.z`); InstCombine folds the
+  later negations into `fsub`s and keeps the frame element on the left (written as `-v.x * f.x - v.y * f.y ...`,
+  Reassociate's rank order puts `v` first). `4eab78`.
+- An 8-byte field loaded once (`ldr x8`) and stored as two words (`str w8; lsr x8, x8, #0x20; str w8`): a small
+  setter taking the value by value, with a type that is not an HFA (the engine's 2D vector is a union; a
+  `{u32, u32}` struct), storing the halves; a struct assignment gives one `str x`, field reads give two `ldr w`.
+  `5efb3c` (three setters).
+- A command block copied into a local in pieces (`memcpy` of 0x3a bytes from +2, scalar loads spilled, two 0x34-byte
+  `memcpy`s, one 8-byte load) after the flags were stored (`sturh` before the first `memcpy`): store the
+  (volatile) flags first, then `memcpy` the rest of the struct in one call; SROA splits the copy at the boundaries
+  of the later uses of the local (whole-struct assignment to the current block, the per-field partial updates).
+  The volatile flags stay in memory, which gives the `ldurh` before every bit test. `5efb3c`.
+- A float range check that fails with `b.mi` and `b.ge` (NaN passes): `if (f < 0.0f || f >= 1.0f) fail;`
+  (`!(f >= 0) || !(f < 1)` gives `b.lt`/`b.pl`). `5efb3c`.
+- A loop with a 64-bit index for its addresses (`add x8, x19, x22, lsl #3`) but a 32-bit signed exit compare
+  (`cmp w22, w8; b.lt`): an `unsigned long` index tested as `(int)i < (int)count`. With `int i` IndVars widens the
+  compare too (`cmp x22, w8, sxtw`); with `unsigned int i` it does not widen the index at all. A test of the zero-
+  extended count against the index with the count first (`mov w9, w8; cmp x9, x22; b.ls`) is written `count > i`
+  (InstCombine would put a cast second, but this compare is widened after it). `5efb3c`.
+- A loop that adds a whole 64-bit load (`ldr x21, [sp, #0x48]`: a u32 stride and the next field) to an offset kept
+  in a 64-bit register, used as `w25, uxtw`: the offset is not a variable in source but `stride * (unsigned)i`,
+  which LSR turns into that accumulator; an explicit `unsigned` accumulator makes the DAG split the widened load into
+  two `ldr w`, and an `unsigned long` one keeps an `and #0xffffffff`. `5efb3c`.
+- An invariant product computed after a loop's count test (`cbz w8; ldr s1, [cf4]; fmul s9, s0, s1`) although it is
+  only used inside: compute it before the loop in source; MachineSink moves it past the test. Written inside the
+  loop body, the load stays in the loop (the call may change it). `5efb3c`.
+- Two call arguments built in stack slots that the original puts at the same offset (the direction for one call
+  and the point for the next, both at sp+0x50): pass them as temporaries to `const T&` parameters
+  (`shape.support(vec4(-v.x, -v.y, -v.z, 0.0f), nullptr)`); a temporary's lifetime ends with its full expression,
+  so stack colouring can give both one slot. A named local, even in a block scope, kept the second one elsewhere.
+  `4eab78` (x6; 9/36 -> 7/34 by edit distance, also fixed a `bfi`'s place).
+- A min/max scan whose `fcsel` for the first value sits between the products of the second (`fcmp s2, s1; ldp; fmul;
+  fmul; fcsel s1, ...`): compute both values before either update (`da = ...; db = ...; if (da < lo) ...; if (db >
+  hi) ...`). `4eab78` (x6, 13/75 -> 9/36 with the block-scoped slot above).
+- A diamond `if (c) v = a + b; else v = a;` where the original adds a first (`ldp q1, q0; fadd v0, v0, v1`) without
+  hoisting: after SROA every whole load of the non-promoted `a` is the same `load i128`, so a then-block that starts
+  with it is hoisted by SimplifyCFG (and the diamond becomes a select, `bsl`); a then-block that loads b first
+  stays a diamond, but Reassociate then orders the `fadd` by load rank (b first). Not solved; `4eab78`.

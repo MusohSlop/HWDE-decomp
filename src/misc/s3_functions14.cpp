@@ -409,3 +409,55 @@ Table533118::Table533118(int count_) : value8(0), p10(nullptr) {
     count = count_;
     memset(p, 0, count_ * sizeof(Item533118));
 }
+
+// A reference-counted object destroyed through its vtable when the last reference goes.
+class SharedObj {
+public:
+    virtual void v00();
+    virtual void v08();
+    virtual void v10();
+    virtual void destroy();      // +18
+
+    int refs;                    // +08
+};
+
+struct Item556720 {
+    void release();              // 0x7100556720
+    unsigned char data[0x40];
+};
+
+class Base53e840 {
+public:
+    virtual ~Base53e840();       // 0x710053e840
+    unsigned char pad8[0x168];
+};
+
+// 0x7100554bbc (D2): vtable GOT 0x7100c2d3b0; its items released unless closed (an unsigned index), then its shared
+// object, read once into a local, released under the object manager's lock.
+class Owner554bbc : public Base53e840 {
+public:
+    virtual void anchor();
+    ~Owner554bbc();
+
+    Item556720* items;           // +170
+    unsigned int count;          // +178
+    unsigned char pad17c[0x4];
+    SharedObj* shared;           // +180
+    unsigned char pad188[0x260];
+    bool closed;                 // +3e8
+};
+
+Owner554bbc::~Owner554bbc() {
+    if (!closed) {
+        for (unsigned int i = 0; i < count; i++)
+            items[i].release();
+    }
+    if (SharedObj* obj = shared) {
+        nn::os::LockMutex(manager_mutex());
+        int refs = --obj->refs;
+        nn::os::UnlockMutex(manager_mutex());
+        if (refs == 0)
+            obj->destroy();
+        shared = nullptr;
+    }
+}

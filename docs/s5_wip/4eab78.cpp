@@ -1,24 +1,33 @@
-// Fifth session, in progress: 0x71004eab78 (1,524 bytes), the first of the vector six (4eab78 4ebc2c 4eccf0 4eddb4
+// Fifth session, parked: 0x71004eab78 (1,524 bytes), the first of the vector six (4eab78 4ebc2c 4eccf0 4eddb4
 // 4eee68 4e9984: one template over the shape at +20, 0x20/0x30/0x30/0x40/0x70/0x50 bytes, with its support and
 // closest callees; 4eee68's closest takes an extra null argument). It sums the entries' edge vectors and their
 // normals weighted by edge length, normalises both unless near zero (|c| < 0.0011920929 per component), picks the
 // normal sum or both (dot < 0.3), projects every entry on that direction (min of a, max of b, the best entry's b
 // becomes pos), then sets result from the shape's support and closest points (dot < 0.3) or by the projection,
-// and writes the frame-based direction to out, normalised. This draft is 15 instructions off abstracted (1,532 B).
+// and writes the frame-based direction to out, normalised. This draft is 7 instructions off abstracted, 34 exact
+// by edit distance (tools/s5/lev.py; 1,520 B), the same for all six copies (4eee68: 5 abstracted).
 // Settled (each measured): the engine vector is a union (by value it travels as two 64-bit integers); the sums
 // zeroed as two longs and kept in memory (the alternate pick takes their address); the sums, the near tests and
-// the pick of v in their own block scope (their slots are reused by dir and q, which gives the 0xd0 frame); the
-// alternate copied as a vector (v.v = alt.v: SROA only vector-promotes v when one access covers it as a vector;
-// with the memcpy form v is split into 32-bit pieces and lives in integer registers); operator+ takes its left side
-// by reference and its right side by value (the pick loads both sums as vectors, only the result goes through
-// x9/x8); the pick tested as !(dot < 0.3) is fine either way; the output's frame transform computed into locals
-// and stored after (78 -> 53 alone).
-// Still off: the near-zero tests of the sums (the original keeps the five compares as branches and the last as a
-// cset; ours folds the y and z pairs into and/cset values: per-pair helpers fold inside the helper, a flat chain
-// folds the last four, and early if-conversion turns the rest into csets; 27 off with either), the order of the
-// two products in the b projection, the zero of best before the count test, the dir build (bfi) and q's slot,
-// and the out near tests (x, z with +E first, y).
-// Maps: --map "_ZNK12Sphere4eab787supportEPK5Vec4uPv=0x7100506264" --map "_ZNK12Sphere4eab787closestEPK5Vec4u=0x7100506284"
+// the pick of v in their own block scope; the alternate copied as a vector (v.v = alt.v); operator+ takes its left
+// side by reference and its right side by value; the output's frame transform computed into locals and stored after.
+// Second pass: the sums' near-zero flags come from an int helper with early returns (nz3: the last compare is the
+// returned value, zext'd in its own block, so SimplifyCFG cannot speculate it into an and; the flag is an int, so
+// it is tested with cbnz); the out test is x, then z with +E first, then y; the frame transform is written with the
+// negated components added (InstCombine folds the y and z negations into fsubs and keeps the frame element
+// first); sum_a's update is (e.b - e.a) + sum_a.
+// Third pass (13/75 -> 7/34): support and closest take their vector by const reference and get temporaries, so
+// each slot's lifetime ends with its call and both reuse sum_b's slot (q at sp+0x50; this also puts the dir build's
+// bfi in place); the projection loop computes both dot products before the min update (the min fcsel then sits
+// between the b products as in the original, and v lands in v5).
+// Still off: the pick's fadd takes sum_a first (ldp q0, q1 against the original's ldp q1, q0): the then block must
+// not start with sum_b's load (after SROA it is the same load i128 as the else block's copy, SimplifyCFG hoists it
+// and the pick becomes a select, a bsl), but when sum_a is loaded first Reassociate puts the earlier load on the
+// left; the zero of best is materialised once above the count test (the original has it in the preheader and on
+// the empty path); d = p - pos and t's products have v0 and v1 swapped and the x product first; the out branch's
+// post-indexed store of the difference comes before the lane moves; the out normalisation's y square in s2
+// instead of s3. Tried without effect: the index and best as long, count copied to a local, count > i, the out
+// difference through a local, the dot product through a helper.
+// Maps: --map "_ZNK12Sphere4eab787supportERK5Vec4uPv=0x7100506264" --map "_ZNK12Sphere4eab787closestERK5Vec4u=0x7100506284"
 //   --map sqrtf=0x71006008a0 --name _ZN9Fit4eab786updateEP5Vec4u
 #include <arm_neon.h>
 
@@ -95,8 +104,8 @@ struct Sphere4eab78 {
     float radius;                     // +10
     unsigned char pad14[0xc];
 
-    Vec4u support(const Vec4u* dir, void* extra) const;        // 0x7100506264
-    Vec4u closest(const Vec4u* point) const;                   // 0x7100506284
+    Vec4u support(const Vec4u& dir, void* extra) const;        // 0x7100506264
+    Vec4u closest(const Vec4u& point) const;                   // 0x7100506284
 };
 
 static inline bool near_zero(float f) {
@@ -118,6 +127,12 @@ static inline Vec4u normalized3(Vec4u v) {
 }
 static inline bool near_zero3(const Vec4u& v) {
     return near_zero(v.x) && near_zero(v.y) && near_zero(v.z);
+}
+static inline int nz3(const Vec4u& v) {
+    if (!(v.x > -0.0011920929f && v.x < 0.0011920929f)) return 0;
+    if (!(v.y > -0.0011920929f && v.y < 0.0011920929f)) return 0;
+    if (!(v.z > -0.0011920929f)) return 0;
+    return v.z < 0.0011920929f;
 }
 
 static inline float length3(const Vec4u& v) {
@@ -153,10 +168,10 @@ bool Fit4eab78::update(Vec4u* out) {
     for (unsigned long i = 0; i < count; i++) {
         FitEntry& e = entries[i];
         sum_b = sum_b + to_vec4(e.n) * length3(e.b - e.a);
-        sum_a = sum_a + (e.b - e.a);
+        sum_a = (e.b - e.a) + sum_a;
     }
-    bool zero_b = near_zero3(sum_b);
-    bool zero_a = near_zero3(sum_a);
+    int zero_b = nz3(sum_b);
+    int zero_a = nz3(sum_a);
     if (!zero_b) {
         float inv = 1.0f / length3(sum_b);
         sum_b.x = sum_b.x * inv;
@@ -193,10 +208,10 @@ bool Fit4eab78::update(Vec4u* out) {
     for (unsigned long i = 0; i < count; i++) {
         FitEntry& e = entries[i];
         float da = v.x * e.a.x + v.y * e.a.y + v.z * e.a.z;
+        float db = v.x * e.b.x + v.y * e.b.y + v.z * e.b.z;
         if (da < lo) {
             lo = da;
         }
-        float db = v.x * e.b.x + v.y * e.b.y + v.z * e.b.z;
         if (db > hi) {
             hi = db;
             best = i;
@@ -204,23 +219,21 @@ bool Fit4eab78::update(Vec4u* out) {
     }
     pos = entries[best].b;
     if (dot < 0.3f) {
-        Vec4u dir = vec4(-v.x, -v.y, -v.z, 0.0f);
-        Vec4u p = shape.support(&dir, nullptr);
+        Vec4u p = shape.support(vec4(-v.x, -v.y, -v.z, 0.0f), nullptr);
         Vec4u d = p - pos;
         float t = v.x * d.x + v.y * d.y + v.z * d.z;
-        Vec4u q = pos + v * t;
-        result = shape.closest(&q);
+        result = shape.closest(pos + v * t);
     } else {
         result = v * (lo - hi) + pos;
     }
     if (out != nullptr) {
-        if (near_zero(v.x) && near_zero(v.z) && near_zero(v.y)) {
+        if (near_zero(v.x) && v.z < 0.0011920929f && v.z > -0.0011920929f && near_zero(v.y)) {
             *out = to_vec4(frame->t) - pos;
         } else {
             Frame4eab78* f = frame;
-            float ox = -v.x * f->x.x - v.y * f->y.x - v.z * f->z.x;
-            float oy = -v.x * f->x.y - v.y * f->y.y - v.z * f->z.y;
-            float oz = -v.x * f->x.z - v.y * f->y.z - v.z * f->z.z;
+            float ox = f->x.x * -v.x + f->y.x * -v.y + f->z.x * -v.z;
+            float oy = f->x.y * -v.x + f->y.y * -v.y + f->z.y * -v.z;
+            float oz = f->x.z * -v.x + f->y.z * -v.y + f->z.z * -v.z;
             out->x = ox;
             out->y = oy;
             out->z = oz;

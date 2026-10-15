@@ -21136,7 +21136,341 @@
     "_Z13callee_37dd20Pvii": "0x710037dd20",
     "_Z13callee_46137cPvS_": "0x710046137c",
     "_Z11callee_8824PvS_l": "0x7100008824",
-    "_Z13callee_2d7e9cPvi": "0x71002d7e9c"
+    "_Z13callee_2d7e9cPvi": "0x71002d7e9c",
+    "gLocal73ccfc_115a14": "0x710073ccfc",
+    "gLocal73cd04_115a14": "0x710073cd04",
+    "gLocal73cd0c_115a14": "0x710073cd0c",
+    "gLocal73cd14_115a14": "0x710073cd14",
+    "gLocal7d8509_2ddbc0": "0x71007d8509",
+    "gLocal7e1f90_115a14": "0x71007e1f90",
+    "gLocal7f7f3c_289874": "0x71007f7f3c",
+    "gLocal7f8090_289874": "0x71007f8090",
+    "gLocalc47f08_1dbb68": "0x7100c47f08",
+    "gLocalc47f08_1dbbe8": "0x7100c47f08",
+    "gLocalc47f10_1dd140": "0x7100c47f10",
+    "got:gGlobalc21690_222ea8": "0x7100c21690",
+    "got:gGlobalc21690_222f60": "0x7100c21690",
+    "got:gGlobalc21690_2230b4": "0x7100c21690",
+    "got:gGlobalc21690_223418": "0x7100c21690",
+    "got:gGlobalc21690_7563c": "0x7100c21690",
+    "got:gGlobalc21690_81294": "0x7100c21690",
+    "got:gGlobalc21690_c0ba8": "0x7100c21690",
+    "got:gGlobalc21698_13a4d4": "0x7100c21698",
+    "got:gGlobalc21698_1a8158": "0x7100c21698",
+    "got:gGlobalc21698_1ba6a8": "0x7100c21698",
+    "got:gGlobalc21698_e09b4": "0x7100c21698",
+    "got:gGlobalc216e8_13caf8": "0x7100c216e8",
+    "got:gGlobalc216e8_155678": "0x7100c216e8",
+    "got:gGlobalc216e8_16ab4c": "0x7100c216e8",
+    "got:gGlobalc216e8_16b1f8": "0x7100c216e8",
+    "got:gGlobalc216e8_16b424": "0x7100c216e8",
+    "got:gGlobalc216e8_16b4b4": "0x7100c216e8",
+    "got:gGlobalc216e8_173bc0": "0x7100c216e8",
+    "got:gGlobalc216e8_193490": "0x7100c216e8",
+    "got:gGlobalc216e8_1949b8": "0x7100c216e8",
+    "got:gGlobalc216e8_194a64": "0x7100c216e8",
+    "got:gGlobalc216e8_197b44": "0x7100c216e8",
+    "got:gGlobalc216e8_197e90": "0x7100c216e8",
+    "got:gGlobalc216e8_1a7458": "0x7100c216e8",
+    "got:gGlobalc216e8_1a8158": "0x7100c216e8",
+    "got:gGlobalc216e8_1a92a0": "0x7100c216e8",
+    "got:gGlobalc216e8_1acb14": "0x7100c216e8",
+    "got:gGlobalc216e8_1b559c": "0x7100c216e8",
+    "got:gGlobalc216e8_1ba6a8": "0x7100c216e8",
+    "got:gGlobalc216e8_1ce720": "0x7100c216e8",
+    "got:gGlobalc216e8_6be0": "0x7100c216e8",
+    "got:gGlobalc216e8_e09b4": "0x7100c216e8",
+    "got:gGlobalc216f8_193624": "0x7100c216f8",
+    "got:gGlobalc216f8_c0ba8": "0x7100c216f8",
+    "got:gGlobalc21708_245bc8": "0x7100c21708",
+    "got:gGlobalc21758_245bc8": "0x7100c21758",
+    "got:gGlobalc21d40_1deb4c": "0x7100c21d40",
+    "got:gGlobalc21d40_1ded64": "0x7100c21d40",
+    "got:gGlobalc21d40_1def50": "0x7100c21d40",
+    "got:gGlobalc21d40_1df040": "0x7100c21d40",
+    "got:gGlobalc21d40_222ea8": "0x7100c21d40",
+    "got:gGlobalc21d40_222f60": "0x7100c21d40",
+    "got:gGlobalc21d40_2230b4": "0x7100c21d40",
+    "got:gGlobalc21d40_223418": "0x7100c21d40",
+    "got:gGlobalc21d58_173bc0": "0x7100c21d58",
+    "got:gGlobalc21db0_1deb4c": "0x7100c21db0",
+    "got:gGlobalc21db0_1e4b64": "0x7100c21db0",
+    "got:gGlobalc21db0_2ddbc0": "0x7100c21db0",
+    "got:gGlobalc21df8_173bc0": "0x7100c21df8",
+    "got:gGlobalc22088_64f58": "0x7100c22088",
+    "got:gGlobalc22a00_2ddbc0": "0x7100c22a00",
+    "got:gGlobalc22a10_115a14": "0x7100c22a10",
+    "got:gGlobalc22a60_1a7098": "0x7100c22a60",
+    "got:gGlobalc22bc8_115a14": "0x7100c22bc8",
+    "got:gGlobalc22bd8_13658c": "0x7100c22bd8",
+    "got:gGlobalc22bd8_13a4d4": "0x7100c22bd8",
+    "got:gGlobalc22bd8_13caf8": "0x7100c22bd8",
+    "got:gGlobalc22bd8_141700": "0x7100c22bd8",
+    "got:gGlobalc22bd8_155678": "0x7100c22bd8",
+    "got:gGlobalc22bd8_16ab4c": "0x7100c22bd8",
+    "got:gGlobalc22bd8_16b1f8": "0x7100c22bd8",
+    "got:gGlobalc22bd8_173bc0": "0x7100c22bd8",
+    "got:gGlobalc22bd8_1a8158": "0x7100c22bd8",
+    "got:gGlobalc22bd8_e09b4": "0x7100c22bd8",
+    "got:gGlobalc22be8_1a7098": "0x7100c22be8",
+    "got:gGlobalc22c40_19ab98": "0x7100c22c40",
+    "got:gGlobalc22ca8_1ba6a8": "0x7100c22ca8",
+    "got:gGlobalc22d30_1a8158": "0x7100c22d30",
+    "got:gGlobalc22d50_1a8158": "0x7100c22d50",
+    "got:gGlobalc22d90_1a8158": "0x7100c22d90",
+    "got:gGlobalc22f08_1deb4c": "0x7100c22f08",
+    "got:gGlobalc2a650_289874": "0x7100c2a650",
+    "got:gGlobalc2aea0_337f18": "0x7100c2aea0",
+    "got:gGlobalc2af70_358e8c": "0x7100c2af70",
+    "got:gGlobalc2af78_358e8c": "0x7100c2af78",
+    "got:gGlobalc2af80_358e8c": "0x7100c2af80",
+    "got:gGlobalc2af88_358e8c": "0x7100c2af88",
+    "got:gGlobalc2af90_358e8c": "0x7100c2af90",
+    "got:gGlobalc2af98_358e8c": "0x7100c2af98",
+    "_Z11callee_c98cv": "0x710000c98c",
+    "_Z12callee_36764Pvi": "0x7100036764",
+    "_Z12callee_36764Pvl": "0x7100036764",
+    "_Z12callee_3db5ci": "0x710003db5c",
+    "_Z12callee_4908cliii": "0x710004908c",
+    "_Z12callee_6b288Pvii": "0x710006b288",
+    "_Z12callee_f2978Pvff": "0x71000f2978",
+    "_Z13callee_114290Pvff": "0x7100114290",
+    "_Z13callee_133250lhi": "0x7100133250",
+    "_Z13callee_1336b8l": "0x71001336b8",
+    "_Z13callee_133758l": "0x7100133758",
+    "_Z13callee_1338d0l": "0x71001338d0",
+    "_Z13callee_133980l": "0x7100133980",
+    "_Z13callee_133a30l": "0x7100133a30",
+    "_Z13callee_133d08l": "0x7100133d08",
+    "_Z13callee_1353ccl": "0x71001353cc",
+    "_Z13callee_135400l": "0x7100135400",
+    "_Z13callee_135698Pvl": "0x7100135698",
+    "_Z13callee_13a64cPv": "0x710013a64c",
+    "_Z13callee_13e3f0lib": "0x710013e3f0",
+    "_Z13callee_13ff10l": "0x710013ff10",
+    "_Z13callee_13ff4cl": "0x710013ff4c",
+    "_Z13callee_13ff88l": "0x710013ff88",
+    "_Z13callee_1460bcPv": "0x71001460bc",
+    "_Z13callee_16ab4cilif": "0x710016ab4c",
+    "_Z13callee_16b424i": "0x710016b424",
+    "_Z13callee_16f354Pvi": "0x710016f354",
+    "_Z13callee_171caci": "0x7100171cac",
+    "_Z13callee_171fe8Pv": "0x7100171fe8",
+    "_Z13callee_173b38l": "0x7100173b38",
+    "_Z13callee_1776b8i": "0x71001776b8",
+    "_Z13callee_17792cPviff": "0x710017792c",
+    "_Z13callee_18a2b4Pv": "0x710018a2b4",
+    "_Z13callee_18deb8Pv": "0x710018deb8",
+    "_Z13callee_18ed70Pvi": "0x710018ed70",
+    "_Z13callee_190f44iiii": "0x7100190f44",
+    "_Z13callee_194850lf": "0x7100194850",
+    "_Z13callee_1948d0lf": "0x71001948d0",
+    "_Z13callee_194900l": "0x7100194900",
+    "_Z13callee_194d88Pvlf": "0x7100194d88",
+    "_Z13callee_196190li": "0x7100196190",
+    "_Z13callee_199c34li": "0x7100199c34",
+    "_Z13callee_19ba20Pv": "0x710019ba20",
+    "_Z13callee_19ba3cPv": "0x710019ba3c",
+    "_Z13callee_19baf4Pvi": "0x710019baf4",
+    "_Z13callee_1a3990Pvh": "0x71001a3990",
+    "_Z13callee_1a3990Pvi": "0x71001a3990",
+    "_Z13callee_1a3e1cPv": "0x71001a3e1c",
+    "_Z13callee_1a78d4ili": "0x71001a78d4",
+    "_Z13callee_1a8d54ii": "0x71001a8d54",
+    "_Z13callee_1ae60cPviDv4_fS0_": "0x71001ae60c",
+    "_Z13callee_1af038iiPvf": "0x71001af038",
+    "_Z13callee_1af308i": "0x71001af308",
+    "_Z13callee_1b0310l": "0x71001b0310",
+    "_Z13callee_1cbd60Pvi": "0x71001cbd60",
+    "_Z13callee_1d3c70i": "0x71001d3c70",
+    "_Z13callee_1db7fcl": "0x71001db7fc",
+    "_Z13callee_1db820v": "0x71001db820",
+    "_Z13callee_1dbbc0i": "0x71001dbbc0",
+    "_Z13callee_1effa8lPvS_S_S_fff": "0x71001effa8",
+    "_Z13callee_1fb5f8Pv": "0x71001fb5f8",
+    "_Z13callee_20fed8i": "0x710020fed8",
+    "_Z13callee_20ff88i": "0x710020ff88",
+    "_Z13callee_210250i": "0x7100210250",
+    "_Z13callee_211504i": "0x7100211504",
+    "_Z13callee_2237d8Pv": "0x71002237d8",
+    "_Z13callee_241fd8Pv": "0x7100241fd8",
+    "_Z13callee_241ff0Pv": "0x7100241ff0",
+    "_Z13callee_256c64i": "0x7100256c64",
+    "_Z13callee_2589d0v": "0x71002589d0",
+    "_Z13callee_25984cv": "0x710025984c",
+    "_Z13callee_272534v": "0x7100272534",
+    "_Z13callee_283d74Pvi": "0x7100283d74",
+    "_Z13callee_28a004Pvi": "0x710028a004",
+    "_Z13callee_30179clPv": "0x710030179c",
+    "_Z13callee_3028d4lPv": "0x71003028d4",
+    "_Z13callee_336750i": "0x7100336750",
+    "_Z13callee_35d968lPv": "0x710035d968",
+    "_Z13callee_37a624l": "0x710037a624",
+    "_Z13callee_3f50ccPv": "0x71003f50cc",
+    "_Z13callee_3f5ea4i": "0x71003f5ea4",
+    "_Z13callee_3fa5a0i": "0x71003fa5a0",
+    "_Z13callee_4520e4i": "0x71004520e4",
+    "_Z13callee_4582a4i": "0x71004582a4",
+    "_Z13callee_459d10v": "0x7100459d10",
+    "_Z13callee_518028PvS_m": "0x7100518028",
+    "_Z13callee_51c86cPviii": "0x710051c86c",
+    "_Z13callee_559b94Pv": "0x7100559b94",
+    "_Z11callee_c98cPv": "0x710000c98c",
+    "_Z13callee_1948d0Pvf": "0x71001948d0",
+    "_Z13callee_37a624Pv": "0x710037a624",
+    "got:_ZTV12Screen2d14dc": "0x7100c2aaa0",
+    "_ZN10Base3c7188C2Ev": "0x71003c7188",
+    "got:_ZTV12Screen2cfc60": "0x7100c2aa98",
+    "got:_ZTV9Mid2cfc60": "0x7100c2aa68",
+    "_ZN10Tail2cf74cC1Ev": "0x71002cf74c",
+    "kMid2cfc60Name": "0x71007d82d4",
+    "kMid2cec6cName": "0x71007d81bd",
+    "got:_ZTV12Screen2cec6c": "0x7100c2aa90",
+    "got:_ZTV12Screen2ce7bc": "0x7100c2aa88",
+    "got:_ZTV12Screen313038": "0x7100c2ad78",
+    "got:_ZTV10NodeHolder": "0x7100c2ad48",
+    "got:_ZTV9CueHolder": "0x7100c2ad68",
+    "_Z9heap_noteP13EffectManagerPvi": "0x71002925c8",
+    "_ZN10Part2fb9f0D1Ev": "0x71002fb9f0",
+    "_ZN10Part304788D1Ev": "0x7100304788",
+    "_ZN10Part333318D1Ev": "0x7100333318",
+    "_ZN10Part327344D1Ev": "0x7100327344",
+    "_ZN10Part3192f0D1Ev": "0x71003192f0",
+    "_ZN10Part310454D1Ev": "0x7100310454",
+    "_ZN10Part3843f0D1Ev": "0x71003843f0",
+    "got:_ZTV15PanelBase2defc0": "0x7100c2abb0",
+    "got:_ZTV11Panel2e8c64": "0x7100c2abe0",
+    "_ZN14SlotPool2dee48C1Ev": "0x71002dee48",
+    "_ZN10Part287efcC1Ev": "0x7100287efc",
+    "_ZN10Part2dd3d4C1Ei": "0x71002dd3d4",
+    "_ZN10Part379e44C1Ev": "0x7100379e44",
+    "_ZN12Base3e82b0_8C2Ev": "0x71003e82b0",
+    "got:_ZTV11Class3edc2c": "0x7100c2b6d0",
+    "got:_ZTV11Owner554bbc": "0x7100c2d3b0",
+    "_ZN10Item5567207releaseEv": "0x7100556720",
+    "_ZN10Base53e840D2Ev": "0x710053e840",
+    "got:_ZTV12Screen383fbc": "0x7100c2b110",
+    "_ZN10Part382488C1Ev": "0x7100382488",
+    "_ZN10Part3830dcC1Ev": "0x71003830dc",
+    "_ZN13Base316a64_40C2Ev": "0x7100316a64",
+    "_ZN9Obj31ce68C1Ev": "0x710031ce68",
+    "_ZN9Obj37a514C1Ev": "0x710037a514",
+    "got:_ZTV11Class2dbe5c": "0x7100c2ab98",
+    "got:_ZTV11Class31a1e0": "0x7100c2adf8",
+    "got:_ZTV12Screen333d20": "0x7100c2ae50",
+    "_ZN10Part333708C1Ev": "0x7100333708",
+    "_ZN10Part30ddf8C1Ev": "0x710030ddf8",
+    "_ZN10Part32d8f0C1Ev": "0x710032d8f0",
+    "_ZN10Part31a1e0C1Ev": "0x710031a1e0",
+    "_ZN10Part31d204C1Ev": "0x710031d204",
+    "_ZN10Part311824C1Ev": "0x7100311824",
+    "_ZN10Part332198C1Ev": "0x7100332198",
+    "_ZN10Part316b64C1Ev": "0x7100316b64",
+    "_ZN10Part316b646attachEPv": "0x7100316e80",
+    "_ZN10Part316b648set_modeEi": "0x7100316e78",
+    "_ZN10Part300058C1Ev": "0x7100300058",
+    "_ZN10Part336774C1Ev": "0x7100336774",
+    "got:gGlobalc216a8_36c80": "0x7100c216a8",
+    "got:gGlobalc216f8_36c80": "0x7100c216f8",
+    "got:gGlobalc21dc0_36c80": "0x7100c21dc0",
+    "got:gGlobalc2a7e0_27c198": "0x7100c2a7e0",
+    "got:gGlobalc2cce8_4c8b04": "0x7100c2cce8",
+    "got:gGlobalc2cdb0_4c8b04": "0x7100c2cdb0",
+    "_Z12callee_71730l": "0x7100071730",
+    "_Z13callee_4a3d34Pv": "0x71004a3d34",
+    "_Z13callee_4b24b4li": "0x71004b24b4",
+    "_ZN8Renderer5setupI10Kind3da0f4EEvP4ItemP9DrawState": "0x71003da6f8",
+    "_ZN7MatPart6hook_bEP6ShaderP5PartA": "0x71003d8788",
+    "_ZN9Kind3b64c6hook_aEP6ShaderP5PartA": "0x71000363ec",
+    "_ZN9Kind3b64c6hook_bEP6ShaderP5PartA": "0x710003659c",
+    "_ZN10Kind3d7f046hook_aEP6ShaderP5PartA": "0x710043c2a8",
+    "_ZN10Kind3d90786hook_aEP6ShaderP5PartA": "0x710043ca58",
+    "_ZN10Kind3d90786hook_bEP6ShaderP5PartA": "0x710043ca84",
+    "_ZN10Kind3da0f46hook_bEP6ShaderP5PartA": "0x71003daa1c",
+    "_Z13callee_58ce5cP9DrawStateP6DeviceP6Shader": "0x710058ce5c",
+    "_Z13callee_58d6dcP9DrawStateP6DeviceP6Shader": "0x710058d6dc",
+    "_Z13callee_58de98P9DrawStateP6DeviceP6Shader": "0x710058de98",
+    "kRupeeS_2b3574": "0x71007d7bc5",
+    "kRupeeL_2b3574": "0x71007d7bcd",
+    "kRecord_2b3574": "0x71007d7bba",
+    "kBonusS_2b3574": "0x71007d7ba2",
+    "kBonusL_2b3574": "0x71007d7bae",
+    "kRupee_2b3574": "0x7100740db7",
+    "kFont_2b3574": "0x71007d60c9",
+    "kPrime_2b3574": "0x71007d7bd5",
+    "kLayout_2b3574": "0x71007d7c5f",
+    "kGradeIn_2b3574": "0x71007d7c72",
+    "kGrade_2b3574": "0x71007d7c7b",
+    "_Z21set_pane_scale_1e4570Pvf": "0x71001e4570",
+    "_Z16find_part_1e3770P15LightEffectNodePKci": "0x71001e3770",
+    "got:gResourceSet": "0x7100c22a10",
+    "_Z15resource_11a81cP11ResourceSeti": "0x71000db39c",
+    "_ZN8SlotView4bindEPvS0_": "0x71001f0df4",
+    "_ZN9SceneView8set_viewEiii": "0x710037dd20",
+    "_ZN9SceneView4drawEPv": "0x710037f5f8",
+    "_ZN11Scene3311d011tick_singleEv": "0x71003312b8",
+    "_ZN11Scene3311d04tickEv": "0x71003315b8",
+    "_ZN11Scene39a9f411tick_singleEv": "0x710039aadc",
+    "_ZN11Scene39a9f44tickEv": "0x710039ae10",
+    "_ZN13MaterialEntry7stat_a1Ev": "0x71001ff92c",
+    "_ZN13MaterialEntry8stat_a99Ev": "0x71001ff934",
+    "_ZN13MaterialEntry9stat_a150Ev": "0x71001ff9b8",
+    "_ZN13MaterialEntry9stat_a200Ev": "0x71001ff9c0",
+    "_ZN13MaterialEntry9stat_a255Ev": "0x71001ff9c8",
+    "_ZN13MaterialEntry7stat_b1Ev": "0x71001ff93c",
+    "_ZN13MaterialEntry8stat_b99Ev": "0x71001ff944",
+    "_ZN13MaterialEntry9stat_b150Ev": "0x71001ff9d0",
+    "_ZN13MaterialEntry9stat_b200Ev": "0x71001ff9d8",
+    "_ZN13MaterialEntry9stat_b255Ev": "0x71001ff9e0",
+    "_ZN11RecordEntry7value_aEv": "0x7100210624",
+    "_ZN11RecordEntry7value_bEv": "0x7100210634",
+    "_ZN11RecordEntry4kindEv": "0x710021063c",
+    "_ZN10RecordBook5entryEi": "0x71002108dc",
+    "_ZN13ShaderProgram7uniformEPKc": "0x71005a3fac",
+    "_ZN11ShaderSetup4initEv": "0x710058ff40",
+    "kDarkenScale_2198fc": "0x710073ff56",
+    "kDarkenOffset_2198fc": "0x710073ff63",
+    "kRim_2198fc": "0x710073ff71",
+    "kRogiaThreshold_2229cc": "0x710073fefc",
+    "kRogiaTexThreshold_2229cc": "0x710073ff0c",
+    "fprintf": "0x7100600a70",
+    "abort": "0x7100600a80",
+    "_ZNSt11logic_errorC2EPKc": "0x7100600a50",
+    "_ZNKSt11logic_error4whatEv": "0x7100600a60",
+    "got:stderr": "0x7100c22f18",
+    "got:_ZTVSt12length_error": "0x7100c22f10",
+    "got:gPlaceTable": "0x7100c22bd8",
+    "_ZN9PlaceGrid4findEP4Vec4P10PlaceEntryi": "0x7100153cf4",
+    "_ZN9PlaceGrid4cellEPiS0_P4Vec4": "0x710014a8f0",
+    "_Z13area_has_gridi": "0x7100148fd8",
+    "_Z15set_actor_stateP5Actori": "0x71001349c0",
+    "_Z11place_actorP5ActorP4Vec4if": "0x7100133158",
+    "_ZN10PlaceRuleA5validEP5ActorP10PlaceEntry": "0x7100135698",
+    "_ZN10PlaceRuleB5validEP5ActorP10PlaceEntry": "0x7100135748",
+    "_ZN6Placer15fallback_heightEv": "0x7100136cf0",
+    "_ZNKSt3__120__vector_base_commonILb1EE20__throw_length_errorEv": "0x7100600aa0",
+    "_ZN10Scene5f79411enter_678d4EP10SceneEntry": "0x71000678d4",
+    "_ZN10Scene5f79411reset_5f8c8Ev": "0x710005f8c8",
+    "_ZN10Scene5f79413prepare_5fae8Ev": "0x710005fae8",
+    "_ZN10Scene5f79413prepare_60d60Ev": "0x7100060d60",
+    "_ZN10Scene5f79415set_range_6a4f4Eii": "0x710006a4f4",
+    "_ZN11TrophyTimes12reset_287e40Ev": "0x7100287e40",
+    "_Z19trophy_times_28873cP12TrophyRecord": "0x710028873c",
+    "_ZN11GameOptions11init_2021e8Ev": "0x71002021e8",
+    "_Z17icon_ready_1f4918i": "0x71001f4918",
+    "_Z17icon_table_1f4940iP14IconRect28d460": "0x71001f4940",
+    "_Z17apply_icon_1f7fe4P11EffectGroupPvS1_P14IconRect28d460": "0x71001f7fe4",
+    "got:gSideTable": "0x7100c21698",
+    "_ZN10MaterialId2idEv": "0x71002005f4",
+    "_Z17stop_voice_3fecccv": "0x71003feccc",
+    "_Z18play_layout_1f7a0cPviif": "0x71001f7a0c",
+    "_ZN10TrophyView15set_mode_316b2cEi": "0x7100316b2c",
+    "_ZN10TrophyView11show_317844EP12TrophyRecord": "0x7100317844",
+    "_ZN10TrophyView11show_318a3cEP12TrophyRecord": "0x7100318a3c",
+    "_Z20unit_material_200accPv": "0x7100200acc",
+    "_ZN8UnitTask10next_b7614Ev": "0x71000b7614",
+    "_ZN8UnitTask10next_b7654Ev": "0x71000b7654",
+    "_ZN12PageScroller13update_37d96cEv": "0x710037d96c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -31112,7 +31446,8 @@
         "_ZN12Worker5f7984C2Ev": "0x71005f7984",
         "_ZN9Mid2d4f14D2Ev": "0x71002d4f14",
         "_ZN10Node5959d4C2EPKc": "0x7100595930",
-        "_ZN11Table533118C2Ei": "0x7100533118"
+        "_ZN11Table533118C2Ei": "0x7100533118",
+        "_ZN11Owner554bbcD2Ev": "0x7100554bbc"
       }
     },
     "misc/s4_298094.cpp": {
@@ -31387,7 +31722,15 @@
     "misc/s3_functions25.cpp": {
       "functions": {
         "_ZN12Screen31d204C2Ev": "0x710031d204",
-        "_ZN13PoolSet0d04c4C2Ev": "0x71000d04c4"
+        "_ZN13PoolSet0d04c4C2Ev": "0x71000d04c4",
+        "_ZN12Screen2d14dcC2Ev": "0x71002d14dc",
+        "_ZN12Screen2cfc60C2Ev": "0x71002cfc60",
+        "_ZN12Frames33be48C2Ev": "0x710033be48",
+        "_ZN12Screen2cec6cC2Ev": "0x71002cec6c",
+        "_ZN12Frames32e4f4C2Ev": "0x710032e4f4",
+        "_ZN12Screen2ce7bcC2Ev": "0x71002ce7bc",
+        "_ZN12Screen383fbcC2Ev": "0x7100383fbc",
+        "_ZN12Screen333d20C2Ev": "0x7100333d20"
       }
     },
     "misc/s2_functions31.cpp": {
@@ -31535,7 +31878,19 @@
       "functions": {
         "_ZN8Renderer10draw_itemsI9Kind3b64cEEvjP4ItemP9DrawStateh": "0x710003b64c",
         "_ZN8Renderer10draw_itemsI10Kind3d7f04EEvjP4ItemP9DrawStateh": "0x71003d7f04",
-        "_ZN8Renderer10draw_itemsI10Kind3d9078EEvjP4ItemP9DrawStateh": "0x71003d9078"
+        "_ZN8Renderer10draw_itemsI10Kind3d9078EEvjP4ItemP9DrawStateh": "0x71003d9078",
+        "_Z9draw_itemI9Kind3b64cEvP4ItemP9DrawStateP6DeviceP6Shader": "0x710003bdf4",
+        "_Z9draw_itemI10Kind3d7f04EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d86ac",
+        "_Z9draw_itemI10Kind3d9078EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d9820",
+        "_ZN8Renderer10draw_itemsI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x71003da0f4",
+        "_ZN8Renderer9draw_listI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x71003dab18"
+      },
+      "map": {
+        ".rodata._Z9draw_itemI9Kind3b64cEvP4ItemP9DrawStateP6DeviceP6Shader": "0x710073ed70",
+        ".rodata._Z9draw_itemI10Kind3d7f04EvP4ItemP9DrawStateP6DeviceP6Shader": "0x710080c160",
+        ".rodata._Z9draw_itemI10Kind3d9078EvP4ItemP9DrawStateP6DeviceP6Shader": "0x710080c174",
+        ".rodata._ZN8Renderer10draw_itemsI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x710080c188",
+        ".rodata._ZN8Renderer9draw_listI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x710080c1c4"
       }
     },
     "misc/variant_functions96.cpp": {
@@ -31581,6 +31936,195 @@
         "_Z11call_255020Pv": "0x7100255020",
         "_Z11call_2a7250Pv": "0x71002a7250",
         "_Z11call_2ade74Pv": "0x71002ade74"
+      }
+    },
+    "misc/variant_functions97.cpp": {
+      "functions": {
+        "_Z10call_e09b4P10Arge09b4_0": "0x71000e09b4",
+        "_Z11call_1dbb68ii": "0x71001dbb68",
+        "_Z11call_1dbbe8il": "0x71001dbbe8",
+        "_Z11call_1dd140i": "0x71001dd140"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s3_functions27.cpp": {
+      "functions": {
+        "_ZN12Screen313038D2Ev": "0x7100313038"
+      }
+    },
+    "misc/s3_functions28.cpp": {
+      "functions": {
+        "_Z11call_2defc0P11Arg2defc0_0Pv": "0x71002defc0",
+        "_Z11call_4c8b04P11Arg4c8b04_0": "0x71004c8b04",
+        "_Z10call_7b5b0P10Arg7b5b0_0": "0x710007b5b0"
+      }
+    },
+    "misc/s3_functions31.cpp": {
+      "functions": {
+        "_ZN11Class31a1e0C2Ev": "0x710031a1e0",
+        "_ZN11Class37adf4C2Ev": "0x710037adf4",
+        "_ZN11Class2dbe5cC2Ev": "0x71002dbe5c",
+        "_ZN11Class3edc2cC2Ev": "0x71003edc2c"
+      }
+    },
+    "misc/s3_functions33.cpp": {
+      "functions": {
+        "_ZN11Panel2e8c64C2EPv": "0x71002e8c64"
+      }
+    },
+    "misc/s4_3becc.cpp": {
+      "functions": {
+        "_ZN7DrawCmd4initILi0EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x710003becc",
+        "_ZN7DrawCmd4initILi1EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x71003e6020",
+        "_ZN7DrawCmd4initILi2EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x71003e63e0",
+        "_ZN7DrawCmd4initILi3EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x71004439e8",
+        "_ZN5Stats3addILi0EEEvP7DrawCmd": "0x710003c108",
+        "_ZN5Stats3addILi1EEEvP7DrawCmd": "0x71003e625c",
+        "_ZN5Stats3addILi2EEEvP7DrawCmd": "0x71003e661c",
+        "_ZN5Stats3addILi3EEEvP7DrawCmd": "0x7100443c24"
+      }
+    },
+    "misc/s4_20e14c.cpp": {
+      "functions": {
+        "_Z18destroy_bgm_playerv": "0x710020e14c",
+        "_Z21destroy_unit_databasev": "0x710020ede8"
+      }
+    },
+    "misc/s4_2b3574.cpp": {
+      "functions": {
+        "_ZN12ResultRecord4initILi0EEEvP11EffectGroupii": "0x71002b3574",
+        "_ZN12ResultRecord4initILi1EEEvP11EffectGroupii": "0x71002b828c"
+      }
+    },
+    "misc/s4_11a81c.cpp": {
+      "functions": {
+        "_ZN9SlotTable4loadILi0EEEvv": "0x710011a81c",
+        "_ZN9SlotTable4loadILi1EEEvv": "0x710011ae90"
+      }
+    },
+    "misc/s4_3311d0.cpp": {
+      "functions": {
+        "_ZN11Scene3311d06updateEv": "0x71003311d0",
+        "_ZN11Scene39a9f46updateEv": "0x710039a9f4"
+      }
+    },
+    "misc/s4_1fc968.cpp": {
+      "functions": {
+        "_Z8curve_atI6CurveAEiij": "0x71001fc968",
+        "_Z8curve_atI6CurveBEiij": "0x71001fcb28"
+      }
+    },
+    "misc/s4_3305ec.cpp": {
+      "functions": {
+        "_ZN10RecordList4initILi0EEEvv": "0x71003305ec",
+        "_ZN10RecordList4initILi1EEEvv": "0x710039a010"
+      }
+    },
+    "misc/s4_36ce3c.cpp": {
+      "map": {
+        ".rodata._ZN10FadeWindow6updateILi0EEEvv": "0x7100801c80",
+        ".rodata._ZN10FadeWindow6updateILi1EEEvv": "0x7100801ca8"
+      },
+      "functions": {
+        "_ZN10FadeWindow6updateILi0EEEvv": "0x710036ce3c",
+        "_ZN10FadeWindow6updateILi1EEEvv": "0x710036f0dc"
+      }
+    },
+    "misc/s4_c554.cpp": {
+      "map": {
+        ".rodata": "0x710073d0f8"
+      },
+      "functions": {
+        "_Z13remapped_c554i": "0x710000c554",
+        "_Z13remapped_c624i": "0x710000c624"
+      }
+    },
+    "misc/s4_2198fc.cpp": {
+      "functions": {
+        "_ZN12DarkenShader5setupEv": "0x71002198fc",
+        "_ZN11RogiaShader5setupEv": "0x71002229cc"
+      }
+    },
+    "misc/s4_1e09d0.cpp": {
+      "map": {
+        ".rodata.str1.1": "0x7100740c0e"
+      },
+      "functions": {
+        "_ZN11SplitBufferIP10Elem1e0580E9push_backEOS1_": "0x71001e09d0",
+        "_ZN11SplitBufferIP10Elem1e0580E9push_backERKS1_": "0x71001e0d90",
+        "_ZN11SplitBufferIP10Elem1e0580E10push_frontEOS1_": "0x71001e0bb0",
+        "_ZN11SplitBufferIP10Elem1e0580E10push_frontERKS1_": "0x71001e0f70"
+      }
+    },
+    "misc/s4_137730.cpp": {
+      "functions": {
+        "_ZN6Placer5placeI10PlaceRuleAEEvv": "0x7100137730",
+        "_ZN6Placer5placeI10PlaceRuleBEEvv": "0x710013789c"
+      }
+    },
+    "misc/s4_2bdbd4.cpp": {
+      "map": {
+        ".rodata._ZN10PopupPanel6updateILi0EEEvv": "0x71007f9264",
+        ".rodata._ZN10PopupPanel6updateILi1EEEvv": "0x71007f928c",
+        ".rodata.cst4": "0x710073b000"
+      },
+      "functions": {
+        "_ZN10PopupPanel6updateILi0EEEvv": "0x71002bdbd4",
+        "_ZN10PopupPanel6updateILi1EEEvv": "0x71002c0348"
+      }
+    },
+    "misc/s4_2cba00.cpp": {
+      "map": {
+        ".rodata.str1.1": "0x7100740c0e"
+      },
+      "functions": {
+        "_ZN6VectorIP10Elem2cba00E19push_back_slow_pathERKS1_": "0x71002cba00",
+        "_ZN6VectorIP10Elem39721cE19push_back_slow_pathERKS1_": "0x710039721c"
+      }
+    },
+    "misc/s4_5f794.cpp": {
+      "functions": {
+        "_ZN10Scene5f7945startILi0EEEvv": "0x710005f794",
+        "_ZN10Scene5f7945startILi1EEEvv": "0x7100060c2c"
+      }
+    },
+    "misc/s4_20493c.cpp": {
+      "functions": {
+        "_ZN9GameState4initILi0EEEvv": "0x710020493c",
+        "_ZN9GameState4initILi1EEEvv": "0x7100204aac"
+      }
+    },
+    "misc/s4_28d460.cpp": {
+      "functions": {
+        "_ZN9IconPanel6updateILi0EEEvv": "0x710028d460",
+        "_ZN9IconPanel6updateILi1EEEvv": "0x710037781c"
+      }
+    },
+    "misc/s4_317754.cpp": {
+      "functions": {
+        "_ZN10TrophyView4openILi0EEEvh": "0x7100317754",
+        "_ZN10TrophyView4openILi1EEEvh": "0x710031894c"
+      }
+    },
+    "misc/s4_4f8c8.cpp": {
+      "functions": {
+        "_ZN12FrameCounter12nested_countILi0EEEjPvi": "0x710004f8c8",
+        "_ZN12FrameCounter12nested_countILi1EEEjPvi": "0x710004f994"
+      }
+    },
+    "misc/s4_b8168.cpp": {
+      "functions": {
+        "_ZN8UnitTask6updateILi0EEEvv": "0x71000b8168",
+        "_ZN8UnitTask6updateILi1EEEvv": "0x71000b821c"
+      }
+    },
+    "misc/s4_366ab0.cpp": {
+      "functions": {
+        "_ZN8PageMenu4drawILi0EEEvv": "0x7100366ab0",
+        "_ZN8PageMenu4drawILi1EEEvv": "0x7100366b64"
       }
     }
   }

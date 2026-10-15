@@ -67,3 +67,4 @@ vptrfirst
 gotfirst
 volstores
 sink+dstfirst
+zeroloop
