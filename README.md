@@ -46,9 +46,6 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 ## Results
 
 7,735 of 7,924 attempted functions match: 7,725 inventory functions (811,984 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 189 are near misses, all `m`.
-7,735 of 7,924 attempted functions match: 7,725 inventory functions (811,984 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 189 are near misses, all `m`.
-7,735 of 7,924 attempted functions match: 7,725 inventory functions (811,984 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 189 are near misses, all `m`.
-7,735 of 7,924 attempted functions match: 7,725 inventory functions (811,984 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 189 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
