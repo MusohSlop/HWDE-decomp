@@ -16581,7 +16581,8 @@
     "_Z13callee_385a34PvS_iiiii": "0x7100385a34",
     "_Z13callee_3861b8Pviff": "0x71003861b8",
     "_Z13callee_38628cPvi": "0x710038628c",
-    "_Z13callee_385938Pvii": "0x7100385938"
+    "_Z13callee_385938Pvii": "0x7100385938",
+    "_Z11callee_25fcif": "0x71000025fc"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -25832,6 +25833,16 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s4_functions01.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z10call_f6fc0P10Argf6fc0_0": "0x71000f6fc0",
+        "_Z9call_1f00iP9Arg1f00_1": "0x7100001f00"
       }
     }
   }
