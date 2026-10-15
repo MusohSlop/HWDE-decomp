@@ -3906,7 +3906,7 @@ def gen_function(a, ins):
             def u64_(x_):
                 tx_ = vtype(x_)
                 return f"reinterpret_cast<unsigned long>({expr(x_)})" if tx_.endswith("*") else f"static_cast<unsigned long>({expr(x_)})"
-            return f"(Vec4f)vcombine_f32(vcreate_f32({u64_(v[1])}), vcreate_f32({u64_(v[2])}))"
+            return f"((Vec4f)vcombine_f32(vcreate_f32({u64_(v[1])}), vcreate_f32({u64_(v[2])})))"
         if v[0] == "vundef":
             return "vundef()"
         if v[0] == "vecu":
