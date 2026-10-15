@@ -1394,7 +1394,9 @@ def gen_function(a, ins):
                     li_[kk_], lf_[kk_] = ni_, nf_; changed_ = True
         LIVE_["i"], LIVE_["f"] = li_, lf_
     def live_at(kk, inloop=True):
-        if "oldlive" not in knobs and inloop:
+        # dataflow liveness at every join; the old linear scan (fallthrough only, up to the first ret) is the
+        # linlive knob, and outside loops also with oldlive
+        if "oldlive" not in knobs and (inloop or "linlive" not in knobs):
             if not LIVE_:
                 live_dataflow_()
             if kk >= len(ins):
