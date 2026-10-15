@@ -22,3 +22,7 @@ Run them with the project's Python, `python -B -I tools/s4/SCRIPT ...`, from `ma
   `OUTDIR/match.cpp`. All scratch files stay in OUTDIR (outside the worktree, for example
   `worktrees\s4_perm\ADDR\`). Start it through `tools/lowprio.py` so it runs at idle priority; a hit still has to
   go into its unit and pass the full check.
+- `triage.py LIST.txt [OUT.tsv]` gives shape metrics (conditional branches, loops, float instructions, calls, jump
+  tables, frame size) for the functions in LIST, sorted by a rough difficulty score, to pick quick hand-writes.
+- `copymap.py ADDR [SRCREG DSTREG]` lists the copied pieces (source offset, destination offset, width) of a
+  straight-line copy function, to read the layout of serialisers such as `11298c`.

@@ -2274,3 +2274,70 @@ void call_176ce0(unsigned char* p0) {
     void* v118 = gGlobalc22a70_176ce0;
     callee_115d9c(v118, reinterpret_cast<long>(p0 + 0x40b38));
 }
+
+struct Rec14_11298c {
+    int v[5];
+};
+
+struct Rec18_11298c {
+    int v[6];
+};
+
+struct Name1d_11298c {
+    char s[0x1d];
+};
+
+struct Named20_11298c {
+    Name1d_11298c name;
+    unsigned char pad1d[3];
+};
+
+struct Src11298c {
+    unsigned char pad0[0x1164];
+    int count;                       // +1164
+    Rec14_11298c recs[32];           // +1168
+    unsigned char pad13e8[0x510];
+    Named20_11298c names[10];        // +18f8
+    Rec18_11298c last;               // +1a38
+};
+
+struct Dst11298c {
+    int count;                       // +0
+    Rec14_11298c recs[32];           // +4
+    Rec18_11298c last;               // +284
+    Named20_11298c names[10];        // +29c
+};
+
+// 0x710011298c: a save copier: an int, then struct-assignment loops (20-byte records, a 24-byte block, 29-byte names at a 0x20 stride) that Clang unrolls into inline copies
+void call_11298c(Src11298c* p0, Dst11298c* p1) {
+    p1->count = p0->count;
+    for (int i = 0; i < 32; i++) {
+        p1->recs[i] = p0->recs[i];
+    }
+    p1->last = p0->last;
+    for (int i = 0; i < 10; i++) {
+        p1->names[i].name = p0->names[i].name;
+    }
+}
+
+
+
+struct Srcf1278 {
+    unsigned char pad0[0x44f60];
+    int count;                       // +44f60
+    Rec14_11298c recs[32];           // +44f64
+    Named20_11298c names[10];        // +451e4
+    Rec18_11298c last;               // +45324
+};
+
+// 0x71000f1278: the same save copier as 11298c for another source object, whose names follow the records directly
+void call_f1278(Srcf1278* p0, Dst11298c* p1) {
+    p1->count = p0->count;
+    for (int i = 0; i < 32; i++) {
+        p1->recs[i] = p0->recs[i];
+    }
+    p1->last = p0->last;
+    for (int i = 0; i < 10; i++) {
+        p1->names[i].name = p0->names[i].name;
+    }
+}

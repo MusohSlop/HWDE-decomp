@@ -26002,7 +26002,9 @@
       "functions": {
         "_Z10call_f6fc0P10Argf6fc0_0": "0x71000f6fc0",
         "_Z9call_1f00iP9Arg1f00_1": "0x7100001f00",
-        "_Z11call_176ce0Ph": "0x7100176ce0"
+        "_Z11call_176ce0Ph": "0x7100176ce0",
+        "_Z11call_11298cP9Src11298cP9Dst11298c": "0x710011298c",
+        "_Z10call_f1278P8Srcf1278P9Dst11298c": "0x71000f1278"
       }
     },
     "misc/variant_ctor01.cpp": {
