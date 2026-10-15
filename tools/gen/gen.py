@@ -374,7 +374,7 @@ def gen_function(a, ins):
     copy_skip_, copy_emit_ = set(), {}
     valinit_imp_ = set()
     if "nostructcopy" not in knobs:
-        MEMC_ = re.compile(r"([wxqds])(\d+), \[(x\d+)(?:, #(-?0x[0-9a-f]+|-?\d+))?\]$")
+        MEMC_ = re.compile(r"([wxqds])(\d+), \[(x\d+)(?:, #(-?0x[0-9a-f]+|-?\d+)|, (x\d+))?\]$")
         SZC_ = {"w": 4, "x": 8, "q": 16, "d": 8, "s": 4}
         def is_br_(i_):
             return i_.mnemonic in ("bl", "blr", "b", "br", "ret") or i_.mnemonic.startswith(("b.", "cbz", "cbnz", "tbz", "tbnz"))
@@ -385,30 +385,76 @@ def gen_function(a, ins):
                 ivs_ = sorted((so_, so_ + sz_) for so_, sz_, _, _ in g_)
                 lo_, hi_ = ivs_[0][0], ivs_[0][1]
                 ok_ = True
+                runs_ = [[lo_, hi_]]
                 for s0_, s1_ in ivs_[1:]:
                     if s0_ > hi_:
                         ok_ = False
-                        break
+                        runs_.append([s0_, s1_])
+                    else:
+                        runs_[-1][1] = max(runs_[-1][1], s1_)
                     hi_ = max(hi_, s1_)
+                if not ok_ and "nocopystride" not in knobs and len(runs_) >= 2:
+                    # records with gaps: equal runs at one stride, each copied with the same pieces
+                    C_, S_ = runs_[0][1] - runs_[0][0], runs_[1][0] - runs_[0][0]
+                    pats_ = {}
+                    for so_, sz_, _, _ in g_:
+                        pats_.setdefault((so_ - lo_) // S_, []).append(((so_ - lo_) % S_, sz_))
+                    if C_ >= 12 and all(r1_ - r0_ == C_ for r0_, r1_ in runs_) \
+                            and all(runs_[j_ + 1][0] - runs_[j_][0] == S_ for j_ in range(len(runs_) - 1)) \
+                            and len(pats_) == len(runs_) and len({tuple(sorted(v_)) for v_ in pats_.values()}) == 1 \
+                            and len(next(iter(pats_.values()))) >= 2:
+                        al_ = 16
+                        for so_, sz_, _, _ in g_:
+                            for x_ in (so_ - lo_, so_ + dl_):
+                                while al_ > 1 and x_ % al_:
+                                    al_ //= 2
+                        ks_ = [kk_ for _, _, kl_, ks2_ in g_ for kk_ in (kl_, ks2_)]
+                        copy_skip_.update(ks_)
+                        copy_emit_[min(ks2_ for _, _, _, ks2_ in g_)] = (bs_, bd_, lo_, lo_ + dl_, C_, len(runs_), al_, S_)
+                    continue
                 if not ok_ or hi_ - lo_ < 12:
                     continue
                 total_ = hi_ - lo_
                 pieces_ = sorted((so_ - lo_, sz_) for so_, sz_, _, _ in g_)
-                R_ = total_
-                for cand_ in range(max(sz_ for _, sz_ in pieces_), total_):
-                    if total_ % cand_:
-                        continue
-                    recs_ = {}
-                    good_ = True
-                    for rel_, sz_ in pieces_:
-                        if rel_ // cand_ != (rel_ + sz_ - 1) // cand_:
-                            good_ = False
-                            break
-                        recs_.setdefault(rel_ // cand_, []).append((rel_ % cand_, sz_))
-                    if good_ and len(recs_) == total_ // cand_ and len({tuple(sorted(v_)) for v_ in recs_.values()}) == 1 \
-                            and len(next(iter(recs_.values()))) >= 2:
-                        R_ = cand_
-                        break
+                def rec_of_(ps_, tot_):
+                    for cand_ in range(max(sz_ for _, sz_ in ps_), tot_):
+                        if tot_ % cand_:
+                            continue
+                        recs_ = {}
+                        good_ = True
+                        for rel_, sz_ in ps_:
+                            if rel_ // cand_ != (rel_ + sz_ - 1) // cand_:
+                                good_ = False
+                                break
+                            recs_.setdefault(rel_ // cand_, []).append((rel_ % cand_, sz_))
+                        if good_ and len(recs_) == tot_ // cand_ and len({tuple(sorted(v_)) for v_ in recs_.values()}) == 1 \
+                                and len(next(iter(recs_.values()))) >= 2:
+                            return cand_
+                    return None
+                R_, h_, e_ = rec_of_(pieces_, total_), 0, total_
+                if R_ is None and "nocopycut" not in knobs:
+                    # fields copied before or after a run of records (a count, then the array) stay fields
+                    cuts_ = [c_ for c_ in sorted({r_ for r_, _ in pieces_} | {total_}) if not any(r_ < c_ < r_ + s_ for r_, s_ in pieces_)]
+                    best_ = None
+                    for h2_ in [c_ for c_ in cuts_ if c_ < total_][:4]:
+                        for e2_ in sorted([c_ for c_ in cuts_ if c_ > h2_], reverse=True)[:4]:
+                            ps_ = [(r_ - h2_, s_) for r_, s_ in pieces_ if h2_ <= r_ < e2_]
+                            if (h2_ or e2_ < total_) and e2_ - h2_ >= 12 and ps_:
+                                R2_ = rec_of_(ps_, e2_ - h2_)
+                                if R2_ is None:
+                                    continue
+                                # Clang copies a record largest pieces first: prefer the cut whose records start so
+                                rec0_ = sorted((r_, s_) for r_, s_ in ps_ if r_ < R2_)
+                                canon_ = all(rec0_[j_][1] >= rec0_[j_ + 1][1] for j_ in range(len(rec0_) - 1))
+                                sc_ = (e2_ - h2_, canon_, -h2_)
+                                if best_ is None or sc_ > best_[0]:
+                                    best_ = (sc_, R2_, h2_, e2_)
+                    if best_ is not None:
+                        _, R_, h_, e_ = best_
+                if R_ is None:
+                    R_ = total_
+                g_ = [p_ for p_ in g_ if h_ <= p_[0] - lo_ < e_]
+                lo_, total_ = lo_ + h_, e_ - h_
                 al_ = 16
                 for so_, sz_, _, _ in g_:
                     for x_ in (so_ - lo_, so_ + dl_):
@@ -417,7 +463,52 @@ def gen_function(a, ins):
                 ks_ = [kk_ for _, _, kl_, ks2_ in g_ for kk_ in (kl_, ks2_)]
                 first_st_ = min(ks2_ for _, _, _, ks2_ in g_)
                 copy_skip_.update(ks_)
-                copy_emit_[first_st_] = (bs_, bd_, lo_, lo_ + dl_, R_, total_ // R_, al_)
+                copy_emit_[first_st_] = (bs_, bd_, lo_, lo_ + dl_, R_, total_ // R_, al_, R_)
+        res_c_ = {}
+        addk_, constk_ = {}, {}
+        ADDI_ = re.compile(r"(x\d+), (x\d+), #(0x[0-9a-f]+|\d+)(?:, lsl #(\d+))?$")
+        MOVR_ = re.compile(r"(x\d+), (x\d+)$")
+        MOVI_ = re.compile(r"[wx](\d+), #(0x[0-9a-f]+|\d+)$")
+        MOVK_ = re.compile(r"[wx](\d+), #(0x[0-9a-f]+|\d+)(?:, lsl #(\d+))?$")
+        for k_, i_ in enumerate(ins):
+            if is_br_(i_):
+                addk_, constk_ = {}, {}
+                continue
+            m_ = MEMC_.match(i_.op_str) if i_.mnemonic in ("ldr", "ldur", "str", "stur") else None
+            if m_:
+                b_, o_ = m_.group(3), int(m_.group(4), 0) if m_.group(4) else 0
+                if m_.group(5) and m_.group(5) not in constk_:
+                    b_ = None
+                elif m_.group(5):
+                    o_ += constk_[m_.group(5)]
+                if b_ in addk_:
+                    b_, o2_ = addk_[b_]
+                    o_ += o2_
+                if b_ is not None and (b_ == m_.group(3) or "nocopybase" not in knobs):
+                    res_c_[k_] = (b_, o_)
+            new_ = None
+            ma_ = ADDI_.match(i_.op_str) if i_.mnemonic == "add" else (MOVR_.match(i_.op_str) if i_.mnemonic == "mov" else None)
+            if ma_:
+                r_, o3_ = addk_.get(ma_.group(2), (ma_.group(2), 0))
+                if r_ != ma_.group(1):
+                    new_ = (ma_.group(1), (r_, o3_ + ((int(ma_.group(3), 0) << int(ma_.group(4) or 0)) if i_.mnemonic == "add" else 0)))
+            mk_ = MOVK_.match(i_.op_str) if i_.mnemonic == "movk" else None
+            newc_ = None
+            if mk_ and "x" + mk_.group(1) in constk_:
+                sh_ = int(mk_.group(3)) if mk_.group(3) else 0
+                newc_ = (constk_["x" + mk_.group(1)] & ~(0xffff << sh_)) | (int(mk_.group(2), 0) << sh_)
+            w4_ = {"x%d" % w_ for w_ in rw(i_)[1]}
+            for w_ in w4_:
+                addk_.pop(w_, None); constk_.pop(w_, None)
+            for d_ in [d_ for d_, (r_, _) in addk_.items() if r_ in w4_]:
+                addk_.pop(d_)
+            if new_ is not None:
+                addk_[new_[0]] = new_[1]
+            if newc_ is not None:
+                constk_["x" + mk_.group(1)] = newc_
+            mm_ = MOVI_.match(i_.op_str) if i_.mnemonic == "mov" else None
+            if mm_:
+                constk_["x" + mm_.group(1)] = int(mm_.group(2), 0)
         groups_ = {}
         written_c_ = set()
         for k_, i_ in enumerate(ins):
@@ -425,14 +516,15 @@ def gen_function(a, ins):
                 flush_(groups_); groups_ = {}; written_c_ = set()
                 continue
             m_ = MEMC_.match(i_.op_str) if i_.mnemonic in ("ldr", "ldur") else None
-            if m_ and m_.group(3) not in written_c_:
+            if m_ and k_ in res_c_ and res_c_[k_][0] not in written_c_:
                 rk_, rn_ = m_.group(1), m_.group(2)
-                so_ = int(m_.group(4), 0) if m_.group(4) else 0
+                rb_, so_ = res_c_[k_]
                 rpat_ = re.compile(r"\b[%s]%s\b" % ("wx" if rk_ in "wx" else "qdsvbh", rn_))
                 for j_ in range(k_ + 1, min(len(ins), k_ + 8)):
                     ij_ = ins[j_]
                     mj_ = MEMC_.match(ij_.op_str) if ij_.mnemonic in ("str", "stur") else None
-                    if mj_ and mj_.group(1) == rk_ and mj_.group(2) == rn_ and mj_.group(3) not in written_c_:
+                    if mj_ and mj_.group(1) == rk_ and mj_.group(2) == rn_ and j_ in res_c_ and res_c_[j_][0] not in written_c_ \
+                            and not any(int(res_c_[j_][0][1:]) in rw(ins[jw_])[1] for jw_ in range(k_, j_)):
                         # the value must not be read again before it is overwritten
                         dead_ = True
                         for jj_ in range(j_ + 1, len(ins)):
@@ -447,8 +539,8 @@ def gen_function(a, ins):
                             if int(rn_) in w2_:
                                 break
                         if dead_:
-                            do_ = int(mj_.group(4), 0) if mj_.group(4) else 0
-                            groups_.setdefault((m_.group(3), mj_.group(3), do_ - so_), []).append((so_, SZC_[rk_], k_, j_))
+                            rd_, do_ = res_c_[j_]
+                            groups_.setdefault((rb_, rd_, do_ - so_), []).append((so_, SZC_[rk_], k_, j_))
                         break
                     if rpat_.search(ij_.op_str) or is_br_(ij_):
                         break
@@ -2399,12 +2491,12 @@ def gen_function(a, ins):
                 k += 1; continue
             if k in copy_skip_:
                 if k in copy_emit_:
-                    bs_, bd_, slo_, dlo_, R_, n_, al_ = copy_emit_[k]
+                    bs_, bd_, slo_, dlo_, R_, n_, al_, st_ = copy_emit_[k]
                     sv_ = use(regs, bs_) if regs.get(regname(bs_)[0]) is not None else None
                     dv_ = use(regs, bd_) if regs.get(regname(bd_)[0]) is not None else None
                     if sv_ is None or dv_ is None:
                         raise Fail("copy base")
-                    items.append(("blkcopy", dv_, dlo_, sv_, slo_, R_, n_, al_))
+                    items.append(("blkcopy", dv_, dlo_, sv_, slo_, R_, n_, al_, st_))
                 k += 1; continue
             ml1_ = re.fullmatch(r"\{v(\d+)\.([sd])\}\[(\d)\], (\[x\d+\])(?:, #(0x[0-9a-f]+|\d+))?", i.op_str) if m in ("ld1", "st1") and "nold1" not in knobs else None
             if ml1_ and not (m == "st1" and ml1_.group(2) == "d") and not (ml1_.group(2) == "d" and ml1_.group(3) != "0"):
@@ -4867,7 +4959,7 @@ def gen_function(a, ins):
                 else:
                     outl.append(f"{pad}for (long i = 0; i < {n_:#x}; ++i) {db_}[i] = {v_:#x};")
             elif it[0] == "blkcopy":
-                _, dv_, dlo_, sv_, slo_, R_, n_, al_ = it
+                _, dv_, dlo_, sv_, slo_, R_, n_, al_, st_ = it
                 bn_ = f"Blk{R_:x}_{al_}_{a:x}"
                 blk_types_.add((R_, al_))
                 def baddr_(b_, o_):
@@ -4875,6 +4967,8 @@ def gen_function(a, ins):
                     return f"({bs_} + {o_:#x})" if o_ else bs_
                 if n_ == 1:
                     outl.append(f"{pad}*reinterpret_cast<{bn_}*>({baddr_(dv_, dlo_)}) = *reinterpret_cast<const {bn_}*>({baddr_(sv_, slo_)});")
+                elif st_ != R_:
+                    outl.append(f"{pad}for (long i = 0; i < {n_}; ++i) *reinterpret_cast<{bn_}*>({baddr_(dv_, dlo_)} + i * {st_:#x}) = *reinterpret_cast<const {bn_}*>({baddr_(sv_, slo_)} + i * {st_:#x});")
                 else:
                     outl.append(f"{pad}for (long i = 0; i < {n_}; ++i) reinterpret_cast<{bn_}*>({baddr_(dv_, dlo_)})[i] = reinterpret_cast<const {bn_}*>({baddr_(sv_, slo_)})[i];")
             elif it[0] == "store" and vu_of_(it[1], it[2]) is not None:

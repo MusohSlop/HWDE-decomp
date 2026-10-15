@@ -168,7 +168,12 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - struct copies (knob `nostructcopy`): a run of load/store pieces whose loaded values are only stored, between two
   (non-stack) bases at one delta and covering 12 or more contiguous bytes in straight-line code, is one struct
   assignment of `struct alignas(A) BlkR_A_FUNC { unsigned char b[R]; }`, or a loop over the records when the pieces
-  repeat a record pattern (Clang expands both into the same pieces); the pieces no longer type fields.
+  repeat a record pattern (Clang expands both into the same pieces); the pieces no longer type fields. The pieces'
+  bases may be computed (`add xD, xR, #imm`, `mov`, and register offsets set by `mov`/`movk`; knob `nocopybase`);
+  pieces that make equal runs at a constant stride with gaps between them are a loop copying one member per record
+  (`d.names[i].name = s.names[i].name`, a 29-byte member at a 0x20 stride; knob `nocopystride`); and when the run
+  only repeats a record pattern after a leading or before a trailing field, that field stays a field (a count
+  before its array; knob `nocopycut`, which prefers the cut whose records start with their largest piece);
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
