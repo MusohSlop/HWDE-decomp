@@ -21169,7 +21169,68 @@
     "_Z13callee_559b94Pv": "0x7100559b94",
     "_Z11callee_c98cPv": "0x710000c98c",
     "_Z13callee_1948d0Pvf": "0x71001948d0",
-    "_Z13callee_37a624Pv": "0x710037a624"
+    "_Z13callee_37a624Pv": "0x710037a624",
+    "got:_ZTV12Screen2d14dc": "0x7100c2aaa0",
+    "_ZN10Base3c7188C2Ev": "0x71003c7188",
+    "got:_ZTV12Screen2cfc60": "0x7100c2aa98",
+    "got:_ZTV9Mid2cfc60": "0x7100c2aa68",
+    "_ZN10Tail2cf74cC1Ev": "0x71002cf74c",
+    "kMid2cfc60Name": "0x71007d82d4",
+    "kMid2cec6cName": "0x71007d81bd",
+    "got:_ZTV12Screen2cec6c": "0x7100c2aa90",
+    "got:_ZTV12Screen2ce7bc": "0x7100c2aa88",
+    "got:_ZTV12Screen313038": "0x7100c2ad78",
+    "got:_ZTV10NodeHolder": "0x7100c2ad48",
+    "got:_ZTV9CueHolder": "0x7100c2ad68",
+    "_Z9heap_noteP13EffectManagerPvi": "0x71002925c8",
+    "_ZN10Part2fb9f0D1Ev": "0x71002fb9f0",
+    "_ZN10Part304788D1Ev": "0x7100304788",
+    "_ZN10Part333318D1Ev": "0x7100333318",
+    "_ZN10Part327344D1Ev": "0x7100327344",
+    "_ZN10Part3192f0D1Ev": "0x71003192f0",
+    "_ZN10Part310454D1Ev": "0x7100310454",
+    "_ZN10Part3843f0D1Ev": "0x71003843f0",
+    "got:_ZTV15PanelBase2defc0": "0x7100c2abb0",
+    "got:_ZTV11Panel2e8c64": "0x7100c2abe0",
+    "_ZN14SlotPool2dee48C1Ev": "0x71002dee48",
+    "_ZN10Part287efcC1Ev": "0x7100287efc",
+    "_ZN10Part2dd3d4C1Ei": "0x71002dd3d4",
+    "_ZN10Part379e44C1Ev": "0x7100379e44",
+    "_ZN12Base3e82b0_8C2Ev": "0x71003e82b0",
+    "got:_ZTV11Class3edc2c": "0x7100c2b6d0",
+    "got:_ZTV11Owner554bbc": "0x7100c2d3b0",
+    "_ZN10Item5567207releaseEv": "0x7100556720",
+    "_ZN10Base53e840D2Ev": "0x710053e840",
+    "got:_ZTV12Screen383fbc": "0x7100c2b110",
+    "_ZN10Part382488C1Ev": "0x7100382488",
+    "_ZN10Part3830dcC1Ev": "0x71003830dc",
+    "_ZN13Base316a64_40C2Ev": "0x7100316a64",
+    "_ZN9Obj31ce68C1Ev": "0x710031ce68",
+    "_ZN9Obj37a514C1Ev": "0x710037a514",
+    "got:_ZTV11Class2dbe5c": "0x7100c2ab98",
+    "got:_ZTV11Class31a1e0": "0x7100c2adf8",
+    "got:_ZTV12Screen333d20": "0x7100c2ae50",
+    "_ZN10Part333708C1Ev": "0x7100333708",
+    "_ZN10Part30ddf8C1Ev": "0x710030ddf8",
+    "_ZN10Part32d8f0C1Ev": "0x710032d8f0",
+    "_ZN10Part31a1e0C1Ev": "0x710031a1e0",
+    "_ZN10Part31d204C1Ev": "0x710031d204",
+    "_ZN10Part311824C1Ev": "0x7100311824",
+    "_ZN10Part332198C1Ev": "0x7100332198",
+    "_ZN10Part316b64C1Ev": "0x7100316b64",
+    "_ZN10Part316b646attachEPv": "0x7100316e80",
+    "_ZN10Part316b648set_modeEi": "0x7100316e78",
+    "_ZN10Part300058C1Ev": "0x7100300058",
+    "_ZN10Part336774C1Ev": "0x7100336774",
+    "got:gGlobalc216a8_36c80": "0x7100c216a8",
+    "got:gGlobalc216f8_36c80": "0x7100c216f8",
+    "got:gGlobalc21dc0_36c80": "0x7100c21dc0",
+    "got:gGlobalc2a7e0_27c198": "0x7100c2a7e0",
+    "got:gGlobalc2cce8_4c8b04": "0x7100c2cce8",
+    "got:gGlobalc2cdb0_4c8b04": "0x7100c2cdb0",
+    "_Z12callee_71730l": "0x7100071730",
+    "_Z13callee_4a3d34Pv": "0x71004a3d34",
+    "_Z13callee_4b24b4li": "0x71004b24b4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -31145,7 +31206,8 @@
         "_ZN12Worker5f7984C2Ev": "0x71005f7984",
         "_ZN9Mid2d4f14D2Ev": "0x71002d4f14",
         "_ZN10Node5959d4C2EPKc": "0x7100595930",
-        "_ZN11Table533118C2Ei": "0x7100533118"
+        "_ZN11Table533118C2Ei": "0x7100533118",
+        "_ZN11Owner554bbcD2Ev": "0x7100554bbc"
       }
     },
     "misc/s4_298094.cpp": {
@@ -31420,7 +31482,15 @@
     "misc/s3_functions25.cpp": {
       "functions": {
         "_ZN12Screen31d204C2Ev": "0x710031d204",
-        "_ZN13PoolSet0d04c4C2Ev": "0x71000d04c4"
+        "_ZN13PoolSet0d04c4C2Ev": "0x71000d04c4",
+        "_ZN12Screen2d14dcC2Ev": "0x71002d14dc",
+        "_ZN12Screen2cfc60C2Ev": "0x71002cfc60",
+        "_ZN12Frames33be48C2Ev": "0x710033be48",
+        "_ZN12Screen2cec6cC2Ev": "0x71002cec6c",
+        "_ZN12Frames32e4f4C2Ev": "0x710032e4f4",
+        "_ZN12Screen2ce7bcC2Ev": "0x71002ce7bc",
+        "_ZN12Screen383fbcC2Ev": "0x7100383fbc",
+        "_ZN12Screen333d20C2Ev": "0x7100333d20"
       }
     },
     "misc/s2_functions31.cpp": {
@@ -31609,6 +31679,31 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s3_functions27.cpp": {
+      "functions": {
+        "_ZN12Screen313038D2Ev": "0x7100313038"
+      }
+    },
+    "misc/s3_functions28.cpp": {
+      "functions": {
+        "_Z11call_2defc0P11Arg2defc0_0Pv": "0x71002defc0",
+        "_Z11call_4c8b04P11Arg4c8b04_0": "0x71004c8b04",
+        "_Z10call_7b5b0P10Arg7b5b0_0": "0x710007b5b0"
+      }
+    },
+    "misc/s3_functions31.cpp": {
+      "functions": {
+        "_ZN11Class31a1e0C2Ev": "0x710031a1e0",
+        "_ZN11Class37adf4C2Ev": "0x710037adf4",
+        "_ZN11Class2dbe5cC2Ev": "0x71002dbe5c",
+        "_ZN11Class3edc2cC2Ev": "0x71003edc2c"
+      }
+    },
+    "misc/s3_functions33.cpp": {
+      "functions": {
+        "_ZN11Panel2e8c64C2EPv": "0x71002e8c64"
       }
     }
   }
