@@ -26,7 +26,7 @@ struct LayoutSprite {
 
 struct LayoutFrame {
     LayoutFrame();                                                          // 0x71001f0140
-    unsigned char data[0x88];
+    void* data[0x11];
 };
 
 struct Part31de28 {
@@ -392,4 +392,154 @@ public:
 Screen2ce7bc::Screen2ce7bc() : Mid2cfc60(0x41e5, kMid2cec6cName), p4a10(nullptr) {
     p4a00 = nullptr;
     i4a08 = -1;
+}
+
+struct ScrollList {
+    ScrollList();                // 0x71001f8700
+    void* data[0x14];
+};
+
+struct Part382488 { Part382488(); void* data[0x561]; };                   // 0x7100382488
+struct Part3830dc { Part3830dc(); void* data[0xc48]; };                   // 0x71003830dc
+
+struct Slots1dd58 {
+    Slots1dd58() {
+        for (int i = 0; i < 4; i++)
+            p[i] = nullptr;
+    }
+    void* p[4];
+};
+
+// 0x7100383fbc: a screen (vtable GOT 0x7100c2b110): thirteen pointers zeroed as one memset (MemCpyOpt puts it
+// where its scan stops, after the frames' address; a value-initialised array would be cleared first), 64 frames,
+// eight parts, a part, four pointers cleared by a loop (LoopIdiom's memset comes before the list's address), a scroll
+// list and two layout handles.
+class Screen383fbc {
+public:
+    Screen383fbc();
+    virtual ~Screen383fbc();
+
+    int i8;                      // +08
+    unsigned char pad0c[0x4];
+    void* p10;
+    void* p18;
+    void* p20;
+    void* p28;
+    void* p30;
+    void* p38;
+    void* p40;
+    void* p48;
+    void* p50;
+    void* p58;
+    void* p60;
+    void* p68;
+    void* p70;
+    unsigned char pad78[0x10];
+    void* p88;                   // +88
+    void* p90;                   // +90
+    void* p98;                   // +98
+    void* pa0;                   // +a0
+    unsigned char pada8[0x18];
+    LayoutFrame frames[64];      // +c0
+    unsigned char pad22c0[0x8];
+    int i22c8;                   // +22c8
+    unsigned char pad22cc[0x4];
+    Part382488 parts[8];         // +22d0
+    int i17b10;                  // +17b10
+    short s17b14;                // +17b14
+    unsigned char pad17b16[0x2];
+    Part3830dc part17b18;        // +17b18
+    Slots1dd58 slots;            // +1dd58
+    ScrollList list;             // +1dd78
+    LayoutHandle handle_a;       // +1de18
+    LayoutHandle handle_b;       // +1de30
+    int i1de48;                  // +1de48
+};
+
+Screen383fbc::Screen383fbc()
+    : i8(0), p10(nullptr), p18(nullptr), p20(nullptr), p28(nullptr), p30(nullptr), p38(nullptr), p40(nullptr), p48(nullptr), p50(nullptr), p58(nullptr), p60(nullptr), p68(nullptr), p70(nullptr), p88(nullptr), p90(nullptr), p98(nullptr), pa0(nullptr), i22c8(0), i17b10(-1), s17b14(0x100),
+      i1de48(0x12) {}
+
+// The screens it is made of; four of them point back at its shared context (their +38).
+struct Part333708 { Part333708(); void* data[0x2b54]; };                                    // 0x7100333708
+struct Part30ddf8 { Part30ddf8(); void* pad[7]; void* context; void* data[0xe790 - 8]; };     // 0x710030ddf8
+struct Part32d8f0 { Part32d8f0(); void* pad[7]; void* context; void* data[0x8610 - 8]; };     // 0x710032d8f0
+struct Part31a1e0 { Part31a1e0(); void* data[0x191c2]; };                                     // 0x710031a1e0
+struct Part31d204 { Part31d204(); void* data[0xd626]; };                                      // 0x710031d204
+struct Part311824 { Part311824(); void* pad[7]; void* context; void* data[0x2c9a0 - 8]; };    // 0x7100311824
+struct Part332198 { Part332198(); void* pad[7]; void* context; void* data[0x7dba - 8]; };     // 0x7100332198
+struct Part316b64 {
+    Part316b64();                                                                              // 0x7100316b64
+    void attach(void* context);                                                                // 0x7100316e80
+    void set_mode(int mode);                                                                   // 0x7100316e78
+    void* data[0x6e];
+};
+struct Part300058 { Part300058(); void* data[0x2e]; };                                        // 0x7100300058
+struct Part336774 { Part336774(); void* data[0x997]; };                                       // 0x7100336774
+
+// The context the screens share.
+struct Context3a95f8 {
+    Context3a95f8() : p0(nullptr), p20(nullptr), b28(false), i1c8(0), b1cc(false) {}
+
+    void* p0;                    // +00
+    unsigned char pad8[0x18];
+    void* p20;                   // +20
+    bool b28;                    // +28
+    LayoutFrame frame;           // +30
+    LightResource light;         // +b8
+    int i1c8;                    // +1c8
+    bool b1cc;                   // +1cc
+};
+
+// 0x7100333d20: the screen made of the others (vtable GOT 0x7100c2ae50): its flags reset in declaration order in the
+// body, four of its screens pointed at the shared context, and the part at +3a4220 attached to it.
+class Screen333d20 : public Base3c7188 {
+public:
+    Screen333d20();
+    ~Screen333d20();
+
+    bool b28;                    // +28
+    bool b29;                    // +29
+    bool b2a;                    // +2a
+    short s2c;                   // +2c
+    void* p30;                   // +30
+    void* p38;                   // +38
+    bool b40;                    // +40
+    unsigned char pad41[0x7];
+    bool b48;                    // +48
+    int i4c;                     // +4c
+    bool b50;                    // +50
+    unsigned char pad51[0xf];
+    Part333708 part60;           // +60
+    void* p15b00;                // +15b00
+    unsigned char pad15b08[0x8];
+    Part30ddf8 part15b10;        // +15b10
+    Part32d8f0 part89790;        // +89790
+    Part31a1e0 partcc810;        // +cc810
+    Part31d204 part195620;       // +195620
+    Part311824 part200750;       // +200750
+    Part332198 part365450;       // +365450
+    Part316b64 part3a4220;       // +3a4220
+    Part300058 part3a4590;       // +3a4590
+    Part336774 part3a4700;       // +3a4700
+    LayoutSprite sprites[8];     // +3a93b8
+    Context3a95f8 context;       // +3a95f8
+};
+
+Screen333d20::Screen333d20() : b28(false), s2c(0) {
+    b29 = false;
+    b2a = false;
+    p30 = nullptr;
+    p38 = nullptr;
+    b40 = false;
+    b48 = false;
+    i4c = -1;
+    b50 = false;
+    p15b00 = nullptr;
+    part15b10.context = &context;
+    part89790.context = &context;
+    part200750.context = &context;
+    part365450.context = &context;
+    part3a4220.attach(&context);
+    part3a4220.set_mode(1);
 }
