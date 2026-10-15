@@ -17146,7 +17146,24 @@
     "_Z13callee_215cf0PvP9Obj1fbbb0": "0x7100215cf0",
     "_Z13callee_216f14Pv": "0x7100216f14",
     "_Z13callee_216f9cPv": "0x7100216f9c",
-    "_Z13callee_19b6c4P10R58_19c9a4P10R68_19c9a4": "0x710019b6c4"
+    "_Z13callee_19b6c4P10R58_19c9a4P10R68_19c9a4": "0x710019b6c4",
+    "kLayout_28b710": "0x71007d6225",
+    "kGroup48_28b710": "0x71007d6126",
+    "kGroup50_28b710": "0x71007d5ca9",
+    "kGroup58_28b710": "0x71007d623a",
+    "kPart18_28b710": "0x710073fffb",
+    "kPart20_28b710": "0x7100740004",
+    "kPart28_28b710": "0x710074056c",
+    "kPane0_28b710": "0x71007d6247",
+    "kPane1_28b710": "0x71007d6253",
+    "kPane2_28b710": "0x71007d6262",
+    "kPane3_28b710": "0x71007d626f",
+    "kPane4_28b710": "0x71007d627f",
+    "kGroupD078_28b710": "0x71007d628e",
+    "kLayout2_28b710": "0x71007d629e",
+    "kAnim_28b710": "0x71007d62ab",
+    "kGroupDup_28b710": "0x71007d62b1",
+    "_ZN11Class28b71012finish_setupEv": "0x710028f4dc"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -26445,7 +26462,8 @@
         "_Z11call_1a4b48P9Src1a4b48P9Dst1a4b48": "0x71001a4b48",
         "_Z11call_20e224P12Table_20e224": "0x710020e224",
         "_Z11call_1f9a98P10This1f9a98": "0x71001f9a98",
-        "_Z11call_19c9a4P9Obj19c9a4P10R24_19c9a4P10R68_19c9a4P10P10_19c9a4P10R6c_19c9a4P10R18_19c9a4PvP11B4d0_19c9a4": "0x710019c9a4"
+        "_Z11call_19c9a4P9Obj19c9a4P10R24_19c9a4P10R68_19c9a4P10P10_19c9a4P10R6c_19c9a4P10R18_19c9a4PvP11B4d0_19c9a4": "0x710019c9a4",
+        "_ZN11Class28b71010initializeEv": "0x710028b710"
       }
     },
     "misc/variant_ctor01.cpp": {

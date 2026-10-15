@@ -3083,3 +3083,176 @@ void call_19c9a4(Obj19c9a4* p0, R24_19c9a4* p1, R68_19c9a4* p2, P10_19c9a4* p3, 
     }
     p0->block = *p7;
 }
+
+#include "event/demo_effects.h"
+#include "event/demo_light_system.h"
+#include "event/layout_panes.h"
+
+class TextRenderer {
+public:
+    void set_area(TrackVec2* pos, TrackVec2* size, int a, int b, int c);    // 0x71001e709c
+    unsigned int draw(void* dest, const char* text, int line, int a, int alpha, float x,
+                      float y);                                             // 0x71001e73c0
+
+    unsigned char pad[0x20b98];
+    int align;                // +20b98
+    unsigned char pad20b9c[0x2d];
+    unsigned char wrap;       // +20bc9
+};
+// Reached through the GOT slot at 0x7100c22a30.
+extern TextRenderer* gTextRenderer;
+
+struct SharedState {
+    int value0;
+    int language;             // +04
+};
+SharedState* get_shared_state();                                            // 0x71002aae3c
+const char* message_text(int id);                                           // 0x7100217d64
+void set_pane_lines(PanelPane* pane, TrackLightTarget* lines, unsigned int count); // 0x71001e41d8
+void callee_1f7430(void*, int);                                             // 0x71001f7430
+
+// The flag bytes of a pane: +58 bit 0 visible, +5b the mode, alignment and wrap fields.
+struct PaneFlags_28b710 {
+    unsigned char pad0[0x58];
+    unsigned char visible : 1;   // +58 bit 0
+    unsigned char : 7;
+    unsigned char pad59[2];
+    unsigned char mode : 2;      // +5b bits 0-1
+    unsigned char align : 2;     // +5b bits 2-3
+    unsigned char wrap : 2;      // +5b bits 4-5
+    unsigned char : 2;
+};
+
+static inline PaneFlags_28b710* flags_28b710(PanelPane* pane) {
+    return reinterpret_cast<PaneFlags_28b710*>(pane);
+}
+
+extern const char kLayout_28b710[] __attribute__((visibility("hidden")));          // 0x71007d6225
+extern const char kGroup48_28b710[] __attribute__((visibility("hidden")));         // 0x71007d6126
+extern const char kGroup50_28b710[] __attribute__((visibility("hidden")));         // 0x71007d5ca9
+extern const char kGroup58_28b710[] __attribute__((visibility("hidden")));         // 0x71007d623a
+extern const char kPart18_28b710[] __attribute__((visibility("hidden")));          // 0x710073fffb
+extern const char kPart20_28b710[] __attribute__((visibility("hidden")));          // 0x7100740004
+extern const char kPart28_28b710[] __attribute__((visibility("hidden")));          // 0x710074056c
+extern const char kPane0_28b710[] __attribute__((visibility("hidden")));           // 0x71007d6247
+extern const char kPane1_28b710[] __attribute__((visibility("hidden")));           // 0x71007d6253
+extern const char kPane2_28b710[] __attribute__((visibility("hidden")));           // 0x71007d6262
+extern const char kPane3_28b710[] __attribute__((visibility("hidden")));           // 0x71007d626f
+extern const char kPane4_28b710[] __attribute__((visibility("hidden")));           // 0x71007d627f
+extern const char kGroupD078_28b710[] __attribute__((visibility("hidden")));       // 0x71007d628e
+extern const char kLayout2_28b710[] __attribute__((visibility("hidden")));         // 0x71007d629e
+extern const char kAnim_28b710[] __attribute__((visibility("hidden")));            // 0x71007d62ab
+extern const char kGroupDup_28b710[] __attribute__((visibility("hidden")));        // 0x71007d62b1
+
+class Class28b710 {
+public:
+    void initialize();                                                       // 0x710028b710: a window set-up written with the effect, pane and text-renderer types of the demo units: the text-area vectors are filled field by field (an aggregate initialiser stores them as one 64-bit constant that is hoisted too early) and the five panes are separate statements, so each slot's address stays in a register
+    void finish_setup();                                                     // 0x710028f4dc
+
+    LightEffectNode* node;           // +0
+    unsigned char pad8[8];
+    LightEffectNode* node2;          // +10
+    void* part18;                    // +18
+    void* part20;                    // +20
+    void* part28;                    // +28
+    unsigned char pad30[8];
+    LayoutAnimation* anim;           // +38
+    unsigned char pad40[8];
+    EffectGroup* group48;            // +48
+    EffectGroup* group50;            // +50
+    EffectGroup* group58;            // +58
+    unsigned char sources[0x458];    // +60
+    EffectGroup* copy;               // +4b8
+    TrackLightTarget lines0[32];     // +4c0
+    TrackLightTarget lines1[32];     // +15c0
+    TrackLightTarget lines2[32];     // +26c0
+    unsigned char pad37c0[0x9878];
+    unsigned int count0;             // +d038
+    unsigned int count1;             // +d03c
+    unsigned int count2;             // +d040
+    unsigned char padd044[0xc];
+    PanelPane* panes[5];             // +d050
+    EffectGroup* groupd078;          // +d078
+};
+
+// 0x710028b710
+void Class28b710::initialize() {
+    gEffectManager->create_node(&node, 0x4203, kLayout_28b710);
+    group48 = node->group->find(kGroup48_28b710, 1);
+    group50 = node->group->find(kGroup50_28b710, 1);
+    group58 = node->group->find(kGroup58_28b710, 1);
+    group58->alpha59 = 0;
+    part18 = callee_1e3770(node, const_cast<char*>(kPart18_28b710), 0);
+    part20 = callee_1e3770(node, const_cast<char*>(kPart20_28b710), 0);
+    part28 = callee_1e3770(node, const_cast<char*>(kPart28_28b710), 0);
+    callee_1f7430(sources, 0xc);
+    node->group->add(new LightEffect(0x10));
+    TextRenderer* renderer = gTextRenderer;
+    {
+        TrackVec2 pos;
+        pos.x = 0.0f;
+        pos.y = 0.0f;
+        TrackVec2 size;
+        size.x = 32.0f;
+        size.y = 32.0f;
+        renderer->set_area(&pos, &size, 0x53, 0x4e, 0);
+    }
+    renderer->wrap = 1;
+    renderer->align = 2;
+    count0 = renderer->draw(lines0, message_text(0x132), 0x20, 1, 0xff, 0.0f, 0.0f);
+    {
+        TrackVec2 pos;
+        pos.x = 0.0f;
+        pos.y = 0.0f;
+        TrackVec2 size;
+        size.x = 32.0f;
+        size.y = 32.0f;
+        renderer->set_area(&pos, &size, 0x53, 0x4e, 0);
+    }
+    renderer->wrap = 1;
+    renderer->align = 2;
+    count1 = renderer->draw(lines1, message_text(0x133), 0x20, 1, 0xff, 0.0f, 0.0f);
+    {
+        TrackVec2 pos;
+        pos.x = -64.0f;
+        pos.y = 0.0f;
+        TrackVec2 size;
+        size.x = 32.0f;
+        size.y = 32.0f;
+        renderer->set_area(&pos, &size, 0x5d, 0x4e, 0);
+    }
+    renderer->wrap = 1;
+    renderer->align = 2;
+    count2 = renderer->draw(lines2, message_text(0x137), 0x20, 1, 0xff, 0.0f, 0.0f);
+    panes[0] = new PanelPane;
+    panes[1] = new PanelPane;
+    panes[2] = new PanelPane;
+    panes[3] = new PanelPane;
+    panes[4] = new PanelPane;
+    node->group->find(kPane0_28b710, 1)->add(panes[0]);
+    node->group->find(kPane1_28b710, 1)->add(panes[1]);
+    node->group->find(kPane2_28b710, 1)->add(panes[2]);
+    node->group->find(kPane3_28b710, 1)->add(panes[3]);
+    node->group->find(kPane4_28b710, 1)->add(panes[4]);
+    flags_28b710(panes[0])->mode = 1;
+    flags_28b710(panes[1])->mode = 1;
+    flags_28b710(panes[2])->mode = 1;
+    flags_28b710(panes[2])->align = 2;
+    if (get_shared_state()->language != 0) {
+        flags_28b710(panes[2])->wrap = 1;
+    }
+    flags_28b710(panes[3])->align = 2;
+    flags_28b710(panes[4])->align = 2;
+    set_pane_lines(panes[0], lines0, count0);
+    set_pane_lines(panes[1], lines1, count1);
+    set_pane_lines(panes[2], lines2, count2);
+    flags_28b710(panes[2])->visible = 0;
+    groupd078 = node->group->find(kGroupD078_28b710, 1);
+    finish_setup();
+    gEffectManager->create_node(&node2, 0x4203, kLayout2_28b710);
+    anim = node2->create_animation(kAnim_28b710, true);
+    gEffectManager->finish(0x4203);
+    copy = node2->group->find(kGroupDup_28b710, 1)->duplicate(gResourceLoader->layout->root);
+    group58->add(copy);
+    node2->group->find(kGroupDup_28b710, 1)->flags58 &= ~1;
+}
