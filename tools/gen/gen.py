@@ -2399,6 +2399,56 @@ def gen_function(a, ins):
                 items.append(("return", r))
                 returns.append(r)
                 return items
+            wl_ = (next((L_ for H_, L_ in loop_info if H_ == k + 1), None)
+                   if m == "b" and "nowhile" not in knobs and imm(ops[0]) in addr_index and (k + 1) not in in_loop else None)
+            if wl_ is not None and k + 1 < addr_index[imm(ops[0])] <= wl_ and ins[wl_].mnemonic != "b":
+                H, L, C = k + 1, wl_, addr_index[imm(ops[0])]
+                ltg_ = {}
+                g_items_ = walk(C, copyregs(regs), flags, set(written), depth + 1, stop=L, latch=ltg_)
+                if "cnd" not in ltg_ or ltg_["cnd"] is None:
+                    raise Fail("while guard")
+                items.extend(g_items_)
+                gregs_ = ltg_["regs"]
+                lt2_ = {}
+                l_items_ = walk(H, copyregs(gregs_), None, set(ltg_["written"]), depth + 1, stop=L + 1, latch=lt2_, region=True)
+                if "regs" not in lt2_:
+                    raise Fail("while exit")
+                lregs_ = lt2_["regs"]
+                live_i, live_f = live_at(L + 1, any(H_ <= L + 1 <= L_ for H_, L_ in loop_info))
+                merged = copyregs(gregs_)
+                decls_, asg_l_, asg_g_ = [], [], []
+                keys = sorted([(n, None) for n in set(gregs_) | set(lregs_) if isinstance(n, int)]
+                              + [(n, "f") for n in set(gregs_["f"]) | set(lregs_["f"])], key=lambda k_: (k_[1] or "", k_[0]))
+                for n, kind in keys:
+                    a_ = (gregs_["f"] if kind else gregs_).get(n)
+                    b_ = (lregs_["f"] if kind else lregs_).get(n)
+                    if a_ == b_:
+                        continue
+                    if a_ is None or b_ is None or n not in (live_f if kind else live_i) \
+                            or any((x_ or ("",))[0] == "hi" for x_ in (a_, b_)):
+                        (merged["f"] if kind else merged)[n] = None
+                        continue
+                    name = f"m{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("merge", b_, a_)
+                    if kind:
+                        fmerges_.add(name)
+                    decls_.append((name, b_))
+                    asg_l_.append((name, b_)); asg_g_.append((name, a_))
+                    (merged["f"] if kind else merged)[n] = ("var", name)
+                for n in [n for n in set(gregs_) | set(lregs_) if isinstance(n, tuple) and n[0] == "spill"]:
+                    if gregs_.get(n) != lregs_.get(n):
+                        merged[n] = None
+                if decls_:
+                    items.append(("diamond", ltg_["cnd"], decls_, l_items_ + [("assign", n_, v_) for n_, v_ in asg_l_],
+                                  [("assign", n_, v_) for n_, v_ in asg_g_]))
+                else:
+                    items.append(("if", ltg_["cnd"], l_items_))
+                regs = merged
+                regs["fw"] = set()
+                flags = None
+                written = set(ltg_["written"]) & set(lt2_.get("written", set()))
+                k = L + 1
+                continue
             if m == "b" and CONT_.get(k) == addr_index[imm(ops[0])] and addr_index[imm(ops[0])] in in_loop:
                 items.append(("cont", copyregs(regs), addr_index[imm(ops[0])]))
                 return items
