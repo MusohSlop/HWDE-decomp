@@ -17,7 +17,7 @@ pieces = []
 for i in md.disasm(img[a:a + sizes[a]], a):
     m, ops = i.mnemonic, [o.strip() for o in i.op_str.replace("[", "").replace("]", "").replace("!", "").split(",")]
     if m in ("mov", "movz") and ops[1].startswith("#"):
-        regs[ops[0][1:]] = ("const", int(ops[1][1:], 16) if ops[1][1:].startswith("0x") else int(ops[1][1:]))
+        regs[ops[0][1:]] = ("const", int(ops[1][1:], 0))
     elif m == "movk":
         v = regs.get(ops[0][1:])
         sh = int(ops[2].split("#")[1]) if len(ops) > 2 else 0
@@ -42,7 +42,10 @@ for i in md.disasm(img[a:a + sizes[a]], a):
         if len(ops) > 2:
             off = int(ops[2][1:], 16) if ops[2].startswith("#") else regs.get(ops[2][1:], ("const", None))[1]
         if base != DST:
-            off = regs.get(base[1:], ("dst", None))[1] + off
+            b = regs.get(base[1:])
+            if not b or b[0] != "dst" or b[1] is None or off is None:
+                continue                      # not a store through the destination base
+            off = b[1] + off
         v = regs.get(ops[0][1:])
         width = {"strb": 1, "strh": 2}.get(m, W[ops[0][0]])
         pieces.append((v[1] if v and v[0] == "src" else None, off, width))

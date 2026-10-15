@@ -22,7 +22,7 @@ while i < len(rest):
     if rest[i] == "--map":
         maps += ["--map", rest[i + 1]]; i += 2
     elif rest[i] == "--sym":
-        d = json.load(open(rest[i + 1], encoding="utf-8"))
+        d = json.load(open(rest[i + 1], encoding="utf-8-sig"))
         for x in d["gsyms"] + d["imports"]:
             maps += ["--map", x]
         i += 2
@@ -30,13 +30,13 @@ while i < len(rest):
         k, v = rest[i + 1].split("=", 1)
         slots.append((k, v.split(SEP))); i += 2
     elif rest[i] == "--slots":
-        for k, v in json.load(open(rest[i + 1], encoding="utf-8")).items():
+        for k, v in json.load(open(rest[i + 1], encoding="utf-8-sig")).items():
             slots.append((k, v))
         i += 2
     else:
         i += 2 if rest[i] == "--sep" else 1
 os.makedirs(outdir, exist_ok=True)
-src = open(tpl, encoding="utf-8").read()
+src = open(tpl, encoding="utf-8-sig").read()
 TRY = os.path.join(M, "tools", "s3", "try.py")
 tmp = os.path.join(outdir, "perm_tmp.cpp")
 log = open(os.path.join(outdir, "log.txt"), "a", encoding="utf-8")

@@ -3,7 +3,8 @@
 usage: audit_bounds.py OUT.tsv [--apply]
 
 For every unmatched entry, a split point is an instruction that follows a ret or an unconditional branch (b, br)
-and that no branch inside the entry reaches, where either a prologue starts (a pre-indexed store of callee-saved
+and that no conditional branch inside the entry reaches (an unconditional b to a prologue is a tail call into
+the next function), where either a prologue starts (a pre-indexed store of callee-saved
 registers or of x29/x30 to the stack, or sub sp, sp, #N) or a bl elsewhere in the image calls it. A split is
 proposed only when every piece decodes completely and ends in ret, b or br. Points that already start another
 entry end the entry there instead of making a new one. OUT.tsv lists every proposal (entry, size, pieces); with
@@ -57,10 +58,12 @@ def main():
         ins = list(md.disasm(d[a:a + n], a))
         if len(ins) * 4 != n:
             continue
-        targets = set()
+        targets, jumps = set(), {}
         for i in ins:
-            if (i.mnemonic in ("b", "cbz", "cbnz", "tbz", "tbnz") or i.mnemonic.startswith("b.")) and "#" in i.op_str:
+            if (i.mnemonic in ("cbz", "cbnz", "tbz", "tbnz") or i.mnemonic.startswith("b.")) and "#" in i.op_str:
                 targets.add(int(i.op_str.split("#")[-1], 0))
+            elif i.mnemonic == "b" and "#" in i.op_str:
+                jumps.setdefault(int(i.op_str.split("#")[-1], 0), set()).add(i.address)
         cuts = []
         for k in range(1, len(ins)):
             prev, cur = ins[k - 1], ins[k]
@@ -68,6 +71,10 @@ def main():
                 continue
             pro = (cur.mnemonic in ("stp", "str") and prologue.search(cur.op_str)) or \
                   (cur.mnemonic == "sub" and cur.op_str.startswith("sp, sp, #"))
+            # an unconditional b to a prologue from the instruction just before it is a tail call into the next
+            # function; any other b to it (a late prologue after a fast path) keeps it inside this one
+            if cur.address in jumps and (not pro or jumps[cur.address] != {prev.address}):
+                continue
             if pro or cur.address in called or cur.address in starts:
                 cuts.append(cur.address)
         if not cuts:
