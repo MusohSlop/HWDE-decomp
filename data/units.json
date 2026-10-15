@@ -30542,6 +30542,18 @@
         ".rodata._ZN8Renderer10draw_itemsI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x710080c188",
         ".rodata._ZN8Renderer9draw_listI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x710080c1c4"
       }
+    },
+    "misc/s4_3becc.cpp": {
+      "functions": {
+        "_ZN7DrawCmd4initILi0EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x710003becc",
+        "_ZN7DrawCmd4initILi1EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x71003e6020",
+        "_ZN7DrawCmd4initILi2EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x71003e63e0",
+        "_ZN7DrawCmd4initILi3EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x71004439e8",
+        "_ZN5Stats3addILi0EEEvP7DrawCmd": "0x710003c108",
+        "_ZN5Stats3addILi1EEEvP7DrawCmd": "0x71003e625c",
+        "_ZN5Stats3addILi2EEEvP7DrawCmd": "0x71003e661c",
+        "_ZN5Stats3addILi3EEEvP7DrawCmd": "0x7100443c24"
+      }
     }
   }
 }
