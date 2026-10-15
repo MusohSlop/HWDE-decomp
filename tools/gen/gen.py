@@ -2422,10 +2422,12 @@ def gen_function(a, ins):
                     live_i, live_f = live_at(alt_inner_ if alt_inner_ is not None else join,
                                              any(H_ <= k <= L_ for H_, L_ in loop_info))
                     keys = [(n, None) for n in set(r1) | set(r2) if isinstance(n, int)] + [(n, "f") for n in set(r1["f"]) | set(r2["f"])]
+                    if "nosortjoin" not in knobs:
+                        keys = sorted(keys, key=lambda k_: (k_[1] or "", k_[0]))
                     # spill slots are carried across the join like registers (a value saved before the branch and
                     # reloaded after it); they are memory, so no liveness test applies
                     if "nospillmerge" not in knobs:
-                        keys += [(n, "s") for n in set(r1) | set(r2) if isinstance(n, tuple) and n[0] == "spill"]
+                        keys += sorted([(n, "s") for n in set(r1) | set(r2) if isinstance(n, tuple) and n[0] == "spill"], key=repr)
                     for n, kind in keys:
                         a_ = (r1["f"] if kind == "f" else r1).get(n)
                         b_ = (r2["f"] if kind == "f" else r2).get(n)
@@ -3914,7 +3916,7 @@ def gen_function(a, ins):
         if v[0] in ("funary", "i2f", "f2i"):
             kids = [v[2]]
         if v[0] == "fselect":
-            kids = [v[1][0][1], v[1][0][2], v[2], v[3]]
+            kids = ([v[1][0][1], v[1][0][2]] if "nomarkfix" in knobs else flag_values(v[1][0])) + [v[2], v[3]]
         if v[0] == "elem":
             kids = [v[1], v[2]]
         if v[0] in ("sub", "sub2"):
@@ -3951,6 +3953,15 @@ def gen_function(a, ins):
             kids = flag_values(v[1][0]) + ([v[2], v[3]] if v[0] == "select" else [])
         for x in kids:
             mark(x, True)
+        if "nomarkfix" not in knobs and v[0] not in ("var", "hi"):
+            mark_vars_(v)
+    def mark_vars_(v):
+        for x in v[1:]:
+            if isinstance(x, (tuple, list)):
+                if len(x) == 2 and x[0] == "var" and isinstance(x[1], str):
+                    used.add(x[1])
+                else:
+                    mark_vars_(x)
     def mark_items(its):
         for it in its:
             if it[0] == "bfstore":
@@ -4790,6 +4801,11 @@ def gen_function(a, ins):
     inline_map = {}
     inl_seen_ = [0]
     inl_mask_ = next((int(k_.split("_")[1]) for k_ in knobs if k_.startswith("inlmask_")), None)
+    def ovarg_(target_, n_, j_, text_, at_):
+        if "noovcast" in knobs or at_ not in ("int", "long", "unsigned int", "unsigned long", "short", "unsigned short",
+                                              "unsigned char", "signed char", "bool", "float", "void*"):
+            return text_
+        return f"\x01{target_:x}/{n_}/{j_}\x03{at_}\x03{text_}\x02"
     def want_inline(name, local_rts, rts):
         if not (name in used and use_count.get(name, 0) == 1 and local_rts == rts):
             return False
@@ -4957,6 +4973,44 @@ def gen_function(a, ins):
             return f"{pad}{name} = {rhs};"
         return f"{pad}{typ} {name} = {rhs};"
     MORE_ = []
+    class RetHoist_(list):
+        pass
+    def ends_in_return_(its_):
+        if not its_:
+            return False
+        l_ = its_[-1]
+        if l_[0] == "return" or (l_[0] == "call" and l_[4]):
+            return True
+        if l_[0] == "diamond":
+            return ends_in_return_(l_[3]) and ends_in_return_(l_[4])
+        return False
+    def unhoist_(ls_):
+        out_ = list(ls_)
+        k_ = 0
+        while k_ < len(out_):
+            l_ = out_[k_]
+            if "\x04" not in l_:
+                k_ += 1
+                continue
+            pad_, rest_ = l_.split("\x04")
+            typ_, name_ = rest_.split("\x05")
+            if_ = k_ + 1
+            while "\x04" in out_[if_]:
+                if_ += 1
+            end_ = next((j_ for j_ in range(if_ + 1, len(out_)) if out_[j_] == pad_ + "}"), None)
+            if end_ is None:
+                raise Fail("hoisted diamond end")
+            if any(re.search(rf"\b{name_}\b", x_) for x_ in out_[end_ + 1:]):
+                out_[k_] = f"{pad_}{typ_} {name_};"
+                k_ += 1
+                continue
+            for j_ in range(if_, end_):
+                mm_ = re.match(rf"^(\s*){name_} = ", out_[j_])
+                if mm_:
+                    out_[j_] = f"{mm_.group(1)}{typ_} {out_[j_][len(mm_.group(1)):]}"
+                    break
+            del out_[k_]
+        return out_
     def has_cont_(its_):
         for it_ in its_:
             if it_[0] == "contassign":
@@ -5154,7 +5208,7 @@ def gen_function(a, ins):
                     raise Fail("callee types")
                 ov_[tuple(atypes)] = rts
                 callees[target][1] = (atypes, rts)
-                argtext = ", ".join(expr(x) for x in args)
+                argtext = ", ".join(ovarg_(target, len(args), j_, expr(x), at_) for j_, (x, at_) in enumerate(zip(args, atypes)))
                 if imp_:
                     kind_, mangled_, qname_, iret_, iparams_ = imp_[0], imp_[1], imp_[2], imp_[3], imp_[4]
                     if len(iparams_) != len(args):
@@ -5188,7 +5242,11 @@ def gen_function(a, ins):
                     outl.append(f"{pad}return;")
                 elif v[0] == "var" and any(x[0] == "call" and x[1] == v[1] and x[4] for x in its):
                     call_it = next(x for x in its if x[0] == "call" and x[1] == v[1])
-                    argtext = ", ".join(expr(member_arg(x)) for x in call_it[3])
+                    tat_ = ["void*" if vtype(member_arg(x)).endswith("*") else vtype(member_arg(x)) for x in call_it[3]]
+                    if "nosextarg" not in knobs:
+                        tat_ = ["int" if x_ in ("short", "signed char") else x_ for x_ in tat_]
+                    argtext = ", ".join(ovarg_(call_it[2], len(tat_), j_, expr(member_arg(x)), at_)
+                                        for j_, (x, at_) in enumerate(zip(call_it[3], tat_)))
                     pre = "return " if rtype != "void" else ""
                     if import_of(call_it[2]):
                         raise Fail("import tail call")
@@ -5218,7 +5276,7 @@ def gen_function(a, ins):
             elif it[0] == "diamond":
                 _, cnd, decls_, taken_its, fall_its = it
                 for name, v in decls_:
-                    if hoist_stack:
+                    if hoist_stack and not isinstance(hoist_stack[-1], RetHoist_):
                         # declared in front of the enclosing loop, so the value is still in scope after it
                         hoist_stack[-1].append((vtype(('var', name)), name))
                     else:
@@ -5226,6 +5284,11 @@ def gen_function(a, ins):
                 f_, cc_ = cnd
                 if cc_ not in NEGCC:
                     raise Fail("negate")
+                hoist_ = ("nohoistret" not in knobs and not hoist_stack and taken_its
+                          and (ends_in_return_(fall_its) or ends_in_return_(taken_its)))
+                if_at_ = len(outl)
+                if hoist_:
+                    hoist_stack.append(RetHoist_())
                 if f_ is not None and f_[0] == "ccmp":
                     outl.append(f"{pad}if (!({cond(f_, cc_)})) {{")
                 else:
@@ -5235,6 +5298,8 @@ def gen_function(a, ins):
                     outl.append(f"{pad}}} else {{")
                     outl.extend(render(taken_its, indent + 1))
                 outl.append(f"{pad}}}")
+                if hoist_:
+                    outl[if_at_:if_at_] = [f"{pad}\x04{typ}\x05{name}" for typ, name in hoist_stack.pop()]
             elif it[0] == "contassign":
                 if len(it[1]) > 1:
                     for n_, v_ in it[1]:
@@ -5568,6 +5633,7 @@ def gen_function(a, ins):
             else:
                 pwidth[key_] = ty_
     lines = render(items, 1)
+    lines = unhoist_(lines)
     for p_, h_ in ESHIFT_.items():
         structs[loopelem[p_]] = {o_ - h_: v_ for o_, v_ in structs[loopelem[p_]].items()}
     decl_lines = []
@@ -5863,6 +5929,23 @@ for size, a in sorted(U, key=lambda x: x[1]):
         else:
             k = f"{type(e).__name__}: {str(e)[:40]}"
             internal[k] = internal.get(k, 0) + 1
+def resolve_ovcasts(d_):
+    """Replace each argument marker: a cast where the callee's overloads of that arity differ in that position."""
+    pat_ = re.compile("\x01([0-9a-f]+)/(\\d+)/(\\d+)\x03([^\x01\x02\x03]*)\x03([^\x01\x02]*)\x02")
+    def one_(mm_):
+        t_, n_, j_ = int(mm_.group(1), 16), int(mm_.group(2)), int(mm_.group(3))
+        at_, text_ = mm_.group(4), mm_.group(5)
+        if len({a_[j_] for (tt_, a_, nm_) in CALLEES if tt_ == t_ and len(a_) == n_}) < 2:
+            return text_
+        if at_ == "void*":
+            return f"reinterpret_cast<void*>({text_})"
+        return f"static_cast<{at_}>({text_})"
+    while "\x01" in d_:
+        d2_ = pat_.sub(one_, d_)
+        if d2_ == d_:
+            break
+        d_ = d2_
+    return d_.replace("\x01", "").replace("\x02", "").replace("\x03", "")
 VEC4_DECL = "typedef float Vec4f __attribute__((ext_vector_type(4)));\n\n"
 FLOAT2_DECL = "struct Float2 {\n    float x;\n    float y;\n};\n\n"
 PAIR16_DECL = "// A 16-byte struct returned in x0 and x1.\nstruct Pair16 {\n    long a;\n    long b;\n};\n\n"
@@ -5885,6 +5968,7 @@ for mn in sorted(IMPORTS_USED):
     if mn in C_PROTOS:
         r_, ps_ = C_PROTOS[mn]
         imp_lines.append(f'extern "C" {r_} {mn}({", ".join(ps_)});')
+defs = [resolve_ovcasts(d_) for d_ in defs]
 cdecl_text = "\n".join(imp_lines) + "\n\n" + "\n".join(f"{rts} {nm}_{t:x}({', '.join(atypes)});{' ' * 8}// 0x71{t:08x}" for (t, atypes, nm), rts in sorted(CALLEES.items())
                        if not any(x.endswith("*") and x != "void*" for x in list(atypes) + [rts]))
 open(out, "w", encoding="utf-8", newline="\n").write(head + ("#include <arm_neon.h>\n\n" if any("float32x4_t" in d_ or "vcombine_f32" in d_ for d_ in defs) else "") + (VEC4_DECL if any("Vec4f" in d_ or "VecU" in d_ or "vins(" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + (PAIR16_DECL if any("Pair16" in d_ for d_ in defs) else "") + (VECU_DECL if any("VecU" in d_ for d_ in defs) else "") + (VINS_DECL if any("vins(" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))

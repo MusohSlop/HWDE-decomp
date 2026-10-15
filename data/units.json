@@ -20145,13 +20145,76 @@
     "_Z13callee_5e7580PvS_": "0x71005e7580",
     "_Z13callee_5e7584PviS_": "0x71005e7584",
     "_Z13callee_5e7588PvS_": "0x71005e7588",
+    "_Z12callee_358b4PvS_ll": "0x71000358b4",
+    "_Z12callee_358b4Pvlll": "0x71000358b4",
+    "_Z12callee_368fcPv": "0x71000368fc",
+    "_Z12callee_4099cPvlS_lS_": "0x710004099c",
+    "_Z12callee_4099cPvlS_ll": "0x710004099c",
+    "_Z12callee_409e8PvlS_lS_": "0x71000409e8",
+    "_Z12callee_40a2ctt": "0x7100040a2c",
+    "_Z12callee_46c68PviiS_ffffffff": "0x7100046c68",
+    "_Z12callee_46c68PviiS_ifffffff": "0x7100046c68",
+    "_Z12callee_47f38l": "0x7100047f38",
+    "_Z12callee_6d814v": "0x710006d814",
+    "_Z12callee_7c5a8li": "0x710007c5a8",
+    "_Z12callee_ba4e0Pv": "0x71000ba4e0",
+    "_Z12callee_ba548Pv": "0x71000ba548",
+    "_Z12callee_ffdf8Pvi": "0x71000ffdf8",
+    "_Z13callee_112798Pv": "0x7100112798",
+    "_Z13callee_130f08Pv": "0x7100130f08",
+    "_Z13callee_1315ecPvi": "0x71001315ec",
+    "_Z13callee_1315ecPvl": "0x71001315ec",
+    "_Z13callee_1321a4Pv": "0x71001321a4",
+    "_Z13callee_145c28i": "0x7100145c28",
+    "_Z13callee_1469b8v": "0x71001469b8",
+    "_Z13callee_146a3ci": "0x7100146a3c",
+    "_Z13callee_164a0cv": "0x7100164a0c",
+    "_Z13callee_16b4b4Pvf": "0x710016b4b4",
+    "_Z13callee_18262cPv": "0x710018262c",
+    "_Z13callee_1875a0v": "0x71001875a0",
+    "_Z13callee_187628i": "0x7100187628",
+    "_Z13callee_19681cl": "0x710019681c",
+    "_Z13callee_1a10e4Pv": "0x71001a10e4",
+    "_Z13callee_1a10e4l": "0x71001a10e4",
+    "_Z13callee_1a17d4i": "0x71001a17d4",
+    "_Z13callee_1a3bccl": "0x71001a3bcc",
+    "_Z13callee_1a9c90i": "0x71001a9c90",
+    "_Z13callee_1af8d8Pv": "0x71001af8d8",
+    "_Z13callee_1cbbbci": "0x71001cbbbc",
+    "_Z13callee_1d591ci": "0x71001d591c",
+    "_Z13callee_1d6194Pv": "0x71001d6194",
+    "_Z13callee_2447c0Pv": "0x71002447c0",
+    "_Z13callee_2447c8Pvl": "0x71002447c8",
+    "_Z13callee_2449dcPvli": "0x71002449dc",
+    "_Z13callee_3e7b14iPvS_iS_S_bb": "0x71003e7b14",
+    "_Z13callee_3e7b14iPvS_iS_S_ii": "0x71003e7b14",
+    "_Z13callee_3e7b14iPvS_iS_lbb": "0x71003e7b14",
+    "_Z13callee_3e7b14iPvS_iS_lii": "0x71003e7b14",
+    "_Z13callee_4528fct": "0x71004528fc",
+    "_Z13callee_45293ctilPv": "0x710045293c",
+    "_Z13callee_459bccv": "0x7100459bcc",
+    "_Z13callee_470f0cPvi": "0x7100470f0c",
+    "_Z12callee_6d814Pvi": "0x710006d814",
+    "_Z13callee_24e364PvS_": "0x710024e364",
+    "_Z13callee_252460Pvi": "0x7100252460",
     "_ZN8Renderer5setupI9Kind3b64cEEvP4ItemP9DrawState": "0x710003bad0",
     "_ZN8Renderer5setupI10Kind3d7f04EEvP4ItemP9DrawState": "0x71003d8388",
     "_ZN8Renderer5setupI10Kind3d9078EEvP4ItemP9DrawState": "0x71003d94fc",
     "_Z9draw_itemI9Kind3b64cEvP4ItemP9DrawStateP6DeviceP6Shader": "0x710003bdf4",
     "_Z9draw_itemI10Kind3d7f04EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d86ac",
     "_Z9draw_itemI10Kind3d9078EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d9820",
-    "_Z13callee_52ac40P6Devicei": "0x710052ac40"
+    "_Z13callee_52ac40P6Devicei": "0x710052ac40",
+    "_ZN8Renderer5setupI10Kind3da0f4EEvP4ItemP9DrawState": "0x71003da6f8",
+    "_ZN7MatPart6hook_bEP6ShaderP5PartA": "0x71003d8788",
+    "_ZN9Kind3b64c6hook_aEP6ShaderP5PartA": "0x71000363ec",
+    "_ZN9Kind3b64c6hook_bEP6ShaderP5PartA": "0x710003659c",
+    "_ZN10Kind3d7f046hook_aEP6ShaderP5PartA": "0x710043c2a8",
+    "_ZN10Kind3d90786hook_aEP6ShaderP5PartA": "0x710043ca58",
+    "_ZN10Kind3d90786hook_bEP6ShaderP5PartA": "0x710043ca84",
+    "_ZN10Kind3da0f46hook_bEP6ShaderP5PartA": "0x71003daa1c",
+    "_Z13callee_58ce5cP9DrawStateP6DeviceP6Shader": "0x710058ce5c",
+    "_Z13callee_58d6dcP9DrawStateP6DeviceP6Shader": "0x710058d6dc",
+    "_Z13callee_58de98P9DrawStateP6DeviceP6Shader": "0x710058de98"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -30432,11 +30495,50 @@
         "_Z11call_600164P11Arg600164_0": "0x7100600164"
       }
     },
+    "misc/variant_functions92.cpp": {
+      "functions": {
+        "_Z11call_11175cPv": "0x710011175c",
+        "_Z11call_171918i": "0x7100171918",
+        "_Z11call_214b90Pv": "0x7100214b90"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s5_functions06.cpp": {
+      "map": {
+        ".rodata._ZN9Ctx5a5b643setILi0ELb0EXadL_ZN13Uniform5a5b644loc0EEEXadL_ZNS1_6count0EEEEEvPKS1_": "0x7100a98948",
+        ".rodata._ZN9Ctx5a5b643setILi4ELb0EXadL_ZN13Uniform5a5b644loc4EEEXadL_ZNS1_6count4EEEEEvPKS1_": "0x7100a98980",
+        ".rodata._ZN9Ctx5a5b643setILi1ELb1EXadL_ZN13Uniform5a5b644loc1EEEXadL_ZNS1_6count1EEEEEvPKS1_": "0x7100a989b8",
+        ".rodata._ZN9Ctx5a5b643setILi2ELb1EXadL_ZN13Uniform5a5b644loc2EEEXadL_ZNS1_6count2EEEEEvPKS1_": "0x7100a989f0",
+        ".rodata._ZN9Ctx5a5b643setILi3ELb1EXadL_ZN13Uniform5a5b644loc3EEEXadL_ZNS1_6count3EEEEEvPKS1_": "0x7100a98a28",
+        ".rodata._ZN9Ctx5a5b643setILi5ELb1EXadL_ZN13Uniform5a5b644loc5EEEXadL_ZNS1_6count5EEEEEvPKS1_": "0x7100a98a60"
+      },
+      "functions": {
+        "_ZN9Ctx5a5b643setILi0ELb0EXadL_ZN13Uniform5a5b644loc0EEEXadL_ZNS1_6count0EEEEEvPKS1_": "0x71005a5b64",
+        "_ZN9Ctx5a5b643setILi4ELb0EXadL_ZN13Uniform5a5b644loc4EEEXadL_ZNS1_6count4EEEEEvPKS1_": "0x71005a60cc",
+        "_ZN9Ctx5a5b643setILi1ELb1EXadL_ZN13Uniform5a5b644loc1EEEXadL_ZNS1_6count1EEEEEvPKS1_": "0x71005a6634",
+        "_ZN9Ctx5a5b643setILi2ELb1EXadL_ZN13Uniform5a5b644loc2EEEXadL_ZNS1_6count2EEEEEvPKS1_": "0x71005a6b9c",
+        "_ZN9Ctx5a5b643setILi3ELb1EXadL_ZN13Uniform5a5b644loc3EEEXadL_ZNS1_6count3EEEEEvPKS1_": "0x71005a7104",
+        "_ZN9Ctx5a5b643setILi5ELb1EXadL_ZN13Uniform5a5b644loc5EEEXadL_ZNS1_6count5EEEEEvPKS1_": "0x71005a766c"
+      }
+    },
     "misc/s4_3b64c.cpp": {
       "functions": {
         "_ZN8Renderer10draw_itemsI9Kind3b64cEEvjP4ItemP9DrawStateh": "0x710003b64c",
         "_ZN8Renderer10draw_itemsI10Kind3d7f04EEvjP4ItemP9DrawStateh": "0x71003d7f04",
-        "_ZN8Renderer10draw_itemsI10Kind3d9078EEvjP4ItemP9DrawStateh": "0x71003d9078"
+        "_ZN8Renderer10draw_itemsI10Kind3d9078EEvjP4ItemP9DrawStateh": "0x71003d9078",
+        "_Z9draw_itemI9Kind3b64cEvP4ItemP9DrawStateP6DeviceP6Shader": "0x710003bdf4",
+        "_Z9draw_itemI10Kind3d7f04EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d86ac",
+        "_Z9draw_itemI10Kind3d9078EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d9820",
+        "_ZN8Renderer10draw_itemsI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x71003da0f4"
+      },
+      "map": {
+        ".rodata._Z9draw_itemI9Kind3b64cEvP4ItemP9DrawStateP6DeviceP6Shader": "0x710073ed70",
+        ".rodata._Z9draw_itemI10Kind3d7f04EvP4ItemP9DrawStateP6DeviceP6Shader": "0x710080c160",
+        ".rodata._Z9draw_itemI10Kind3d9078EvP4ItemP9DrawStateP6DeviceP6Shader": "0x710080c174",
+        ".rodata._ZN8Renderer10draw_itemsI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x710080c188"
       }
     }
   }

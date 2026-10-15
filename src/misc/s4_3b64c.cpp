@@ -1,7 +1,12 @@
-// A renderer's batch drawer, a template instantiated once per item kind: Renderer::draw_items<Kind3b64c>
-// (0x710003b64c), <Kind3d7f04> (0x71003d7f04) and <Kind3d9078> (0x71003d9078). It walks an item list forwards or
-// backwards, groups neighbouring items that use the same shader, binds the shader once per group and draws the group
-// once per pass. Names are descriptive placeholders; the kinds are named after their first instantiation.
+// A renderer's batch drawer, templates instantiated once per item kind (the kinds are the item materials, named
+// after their first instantiation):
+// - Renderer::draw_items<Kind> walks an item list forwards or backwards, groups neighbouring items that use the same
+//   shader, binds the shader once per group and draws the group once per pass: <Kind3b64c> (0x710003b64c),
+//   <Kind3d7f04> (0x71003d7f04), <Kind3d9078> (0x71003d9078), <Kind3da0f4> (0x71003da0f4, with draw_item inlined);
+// - draw_item<Kind> hands one item to the device by its part's kind: <Kind3b64c> (0x710003bdf4), <Kind3d7f04>
+//   (0x71003d86ac), <Kind3d9078> (0x71003d9820). Kind3da0f4's first hook is empty, which makes its draw_item cheap
+//   enough to inline.
+// Names are descriptive placeholders.
 
 struct Device {
     unsigned char pad0[0x88];
@@ -36,21 +41,25 @@ public:
 struct PartA {
     unsigned char pad0[4];
     short id;                 // +04
+    short kind;               // +06
 };
 struct PartB {
     unsigned char pad0[0x2a];
     short id;                 // +2a
+    unsigned char pad2c[0x14];
+    void* material;           // +40: the kind's material
 };
 struct Item {
     PartA* a;
     PartB* b;                 // null: skipped
 };
 
+struct MatPart;
 struct DrawState {
-    void* f0;
-    void* f8;
-    void* f10;
-    void* f18;
+    PartA* f0;
+    MatPart* f8;
+    PartB* f10;
+    PartB* f18;               // the previous item's f10
     void* f20;
     void* f28;
     void* f30;
@@ -59,17 +68,67 @@ struct DrawState {
     int index;                // +48
 };
 
-struct Kind3b64c;
-struct Kind3d7f04;
-struct Kind3d9078;
+void callee_58ce5c(DrawState*, Device*, Shader*);                           // 0x710058ce5c
+void callee_58d6dc(DrawState*, Device*, Shader*);                           // 0x710058d6dc
+void callee_58de98(DrawState*, Device*, Shader*);                           // 0x710058de98
 
-// Draws one item with the bound shader: 0x710003bdf4, 0x71003d86ac, 0x71003d9820.
-template <class Kind> void draw_item(Item* item, DrawState* st, Device* dev, Shader* shader);
+struct MatBase {
+    void* head;
+};
+struct MatPart {
+    void* head;
+    void hook_b(Shader*, PartA*);                                           // 0x71003d8788
+};
+struct Kind3b64c : MatBase, MatPart {
+    void hook_a(Shader*, PartA*);                                           // 0x71000363ec
+    void hook_b(Shader*, PartA*);                                           // 0x710003659c
+};
+struct Kind3d7f04 : MatBase, MatPart {
+    void hook_a(Shader*, PartA*);                                           // 0x710043c2a8
+};
+struct Kind3d9078 : MatBase, MatPart {
+    void hook_a(Shader*, PartA*);                                           // 0x710043ca58
+    void hook_b(Shader*, PartA*);                                           // 0x710043ca84
+};
+struct Kind3da0f4 : MatBase, MatPart {
+    void hook_a(Shader*, PartA*) {}
+    void hook_b(Shader*, PartA*);                                           // 0x71003daa1c
+};
+
+// The material is converted to its second base in a local before the previous item is read (the conversion's
+// register comes first), and the state's item pair is stored before the part pair.
+template <class Kind>
+void draw_item(Item* item, DrawState* st, Device* dev, Shader* shader) {
+    PartA* part = item->a;
+    PartB* b = item->b;
+    Kind* m = static_cast<Kind*>(b->material);
+    MatPart* mp = m;
+    PartB* prev = st->f10;
+    st->f10 = b;
+    st->f18 = prev;
+    st->f0 = part;
+    st->f8 = mp;
+    PartA* a = item->a;
+    switch (a->kind) {
+    case 0:
+    case 2:
+        m->hook_a(shader, a);
+        callee_58ce5c(st, dev, shader);
+        break;
+    case 1:
+        m->hook_b(shader, a);
+        callee_58d6dc(st, dev, shader);
+        break;
+    case 4:
+        callee_58de98(st, dev, shader);
+        break;
+    }
+}
 
 class Renderer {
 public:
     template <class Kind> void draw_items(unsigned int count, Item* items, DrawState* st, unsigned char reverse);
-    // Per-item render state: 0x710003bad0, 0x71003d8388, 0x71003d94fc.
+    // Per-item render state: 0x710003bad0, 0x71003d8388, 0x71003d94fc, 0x71003da6f8 (docs/s4_wip/3bad0.cpp).
     template <class Kind> void setup(Item* item, DrawState* st);
 
     Shader* shader_for(Item* it) {
@@ -169,6 +228,10 @@ void Renderer::draw_items(unsigned int count, Item* items, DrawState* st, unsign
     callee_52ac40(dev, saved_cull);
 }
 
+template void draw_item<Kind3b64c>(Item*, DrawState*, Device*, Shader*);
+template void draw_item<Kind3d7f04>(Item*, DrawState*, Device*, Shader*);
+template void draw_item<Kind3d9078>(Item*, DrawState*, Device*, Shader*);
 template void Renderer::draw_items<Kind3b64c>(unsigned int, Item*, DrawState*, unsigned char);
 template void Renderer::draw_items<Kind3d7f04>(unsigned int, Item*, DrawState*, unsigned char);
 template void Renderer::draw_items<Kind3d9078>(unsigned int, Item*, DrawState*, unsigned char);
+template void Renderer::draw_items<Kind3da0f4>(unsigned int, Item*, DrawState*, unsigned char);
