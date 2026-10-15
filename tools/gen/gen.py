@@ -372,6 +372,7 @@ def gen_function(a, ins):
                 if n_ in r_ or n_ in w_ or ij_.mnemonic in ("bl", "blr", "b", "br", "ret") or ij_.mnemonic.startswith("b."):
                     break
     copy_skip_, copy_emit_ = set(), {}
+    cstore1_ = set()       # (struct, offset, size) written by a single constant store
     stack_min_, stack_al_ = {}, {}     # stack structs: the size and alignment their block copies need
     valinit_imp_ = set()
     if "nostructcopy" not in knobs:
@@ -381,6 +382,15 @@ def gen_function(a, ins):
                             and re.fullmatch(r"x(\d+), sp, #(0x[0-9a-f]+|\d+)", i_.op_str) and not i_.op_str.startswith("x29")}
                            | {0 for i_ in ins if i_.mnemonic == "mov" and re.fullmatch(r"x\d+, sp", i_.op_str)
                               and not i_.op_str.startswith("x29")})
+        fp_c_ = None
+        for i_ in ins[:8]:
+            if i_.mnemonic == "mov" and i_.op_str == "x29, sp":
+                fp_c_ = 0
+            elif i_.mnemonic == "add" and i_.op_str.startswith("x29, sp, #"):
+                fp_c_ = imm(i_.op_str.split(",")[2])
+        if fp_c_ is not None and "nofpcopy" not in knobs and "nostackcopy" not in knobs:
+            starts_c_ = sorted(set(starts_c_) | {fp_c_ - imm(i_.op_str.split(",")[2]) for i_ in ins if i_.mnemonic == "sub"
+                                                 and re.fullmatch(r"x(\d+), x29, #(0x[0-9a-f]+|\d+)", i_.op_str)})
         SZC_ = {"w": 4, "x": 8, "q": 16, "d": 8, "s": 4}
         def is_br_(i_):
             return i_.mnemonic in ("bl", "blr", "b", "br", "ret") or i_.mnemonic.startswith(("b.", "cbz", "cbnz", "tbz", "tbnz"))
@@ -508,7 +518,13 @@ def gen_function(a, ins):
                 if b_ in addk_:
                     b_, o2_ = addk_[b_]
                     o_ += o2_
-                if b_ is not None and (b_ == m_.group(3) or "nocopybase" not in knobs):
+                if b_ == "x29" and "nofpcopy" not in knobs:
+                    # the frame pointer: a stack offset, or no base
+                    if fp_c_ is not None and "nostackcopy" not in knobs:
+                        b_, o_ = "sp", fp_c_ + o_
+                    else:
+                        b_ = None
+                if b_ is not None and (b_ == m_.group(3) or b_ == "sp" or "nocopybase" not in knobs):
                     res_c_[k_] = (b_, o_)
                 vsnap_[k_] = dict(ver_)
             new_ = None
@@ -1263,6 +1279,10 @@ def gen_function(a, ins):
                 ct0, child0 = structs[sn0][off0]
                 if ct0 == "ARRAY:void*" and len(cur) > 3 and cur[3] != "void*":
                     raise Fail("non-pointer load base")
+                if ct0 == "long" and "nolongbase" not in knobs and off0 != 0 and (len(cur) == 3 or cur[3] in ("void*", "long")):
+                    # an address kept in an 8-byte field: a pointer
+                    structs[sn0][off0] = ("void*", child0)
+                    ct0 = "void*"
                 if ct0 not in ("void*", "ARRAY:void*"):
                     raise Fail("non-pointer load base")
                 if child0 is None:
@@ -3581,6 +3601,8 @@ def gen_function(a, ins):
                         if structs[sn][off2][0] == ct and ct in ("unsigned char", "unsigned short") and not any(
                                 it_[0] in ("let", "leti") and it_[2] == sn and it_[3] == off2 for it_ in items):
                             store_typed.add((sn, off2))
+                        if not pair and val[0] == "const" and SIZE.get(ct, 8) <= 4:
+                            cstore1_.add((sn, off2, SIZE[ct]))
                         items.append(("store", sn, off2, base, val))
                 if pre:
                     regs[bn_] = basev
@@ -4335,6 +4357,23 @@ def gen_function(a, ins):
         if "noscalarlane" not in knobs and v_[0] not in ("fconst", "fparam") and vtype(v_) == "Vec4f":
             return f"{expr(v_, False)}[0]"
         return expr(v_, top_)
+    sdst_cache_ = []
+    def store_dsts_():
+        """Variables used as the base of a store (destinations)."""
+        if not sdst_cache_:
+            acc_ = set()
+            def walk_(its_):
+                for it_ in its_:
+                    if not isinstance(it_, tuple) or not it_:
+                        continue
+                    if it_[0] in ("store", "storei") and len(it_) > 3 and isinstance(it_[3], tuple) and it_[3][0] == "var":
+                        acc_.add(it_[3][1])
+                    for x_ in it_:
+                        if isinstance(x_, list):
+                            walk_(x_)
+            walk_(items)
+            sdst_cache_.append(acc_)
+        return sdst_cache_[0]
     def iexpr_(v_):
         """An index: a pointer-typed value goes through reinterpret_cast<long>."""
         e_ = expr(v_)
@@ -5102,7 +5141,8 @@ def gen_function(a, ins):
                     continue
                 outl.append(f"{pad}{acc(base, off)}[{iexpr_(iv)}] = {fit(expr(val), vtype(val), ftype(sn, off))};")
                 continue
-            if it[0] == "let" and "sink" in knobs and use_count.get(it[1], 0) == 1 and not (isinstance(vars_[it[1]], str) and vars_[it[1]] in structs):
+            if it[0] == "let" and "sink" in knobs and use_count.get(it[1], 0) == 1 and not (isinstance(vars_[it[1]], str) and vars_[it[1]] in structs) \
+                    and not ("dstfirst" in knobs and it[1] in store_dsts_()):
                 lt0 = vars_[it[1]]
                 if not (isinstance(lt0, tuple) and len(lt0) > 3 and lt0[3] != ftype(it[2], it[3])):
                     inline_map[it[1]] = acc(it[4], it[3])
@@ -5707,6 +5747,12 @@ def gen_function(a, ins):
         else:
             gdecls.append(f"{note}extern {sn} g{sn}{hidden};{tail}")
         gsyms.append(sym)
+    vol_fields_ = set()
+    if "volstores" in knobs:
+        for sn_, off_, sz_ in cstore1_:
+            if any((sn_, off_ + sz_, s2_) in cstore1_ for s2_ in (1, 2, 4)) \
+                    or any((sn_, off_ - s2_, s2_) in cstore1_ for s2_ in (1, 2, 4)):
+                vol_fields_.add((sn_, off_))
     def pack_(ct_, off_):
         """The attribute that keeps a field of type ct_ at an offset its type is not aligned to."""
         sz_ = SIZE.get(ct_[6:] if ct_.startswith("ARRAY:") else ct_)
@@ -5768,6 +5814,8 @@ def gen_function(a, ins):
                     pos = off + SIZE[ct[6:]]
                     continue
                 t2 = f"{child}*" if child else ct
+                if (sn, off) in vol_fields_:
+                    t2 = "volatile " + t2
                 fl.extend(bf_lines_(sn, off, t2)) if (sn, off) in bitfields_ and t2 in BFW_ else \
                     fl.append(f"    {t2} field_{off:x}{pack_(ct, off)};{' ' * max(1, 20 - len(t2))}// +{off:x}")
                 pos = off + SIZE[ct]
@@ -5792,6 +5840,8 @@ def gen_function(a, ins):
                 pos = off + SIZE[ct[6:]]
                 continue
             t = f"{child}*" if child else ct
+            if (sn, off) in vol_fields_:
+                t = "volatile " + t
             fl.extend(bf_lines_(sn, off, t)) if (sn, off) in bitfields_ and t in BFW_ else \
                 fl.append(f"    {t} field_{off:x}{pack_(ct, off)};{' ' * max(1, 20 - len(t))}// +{off:x}")
             pos = off + SIZE[ct]
