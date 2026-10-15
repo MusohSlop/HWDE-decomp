@@ -110,6 +110,7 @@ real classes.
 | `misc/variant_functions81.cpp` | variant search, eighty-first run (`nobasefix`, `noicvt`, `nopackfield`) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions82.cpp` | variant search, eighty-second run (`readarity`, `readarity+voidret`) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions83.cpp` | variant search, eighty-third run (`noretthis`, `noread0`, `nobytearr`, `nofbits`, `nofccmp`) | as `misc/variant_functions26.cpp` |
+| `misc/variant_functions84.cpp` | variant search, eighty-fourth run (`noshortidx`) | as `misc/variant_functions26.cpp` |
 | `misc/s2_functions1.cpp` | second session, first run over `0x7100380000` and up (the whole 4-byte constant pool, 16-byte vector constants from the literal pool) | as `misc/variant_functions26.cpp`; vector constants are `(Vec4f){...}` literals, mapped through `.rodata.cst16` |
 | `misc/s2_functions2.cpp` | second session, second run (float stack slots, `sqrtf`, float branches, indexed floats) | as `misc/s2_functions1.cpp` |
 | `misc/s2_functions3.cpp` | second session, third run (constant-store fields retyped, integer reads of two widths; only the newly generated functions) | as `misc/s2_functions1.cpp` |
@@ -133,6 +134,8 @@ real classes.
 | `misc/s2_functions21.cpp` | second session, address-taken locals declared from the highest offset down (knob sets `stackdesc`, `stackdesc+voidret`) over every generating but unmatched function of `0x7100380000` and up | as `misc/s2_functions13.cpp` (4a29d0 and 4a2abc are in `misc/variant_ctor01.cpp`) |
 | `misc/s2_functions22.cpp` | second session, int fields converted to float in a vector register (`noicvt`) and fields at unaligned offsets (`nopackfield`; only the functions whose generated code changed) | as `misc/s2_functions13.cpp` |
 | `misc/s2_functions23.cpp` | second session, byte-offset accesses into typed fields (`nobytearr`), floats through general registers (`nofbits`), conditional float compares (`nofccmp`) and every function of `0x7100380000` and up that generates since the stackdesc run | as `misc/s2_functions13.cpp` |
+| `misc/s2_functions24.cpp` | second session, vector slots and members used as lanes and halves (`novecunion`; only the functions whose generated code changed) | as `misc/s2_functions13.cpp`; such slots are `VecU` unions accessed through `.v`, `.f[k]`, `.i[k]`, `.l[h]` |
+| `misc/s2_functions25.cpp` | second session, float rounding (`nofround`) and the functions of `0x7100380000` and up that generate since master's `noretthis` and `noread0` | as `misc/s2_functions13.cpp` |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/loop_functions2.cpp` | loops with if/else bodies and pointer induction variables | as `misc/loop_functions.cpp`, plus element structs `ElemFUNC_rN` sized to the stride |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |
