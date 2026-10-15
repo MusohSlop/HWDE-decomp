@@ -4539,6 +4539,12 @@ def gen_function(a, ins):
         else:
             gdecls.append(f"{note}extern {sn} g{sn}{hidden};{tail}")
         gsyms.append(sym)
+    def pack_(ct_, off_):
+        """The attribute that keeps a field of type ct_ at an offset its type is not aligned to."""
+        sz_ = SIZE.get(ct_[6:] if ct_.startswith("ARRAY:") else ct_)
+        if "nopackfield" in knobs or sz_ not in (2, 4, 8) or off_ % sz_ == 0:
+            return ""
+        return f" __attribute__((packed, aligned({off_ & -off_})))"
     for sn in order:
         if sn in gobjs and set(structs[sn]) <= {0}:
             continue
@@ -4553,7 +4559,7 @@ def gen_function(a, ins):
                     fl.append(f"    unsigned char pad{pos:x}[0x{off - pos:x}];")
                 tt_ = (f"{child}*" if child else ct[6:]) if ct.startswith("ARRAY:") else (f"{child}*" if child else ct)
                 fl.extend(bf_lines_(sn, off, tt_)) if (sn, off) in bitfields_ and tt_ in BFW_ and not ct.startswith("ARRAY:") else \
-                    fl.append(f"    {tt_} field_{off:x}{'[1]' if ct.startswith('ARRAY:') else ''};{' ' * max(1, 20 - len(tt_))}// +{off:x}")
+                    fl.append(f"    {tt_} field_{off:x}{'[1]' if ct.startswith('ARRAY:') else ''}{pack_(ct, off)};{' ' * max(1, 20 - len(tt_))}// +{off:x}")
                 pos = off + SIZE[ct[6:] if ct.startswith("ARRAY:") else ct]
             if pos > elemsizes[sn]:
                 raise Fail("element too small")
@@ -4583,12 +4589,12 @@ def gen_function(a, ins):
                     fl.append(f"    unsigned char pad{pos:x}[0x{off - pos:x}];")
                 if ct.startswith("ARRAY:"):
                     et_ = f"{child}*" if child else ct[6:]
-                    fl.append(f"    {et_} field_{off:x}[1];{' ' * max(1, 17 - len(et_))}// +{off:x}")
+                    fl.append(f"    {et_} field_{off:x}[1]{pack_(ct, off)};{' ' * max(1, 17 - len(et_))}// +{off:x}")
                     pos = off + SIZE[ct[6:]]
                     continue
                 t2 = f"{child}*" if child else ct
                 fl.extend(bf_lines_(sn, off, t2)) if (sn, off) in bitfields_ and t2 in BFW_ else \
-                    fl.append(f"    {t2} field_{off:x};{' ' * max(1, 20 - len(t2))}// +{off:x}")
+                    fl.append(f"    {t2} field_{off:x}{pack_(ct, off)};{' ' * max(1, 20 - len(t2))}// +{off:x}")
                 pos = off + SIZE[ct]
             sdefs.append(f"class {sn} {{\npublic:\n" + "\n".join(ml) + ("\n\n" + "\n".join(fl) if fl else "") + "\n};\n")
             continue
@@ -4600,12 +4606,12 @@ def gen_function(a, ins):
                 fl.append(f"    unsigned char pad{pos:x}[0x{off - pos:x}];")
             if ct.startswith("ARRAY:"):
                 et_ = f"{child}*" if child else ct[6:]
-                fl.append(f"    {et_} field_{off:x}[1];{' ' * max(1, 17 - len(et_))}// +{off:x}")
+                fl.append(f"    {et_} field_{off:x}[1]{pack_(ct, off)};{' ' * max(1, 17 - len(et_))}// +{off:x}")
                 pos = off + SIZE[ct[6:]]
                 continue
             t = f"{child}*" if child else ct
             fl.extend(bf_lines_(sn, off, t)) if (sn, off) in bitfields_ and t in BFW_ else \
-                fl.append(f"    {t} field_{off:x};{' ' * max(1, 20 - len(t))}// +{off:x}")
+                fl.append(f"    {t} field_{off:x}{pack_(ct, off)};{' ' * max(1, 20 - len(t))}// +{off:x}")
             pos = off + SIZE[ct]
         if "stackpad" in knobs and stackobjs and sn == stackobjs[max(stackobjs)]:
             local_ = None
