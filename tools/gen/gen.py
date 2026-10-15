@@ -1816,6 +1816,12 @@ def gen_function(a, ins):
                         items.append(("return", ("pair", fv, fv1)))
                         returns.append(items[-1][1])
                         return items
+                if "noretthis" not in knobs and v == ("param", 0) and 0 in written:
+                    # x0 set back to the incoming first argument since the last call (mov x0, x19): the function
+                    # returns it, as a placement constructor returns this
+                    items.append(("return", ("param", 0)))
+                    returns.append(items[-1][1])
+                    return items
                 if v != ("param", 0) and computed_float(fv) and weak_int(v):
                     v = ("param", 0)
                 if v == ("param", 0) and fv is not None and fv != ("fparam", 0):
