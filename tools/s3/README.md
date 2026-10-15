@@ -38,10 +38,15 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
 - `topotry.py SPEC.json [--work DIR]` tries every order of a set of statements (with dependencies and chains that
   keep a relative order) in a template's `{REGION}`; for load and store order problems. The spec format is in the
   script's docstring; a match goes to `DIR/topo_match.cpp` (exit code 0).
+- `irsbatch.py LIST [--iters N] --work DIR` runs the fifth session's `tools/s5/irsearch.py --groups` (used as is)
+  over the lines `ADDR CPP [SYMS] [FUNC] [NAME=ADDR ...]` of LIST, one after another; each source goes to irsearch
+  as a .cpp, so its IR is emitted with -g and use-list orders like the unit compile. A match is copied to
+  `DIR/irs_match_ADDR.ll`. Some functions' -g IR does not compile back (clang 3.9.1 crashes, `761d8`); irsearch
+  then stops at its first score.
 
 ## Unattended searches
 
-`bgsearch.py` runs one of the searches above (permtry, topotry, voltry, ordtry, floattry) detached through `tools/lowprio.py` (idle
+`bgsearch.py` runs one of the searches above (permtry, topotry, voltry, ordtry, floattry, or `irsbatch.py`) detached through `tools/lowprio.py` (idle
 priority, one job, as `docs/second_session.md` asks of unattended searches), so it only uses spare CPU, with its
 own work folder under `build/s3_perm/NAME/` (ignored by git; nothing tracked is touched). At most two run at a
 time.
@@ -55,7 +60,8 @@ python -B -I tools/s3/bgsearch.py stop 351428-vol
 `start` appends `--work build/s3_perm/NAME/work` to the search's arguments, writes its output to
 `build/s3_perm/NAME/log.txt`, its PID to `build/s3_perm/NAME/pid` and `build/s3_perm/pids.txt`, and its exit code
 to `build/s3_perm/NAME/exit.txt` when it ends (0: it found a match, in `NAME/work/perm_match.cpp`,
-`topo_match.cpp`, `vol_match.cpp`, `ord_match.cpp`, or `*_match_ADDR.cpp` for a `--list` run). A hit is only a candidate: put the source into its unit (addgen.py or by
+`topo_match.cpp`, `vol_match.cpp`, `ord_match.cpp`, or `*_match_ADDR.cpp` for a `--list` run; `irs_match_ADDR.ll`
+from irsbatch.py, an IR order still to be written as source). A hit is only a candidate: put the source into its unit (addgen.py or by
 hand), register its symbols, and run `tools/check.py UNIT`, then the full `tools/check.py`, before committing it.
 Anything else unattended (a rank.py or batchconv.py batch) goes through `tools/lowprio.py --jobs 1 -- ...` as
 well.
@@ -142,8 +148,9 @@ third session's reports). Paths may be absolute or relative to the caller's dire
 
 - `addgen.py SRC.cpp ADDR SYMJSON UNIT [NOTE]` appends a generated-style (or converted) function to a unit:
   identical declarations, extern globals, includes and type definitions already in the unit are dropped, a
-  callee declaration that clashes with one of another return type is renamed `callee2_NNN` (as gen.py does inside
-  a unit), the function's symbols and the function itself are registered in `units.json`, and the unit is built
+  callee declaration that clashes with one in the unit (another return type or parameter list) moves, with all of
+  the new code's overloads of that callee, to one new prefix `calleeK_NNN` that clashes with none of them (as gen.py
+  does inside a unit), the function's symbols and the function itself are registered in `units.json`, and the unit is built
   and checked (with `tools/gen/autosym.py` for the callee names). NOTE becomes the comment over the function.
 - `dropunit.py UNIT` removes a unit's entry from `units.json` (its symbols stay).
 

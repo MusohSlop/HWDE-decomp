@@ -2,9 +2,11 @@
 //   build/s4/adiff.py, --name _ZN7AdvUnit6decideEv and docs/s4_wip/294378.json (its .rodata 0x71007f8554 holds the
 //   main 70-entry jump table and the nested switch's 10-entry one right after it). can_move (0x7100298094) and
 //   can_warp (0x7100298390) from this file are matched in src/misc/s4_298094.cpp.
-// State: 12,100 B, 1,208 instructions off with registers abstracted (branch targets counted). Every case's first
-//   block is laid out in the original's order (the case groups 9/f/45, c/16/31, 20/3a/44, 25/30/3c and 26/3e/42
-//   first, then 1, 2, 3, ... 24, the default and 43). What is right:
+// State: 12,608 B, 1,169 instructions off with registers abstracted (branch targets counted). can_move is only
+//   declared here: defined in the same file, LLVM stops passing this to it (it never reads it) while the original
+//   passes this at every call, so can_move was in another unit. The case groups 9/f/45, c/16/31, 20/3a/44, 25/30/3c
+//   and 26/3e/42 start where the original's do; from case 1 on ours drifts (case 2 jumps into case c's chain where
+//   the original has its own, case 18 shares case 10's code, about 520 B more before the return). What is right:
 //   - the cell is an int (c - 1 with nsw lets the inlined neighbour tests fold for constant offsets; unsigned,
 //     nothing folds and the function is 4.6 KB larger); the neighbour test is can_move's own helper (adjacent,
 //     returning unsigned char), which already gives the original's code for step(c - 0x10, c - 0x20) in case 8;
@@ -16,9 +18,11 @@
 // Still different: the order of the first neighbour test of a chain: the original tests the column first
 //   ((c & 0xf) != 0) and then c and c - 1 against 0xb0 as separate branches; ours computes the two range tests as
 //   an or, branches on the column, then on the or. Writing the left/right steps out (column first) did not help.
-//   ready (0x7100297f34, 7 off) and blocked (0x7100298178, 36 off), kept below, both differ where the original
-//   materializes the cell table's offset 0xdb636 (and, in ready, 0x1e0 and the map's sign extension) in the
-//   entry block; neither a cell pointer taken early nor byte arithmetic reproduced it.
+//   ready (0x7100297f34) is 2 off: the panel is loaded in the entry block (MachineSink then moves the load and its
+//   address down but leaves the constants, as in the original); what remains is the index's zero extension, which
+//   InstCombine places after the second get_unit_database call. blocked (0x7100298178, the same load) is 46 off in
+//   its tail. The open() check converts the panel to a 64-bit index before its second call (one instruction at
+//   each of about 30 sites); the first neighbour test of case 9 tests the column first ((c & 0xf) != 0).
 
 // Adventure Mode: a board unit's movement choice (0x7100294378). By the unit's kind it tests the cells around it
 // (the eight-neighbour test of can_move, the unit tables' passability and the panels' blocking byte) and returns
@@ -172,8 +176,8 @@ static inline unsigned char adjacent(unsigned int from, unsigned int to) {
 static inline bool open(unsigned int cell) {
     Game* game = get_game();
     int map = game->players[game_mode()].map;
-    short panel = get_unit_database()->maps[map].cells[cell];
-    return get_unit_database()->panel(panel).blocking == 0;
+    unsigned long panel = static_cast<unsigned int>(get_unit_database()->maps[map].cells[cell]);
+    return get_unit_database()->panels[panel].blocking == 0;
 }
 
 static inline bool step(unsigned int from, unsigned int to) {
@@ -203,10 +207,14 @@ int AdvUnit::decide() {
     case 9:
     case 0xf:
     case 0x45:
-        if (adjacent(c, c - 1) && adjacent(c - 1, c - 2) && can_move(c - 2, c - 3))
-            return go(3);
-        if (adjacent(c, c + 1) && adjacent(c + 1, c + 2) && can_move(c + 2, c + 3))
-            return go(2);
+        if ((c & 0xf) != 0) {
+            if (adjacent(c, c - 1) && adjacent(c - 1, c - 2) && can_move(c - 2, c - 3))
+                return go(3);
+        }
+        if (c % 16 != 15) {
+            if (adjacent(c, c + 1) && adjacent(c + 1, c + 2) && can_move(c + 2, c + 3))
+                return go(2);
+        }
         if (adjacent(c, c - 0x10) && adjacent(c - 0x10, c - 0x20) && can_move(c - 0x20, c - 0x30))
             return go(1);
         if (adjacent(c, c + 0x10) && adjacent(c + 0x10, c + 0x20) && can_move(c + 0x20, c + 0x30))
@@ -228,7 +236,7 @@ int AdvUnit::decide() {
     case 0x3a:
     case 0x44:
         if ((can_move(c, c - 1) && can_move(c - 1, c - 2) && can_move(c - 2, c - 3)) || open(c))
-            return go(3);
+            return pick(3);
         if ((can_move(c, c + 1) && can_move(c + 1, c + 2) && can_move(c + 2, c + 3)) || open(c))
             return pick(2);
         if ((can_move(c, c - 0x10) && can_move(c - 0x10, c - 0x20) && can_move(c - 0x20, c - 0x30)) || open(c))
@@ -475,7 +483,7 @@ int AdvUnit::decide() {
             if (can_move(c, c - 1) && can_move(c - 1, c - 2))
                 return pick(3);
             if (can_move(c, c + 1) && can_move(c + 1, c + 2))
-                return pick(2);
+                return go(2);
             if (!can_move(c, c - 0x10) || !can_move(c - 0x10, c - 0x20))
                 return 5;
             return pick(1);
@@ -527,14 +535,6 @@ int AdvUnit::decide() {
     }
 }
 
-// 0x7100298094
-unsigned char AdvUnit::can_move(unsigned int from, unsigned int to) {
-    if (adjacent(from, to)) {
-        Game* game = get_game();
-        return unit_is_leader(game->players[game_mode()].map, to);
-    }
-    return false;
-}
 
 // 0x7100297f34
 unsigned char AdvUnit::ready() {
@@ -543,7 +543,7 @@ unsigned char AdvUnit::ready() {
     unsigned int c = cell;
     int k = kind;
     unit_kind(map, c);
-    short* cells = get_unit_database()->maps[map].cells;
+    unsigned int p = get_unit_database()->maps[map].cells[c];
     if (k < 0)
         return false;
     if (static_cast<unsigned int>(board->lane - 1) < 2)
@@ -552,12 +552,10 @@ unsigned char AdvUnit::ready() {
         return true;
     if (k == 0x1c)
         return true;
-    unsigned int p = cells[c];
     if (k == get_unit_database()->panel(p).kind && get_unit_database()->panel(p).flag3 != 1)
         return true;
     return false;
-}
-// 0x7100298178
+}// 0x7100298178
 unsigned char AdvUnit::blocked() {
     Game* game = get_game();
     unsigned int mode = game_mode();
@@ -565,13 +563,12 @@ unsigned char AdvUnit::blocked() {
     int map = game->players[mode].map;
     int k = kind;
     unit_kind(map, c);
-    UnitDatabase* db = get_unit_database();
+    unsigned int p = get_unit_database()->maps[map].cells[c];
     if (k < 0)
         return false;
     Player& player = game->players[mode];
     if (k == 0)
         return player.visited[map] != 0;
-    unsigned int p = db->maps[map].cells[c];
     if (k != get_unit_database()->panel(p).kind)
         return false;
     if (get_unit_database()->panel(p).flag3 == 1)
@@ -593,8 +590,7 @@ unsigned char AdvUnit::blocked() {
         return !(player.progress[map].flags & 8);
     }
     return true;
-}
-// 0x7100298390
+}// 0x7100298390
 unsigned char AdvUnit::can_warp(int map) {
     Game* game = get_game();
     Player& player = game->players[game_mode()];

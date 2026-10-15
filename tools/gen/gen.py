@@ -1853,7 +1853,7 @@ def gen_function(a, ins):
         return its, lt["regs"], lt["flags"], lt["written"]
     in_loop = set()
     def walk(k, regs, flags, written, depth, stop=None, latch=None, region=False, alt=None):
-        if depth > 6:
+        if depth > (6 if "deep6" in knobs else 8):
             raise Fail("deep")
         items = []
         while True:
