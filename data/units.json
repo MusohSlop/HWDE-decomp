@@ -29226,6 +29226,25 @@
         "_ZN7AdvUnit8can_warpEi": "0x7100298390"
       }
     },
+    "misc/s2_functions29.cpp": {
+      "functions": {
+        "_Z11call_399c58P11Arg399c58_0": "0x7100399c58",
+        "_Z11call_3db95cl": "0x71003db95c",
+        "_Z11call_3dcac8Pv": "0x71003dcac8",
+        "_Z11call_3dcb24Pv": "0x71003dcb24",
+        "_Z11call_3dd5bcPv": "0x71003dd5bc",
+        "_Z11call_3dd8e0l": "0x71003dd8e0",
+        "_Z11call_3de800l": "0x71003de800",
+        "_Z11call_444528P11Arg444528_0": "0x7100444528",
+        "_Z11call_5c6df0P11Arg5c6df0_0": "0x71005c6df0",
+        "_Z11call_5f8f4cPv": "0x71005f8f4c",
+        "_Z11call_5f940cPv": "0x71005f940c"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      }
+    },
     "misc/s3_functions15.cpp": {
       "map": {
         ".rodata.cst4": "0x710073b000",
