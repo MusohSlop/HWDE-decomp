@@ -2668,6 +2668,29 @@
   }
  },
  {
+  "timestamp": "2026-10-14T00:47:10Z",
+  "commit_sha": "2d80606baee925fc31c6ca40d73f21735fe0918f",
+  "commit_message": "Update README.md",
+  "measures": {
+   "fuzzy_match_percent": 3.23,
+   "total_code": 5603025,
+   "matched_code": 180944,
+   "matched_code_percent": 3.23,
+   "total_data": 0,
+   "matched_data": 0,
+   "matched_data_percent": 0,
+   "total_functions": 17282,
+   "matched_functions": 3817,
+   "matched_functions_percent": 22.09,
+   "complete_code": 0,
+   "complete_code_percent": 0,
+   "complete_data": 0,
+   "complete_data_percent": 0,
+   "total_units": 0,
+   "complete_units": 0
+  }
+ },
+ {
   "timestamp": "2026-10-14T00:47:56Z",
   "commit_sha": "6fecff644e8a9c4566ab7767f26278f8607f75c6",
   "commit_message": "matching: 14 single ranked leaves; two near misses",
@@ -2705,29 +2728,6 @@
    "total_functions": 17282,
    "matched_functions": 3831,
    "matched_functions_percent": 22.17,
-   "complete_code": 0,
-   "complete_code_percent": 0,
-   "complete_data": 0,
-   "complete_data_percent": 0,
-   "total_units": 0,
-   "complete_units": 0
-  }
- },
- {
-  "timestamp": "2026-10-14T00:47:10Z",
-  "commit_sha": "2d80606baee925fc31c6ca40d73f21735fe0918f",
-  "commit_message": "Update README.md",
-  "measures": {
-   "fuzzy_match_percent": 3.23,
-   "total_code": 5603025,
-   "matched_code": 180944,
-   "matched_code_percent": 3.23,
-   "total_data": 0,
-   "matched_data": 0,
-   "matched_data_percent": 0,
-   "total_functions": 17282,
-   "matched_functions": 3817,
-   "matched_functions_percent": 22.09,
    "complete_code": 0,
    "complete_code_percent": 0,
    "complete_data": 0,
@@ -9640,6 +9640,52 @@
   "timestamp": "2026-10-15T18:08:24Z",
   "commit_sha": "4beaef2c32884aef6d68d52a29cff2cbff1e25bf",
   "commit_message": "tools/bytematch_history.py: ByteMatch history file from the published commits",
+  "measures": {
+   "fuzzy_match_percent": 17.29,
+   "total_code": 5590465,
+   "matched_code": 966356,
+   "matched_code_percent": 17.29,
+   "total_data": 0,
+   "matched_data": 0,
+   "matched_data_percent": 0,
+   "total_functions": 17366,
+   "matched_functions": 8096,
+   "matched_functions_percent": 46.62,
+   "complete_code": 0,
+   "complete_code_percent": 0,
+   "complete_data": 0,
+   "complete_data_percent": 0,
+   "total_units": 0,
+   "complete_units": 0
+  }
+ },
+ {
+  "timestamp": "2026-10-15T18:18:30Z",
+  "commit_sha": "e7ac34a21586eea54983edd96e59687a21c44f54",
+  "commit_message": "history: ByteMatch history file for version 1.0.1",
+  "measures": {
+   "fuzzy_match_percent": 17.29,
+   "total_code": 5590465,
+   "matched_code": 966356,
+   "matched_code_percent": 17.29,
+   "total_data": 0,
+   "matched_data": 0,
+   "matched_data_percent": 0,
+   "total_functions": 17366,
+   "matched_functions": 8096,
+   "matched_functions_percent": 46.62,
+   "complete_code": 0,
+   "complete_code_percent": 0,
+   "complete_data": 0,
+   "complete_data_percent": 0,
+   "total_units": 0,
+   "complete_units": 0
+  }
+ },
+ {
+  "timestamp": "2026-10-15T18:28:57Z",
+  "commit_sha": "51fab7b815ac5f546e5415dd3ea274958c8f192e",
+  "commit_message": "bytematch_history.py: git from GIT, entries in timestamp order",
   "measures": {
    "fuzzy_match_percent": 17.29,
    "total_code": 5590465,
