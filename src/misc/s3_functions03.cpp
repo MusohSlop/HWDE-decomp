@@ -2028,3 +2028,85 @@ int call_3aa468(Arg3aa468_0* p0) {
     p0->field_48 = nullptr;
     return c6;
 }
+
+struct Arg1f1c8c_0 {
+    long field_0;                // +0
+    int field_8;                 // +8
+    int field_c;                 // +c
+};
+// Reached through the GOT slot at 0x7100c23150.
+extern unsigned char gGlobalc23150_1f1c8c[];
+
+// 0x71001f1c8c: stores in the original's order
+void call_1f1c8c(Arg1f1c8c_0* p0) {
+    p0->field_8 = -0x5fcffffa;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc23150_1f1c8c) + 0x10);
+    p0->field_c = 2;
+}
+
+struct Arg75bd4_0 {
+    long field_0;                // +0
+    void* field_8;               // +8
+    void* field_10;               // +10
+    void* field_18;               // +18
+    int field_20;                 // +20
+    unsigned char pad24[0x4];
+    void* field_28;               // +28
+    int field_30;                 // +30
+};
+// Reached through the GOT slot at 0x7100c221a0.
+extern unsigned char gGlobalc221a0_75bd4[];
+
+// 0x7100075bd4: stores in the original's order
+void call_75bd4(Arg75bd4_0* p0) {
+    p0->field_10 = nullptr;
+    p0->field_18 = nullptr;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc221a0_75bd4) + 0x10);
+    p0->field_20 = 0;
+    p0->field_8 = nullptr;
+    p0->field_28 = nullptr;
+    p0->field_30 = 0;
+}
+
+// 0x7100053958: converted to a class, with a field at an offset its type would not get declared packed
+class Class53958 {
+public:
+    Class53958();
+    virtual void v00();
+
+    void* f8;
+    void* f10;
+    int f18;
+    int f1c;
+    int f20;
+    long f24 __attribute__((packed));
+};
+
+Class53958::Class53958()
+    : f8(nullptr), f10(nullptr), f18(-1), f1c(-1), f20(0), f24(-1) {}
+
+// 0x7100441a44: converted to a class, with a field at an offset its type would not get declared packed
+class Class441a44 {
+public:
+    Class441a44();
+    virtual void v00();
+
+    void* f8;
+    void* f10;
+    int f18;
+    int f1c;
+    unsigned char pad20[0x810];
+    void* f830;
+    unsigned char pad838[0x48];
+    void* f880;
+    void* f888;
+    void* f890;
+    void* f898;
+    unsigned char pad8a0[0x8];
+    int f8a8;
+    void* f8ac __attribute__((packed));
+    void* f8b4 __attribute__((packed));
+};
+
+Class441a44::Class441a44()
+    : f8(nullptr), f10(nullptr), f18(0), f1c(-1), f830(nullptr), f880(nullptr), f888(nullptr), f890(nullptr), f898(nullptr), f8a8(0x64), f8ac(nullptr), f8b4(nullptr) {}

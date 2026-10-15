@@ -79,7 +79,9 @@ well.
   `HandleState` base, then the vtable). With `--prefix` only the leading member initialisation becomes members
   and the rest of the function stays as the constructor body, run on the generated view of the object (`p0`).
   Prints the constructor's symbol and the `--map` arguments for the placeholder classes (`ObjNNN`, or the class
-  of a constructor already named in `units.json`). A run of equal no-argument members becomes an array when the
+  of a constructor already named in `units.json`). A field at an offset its type would not get is declared
+  `__attribute__((packed))` (and fixalign.py's packed fields are read). A run of equal no-argument members
+  becomes an array when the
   original's vtable store post-increments (`str x8, [xN], #K`) to the run's second member: Clang folds into that
   store the newest `this`+K address with K under 256, which for single members is the last one under 256 and for
   an array the second element (`--no-post-arrays` keeps single members).

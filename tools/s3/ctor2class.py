@@ -56,7 +56,7 @@ for sm in re.finditer(r"struct (\w+) \{\n(.*?)\n\};", src, re.S):
         pm = re.search(r"pad0\[0x([0-9a-f]+)\]", body)
         elems[sm.group(1)] = int(pm.group(1), 16) if pm else None
     if argstruct and sm.group(1) == argstruct.group(1):
-        for fm in re.finditer(r"^\s+([\w\s\*]+?) field_([0-9a-f]+);", body, re.M):
+        for fm in re.finditer(r"^\s+([\w\s\*]+?) field_([0-9a-f]+)(?: __attribute__\(\(packed\)\))?;", body, re.M):
             fields[int(fm.group(2), 16)] = fm.group(1).strip()
 
 body = fn.group(3).split("\n")
@@ -301,7 +301,9 @@ while idx < len(offs_list):
             body_stmts.append(f"__builtin_memset(z{o:x}, {mbr[2]}, sizeof(z{o:x}));")
     else:
         t = mbr[1]
-        out.append(f"    {t} f{o:x};" if not t.endswith("*") else f"    {t[:-1].strip()}* f{o:x};")
+        # a field at an offset its type would not get (an int pair stored as one long at +...4) stays there packed
+        pk = " __attribute__((packed))" if msize(mbr) in (2, 4, 8) and o % msize(mbr) else ""
+        out.append(f"    {t} f{o:x}{pk};" if not t.endswith("*") else f"    {t[:-1].strip()}* f{o:x}{pk};")
         inits.append(f"f{o:x}({mbr[3]})")
     pos = o + msize(mbr)
     idx += 1

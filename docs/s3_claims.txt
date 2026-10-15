@@ -2,6 +2,6 @@
 # functions (vtable stores into this) at any size. Generator runs should skip every address listed here.
 # working: functions being hand-matched now; matched: functions matched on matching-s3; tried: parked, with reason.
 working:
-matched: 28ee38 30be50 325e64 3b9ccc 362914 384a50 3556b8 35f6e8 118e44 1721b0 2900cc 3c8578 33f7c0 1ddfe8 3980b8 36983c 187d78 369d3c ef31c 33b748 1ec528 5f80bc 5f37e8 b63f4 b6478 af10c 5fbbb0 351428 37af54 3527e8 34d974 2f2ae4 1ef064 1f2124 2b349c 2b81b4 3c8724 2a6fd0 c5df8 1f18e8 3aa468
+matched: 28ee38 30be50 325e64 3b9ccc 362914 384a50 3556b8 35f6e8 118e44 1721b0 2900cc 3c8578 33f7c0 1ddfe8 3980b8 36983c 187d78 369d3c ef31c 33b748 1ec528 5f80bc 5f37e8 b63f4 b6478 af10c 5fbbb0 351428 37af54 3527e8 34d974 2f2ae4 1ef064 1f2124 2b349c 2b81b4 3c8724 2a6fd0 c5df8 1f18e8 3aa468 1f1c8c 75bd4 53958 441a44
 tried: 38868 3e1dec 441e94 3e350c (5,920 B each, the same code four times: docs/s3_wip/38868.cpp compiles to 5,900 B with 86 instructions still differing; see its header)
 tried: 3f6964 (1,544 B, 2 off: the generated source with the thunk 5e66c0 called as (obj->x20, &zero vec3) and &this->x19e1 taken first matches but for the order of three constant materialisations at the start of the tail stores)
