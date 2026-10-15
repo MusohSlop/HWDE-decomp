@@ -6,7 +6,7 @@
   bgsearch.py list                        each search: running or its exit code, match file, last log line
   bgsearch.py stop NAME                   end a running search (and its compiles)
 
-SCRIPT is one of the searches that take --work (permtry.py, topotry.py, voltry.py). At most two run at a time.
+SCRIPT is one of the searches that take --work (permtry.py, topotry.py, voltry.py, ordtry.py). At most two run at a time.
 Everything stays under build/s3_perm (ignored by git); the PID is in NAME/pid and in build/s3_perm/pids.txt. A
 search's own exit code goes to NAME/exit.txt: 0 means it wrote its match file (perm_match.cpp, topo_match.cpp or
 vol_match.cpp) into NAME/work. A hit still has to be put into its unit and pass the full check before it counts.

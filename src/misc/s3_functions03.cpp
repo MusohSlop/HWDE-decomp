@@ -1916,3 +1916,115 @@ int call_34d974(Arg34d974_0* p0) {
     }
     return reinterpret_cast<int (*)(long, long)>(v15)(reinterpret_cast<long>(h78), m22);
 }
+
+struct Argc5df8_0 {
+    long field_0;                // +0
+    int field_8;                 // +8
+    int field_c;                 // +c
+    int field_10;                 // +10
+    long field_14 __attribute__((packed));                // +14
+};
+// Reached through the GOT slot at 0x7100c22860.
+extern unsigned char gGlobalc22860_c5df8[];
+
+// 0x71000c5df8: the int pair at +14 as one packed 8-byte field, stored after the vtable
+void call_c5df8(Argc5df8_0* p0) {
+    p0->field_8 = -1;
+    p0->field_c = -1;
+    p0->field_10 = 0;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc22860_c5df8) + 0x10);
+    p0->field_14 = static_cast<unsigned long>(static_cast<unsigned int>(-1));
+}
+
+struct Arg1f18e8_0 {
+    long field_0;                // +0
+    int field_8;                 // +8
+    int field_c;                 // +c
+};
+// Reached through the GOT slot at 0x7100c23148.
+extern unsigned char gGlobalc23148_1f18e8[];
+
+// 0x71001f18e8: stores in the original's order
+void call_1f18e8(Arg1f18e8_0* p0) {
+    p0->field_8 = -0x5fcffffb;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc23148_1f18e8) + 0x10);
+    p0->field_c = 0;
+}
+
+int callee_1e26e0(void*, long);        // 0x71001e26e0
+void callee_3c7188(void*);        // 0x71003c7188
+
+struct Arg3aa468_0 {
+    long field_0;                // +0
+    unsigned char pad8[0x20];
+    void* field_28;               // +28
+    void* field_30;               // +30
+    int field_38;                 // +38
+    unsigned char pad3c[0x4];
+    void* field_40;               // +40
+    void* field_48;               // +48
+    void* field_50;               // +50
+    void* field_58;               // +58
+    void* field_60;               // +60
+    void* field_68;               // +68
+    unsigned char pad70[0x220];
+    volatile int field_290;                 // +290
+    unsigned char pad294[0x4];
+    void* field_298;               // +298
+    void* field_2a0;               // +2a0
+    unsigned char pad2a8[0x18];
+    void* field_2c0;               // +2c0
+    void* field_2c8;               // +2c8
+    long field_2d0;                // +2d0
+    long field_2d8;                // +2d8
+    int field_2e0;                 // +2e0
+    unsigned char pad2e4[0x4];
+    unsigned short field_2e8;      // +2e8
+    unsigned char pad2ea[0x6];
+    void* field_2f0;               // +2f0
+    void* field_2f8;               // +2f8
+    void* field_300;               // +300
+    int field_308;                 // +308
+    unsigned char pad30c[0x4];
+    void* field_310;               // +310
+};
+// Reached through the GOT slot at 0x7100c22a00.
+extern void* gGlobalc22a00_3aa468;
+// Reached through the GOT slot at 0x7100c2adb8.
+extern unsigned char gGlobalc2adb8_3aa468[];
+// Reached through the GOT slot at 0x7100c22f00.
+extern unsigned char gGlobalc22f00_3aa468[];
+
+// 0x71003aa468: one field volatile: the original keeps its store in source order
+int call_3aa468(Arg3aa468_0* p0) {
+    callee_3c7188(p0);
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2adb8_3aa468) + 0x10);
+    p0->field_28 = nullptr;
+    p0->field_30 = nullptr;
+    p0->field_38 = 2;
+    callee_5d2744(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x70));
+    callee_5d2744(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x180));
+    p0->field_2c8 = nullptr;
+    p0->field_2c0 = nullptr;
+    p0->field_290 = 0;
+    p0->field_2a0 = nullptr;
+    p0->field_298 = nullptr;
+    new (reinterpret_cast<unsigned char*>(p0) + 0x2d0) LayoutHandle;
+    p0->field_2e8 = 0;
+    p0->field_308 = 0;
+    p0->field_300 = nullptr;
+    p0->field_2f8 = nullptr;
+    p0->field_2f0 = nullptr;
+    void* v3 = gGlobalc22a00_3aa468;
+    callee_1e26dc(v3, reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x70), 0);
+    void* v5 = gGlobalc22a00_3aa468;
+    int c6 = callee_1e26e0(v5, reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x180));
+    p0->field_310 = nullptr;
+    p0->field_60 = nullptr;
+    p0->field_68 = nullptr;
+    p0->field_50 = nullptr;
+    p0->field_58 = nullptr;
+    p0->field_40 = nullptr;
+    p0->field_48 = nullptr;
+    return c6;
+}

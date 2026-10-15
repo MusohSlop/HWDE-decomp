@@ -26,13 +26,17 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
 - `blocks.py`, `ours.py` and `regiondiff.py` are for long functions: `blocks.py` lists the differing runs with their lengths,
   `ours.py` writes our relocated disassembly in the original's address layout, and `regiondiff.py OURS.s ORIG.s START [END] [--abs]`
   prints a side-by-side diff of one region (`--abs` hides register numbers).
+- `ordtry.py CPP ADDR SYMJSON [--limit N] [--work DIR]` (or `--list FILE`) tries orders of a straight-line
+  generated function's statements without a spec: calls keep their order, the statements between two calls are
+  permuted (a use after the statement that sets the local), up to N orders; a match goes to `DIR/ord_match.cpp`.
+  Run it on the `fixalign.py` output for functions with misaligned 8-byte stores (`c5df8`, `1f18e8`).
 - `topotry.py SPEC.json [--work DIR]` tries every order of a set of statements (with dependencies and chains that
   keep a relative order) in a template's `{REGION}`; for load and store order problems. The spec format is in the
   script's docstring; a match goes to `DIR/topo_match.cpp` (exit code 0).
 
 ## Unattended searches
 
-`bgsearch.py` runs one of the searches above (permtry, topotry, voltry) detached through `tools/lowprio.py` (idle
+`bgsearch.py` runs one of the searches above (permtry, topotry, voltry, ordtry) detached through `tools/lowprio.py` (idle
 priority, one job, as `docs/second_session.md` asks of unattended searches), so it only uses spare CPU, with its
 own work folder under `build/s3_perm/NAME/` (ignored by git; nothing tracked is touched). At most two run at a
 time.
@@ -46,7 +50,7 @@ python -B -I tools/s3/bgsearch.py stop 351428-vol
 `start` appends `--work build/s3_perm/NAME/work` to the search's arguments, writes its output to
 `build/s3_perm/NAME/log.txt`, its PID to `build/s3_perm/NAME/pid` and `build/s3_perm/pids.txt`, and its exit code
 to `build/s3_perm/NAME/exit.txt` when it ends (0: it found a match, in `NAME/work/perm_match.cpp`,
-`topo_match.cpp` or `vol_match.cpp`). A hit is only a candidate: put the source into its unit (addgen.py or by
+`topo_match.cpp`, `vol_match.cpp`, `ord_match.cpp`, or `*_match_ADDR.cpp` for a `--list` run). A hit is only a candidate: put the source into its unit (addgen.py or by
 hand), register its symbols, and run `tools/check.py UNIT`, then the full `tools/check.py`, before committing it.
 Anything else unattended (a rank.py or batchconv.py batch) goes through `tools/lowprio.py --jobs 1 -- ...` as
 well.

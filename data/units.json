@@ -26028,7 +26028,10 @@
         "_Z11call_2b81b4P11Arg2b81b4_0": "0x71002b81b4",
         "_Z11call_3c8724P11Arg3c8724_0": "0x71003c8724",
         "_Z11call_2a6fd0P11Arg2a6fd0_0": "0x71002a6fd0",
-        "_Z11call_34d974P11Arg34d974_0": "0x710034d974"
+        "_Z11call_34d974P11Arg34d974_0": "0x710034d974",
+        "_Z10call_c5df8P10Argc5df8_0": "0x71000c5df8",
+        "_Z11call_1f18e8P11Arg1f18e8_0": "0x71001f18e8",
+        "_Z11call_3aa468P11Arg3aa468_0": "0x71003aa468"
       }
     },
     "misc/variant_functions74.cpp": {
