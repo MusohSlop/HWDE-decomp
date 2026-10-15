@@ -1209,6 +1209,7 @@ def gen_function(a, ins):
             return v
         raise Fail("index ext")
     returns = []
+    PAIRS_ = set()      # calls whose result is a 16-byte struct (its high half in x1 is used)
     calls_by_target_ = {}
     call_k_ = [None]
     def farg_count_(k_):
@@ -1257,6 +1258,8 @@ def gen_function(a, ins):
         args = []
         for k in range(n):
             v = regs.get(k)
+            if v is not None and v[0] == "hi":
+                v = None
             if v is None:
                 raise Fail("undefined arg")
             if v[0] == "param":
@@ -1300,7 +1303,7 @@ def gen_function(a, ins):
             elif ir_ == "float":
                 vars_[name] = "f"
         prev = callees.get(target)
-        snap_ = {k_: regs.get(k_) for k_ in range(8)}
+        snap_ = {k_: (None if (regs.get(k_) or ("",))[0] == "hi" else regs.get(k_)) for k_ in range(8)}
         if prev and len(prev[0]) != len(args):
             def extend_(alist_, snap0_, nf0_, want_):
                 if nf0_ or nf:
@@ -1705,6 +1708,8 @@ def gen_function(a, ins):
                     if isinstance(n, int) and n < 19:
                         regs[n] = None
                 regs[0] = r
+                if "nopair16" not in knobs and r is not None and r[0] == "var":
+                    regs[1] = ("hi", r[1])
                 regs["f"] = {n2: v2 for n2, v2 in regs["f"].items() if 8 <= n2 <= 15}
                 regs["f"][0] = r
                 regs["fw"] = set()
@@ -1784,6 +1789,8 @@ def gen_function(a, ins):
                     for n, kind in keys:
                         a_ = (r1["f"] if kind == "f" else r1).get(n)
                         b_ = (r2["f"] if kind == "f" else r2).get(n)
+                        if a_ != b_ and ((a_ or ("",))[0] == "hi" or (b_ or ("",))[0] == "hi"):
+                            a_ = b_ = None
                         if a_ == b_:
                             (merged["f"] if kind == "f" else merged)[n] = a_
                             continue
@@ -2987,6 +2994,9 @@ def gen_function(a, ins):
     def mark(v, as_arith=False):
         if v is None:
             return
+        if v[0] == "hi":
+            used.add(v[1]); PAIRS_.add(v[1])
+            return
         if v[0] == "var":
             used.add(v[1])
         if v[0] == "param" and as_arith:
@@ -3112,6 +3122,8 @@ def gen_function(a, ins):
             return "long" if n in arith else "void*"
         return f"{p}*"
     def vtype(v):
+        if v[0] == "hi" or (v[0] == "var" and v[1] in PAIRS_):
+            return "long"
         if v[0] == "retobj":
             return f"{RETN_}*"
         if v[0] == "retval":
@@ -3294,6 +3306,10 @@ def gen_function(a, ins):
             return f"{gname(base)}.field_{off:x}"
         return f"{expr(base)}->field_{off:x}"
     def expr(v, top=True):
+        if v[0] == "hi":
+            return f"{v[1]}.b"
+        if v[0] == "var" and v[1] in PAIRS_:
+            return f"{v[1]}.a"
         if v[0] == "retobj":
             return "&r"
         if v[0] == "retval":
@@ -3655,6 +3671,9 @@ def gen_function(a, ins):
     def count(v):
         if v is None or not isinstance(v, tuple):
             return
+        if v[0] == "hi":
+            use_count[v[1]] = use_count.get(v[1], 0) + 2
+            return
         if v[0] == "var":
             use_count[v[1]] = use_count.get(v[1], 0) + 1
             return
@@ -3984,6 +4003,10 @@ def gen_function(a, ins):
                 atypes = [vtype(x) for x in args]
                 rt = vars_[name]
                 rts = "void"
+                if name in PAIRS_:
+                    if tail or imp_:
+                        raise Fail("pair return")
+                    rt = "Pair16"
                 if name in used or tail:
                     if tail:
                         rts = rtype
@@ -4523,6 +4546,7 @@ for size, a in sorted(U, key=lambda x: x[1]):
             internal[k] = internal.get(k, 0) + 1
 VEC4_DECL = "typedef float Vec4f __attribute__((ext_vector_type(4)));\n\n"
 FLOAT2_DECL = "struct Float2 {\n    float x;\n    float y;\n};\n\n"
+PAIR16_DECL = "// A 16-byte struct returned in x0 and x1.\nstruct Pair16 {\n    long a;\n    long b;\n};\n\n"
 VINS_DECL = ("static inline Vec4f vins(Vec4f v, float s, int i) {\n    v[i] = s;\n    return v;\n}\n"
              "static inline Vec4f vundef() {\n    Vec4f v;\n    return v;\n}\n\n")
 VECU_DECL = ("// A 16-byte vector passed and returned in two x registers.\nunion VecU {\n    Vec4f v;\n    long l[2];\n};\n"
@@ -4544,7 +4568,7 @@ for mn in sorted(IMPORTS_USED):
         imp_lines.append(f'extern "C" {r_} {mn}({", ".join(ps_)});')
 cdecl_text = "\n".join(imp_lines) + "\n\n" + "\n".join(f"{rts} {nm}_{t:x}({', '.join(atypes)});{' ' * 8}// 0x71{t:08x}" for (t, atypes, nm), rts in sorted(CALLEES.items())
                        if not any(x.endswith("*") and x != "void*" for x in list(atypes) + [rts]))
-open(out, "w", encoding="utf-8", newline="\n").write(head + ("#include <arm_neon.h>\n\n" if any("float32x4_t" in d_ for d_ in defs) else "") + (VEC4_DECL if any("Vec4f" in d_ or "VecU" in d_ or "vins(" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + (VECU_DECL if any("VecU" in d_ for d_ in defs) else "") + (VINS_DECL if any("vins(" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))
+open(out, "w", encoding="utf-8", newline="\n").write(head + ("#include <arm_neon.h>\n\n" if any("float32x4_t" in d_ for d_ in defs) else "") + (VEC4_DECL if any("Vec4f" in d_ or "VecU" in d_ or "vins(" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + (PAIR16_DECL if any("Pair16" in d_ for d_ in defs) else "") + (VECU_DECL if any("VecU" in d_ for d_ in defs) else "") + (VINS_DECL if any("vins(" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))
 m = MATCHDIR
 if os.environ.get("SYMOUT"):
     json.dump({"unit": unit, "gsyms": sorted(GSYMS),
