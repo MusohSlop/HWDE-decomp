@@ -205,6 +205,17 @@ for _n, _a in list(units["symbols"].items()) + [(_n2, _a2) for _u in units["unit
             KNOWN_ARITY[_t] = None  # two names disagree
         else:
             KNOWN_ARITY[_t] = _ar
+# a function that never reads an argument register (an empty body, a constant return) shows no parameters: the
+# parameter list of its name is a guess
+TRIVIAL_ = set()
+TRIVIAL_USED = [False]
+for _r in rows:
+    _t = int(_r[0], 16) - 0x7100000000
+    if KNOWN_ARITY.get(_t) is not None and int(_r[2]) <= 8:
+        _ins = list(md.disasm(d[_t:_t + int(_r[2])], _t))
+        if all(not _i.mnemonic.startswith("b") and not any(re.search(r"\b[xwsdqv][0-7]\b", _o)
+               for _o in _i.op_str.split(", ")[1:]) for _i in _ins):
+            TRIVIAL_.add(_t)
 
 def regname(r):
     if r in ("wzr", "xzr"):
@@ -1195,6 +1206,11 @@ def gen_function(a, ins):
         nf = max(fw) + 1 if fw else 0
         n = max(written) + 1 if written else (1 if regs.get(0) is not None else 0)
         ka_ = KNOWN_ARITY.get(target) if "noknownarity" not in knobs else None
+        if ka_ is not None and target in TRIVIAL_ and "trivialarity" not in knobs:
+            # the name of a trivial callee does not show its parameters
+            if ka_[0] < n or ka_[1] < nf:
+                TRIVIAL_USED[0] = True
+            ka_ = None
         if ka_ is not None and (ka_[0] < n or ka_[1] < nf):
             n, nf = min(n, ka_[0]), min(nf, ka_[1])
             ARITY_USED[0] = True
@@ -4320,16 +4336,29 @@ for size, a in sorted(U, key=lambda x: x[1]):
         ARITY_USED[0] = False
         PAIR_USED[0] = False
         HOIST_USED[0] = False
+        TRIVIAL_USED[0] = False
         try:
             text, sigs, gsyms = gen_function(a, ins)
         except Fail:
-            if not (ARITY_USED[0] or PAIR_USED[0] or HOIST_USED[0]):
+            if not (ARITY_USED[0] or PAIR_USED[0] or HOIST_USED[0] or TRIVIAL_USED[0]):
                 raise
-            # known argument counts, a split 64-bit load or a hoisted address made this function fail: generate it
-            # as before
-            KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | ({"noknownarity"} if ARITY_USED[0] else set()) \
-                | ({"nopair32"} if PAIR_USED[0] else set()) | ({"nohoistaddr"} if HOIST_USED[0] else set())
-            text, sigs, gsyms = gen_function(a, ins)
+            done_ = False
+            if TRIVIAL_USED[0]:
+                # without the argument counts of trivial callees' names the function failed: use them
+                KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | {"trivialarity"}
+                ARITY_USED[0] = PAIR_USED[0] = HOIST_USED[0] = False
+                try:
+                    text, sigs, gsyms = gen_function(a, ins)
+                    done_ = True
+                except Fail:
+                    if not (ARITY_USED[0] or PAIR_USED[0] or HOIST_USED[0]):
+                        raise
+            if not done_:
+                # known argument counts, a split 64-bit load or a hoisted address made this function fail: generate
+                # it as before
+                KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | ({"noknownarity"} if ARITY_USED[0] else set()) \
+                    | ({"nopair32"} if PAIR_USED[0] else set()) | ({"nohoistaddr"} if HOIST_USED[0] else set())
+                text, sigs, gsyms = gen_function(a, ins)
         if len(text) > 2000000:
             raise Fail("output too large")
         # jump tables share the unit's .rodata, so one anchor maps them only while they follow each other as
