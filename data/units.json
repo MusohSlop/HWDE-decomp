@@ -15845,6 +15845,18 @@
     "gLocalcf03f8_459c90": "0x7100cf03f8",
     "_Z13callee_25b71cli": "0x710025b71c",
     "_Z13callee_45bf78iPv": "0x710045bf78",
+    "got:gGlobalc21880_4418a8": "0x7100c21880",
+    "got:gGlobalc21880_4436b8": "0x7100c21880",
+    "got:gGlobalc21db0_4418a8": "0x7100c21db0",
+    "got:gGlobalc21db0_4436b8": "0x7100c21db0",
+    "_Z13callee_1a8d1cPv": "0x71001a8d1c",
+    "_Z13callee_2ae1c4li": "0x71002ae1c4",
+    "_Z13callee_3336b4Pvb": "0x71003336b4",
+    "_Z13callee_51ed58Pv": "0x710051ed58",
+    "_Z13callee_52a31cv": "0x710052a31c",
+    "_Z13callee_52ada0Pvi": "0x710052ada0",
+    "_Z13callee_52c3ecPvi": "0x710052c3ec",
+    "_Z13callee_52ef08Pv": "0x710052ef08",
     "got:gGlobalc216e8_f2404": "0x7100c216e8",
     "_Z12callee_4b034Pvli": "0x710004b034",
     "_Z12callee_cb050v": "0x71000cb050",
@@ -24556,26 +24568,45 @@
         "_Z11call_3d711cP11Arg3d711c_0": "0x71003d711c"
       }
     },
-    "misc/variant_functions63.cpp": {
+    "misc/s2_functions12.cpp": {
       "functions": {
-        "_Z10call_dd8ecP10Argdd8ec_0": "0x71000dd8ec",
-        "_Z11call_1df6e0P11Arg1df6e0_0": "0x71001df6e0",
-        "_Z11call_28a150P11Arg28a150_0": "0x710028a150"
+        "_Z11call_38a030P11Arg38a030_0": "0x710038a030",
+        "_Z11call_38f4ecP11Arg38f4ec_0": "0x710038f4ec",
+        "_Z11call_39855cP11Arg39855c_0": "0x710039855c",
+        "_Z11call_3b48d0P11Arg3b48d0_0": "0x71003b48d0",
+        "_Z11call_3c90a4P11Arg3c90a4_0": "0x71003c90a4",
+        "_Z11call_40a884P11Arg40a884_0": "0x710040a884",
+        "_Z11call_4344acP11Arg4344ac_0P11Arg4344ac_1": "0x71004344ac",
+        "_Z11call_45751cP11Arg45751c_0ii": "0x710045751c",
+        "_Z11call_457558P11Arg457558_0ii": "0x7100457558",
+        "_Z11call_5da1b0lP11Arg5da1b0_1": "0x71005da1b0",
+        "_Z11call_5f9968P11Arg5f9968_0Pv": "0x71005f9968"
       },
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
       }
     },
+    "misc/variant_functions63.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z10call_dd8ecP10Argdd8ec_0": "0x71000dd8ec",
+        "_Z11call_1df6e0P11Arg1df6e0_0": "0x71001df6e0",
+        "_Z11call_28a150P11Arg28a150_0": "0x710028a150"
+      }
+    },
     "misc/variant_functions64.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
       "functions": {
         "_Z10call_3c5fcv": "0x710003c5fc",
         "_Z11call_193df0P11Arg193df0_0": "0x7100193df0",
         "_Z11call_1b57d4P11Arg1b57d4_0": "0x71001b57d4"
-      },
-      "map": {
-        ".rodata.cst4": "0x710073b000",
-        ".rodata.cst16": "0x710073dff0"
       }
     }
   }
