@@ -124,7 +124,12 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   the straight-line code before the call, counting only registers not read after their last write;
 - two-float struct results of calls (knob `nof2call`): when the code after a call (straight-line, following
   unconditional jumps) reads s1 before writing it, the callee returns `Float2` and s0 and s1 are its `.x` and `.y`
-  (`bl f; stp s0, s1, [sp, #0x18]`; these failed with undefined s1).
+  (`bl f; stp s0, s1, [sp, #0x18]`; these failed with undefined s1);
+- values merged in float registers are floats (knob `nofmerge`): a call result only copied in a float register
+  (`bl f; mov v8.16b, v0.16b`) stayed untyped and failed a merge with a float ("merge types: int|float"); the call
+  results in a used float merge, and in every float merge connected to it, are floats, unless one of them also
+  reaches a merge outside the float registers (a call result is in x0 and s0) or its callee returns an int at
+  another call; a float merge with a side typed as an int or a pointer (the stale s0 of an int call) is dropped.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
