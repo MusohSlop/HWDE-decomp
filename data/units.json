@@ -21190,6 +21190,13 @@
     "_ZN10Part3192f0D1Ev": "0x71003192f0",
     "_ZN10Part310454D1Ev": "0x7100310454",
     "_ZN10Part3843f0D1Ev": "0x71003843f0",
+    "_ZN10Base41be40C2Ev": "0x710041be40",
+    "_ZN10Base41be40D2Ev": "0x710041be7c",
+    "_ZN7Mid41ed7releaseEv": "0x710041bf28",
+    "got:_ZTV9Light41edILi0EE": "0x7100c2b848",
+    "got:_ZTV9Light41edILi1EE": "0x7100c2b850",
+    "got:_ZTV9Light41edILi2EE": "0x7100c2b858",
+    "got:_ZTV7Mid41ed": "0x7100c2b838",
     "_Z10step_d02b8Pv": "0x71000d02b8",
     "_Z10step_d046cPv": "0x71000d046c",
     "got:gWorld1778b8": "0x7100c216e8",
@@ -32858,7 +32865,16 @@
         "_Z16demo_event_valueILi0EE7Value16ii": "0x7100257334",
         "_Z16demo_event_valueILi1EE7Value16ii": "0x71002573b8",
         "_Z9apply_keyILi0EEbPvi": "0x710023bb90",
-        "_Z9apply_keyILi1EEbPvi": "0x710023bd98"
+        "_Z9apply_keyILi1EEbPvi": "0x710023bd98",
+        "_ZN9Light41edILi0EEC2Ev": "0x710041ed00",
+        "_ZN9Light41edILi0EED2Ev": "0x710041ed68",
+        "_ZN9Light41edILi1EEC2Ev": "0x710041f32c",
+        "_ZN9Light41edILi1EED2Ev": "0x710041f394",
+        "_ZN9Light41edILi2EEC2Ev": "0x710041f8cc",
+        "_ZN9Light41edILi2EED2Ev": "0x710041f934"
+      },
+      "map": {
+        ".rodata.cst16": "0x710073dff0"
       }
     },
     "misc/variant_functions98.cpp": {

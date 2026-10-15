@@ -577,3 +577,76 @@ bool apply_key(void* self, int key) {
 
 template bool apply_key<0>(void*, int);   // 0x710023bb90
 template bool apply_key<1>(void*, int);   // 0x710023bd98
+
+// A family from the third session's own scan (tools/s3/famscan.py): three classes on one middle class, each
+// constructor and destructor the same code but for the class's vtable.
+
+typedef float Vec4f __attribute__((ext_vector_type(4)));
+
+class Base41be40 {
+public:
+    Base41be40();                // 0x710041be40
+    virtual ~Base41be40();       // D2 0x710041be7c
+    unsigned char pad8[0x48];
+};
+
+// The middle class (vtable GOT 0x7100c2b838): a transform, built with its rows set in the body and reset to identity
+// (with 1.5 and -1 after it) when released.
+class Mid41ed : public Base41be40 {
+public:
+    Mid41ed() : f90(0.0f), f94(0.0f), i98(-1) {
+        r50 = (Vec4f){1.0f, 0.0f, 0.0f, 0.0f};
+        r60 = (Vec4f){0.0f, 1.0f, 0.0f, 0.0f};
+        r70 = (Vec4f){0.0f, 0.0f, 1.0f, 0.0f};
+        r80 = (Vec4f){0.0f, 0.0f, 0.0f, 1.0f};
+    }
+    ~Mid41ed() {
+        release();
+        reset();
+    }
+    void release();              // 0x710041bf28
+    void reset() {
+        r50 = (Vec4f){1.0f, 0.0f, 0.0f, 0.0f};
+        r60 = (Vec4f){0.0f, 1.0f, 0.0f, 0.0f};
+        r70 = (Vec4f){0.0f, 0.0f, 1.0f, 0.0f};
+        r80 = (Vec4f){0.0f, 0.0f, 0.0f, 1.0f};
+        f90 = 1.5f;
+        f94 = 1.5f;
+        i98 = -1;
+    }
+
+    Vec4f r50;                   // +50
+    Vec4f r60;                   // +60
+    Vec4f r70;                   // +70
+    Vec4f r80;                   // +80
+    float f90;                   // +90
+    float f94;                   // +94
+    int i98;                     // +98
+};
+
+// Three classes on it (vtable GOT 0x7100c2b848, 0x7100c2b850, 0x7100c2b858) with the same constructor and
+// destructor.
+template <int Copy>
+class Light41ed : public Mid41ed {
+public:
+    Light41ed() : pa0(nullptr), pa8(nullptr) {}
+    ~Light41ed();
+
+    void* pa0;                   // +a0
+    void* pa8;                   // +a8
+};
+
+template <int Copy>
+Light41ed<Copy>::~Light41ed() {
+    this->release();
+    this->reset();
+    pa0 = nullptr;
+    pa8 = nullptr;
+}
+
+template Light41ed<0>::Light41ed();    // 0x710041ed00
+template Light41ed<0>::~Light41ed();   // 0x710041ed68
+template Light41ed<1>::Light41ed();    // 0x710041f32c
+template Light41ed<1>::~Light41ed();   // 0x710041f394
+template Light41ed<2>::Light41ed();    // 0x710041f8cc
+template Light41ed<2>::~Light41ed();   // 0x710041f934
