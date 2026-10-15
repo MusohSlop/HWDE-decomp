@@ -19422,7 +19422,40 @@
     "got:_ZTV14DeckBase38fc44": "0x7100c2b168",
     "got:_ZTV10Card38fc44": "0x7100c2b198",
     "got:_ZTV14CardBase38fc44": "0x7100c2b158",
-    "got:_ZTV11Table533118": "0x7100c2d298"
+    "got:_ZTV11Table533118": "0x7100c2d298",
+    "_Z11call_45e718v": "0x710045e718",
+    "_Z11call_45e930v": "0x710045e930",
+    "_Z11call_45e9e8v": "0x710045e9e8",
+    "_Z11call_45ea64v": "0x710045ea64",
+    "_Z11call_45eae4v": "0x710045eae4",
+    "_Z11call_45eba0v": "0x710045eba0",
+    "_Z11call_45ec50v": "0x710045ec50",
+    "_Z11call_45ed00v": "0x710045ed00",
+    "_Z11call_45edb0v": "0x710045edb0",
+    "_Z11call_45ee60v": "0x710045ee60",
+    "_Z11call_45ef10v": "0x710045ef10",
+    "_Z11call_45efc0v": "0x710045efc0",
+    "_Z15progress_45e160i": "0x710045e160",
+    "_Z18load_global_209cb4v": "0x7100209cb4",
+    "_Z24get_unit_database_20ec80v": "0x710020ec80",
+    "_Z8get_gamev": "0x7100204728",
+    "_ZN10Game45f07c10has_202b1cEi": "0x7100202b1c",
+    "_ZN10Game45f07c10has_202ba0Ei": "0x7100202ba0",
+    "_ZN10Game45f07c10has_202cecEi": "0x7100202cec",
+    "_ZN10Game45f07c11flag_204674Ei": "0x7100204674",
+    "_ZN10Game45f07c12count_203b10Ei": "0x7100203b10",
+    "_ZN10Game45f07c13earned_203dfcEi": "0x7100203dfc",
+    "_ZN10Game45f07c15has_flag_2026fcEi": "0x71002026fc",
+    "_ZN10Game45f07c15reported_203d0cEi": "0x7100203d0c",
+    "_ZN10Game45f07c15unlocked_204518Ei": "0x7100204518",
+    "_ZN10Game45f07c17set_earned_203e30Eih": "0x7100203e30",
+    "_ZN10Game45f07c20stage_cleared_202eb0Eii": "0x7100202eb0",
+    "_ZN11Board45f07c14cleared_26b0d4Ei": "0x710026b0d4",
+    "_ZN11Entry45f07c11kind_209bd8Ev": "0x7100209bd8",
+    "_ZN11Level45f07c14clamped_200294Ev": "0x7100200294",
+    "_ZN11Stats45f07c11stat_2028b4Ej": "0x71002028b4",
+    "_ZN11Table45f07c12entry_209c48Ei": "0x7100209c48",
+    "_ZN16FoundTable45f07c12found_2015a8Ei": "0x71002015a8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29491,6 +29524,14 @@
         "_ZN11Pages3485e8D2Ev": "0x71003485e8",
         "_ZN12Screen34840cD2Ev": "0x710034840c",
         "_ZN11Table38fc44D2Ev": "0x710038fc44"
+      }
+    },
+    "misc/s5_functions04.cpp": {
+      "functions": {
+        "_ZN19TrophyChecker45f07c6updateEv": "0x710045f07c"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000"
       }
     }
   }

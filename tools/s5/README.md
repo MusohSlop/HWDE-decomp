@@ -158,3 +158,10 @@ Each with the functions it fixed; three or more make it a generator note.
 - Fused multiply-adds with a constant splat as the first multiplicand (`fmla v, vSplat, vRow`): the transform is
   written `vfmaq_f32(r, vdupq_lane_f32(lo, 1), m.r[1])`; with a variable vector both forms give the by-element
   `fmla`, so the shared `XMVector4Transform` is written splat-first. `242070` (parked).
+- A loop whose body starts with the same call as the code after it (`bl get_game` at the top of the body and of
+  the unlock), with the original keeping the call in the body and the exit test at the bottom: write the loop as
+  its own inline function returning the result. Written in the caller, SimplifyCFG hoists the common call above
+  the loop test before LoopRotate runs, and the rotated loop then calls it in the preheader and the latch (and a
+  `bool ok` + `break` form also carries the flag in a register). Several `continue`s in such a loop become a
+  state switch (`orr #4; and #7; cmp #4`); one combined `if (... && ...) return false;` keeps the branches.
+  `45f07c` (eight loops).
