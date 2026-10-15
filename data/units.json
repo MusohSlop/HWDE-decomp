@@ -16077,7 +16077,42 @@
     "_Z13callee_37d87clPvi": "0x710037d87c",
     "_Z13callee_45387ciPvS_": "0x710045387c",
     "_Z13callee_1958e0Pv": "0x71001958e0",
-    "_Z13callee_37d87cPvS_i": "0x710037d87c"
+    "_Z13callee_37d87cPvS_i": "0x710037d87c",
+    "gLocal741feb_44c360": "0x7100741feb",
+    "gLocal741ff1_44c360": "0x7100741ff1",
+    "gLocala98b4c_5aeafc": "0x7100a98b4c",
+    "gLocala98b51_5aeafc": "0x7100a98b51",
+    "got:gGlobalc216e8_3f580c": "0x7100c216e8",
+    "got:gGlobalc21de8_4c7164": "0x7100c21de8",
+    "got:gGlobalc22f20_4610e0": "0x7100c22f20",
+    "got:gGlobalc2b700_3f850c": "0x7100c2b700",
+    "got:gGlobalc2cd10_4c7164": "0x7100c2cd10",
+    "got:gGlobalc2d010_523f5c": "0x7100c2d010",
+    "got:gGlobalc2d020_523f5c": "0x7100c2d020",
+    "got:gGlobalc2d850_5aeafc": "0x7100c2d850",
+    "_Z13callee_181cacPv": "0x7100181cac",
+    "_Z13callee_1d862ci": "0x71001d862c",
+    "_Z13callee_2221c8PvS_i": "0x71002221c8",
+    "_Z13callee_3fc754Pvii": "0x71003fc754",
+    "_Z13callee_3fc94cPvii": "0x71003fc94c",
+    "_Z13callee_3fccb4Pvi": "0x71003fccb4",
+    "_Z13callee_3ffab0Pvi": "0x71003ffab0",
+    "_Z13callee_4340d4PvS_": "0x71004340d4",
+    "_Z13callee_4342d8Pv": "0x71004342d8",
+    "_Z13callee_4343bcPv": "0x71004343bc",
+    "_Z13callee_438624Pvf": "0x7100438624",
+    "_Z13callee_4443ecPvi": "0x71004443ec",
+    "_Z13callee_453480iiff": "0x7100453480",
+    "_Z13callee_4673c4Pv": "0x71004673c4",
+    "_Z13callee_4a2b3cli": "0x71004a2b3c",
+    "_Z13callee_520c70llPv": "0x7100520c70",
+    "_Z13callee_5273c4PvS_ii": "0x71005273c4",
+    "_Z13callee_5278fcPvS_ii": "0x71005278fc",
+    "_Z13callee_52c824Pvl": "0x710052c824",
+    "_Z13callee_593810Pvi": "0x7100593810",
+    "_Z13callee_594144Pviiill": "0x7100594144",
+    "_Z13callee_5a7d6cPviiilS_": "0x71005a7d6c",
+    "_Z13callee_5a81c4PviilS_S_": "0x71005a81c4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -25060,6 +25095,35 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s2_functions15.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z11call_3911a0P11Arg3911a0_0i": "0x71003911a0",
+        "_Z11call_52b4bcP11Arg52b4bc_0P11Arg52b4bc_1": "0x710052b4bc",
+        "_Z11call_52b60cP11Arg52b60c_0P11Arg52b60c_1": "0x710052b60c",
+        "_Z11call_52b938P11Arg52b938_0P11Arg52b938_1": "0x710052b938",
+        "_Z11call_5b3b3cP11Arg5b3b3c_0P11Arg5b3b3c_1": "0x71005b3b3c"
+      }
+    },
+    "misc/s2_functions16.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z11call_38d144P11Arg38d144_0i": "0x710038d144",
+        "_Z11call_38f818P11Arg38f818_0": "0x710038f818",
+        "_Z11call_3dcbd8P11Arg3dcbd8_0": "0x71003dcbd8",
+        "_Z11call_46b8ecP11Arg46b8ec_0P11Arg46b8ec_1": "0x710046b8ec",
+        "_Z11call_4c7164v": "0x71004c7164",
+        "_Z11call_4e1748P11Arg4e1748_0P11Arg4e1748_1": "0x71004e1748",
+        "_Z11call_521e64P11Arg521e64_0": "0x7100521e64",
+        "_Z11call_521ed4P11Arg521ed4_0": "0x7100521ed4"
       }
     }
   }
