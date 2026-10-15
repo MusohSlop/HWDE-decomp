@@ -1255,6 +1255,8 @@ def gen_function(a, ins):
         return True
     def spun_(a_, b_):
         """An int and a float in one stack slot: the slot keeps its first type and the other access is a pun."""
+        if "nostackpun8" not in knobs and "float" in (a_, b_) and ({a_, b_} - {"float"}) <= {"long", "void*"} and a_ != b_:
+            return True
         return "nostackpun" not in knobs and a_ in ("int", "unsigned int", "float") and b_ in ("int", "unsigned int", "float") \
             and "float" in (a_, b_)
     def retype_ok_(sn_, off_, prev_t, ct_):
@@ -5332,6 +5334,11 @@ def gen_function(a, ins):
                 if isinstance(lt_, tuple) and len(lt_) > 3 and lt_[3] != t and t in ("int", "unsigned int", "float") and lt_[3] in ("int", "unsigned int", "float") and "float" in (t, lt_[3]):
                     outl.append(declare_line(pad, lt_[3], name, f"*reinterpret_cast<{lt_[3]}*>(&{acc(base, off)})"))
                     continue
+                if "nostackpun8" not in knobs and isinstance(lt_, tuple) and len(lt_) > 3 and "float" in (t, lt_[3]) \
+                        and ({t, lt_[3]} - {"float"}) <= {"long", "void*"} and t != lt_[3]:
+                    want8_ = "long" if lt_[3] == "void*" else lt_[3]
+                    outl.append(declare_line(pad, want8_, name, f"*reinterpret_cast<{want8_}*>(&{acc(base, off)})"))
+                    continue
                 if isinstance(lt_, tuple) and len(lt_) > 3 and lt_[3] != t and not t.endswith("*") or (isinstance(lt_, tuple) and len(lt_) > 3 and lt_[3] == "long" and t == "void*"):
                     want = lt_[3]
                     outl.append(declare_line(pad, want, name, f"{fit(acc(base, off), t, want)}"))
@@ -5399,6 +5406,11 @@ def gen_function(a, ins):
                 vt_, ft_ = vtype(val), ftype(sn, off)
                 if vt_ != ft_ and vt_ in ("int", "unsigned int", "float") and ft_ in ("int", "unsigned int", "float") and "float" in (vt_, ft_) and not (val[0] == "const" and val[1] == 0):
                     outl.append(f"{pad}*reinterpret_cast<{vt_}*>(&{acc(base, off)}) = {expr(val)};")
+                    continue
+                if "nostackpun8" not in knobs and vt_ != ft_ and "float" in (vt_, ft_) and ({vt_, ft_} - {"float"}) <= {"long", "void*"} \
+                        and not (val[0] == "const" and val[1] == 0):
+                    w8_ = "long" if vt_ == "void*" else vt_
+                    outl.append(f"{pad}*reinterpret_cast<{w8_}*>(&{acc(base, off)}) = {fit(expr(val), vt_, w8_)};")
                     continue
                 outl.append(f"{pad}{acc(base, off)} = {fit(expr(val), vt_, ft_)};")
             elif it[0] == "call":
