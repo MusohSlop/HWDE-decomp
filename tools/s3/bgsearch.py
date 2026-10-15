@@ -6,10 +6,11 @@
   bgsearch.py list                        each search: running or its exit code, match file, last log line
   bgsearch.py stop NAME                   end a running search (and its compiles)
 
-SCRIPT is one of the searches that take --work (permtry.py, topotry.py, voltry.py, ordtry.py, floattry.py). At most two run at a time.
+SCRIPT is one of the searches that take --work (permtry.py, topotry.py, voltry.py, ordtry.py, floattry.py,
+irsbatch.py). At most two run at a time.
 Everything stays under build/s3_perm (ignored by git); the PID is in NAME/pid and in build/s3_perm/pids.txt. A
 search's own exit code goes to NAME/exit.txt: 0 means it wrote its match file (perm_match.cpp, topo_match.cpp or
-vol_match.cpp) into NAME/work. A hit still has to be put into its unit and pass the full check before it counts.
+vol_match.cpp; irsbatch.py: irs_match_ADDR.ll, an IR order still to be written as source) into NAME/work. A hit still has to be put into its unit and pass the full check before it counts.
 """
 import os, re, sys, subprocess, time, ctypes
 M = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # the matching/ folder
@@ -80,7 +81,7 @@ def main():
             ex = os.path.join(d, "exit.txt")
             state = ("exit " + open(ex).read().split()[0]) if os.path.exists(ex) else ("running" if alive(pid) else "gone")
             w = os.path.join(d, "work")
-            hits = sorted(f for f in (os.listdir(w) if os.path.isdir(w) else []) if re.fullmatch(r"\w+_match(_\w+)?\.cpp", f))
+            hits = sorted(f for f in (os.listdir(w) if os.path.isdir(w) else []) if re.fullmatch(r"\w+_match(_\w+)?\.(cpp|ll)", f))
             lines = open(os.path.join(d, "log.txt"), encoding="utf-8", errors="replace").read().strip().split("\n")
             print(f"{n}\tpid {pid}\t{state}\t{','.join(hits) or '-'}\t{lines[-1][:120]}")
         return 0
