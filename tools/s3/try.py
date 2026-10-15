@@ -1,6 +1,6 @@
 """Compile one scratch cpp and diff one function against the original.
 
-usage: try.py CPP ADDR [SYMJSON] [--name SYM] [--all] [--ctx N]
+usage: try.py CPP ADDR [SYMJSON] [--name SYM] [--map NAME=ADDR ...] [--all] [--ctx N] [--work DIR]
 Placeholder externals (callee_XXXX etc.) resolve from their address suffix, symbols from SYMJSON
 (gen.py SYMOUT format) and units.json. Prints the difflib opcodes with instructions.
 """
@@ -23,10 +23,12 @@ ap = argparse.ArgumentParser()
 ap.add_argument("cpp"); ap.add_argument("addr"); ap.add_argument("symjson", nargs="?")
 ap.add_argument("--name"); ap.add_argument("--all", action="store_true"); ap.add_argument("--ctx", type=int, default=2)
 ap.add_argument("--map", action="append", default=[])
+ap.add_argument("--work", help="folder for the object file (default build/s3)")
 a = ap.parse_args()
 addr = int(a.addr, 16) & 0xffffffff
 man = json.load(open(os.path.join(M, "data", "units.json"), encoding="utf-8-sig"))
-obj = os.path.splitext(a.cpp)[0] + ".o"
+os.makedirs(a.work or WORK, exist_ok=True)
+obj = os.path.join(a.work or WORK, os.path.splitext(os.path.basename(a.cpp))[0] + ".o")
 c = subprocess.run([os.path.join(ROOT, man["compiler"]), *man["flags"], "-I", os.path.join(M, "include"), "-c", a.cpp, "-o", obj],
                    capture_output=True, text=True)
 if c.returncode:

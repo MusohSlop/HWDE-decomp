@@ -13,6 +13,8 @@ _os.makedirs(WORK, exist_ok=True)
 import re, sys, subprocess, os
 src, out = sys.argv[1], sys.argv[2]
 fixes = sys.argv[3:] or ["loops", "panes", "handles"]
+if set(fixes) - {"loops", "panes", "handles"}:
+    sys.exit("unknown fix: " + " ".join(sorted(set(fixes) - {"loops", "panes", "handles"})))
 t = open(src, encoding="utf-8").read()
 SP = os.path.dirname(os.path.abspath(__file__))
 
@@ -65,3 +67,4 @@ open(out, "w", encoding="utf-8", newline="\n").write(t)
 if "handles" in fixes:
     r = subprocess.run([sys.executable, "-B", "-I", os.path.join(SP, "handlify.py"), out, out], capture_output=True, text=True)
     print(r.stdout.strip(), r.stderr.strip())
+    sys.exit(r.returncode)
