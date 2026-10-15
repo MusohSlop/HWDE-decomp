@@ -20050,7 +20050,10 @@
     "got:_ZTV12OptionRangeB": "0x7100c2b2f0",
     "got:_ZTV17RangeOptionScreen": "0x7100c2b2e0",
     "got:_ZTV17PanelOptionScreen": "0x7100c2b2d8",
-    "got:_ZTV23SliderPanelOptionScreen": "0x7100c2b310"
+    "got:_ZTV23SliderPanelOptionScreen": "0x7100c2b310",
+    "got:_ZTV14DeckBase38dca4": "0x7100c2b168",
+    "got:_ZTV9DeckPanel": "0x7100c2b180",
+    "got:_ZTV14DeckMenu38dca4": "0x7100c2b178"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -30234,7 +30237,8 @@
       "functions": {
         "_ZN10Page39ec78C2Ev": "0x710039ec78",
         "_ZN10Page3940c4C2Ev": "0x71003940c4",
-        "_ZN10Page3a4034C2Ev": "0x71003a4034"
+        "_ZN10Page3a4034C2Ev": "0x71003a4034",
+        "_ZN14DeckMenu38dca4C2EPv": "0x710038dca4"
       }
     },
     "misc/s3_functions25.cpp": {
