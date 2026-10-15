@@ -1,0 +1,5 @@
+# Fifth session (branch matching-s5): hand-matching of non-constructor functions over 1,500 bytes at 0x380000 and
+# above, and the giants of that range. Generator runs should skip every address listed here.
+# working: functions being hand-matched now; matched: functions matched on matching-s5; tried: parked, with reason.
+working: 425de0
+matched: 415f00
