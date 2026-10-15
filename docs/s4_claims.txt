@@ -8,3 +8,5 @@ tried: 3e934 (1,620 B, 79 off with registers abstracted: our 0x1c and default ca
 tried: 111d24 (2,676 B, 5 off, 1 with registers abstracted: the trip count and the -1.0f constant of the reset loop come out in the other order; docs/s4_wip/111d24.cpp; now on main's generator queue)
 tried: 1a5388 (1,648 B, 1 off: the records loop advances its destination pointer after the count, the original before; docs/s4_wip/1a5388.cpp; now on main's generator queue)
 tried: 347928 (1,724 B, 43 off with registers abstracted: block placement of the lock branch and one more saved register; docs/s4_wip/347928.cpp)
+tried: 1179f0 (1,520 B, 8 words off, 0 with registers abstracted: three FP registers in the hit-rectangle block; docs/s4_wip/1179f0.cpp)
+tried: 31e3d0 (1,992 B, 11 off with registers abstracted: the sprite loop's induction variable and the second screen test; docs/s4_wip/31e3d0.cpp)
