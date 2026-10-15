@@ -30,29 +30,36 @@ DECL = re.compile(r"^(\S[^=(]*?) (callee\d*)_([0-9a-f]+)\(([^()]*)\);(\s+// 0x71
 have = {}
 for m in DECL.finditer(old):
     have.setdefault((m.group(3), m.group(4)), {})[m.group(2)] = m.group(1)
+# A callee whose declaration clashes with the unit's (same name and parameters, another return type) moves to the
+# next free prefix together with its other overloads in this function, so every call still finds its overload
+# (the uses are renamed by name, not by overload).
+groups = {}
+for m in DECL.finditer(body):
+    groups.setdefault((m.group(2), m.group(3)), []).append((m.group(1), m.group(4)))
 ren = {}
+for (pref, t_), decls in groups.items():
+    if not any(pref in have.get((t_, params), {}) and have[(t_, params)][pref] != rt for rt, params in decls):
+        continue
+    k = 2
+    while any(("callee%d" % k) in have.get((t_, params), {}) and have[(t_, params)]["callee%d" % k] != rt
+              for rt, params in decls):
+        k += 1
+    ren[(pref, t_)] = "callee%d" % k
 out_lines = []
 for line in body.split("\n"):
     m = DECL.match(line)
     if m:
-        key = (m.group(3), m.group(4))
-        prefs = have.get(key, {})
-        if prefs.get(m.group(2)) == m.group(1):
+        name = ren.get((m.group(2), m.group(3)), m.group(2))
+        prefs = have.setdefault((m.group(3), m.group(4)), {})
+        if prefs.get(name) == m.group(1):
             continue                                  # same declaration already in the unit
-        if m.group(2) in prefs:
-            k = 2
-            while ("callee%d" % k) in prefs and prefs["callee%d" % k] != m.group(1):
-                k += 1
-            new = "callee%d" % k
-            ren[(m.group(2), m.group(3), m.group(4))] = new
-            if prefs.get(new) == m.group(1):
-                continue
-            line = line.replace("%s_%s(" % (m.group(2), m.group(3)), "%s_%s(" % (new, m.group(3)), 1)
-            prefs[new] = m.group(1)
+        if name != m.group(2):
+            line = line.replace("%s_%s(" % (m.group(2), m.group(3)), "%s_%s(" % (name, m.group(3)), 1)
+        prefs[name] = m.group(1)
     out_lines.append(line)
 body = "\n".join(out_lines)
-for (pref, t_, params), new in ren.items():
-    # rename the uses: every call of pref_t_ in this function (a function only uses one overload per name)
+for (pref, t_), new in ren.items():
+    # rename the uses: every call of pref_t_ in this function, whichever overload it calls
     body = re.sub(r"\b%s_%s\(" % (pref, t_), "%s_%s(" % (new, t_), body)
     print("renamed", pref, t_, "->", new)
 # extern globals already declared in the unit are dropped

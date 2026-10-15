@@ -19233,7 +19233,24 @@
     "_Z11callee_fd70PvS_fDv4_fffffff": "0x710000fd70",
     "_Z13callee_3c5f70lii": "0x71003c5f70",
     "_Z13callee_455c38lfffff": "0x7100455c38",
-    "kCornerPlanes_a9aea8": "0x7100a9aea8"
+    "kCornerPlanes_a9aea8": "0x7100a9aea8",
+    "got:_ZTV9Obj1f10f4": "0x7100c23130",
+    "got:_ZTV8Objcb4d0": "0x7100c22938",
+    "_ZN9Basecafd4C2Ev": "0x71000cafd4",
+    "got:_ZTV11Owner5c2234": "0x7100c2db50",
+    "got:_ZTV11Owner5c22e8": "0x7100c2db50",
+    "got:_ZTV17Owner5c2234Buffer": "0x7100c2b738",
+    "got:_ZTV17Owner5c22e8Buffer": "0x7100c2b738",
+    "_ZN10Base5c4278D2Ev": "0x71005c4278",
+    "got:_ZTV13JobSlot5f79fc": "0x7100c2de00",
+    "_ZN2nn2os13FinalizeEventEPNS0_9EventTypeE": "0x71006011c0",
+    "_ZN2nn2os13DestroyThreadEPNS0_10ThreadTypeE": "0x7100601400",
+    "got:_ZTV10Mesh5e3f48": "0x7100c2dda8",
+    "got:_ZTV12Screen2d4d84": "0x7100c2aa90",
+    "got:_ZTV12Screen2d4e4c": "0x7100c2aa88",
+    "got:_ZTV11Table534010": "0x7100c2d2b0",
+    "got:_ZTV11Group5d4040": "0x7100c2dc88",
+    "_ZN14ItemNode5d4040nwEm": "0x71005d4380"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29172,7 +29189,8 @@
         "_ZN11Group_d2784C2Ev": "0x71000d2784",
         "_ZN15OwnedHeap5c49fcC2EP6RefObj": "0x71005c49fc",
         "_ZN12Worker5f7984C2Ev": "0x71005f7984",
-        "_ZN9Mid2d4f14D2Ev": "0x71002d4f14"
+        "_ZN9Mid2d4f14D2Ev": "0x71002d4f14",
+        "_ZN10Node5959d4C2EPKc": "0x7100595930"
       },
       "map": {
         ".rodata.cst4": "0x710073b000",
@@ -29217,6 +29235,20 @@
         "_Z11call_3fe54cv": "0x71003fe54c",
         "_Z11call_40fd58liP11Arg40fd58_2": "0x710040fd58",
         "_Z11call_56b3c8P11Arg56b3c8_0P11Arg56b3c8_1": "0x710056b3c8"
+      }
+    },
+    "misc/s3_functions16.cpp": {
+      "functions": {
+        "_ZN9Obj1f10f4C2Ev": "0x71001f10f4",
+        "_ZN8Objcb4d0C2Ev": "0x71000cb4d0",
+        "_ZN11Owner5c2234D2Ev": "0x71005c2234",
+        "_ZN11Owner5c22e8D2Ev": "0x71005c22e8",
+        "_ZN12Worker5f79fcD2Ev": "0x71005f79fc",
+        "_ZN10Mesh5e3f48C2Ejii": "0x71005e3f48",
+        "_ZN12Screen2d4d84D2Ev": "0x71002d4d84",
+        "_ZN12Screen2d4e4cD2Ev": "0x71002d4e4c",
+        "_ZN11Table534010C2EPK11Entry534010ji": "0x7100534010",
+        "_ZN11Group5d4040C2EP14Resource5d4040P13Factory5d4040": "0x71005d4040"
       }
     },
     "misc/s4_298094.cpp": {

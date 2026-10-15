@@ -179,18 +179,41 @@ Buffer5f3808::~Buffer5f3808() {
     p10 = nullptr;
 }
 
-// 0x71005959d4 (D2): unlinks itself from the global list (linked through +18).
+// 0x7100595930 and 0x71005959d4 (D2): a named node kept in a global list sorted by its name's hash (linked
+// through +18); the destructor unlinks it.
 class Node5959d4;
 // Reached through the GOT slot at 0x7100c2d798.
 extern Node5959d4* gNodeList5959d4;
 
 class Node5959d4 {
 public:
+    Node5959d4(const char* name);
     virtual ~Node5959d4();
 
-    unsigned char pad8[0x10];
+    unsigned int hash;        // +08
+    const char* name;         // +10
     Node5959d4* next;         // +18
 };
+
+Node5959d4::Node5959d4(const char* name_) : name(name_) {
+    unsigned int h = 0;
+    for (const unsigned char* p = reinterpret_cast<const unsigned char*>(name_); *p; p++)
+        h = h * 27 + *p;
+    hash = h;
+    Node5959d4* prev = nullptr;
+    Node5959d4* node = gNodeList5959d4;
+    while (node && node->hash < h) {
+        prev = node;
+        node = node->next;
+    }
+    if (prev) {
+        prev->next = this;
+        next = node;
+    } else {
+        next = gNodeList5959d4;
+        gNodeList5959d4 = this;
+    }
+}
 
 Node5959d4::~Node5959d4() {
     Node5959d4* prev = nullptr;
