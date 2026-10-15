@@ -1282,6 +1282,11 @@ def gen_function(a, ins):
             if cur in structs:
                 return cur
             raise Fail("var base")
+        if v[0] == "bin" and v[1] in ("+", "-", "|") and "noaddrbase" not in knobs:
+            if v not in bytekinds:
+                bytekinds[v] = f"Addr{a:x}_{len(bytekinds)}"
+                structs[bytekinds[v]] = {}
+            return bytekinds[v]
         raise Fail("base kind")
     def use(regs, r):
         n, w = regname(r)
@@ -4285,6 +4290,12 @@ def gen_function(a, ins):
         if base[0] == "bytes":
             sn_ = bytekinds[base]
             return f"reinterpret_cast<{sn_}*>(reinterpret_cast<unsigned char*>({expr(base[1])}) + {expr(base[2], 'noaddrparen' in knobs)})->field_{off:x}"
+        if base[0] == "bin" and base in bytekinds:
+            sn_ = bytekinds[base]
+            e_ = expr(base)
+            if vtype(base).endswith("*"):
+                return f"reinterpret_cast<{sn_}*>({e_})->field_{off:x}"
+            return f"reinterpret_cast<{sn_}*>(static_cast<long>({e_}))->field_{off:x}"
         if base[0] == "select":
             sn_ = bytekinds[base]
             a_ = f"reinterpret_cast<{sn_}*>({expr(base[2])})->field_{off:x}"
@@ -4806,6 +4817,7 @@ def gen_function(a, ins):
                                               "unsigned char", "signed char", "bool", "float", "void*"):
             return text_
         return f"\x01{target_:x}/{n_}/{j_}\x03{at_}\x03{text_}\x02"
+    PTRRET_ = set()     # callees whose result is used as a pointer somewhere
     def want_inline(name, local_rts, rts):
         if not (name in used and use_count.get(name, 0) == 1 and local_rts == rts):
             return False
@@ -5197,6 +5209,8 @@ def gen_function(a, ins):
                     atypes = ["int" if x_ in ("short", "signed char") else x_ for x_ in atypes]
                 local_rts = rts
                 rts = "void*" if rts.endswith("*") else rts
+                if target in PTRRET_ and rts == "int" and rt in ("?", "w") and not tail and not imp_:
+                    rts = "void*"
                 ov_ = over_.setdefault(target, {})
                 pr_ = ov_.get(tuple(atypes))
                 if pr_ is not None and pr_ != rts:
@@ -5218,7 +5232,8 @@ def gen_function(a, ins):
                                         else expr(x) for x, pt in zip(args, iparams_))
                     argtext = ", ".join(
                         (f"reinterpret_cast<{pt}>({expr(x)})" if pt.endswith("*") and vtype(x) in ("long",) else
-                         (f"{'static' if vtype(x) == 'void*' else 'reinterpret'}_cast<{pt}>({expr(x)})" if pt.endswith("*") and vtype(x).endswith("*") and pt != vtype(x) and "const" not in pt else
+                         (f"{'static' if vtype(x) == 'void*' else 'reinterpret'}_cast<{pt}>({expr(x)})" if pt.endswith("*") and vtype(x).endswith("*") and pt != vtype(x)
+                          and ("const" not in pt or ("noconstarg" not in knobs and not vtype(x).startswith("const"))) else
                           (expr(x) if pt.endswith("*") else fit(expr(x), vtype(x), pt))))
                         for x, pt in zip(args, iparams_))
                     used_imports.add(mangled_)
@@ -5230,7 +5245,9 @@ def gen_function(a, ins):
                     inline_map[name] = f"{cname}({argtext})"
                     continue
                 if name in used:
-                    if local_rts != rts:
+                    if local_rts != rts and rts == "void*" and local_rts == "int":
+                        outl.append(declare_line(pad, local_rts, name, f"static_cast<int>(reinterpret_cast<long>({cname}({argtext})))"))
+                    elif local_rts != rts:
                         outl.append(declare_line(pad, local_rts, name, f"static_cast<{local_rts}>({cname}({argtext}))"))
                     else:
                         outl.append(declare_line(pad, rts, name, f"{cname}({argtext})"))
@@ -5632,6 +5649,15 @@ def gen_function(a, ins):
                 vars_[key_] = ty_
             else:
                 pwidth[key_] = ty_
+    def ptr_targets_(obj, acc_):
+        if isinstance(obj, (list, tuple)):
+            if (len(obj) == 5 and obj[0] == "call" and isinstance(obj[1], str) and isinstance(obj[2], int)
+                    and obj[1] in used and (vars_.get(obj[1]) == "x" or vars_.get(obj[1]) in structs)):
+                acc_.add(obj[2])
+            for x_ in obj:
+                ptr_targets_(x_, acc_)
+    if "noretunify" not in knobs:
+        ptr_targets_(items, PTRRET_)
     lines = render(items, 1)
     lines = unhoist_(lines)
     for p_, h_ in ESHIFT_.items():
