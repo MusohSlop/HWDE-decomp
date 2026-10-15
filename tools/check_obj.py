@@ -19,8 +19,9 @@ import capstone  # noqa: E402
 
 IMAGE = ROOT / "analysis/extracted/update/decompressed/main.memory.bin"
 BASE = 0x7100000000
-# Bytes after a mapped mergeable-constant base searched for an equal value.
-MERGE_SEARCH = 0x1000
+# Bytes after a mapped mergeable-constant base searched for an equal value (the 4-byte pool is
+# 0x19e0 bytes long).
+MERGE_SEARCH = 0x2000
 
 # Relocation type -> mask of the bits the relocation fills in.
 RELOC_MASKS = {

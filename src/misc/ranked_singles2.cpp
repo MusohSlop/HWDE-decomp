@@ -175,18 +175,14 @@ unsigned char DataChunk::set(const void* source) {
         return 0;
     data = static_cast<const unsigned int*>(source);
     unsigned int magic = *data;
-    return (magic & 0xffff0000) == 0x130000 && (magic & 0xffff) == 0x4c58;
+    return (magic & 0xffff) == 0x4c58 ? (magic & 0xffff0000) == 0x130000 : false;
 }
 
-// The fields sit in a non-virtual base, so they are cleared before the vtable pointer is stored.
-struct QueueBase5325e4 {
-    QueueBase5325e4() {
-        count = 0;
-        head = nullptr;
-        size = 0;
-        first = nullptr;
-        second = nullptr;
-    }
+// Vtable through the GOT slot at 0x7100c2d288.
+class Queue5325e4 {
+public:
+    Queue5325e4();
+    virtual ~Queue5325e4();
 
     int count;                // +08
     unsigned char padc[4];
@@ -196,15 +192,15 @@ struct QueueBase5325e4 {
     void* second;             // +28
     int size;                 // +30
 };
-// Vtable through the GOT slot at 0x7100c2d288.
-class Queue5325e4 : public QueueBase5325e4 {
-public:
-    Queue5325e4();
-    virtual ~Queue5325e4();
-};
 
 // 0x71005325e4
-Queue5325e4::Queue5325e4() {}
+Queue5325e4::Queue5325e4() {
+    count = 0;
+    head = nullptr;
+    size = 0;
+    first = nullptr;
+    second = nullptr;
+}
 
 struct OwnerBase5c2d24 {
     OwnerBase5c2d24() : owner(nullptr) {}

@@ -12,6 +12,13 @@ template <unsigned long N> struct ByteBlock {
     unsigned char bytes[N];
 };
 
+// The same, 8-byte aligned. A later 4-byte store into the block's last word lets the compiler
+// shorten the memset of a ByteBlock (offset multiple of 4 = its alignment); with 8-byte alignment
+// it keeps the full size.
+template <unsigned long N> struct WordBlock {
+    unsigned long words[N / 8];
+};
+
 class BattleSetup {
 public:
     void clear_flags(int flags);                                            // 0x710016f29c
@@ -1630,7 +1637,7 @@ struct TimedTable {
     void reset();
 
     union {
-        ByteBlock<0xc0> all;  // the whole object, cleared first
+        WordBlock<0xc0> all;  // the whole object, cleared first
         struct {
             unsigned char bytes[0xa8]; // +00
             int valuea8;              // +a8

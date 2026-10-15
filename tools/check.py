@@ -124,6 +124,8 @@ def main():
                 elif row["Quality"] == "O":
                     print(f"  warning: {addr:x} was O and no longer matches; set to m")
                     row["Quality"] = "m"
+                elif row["Quality"] == "U":
+                    row["Quality"] = "m"  # attempted, compiles, does not match yet
                 row["Name"] = name
         if unresolved:
             print("  unresolved relocations (masked):", ", ".join(sorted(unresolved)))

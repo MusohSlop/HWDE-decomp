@@ -844,17 +844,14 @@ int stage_message() {
     return static_cast<int>(mode) > 6 ? mode + 0x461e : 0x4210;
 }
 
-bool is_plain_cell(BoardRow* row) {
-    switch (row->kind) {
-    case 8:
-    case 12:
-    case 14:
-    case 20:
-    case 21:
+// The int result keeps the sign and range tests apart (a bool lets them fold into one compare).
+int is_plain_cell(BoardRow* row) {
+    unsigned char kind = row->kind;
+    // kinds 8, 12, 14, 20 and 21
+    if (kind <= 0x15 && ((1 << kind) & 0x305100) != 0)
         return false;
-    }
-    signed char kind = row->kind;
-    return kind >= 0 && kind < 0x20;
+    long value = static_cast<signed char>(kind);
+    return value >= 0 ? value < 0x20 : 0;
 }
 
 int unit_override_kind(int player, int slot) {

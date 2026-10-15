@@ -1,0 +1,44 @@
+Fifth session, family (a): 0x71004f09dc, 0x71004f17f8, 0x71004f2620, 0x71004f3448 (1,532 bytes each, one template:
+identical opcodes, 33 differing words each against 4f09dc). Drafted as one template, docs/s5_wip/4f09dc.cpp; each of
+the four instantiations is 21 instructions off abstracted (1,536 bytes here, 74 instruction diffs, 178 word diffs).
+
+What it is: a contact search in the physics module of the vector five (docs/s5_wip/4eab78.cpp: same epsilon
+0.0011920929 at 0x73bbc4/0x73bcbc, the same normalise x * inv, inv * y, inv * z, the same to_vec4). The owner is
+{ shape (0x20/0x30/0x30/0x40 bytes), entries[64] of 0x90, u64 count, pad, matrix* }, so the count is at
+0x2420/0x2430/0x2430/0x2440 and the shape-specific callee (4f42c0/4f481c/4f475c/4f48dc) takes the owner pointer as
+the shape. bool find(Result* out): for each entry, dir = the normal if a and b are equal within the epsilon, else
+normalised a - b; skip if dot(normal, dir) > 0; two contact ids (4e7928 fills the second, the shape callee the
+first), each trimmed to 22 bits when its kind byte is 2; skip duplicates (an address comparison, see the draft);
+append; insertion sort by |a - b|^2; the last hit's points (w = 1) transformed by the matrix, its direction through
+the 3x3 part and normalised, the two ids, found = 1.
+
+Settled (each measured):
+- The hit's direction type has a default constructor that zeroes w (the 64 stores at +0xc, and the store at the top
+  of each iteration); that makes the hit non-POD, so its data size is 0x28 and the sort's assignments copy 0x28 bytes
+  (memcpy calls) while the stride stays 0x30.
+- The sort is an inlined member function of the hit list: the inliner moves its key alloca to the top of the
+  caller's entry block, and stack colouring merges the direction into the key's slot, which gives the original's
+  frame (key/direction at x29-0xb0, hits at sp+0x30, the ids at sp+0x20). Written in the caller the key goes below.
+- The break form of the insertion loop (int j = i; while (j > 0) { if (!(less)) break; ... }) gives the original's
+  counters (x24 = j + 1, the j - 1 index in w25); the && form and the j = i - 1 form are 34-60 off.
+- The near test must be written in the caller with a.x read into a local first: in a helper (by value, or by
+  reference: static helpers get their reference parameters promoted to values by ArgumentPromotion) InstCombine
+  swaps the compare operands, and without the local the a.x load comes last and takes the pre-indexed base.
+- The vector five's to_vec4 (12-byte copy + int w) gives the three int loads of the normal with y and z paired.
+- The 3x3 result computed into locals and stored after; the final normalise multiplies x and y before storing them.
+- The points copied through a local (12-byte copy, w = 1) then assigned; XMVector4Transform from
+  misc/matrix_inverse.h (matrix by value).
+
+Still off (21):
+- Register allocation in the sort: the original spills the hit count n (stp x19, x9, [sp, #8]) and keeps this in
+  x20; ours keeps n in x20 and spills this before the sort, which also reorders the tail (the first transform's row
+  loads and the 3x3 products, about 8 of the 21). The pointer form (Hit* p = items + j; *p = *(p - 1); && test)
+  keeps this in x20 and fixes the tail transform (105 word diffs) but changes the loop counters (27 off). The
+  original's break exit stores through the loop's pointer IV (x22) while the other two exits recompute the address
+  from j; no source form tried reproduces that split.
+- The direction's w lane: the original's merged w phi is the first phi of the dot block (registers s0, then
+  z, y, x in s1-s3); ours is last (InstCombine merges the w stores before GVN creates the x, y, z phis). Moving that
+  phi first by hand in the IR gives 20.
+- Scheduling of the sort's two squared lengths (the original loads the previous entry pointer in the middle of the
+  key's length); irsearch on that block finds 16 but with orders that do not map to source.
+Callees: 0x71004e7928 (968 B), the shape callees (4f42c0 20 B, 4f48dc 16 B, 4f475c/4f481c 192 B), sqrtf, memcpy.

@@ -1,6 +1,8 @@
 // Clamped weekday-style lookups found by tools/family_scan.py --immediates: each reads one of seven
 // byte settings, falling back to the last one for an index out of range. They differ only in the
-// table; types and functions are named after their address. Status: matching/README.md.
+// table; types and functions are named after their address. The original tests the index twice
+// (an unsigned range test, then the sign again), which only this form reproduces.
+// Status: matching/README.md.
 
 struct SevenBytes205670 {
     unsigned char pad[0x67f];
@@ -9,7 +11,8 @@ struct SevenBytes205670 {
 
 // 0x7100205670
 unsigned char seven_byte_205670(SevenBytes205670* table, int index) {
-    return index >= 0 && index < 7 ? table->values[index] : table->values[6];
+    bool valid = index >= 0 ? (unsigned)index < 7 : false;
+    return valid && index >= 0 ? table->values[index] : table->values[6];
 }
 
 struct SevenBytes205694 {
@@ -19,7 +22,8 @@ struct SevenBytes205694 {
 
 // 0x7100205694
 unsigned char seven_byte_205694(SevenBytes205694* table, int index) {
-    return index >= 0 && index < 7 ? table->values[index] : table->values[6];
+    bool valid = index >= 0 ? (unsigned)index < 7 : false;
+    return valid && index >= 0 ? table->values[index] : table->values[6];
 }
 
 struct SevenBytes2056b8 {
@@ -29,7 +33,8 @@ struct SevenBytes2056b8 {
 
 // 0x71002056b8
 unsigned char seven_byte_2056b8(SevenBytes2056b8* table, int index) {
-    return index >= 0 && index < 7 ? table->values[index] : table->values[6];
+    bool valid = index >= 0 ? (unsigned)index < 7 : false;
+    return valid && index >= 0 ? table->values[index] : table->values[6];
 }
 
 struct SevenBytes2056dc {
@@ -39,7 +44,8 @@ struct SevenBytes2056dc {
 
 // 0x71002056dc
 unsigned char seven_byte_2056dc(SevenBytes2056dc* table, int index) {
-    return index >= 0 && index < 7 ? table->values[index] : table->values[6];
+    bool valid = index >= 0 ? (unsigned)index < 7 : false;
+    return valid && index >= 0 ? table->values[index] : table->values[6];
 }
 
 struct SevenBytes205734 {
@@ -49,7 +55,8 @@ struct SevenBytes205734 {
 
 // 0x7100205734
 unsigned char seven_byte_205734(SevenBytes205734* table, int index) {
-    return index >= 0 && index < 7 ? table->values[index] : table->values[6];
+    bool valid = index >= 0 ? (unsigned)index < 7 : false;
+    return valid && index >= 0 ? table->values[index] : table->values[6];
 }
 
 struct SevenBytes20578c {
@@ -59,5 +66,6 @@ struct SevenBytes20578c {
 
 // 0x710020578c
 unsigned char seven_byte_20578c(SevenBytes20578c* table, int index) {
-    return index >= 0 && index < 7 ? table->values[index] : table->values[6];
+    bool valid = index >= 0 ? (unsigned)index < 7 : false;
+    return valid && index >= 0 ? table->values[index] : table->values[6];
 }

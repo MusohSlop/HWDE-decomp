@@ -1,0 +1,63 @@
+# Fifth session (branch matching-s5): hand-matching of non-constructor functions over 1,500 bytes at 0x380000 and
+# above, and the giants of that range. Generator runs should skip every address listed here.
+# working: functions being hand-matched now; matched: functions matched on matching-s5; tried: parked, with reason.
+tried: 4eab78 4ebc2c 4eccf0 4eddb4 4eee68 4e9984 (the vector six: one template, all six instantiate at 7 off abstracted, 34 exact by edit distance (4eee68: 5 abstracted): the sums' near-zero flags from an int helper with early returns, the out test x/z/y with z reversed, the frame transform with negated components added, support and closest given temporaries by const reference, both projections before the min update; what is left is register and schedule level: the pick's fadd operand order, the zero of best, d = p - pos in swapped registers, the out branch's store; docs/s5_wip/4eab78.cpp)
+tried: 4f09dc 4f17f8 4f2620 4f3448 (family a: 1,532 B each, one template, a contact search of the vector five's module; 1,536 B here, 21 off abstracted each: the sort spills this instead of the hit count, the w lane's phi order; docs/s5_wip/4f09dc.cpp and .txt)
+tried: 503bd0 504188 (family d pair: 1,460 B each, a capsule-mesh GJK contact; 1,468 B here, 25 off abstracted: support-object store order, the solver's second point copied through a register, the 3x3 normal transform as in family a; docs/s5_wip/503bd0.cpp)
+tried: 5efb3c (6,012 B giant, the stream voice update: same size here, edit distance 168 abstracted, 488 exact (tools/s5/lev.py); what is left is register allocation of the flags and the spill area, a few load placements and block layouts; docs/s5_wip/5efb3c.cpp)
+tried: 400e40 (6,304 B giant, model node setup: 5,496 B here, edit distance 723 abstracted; the original keeps two differently scheduled copies of each inlined matrix block per node list (18 sincos calls against our 9: ours are identical and branch folding merges them); docs/s5_wip/400e40.cpp)
+tried: 492bd0 (6,132 B giant, the tree build: 6,144 B here, edit distance 227 abstracted, 632 exact (775/1,298 at the first draft); left: the bounds jobs' tail placement (one wait call in the original), merged initial stores, register allocation in the mark loops and the split ranges; docs/s5_wip/492bd0.cpp)
+# Background irsearch targets (one slot): 5efb3c running (build/s5/ev/irs); next 4eee68 at 5 off (the vector six's pick fadd order, the zero of best, d = p - pos registers, the out branch's store), then 4eab78's copies.
+working: 4030ac (13,924 B giant: surveyed, deferred to last; its large callees 402aec 406710 4068c0 406f8c 40a074 4095b8 22286c first)
+working: 406710 4068c0 406f8c 40a074 4095b8 22286c (4030ac's callees, main's assignment) 539ecc 40bc50 5198e0 4d198c (main's picks)
+tried: 409078 (1,344 B, 402aec's classifier, in misc/s5_functions07.cpp as a near miss: same size, 7 off abstracted, registers left: the collinear cross product's indexed multiplies, the tbz of the apart flag, the spill slots' order; it has to stay in 402aec's unit, see the unit's header)
+tried: 459ffc (1,920 B, in misc/text_format.cpp as a near miss, 2,168 B: the flag loop keeps its bool in the original and the length modifiers are kept as values; it writes the statics 45a850 needs)
+tried: 45b158 (2,464 B, 2,520 B here: padding loops solved by an explicit cap == 0 fill path; the sign mask, the a-f test and the frame size remain; docs/s5_wip/45b158.cpp)
+matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544 3bd1d8 3beef0 5a3ce0 3e1538 5f9fac 45f07c 59f778 5a18e0 5a5b64 5a60cc 5a6634 5a6b9c 5a7104 5a766c 402aec
+tried: 3ba734 (7,108 B giant, 7,080 B here, 117 off abstracted (an IR order of the init block gives 116): register allocation of this and the layout addresses, and the DLC branch of the plate loop; docs/s5_wip/3ba734.cpp)
+tried: 4abdcc (2,256 B, 2,252 B here, 110 instructions off abstracted: scheduling of the light loop and of the camera loads; docs/s5_wip/4abdcc.cpp)
+tried: 4b2e34 (4,600 B, not drafted: it inlines the NEON matrix inverse, now include/misc/matrix_inverse.h)
+tried: 3b0428 (1,800 B, 1,764 B here, 37 off abstracted: the second mode == 7 test is jump-threaded through the mode == 3 arm, the last loop's exit is not the original's sum of flags, one value spilled differently; docs/s5_wip/3b0428.cpp)
+tried: 423e04 (2,808 B, 61 off, same size: layout of the first test and of the shared tail, two byte loads merged; docs/s5_wip/423e04.cpp)
+tried: 3ccf84 (3,100 B, 24 off, same size: only the tail differs, the shared reset block and the keep-flag test; docs/s5_wip/3ccf84.cpp)
+tried: 3be490 (2,656 B, 2,624 B here, 16 off abstracted: the indexes derived from the loop index are sign-extended from 32 bits in the original, widened in ours; docs/s5_wip/3be490.cpp)
+tried: 3b4e98 (2,576 B, same size here, 6 off abstracted: scheduling in the extra item's setters; s3's create_anim_transform shape gives the same 6; docs/s5_wip/3b4e98.cpp)
+tried: 3bf978 (3,060 B, 3,056 B here, 174 off abstracted: the rank-to-frame mapping and the slot reloads; docs/s5_wip/3bf978.cpp)
+tried: 3c2280 (4,044 B, same size here, 18 off abstracted: a bounds test's encoding, select and store scheduling; docs/s5_wip/3c2280.cpp)
+tried: 4ce8e0 (2,104 B, 2,112 B here, 23 off abstracted: register allocation of the stage pointers and offsets; an IR order gives 0 off abstracted and 36 register diffs; docs/s5_wip/4ce8e0.cpp)
+tried: 242070 (876 B, 860 B here, 93 off abstracted: the pre-RA scheduler sinks the matrix product below the inverse; docs/s5_wip/242070.cpp)
+tried: 54e330 (948 B, 980 B here, 125 off abstracted: the pre-RA scheduler hoists the loads and runs out of registers; docs/s5_wip/54e330.cpp)
+tried: 5b6cbc (784 B, same size here, 37 off abstracted: the scalar bias product's order; docs/s5_wip/5b6cbc.cpp)
+tried: 96e0c (868 B, same size here, 47 off abstracted, 14 with an IR order: the Euler rotation's loads and products; docs/s5_wip/96e0c.cpp)
+# The NEON matrix-inverse family (main: s5 owns the shared inline and all 23 copies, any range or size; the inline is
+# include/misc/matrix_inverse.h, 5a3ce0 and 3e1538 matched on it; 1e26f8 and 5f4418, a look-at instead, are released
+# to the normal split), working:
+96e0c
+a6470
+2212c4
+242070
+3d0ca4
+3e6aa8
+3f4b2c
+41ff58
+47f8ac
+482bc4
+489450
+4b2e34
+54e330
+5acba4
+5ad154
+5b5c1c
+5b6cbc
+5be884
+# The rest of 3ccf84's unit (its globals only lay out right with the flag setters in the same unit), kept for it:
+3cdc04
+3cddbc
+3cdf60
+3cdfe0
+3cdffc
+3ce0cc
+3ce1fc
+3ce208
+3ce218
+3ce290
