@@ -30532,13 +30532,15 @@
         "_Z9draw_itemI9Kind3b64cEvP4ItemP9DrawStateP6DeviceP6Shader": "0x710003bdf4",
         "_Z9draw_itemI10Kind3d7f04EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d86ac",
         "_Z9draw_itemI10Kind3d9078EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d9820",
-        "_ZN8Renderer10draw_itemsI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x71003da0f4"
+        "_ZN8Renderer10draw_itemsI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x71003da0f4",
+        "_ZN8Renderer9draw_listI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x71003dab18"
       },
       "map": {
         ".rodata._Z9draw_itemI9Kind3b64cEvP4ItemP9DrawStateP6DeviceP6Shader": "0x710073ed70",
         ".rodata._Z9draw_itemI10Kind3d7f04EvP4ItemP9DrawStateP6DeviceP6Shader": "0x710080c160",
         ".rodata._Z9draw_itemI10Kind3d9078EvP4ItemP9DrawStateP6DeviceP6Shader": "0x710080c174",
-        ".rodata._ZN8Renderer10draw_itemsI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x710080c188"
+        ".rodata._ZN8Renderer10draw_itemsI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x710080c188",
+        ".rodata._ZN8Renderer9draw_listI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x710080c1c4"
       }
     }
   }
