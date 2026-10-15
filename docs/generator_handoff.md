@@ -182,7 +182,7 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - copies to and from stack locals (knob `nostackcopy`): a copy whose stack side lies in one addressed stack object is
   a block copy into (or out of) that local, whose struct is made as large as the copied range and aligned as the
   pieces show, its fields typed only by the other accesses (a vector copied into a local, its w set, the local
-  passed on);
+  passed on); a stack side addressed through x29 resolves to sp offsets through the frame offset (knob `nofpcopy`);
 - unused merges in loop bodies are pruned like those in straight code (knob `noloopprune`): a call in a conditional
   in a loop left s0 merged with the incoming s0, and the unused merge failed with "merge types: int|float";
 - a 64-bit load split into two neighbouring fields is found along the control flow (knob `nopairflow`): the scan
@@ -206,6 +206,9 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   `noscalarlane`; a variable typed Vec4f only after its s-register uses were built rendered vector arithmetic);
 - select arms are fitted to the select's type and pointers of different types are compared as longs (knob
   `notypefit`; a pointer arm against an int arm, or two struct pointers compared, did not compile);
+- an 8-byte integer field whose load is used as a base is a pointer (knob `nolongbase`): a member's address kept in
+  a field (`add x9, x8, #0x1a0; stp x8, x9, [x20, #0x50]`) typed the field long, and its load as a base failed with
+  "non-pointer load base" (offset 0, a vtable slot, is left alone);
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
@@ -244,7 +247,12 @@ destructor stores the member's vtable pointer first, and the scheduler hoists th
 `gotfirst` (a global whose GOT address the original loads before the first branch is read before the first test:
 the first read of it inside an if moves in front of that if and of the loads that feed its test; the value load
 sinks back into the if, the GOT address stays in a callee-saved register for the later reads, as s3 found in
-destructors that read a manager global at the top). Functions whose generated source would exceed 2 MB
+destructors that read a manager global at the top) and `volstores` (a field written by a single constant store of
+4 bytes or less, next to another such field, is volatile: the original keeps adjacent constant stores apart that
+Clang would merge, as s3 found for 347fe4 and 3a4034; volatile also keeps loads apart, so it is only a knob set) and
+`dstfirst` (with `sink`: a load used as a store's destination stays a local where it was loaded instead of being
+inlined at the store, whose right side would be evaluated first; s5's rule for 5a5b64 and its template copies).
+Functions whose generated source would exceed 2 MB
 are skipped (forking at every branch can grow a function's source exponentially).
 
 ## Queued next
