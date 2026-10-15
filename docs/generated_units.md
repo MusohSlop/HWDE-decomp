@@ -119,6 +119,9 @@ real classes.
 | `misc/variant_functions90.cpp` | variant search, ninetieth run (fast knob list after the second session's 6fa2312 rules) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions91.cpp` | variant search, ninety-first run (`gotfirst`) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions92.cpp` | variant search, ninety-second run (`noovcast`) | as `misc/variant_functions26.cpp` |
+| `misc/variant_functions93.cpp` | variant search, ninety-third run (`noaddrbase`) | as `misc/variant_functions26.cpp` |
+| `misc/variant_functions94.cpp` | variant search, ninety-fourth run (`noretunify`) | as `misc/variant_functions26.cpp` |
+| `misc/variant_functions95.cpp` | variant search, ninety-fifth run (`noconstarg`) | as `misc/variant_functions26.cpp` |
 | `misc/s2_functions1.cpp` | second session, first run over `0x7100380000` and up (the whole 4-byte constant pool, 16-byte vector constants from the literal pool) | as `misc/variant_functions26.cpp`; vector constants are `(Vec4f){...}` literals, mapped through `.rodata.cst16` |
 | `misc/s2_functions2.cpp` | second session, second run (float stack slots, `sqrtf`, float branches, indexed floats) | as `misc/s2_functions1.cpp` |
 | `misc/s2_functions3.cpp` | second session, third run (constant-store fields retyped, integer reads of two widths; only the newly generated functions) | as `misc/s2_functions1.cpp` |
