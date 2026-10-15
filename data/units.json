@@ -29185,6 +29185,12 @@
         "_ZN12Worker5f7984C2Ev": "0x71005f7984",
         "_ZN9Mid2d4f14D2Ev": "0x71002d4f14"
       }
+    },
+    "misc/s4_298094.cpp": {
+      "functions": {
+        "_ZN7AdvUnit8can_moveEjj": "0x7100298094",
+        "_ZN7AdvUnit8can_warpEi": "0x7100298390"
+      }
     }
   }
 }
