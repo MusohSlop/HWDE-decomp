@@ -9,9 +9,11 @@ tried: 400e40 (6,304 B giant, model node setup: 5,496 B here, edit distance 723 
 tried: 492bd0 (6,132 B giant, the tree build: 6,144 B here, edit distance 227 abstracted, 632 exact (775/1,298 at the first draft); left: the bounds jobs' tail placement (one wait call in the original), merged initial stores, register allocation in the mark loops and the split ranges; docs/s5_wip/492bd0.cpp)
 # Background irsearch targets (one slot): 5efb3c running (build/s5/ev/irs); next 4eee68 at 5 off (the vector six's pick fadd order, the zero of best, d = p - pos registers, the out branch's store), then 4eab78's copies.
 working: 4030ac (13,924 B giant: surveyed, deferred to last; its large callees 402aec 406710 4068c0 406f8c 40a074 4095b8 22286c first)
+working: 406710 4068c0 406f8c 40a074 4095b8 22286c (4030ac's callees, main's assignment) 539ecc 40bc50 5198e0 4d198c (main's picks)
+tried: 409078 (1,344 B, 402aec's classifier, in misc/s5_functions07.cpp as a near miss: same size, 7 off abstracted, registers left: the collinear cross product's indexed multiplies, the tbz of the apart flag, the spill slots' order; it has to stay in 402aec's unit, see the unit's header)
 tried: 459ffc (1,920 B, in misc/text_format.cpp as a near miss, 2,168 B: the flag loop keeps its bool in the original and the length modifiers are kept as values; it writes the statics 45a850 needs)
 tried: 45b158 (2,464 B, 2,520 B here: padding loops solved by an explicit cap == 0 fill path; the sign mask, the a-f test and the frame size remain; docs/s5_wip/45b158.cpp)
-matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544 3bd1d8 3beef0 5a3ce0 3e1538 5f9fac 45f07c 59f778 5a18e0 5a5b64 5a60cc 5a6634 5a6b9c 5a7104 5a766c
+matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544 3bd1d8 3beef0 5a3ce0 3e1538 5f9fac 45f07c 59f778 5a18e0 5a5b64 5a60cc 5a6634 5a6b9c 5a7104 5a766c 402aec
 tried: 3ba734 (7,108 B giant, 7,080 B here, 117 off abstracted (an IR order of the init block gives 116): register allocation of this and the layout addresses, and the DLC branch of the plate loop; docs/s5_wip/3ba734.cpp)
 tried: 4abdcc (2,256 B, 2,252 B here, 110 instructions off abstracted: scheduling of the light loop and of the camera loads; docs/s5_wip/4abdcc.cpp)
 tried: 4b2e34 (4,600 B, not drafted: it inlines the NEON matrix inverse, now include/misc/matrix_inverse.h)

@@ -32871,6 +32871,16 @@
         "_ZN14UnitRosterList6lookupILi0EEEiP4Unit": "0x710005d448",
         "_ZN14UnitRosterList6lookupILi1EEEiP4Unit": "0x710005d4d0"
       }
+    },
+    "misc/s5_functions07.cpp": {
+      "functions": {
+        "_Z16intersect_402aecPK5Vec3fPK5Vec4uiS4_S1_S1_f": "0x7100402aec",
+        "_Z15classify_409078PK5Vec4uS1_S1_S1_": "0x7100409078"
+      },
+      "map": {
+        ".rodata": "0x710080f4ac",
+        ".rodata.cst4": "0x710073b000"
+      }
     }
   }
 }

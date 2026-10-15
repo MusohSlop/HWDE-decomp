@@ -78,14 +78,15 @@ def name_args(define):
 
 
 def join_multiline(body):
-    """One entry per instruction: a switch or indirectbr spans lines up to its closing ']'."""
+    """One entry per instruction: a switch or indirectbr spans lines up to its closing ']' (which carries the
+    instruction's metadata in IR emitted with -g: '], !dbg !N')."""
     out, k = [], 0
     while k < len(body):
         l = body[k]
         if l.rstrip().endswith("[") and re.search(r"\b(switch|indirectbr)\b", l):
             parts = [l]
             k += 1
-            while k < len(body) and body[k].strip() != "]":
+            while k < len(body) and not body[k].strip().startswith("]"):
                 parts.append(body[k])
                 k += 1
             if k < len(body):
