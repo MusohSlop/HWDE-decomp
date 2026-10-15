@@ -372,3 +372,224 @@ ShopExpScreen::ShopExpScreen()
     attack_list.setup(attack, attack_anim, 5);
     attack_up_list.setup(attack_up, attack_up_anim, 5);
 }
+
+static inline void move_x(EffectGroup* pane, float dx) {
+    pane->offset30 += dx;
+    pane->flags58 |= 0x10;
+}
+
+void* load_global_334a04();                                 // 0x7100334a04
+struct PageOverride;
+// Reached through the GOT slot at 0x7100c22da8.
+extern PageOverride* gPageOverride;
+
+// Ids of the active page while no override is set (two branches: the getter and the global have different types).
+inline bool page_ids() { return !load_global_334a04() && !gPageOverride; }
+
+class RandomSource {
+public:
+    void roll();                                                            // 0x71003336c4
+};
+// Reached through the GOT slot at 0x7100c22c00.
+extern RandomSource gRandomSource;
+int controller_style_3ce218();                                              // 0x71003ce218
+
+struct OptionOwner;
+
+// A cursor sub-object of the options screens (0x30 bytes).
+class MenuCursor {
+public:
+    MenuCursor();                                                           // 0x710037f550
+    void init();                                                            // 0x710037cc88
+    void set(float x, float y, float width);                                // 0x710037cd30
+
+    unsigned char data[0x30];
+};
+
+// Base of the options screens (0xc0 bytes; vtable GOT 0x7100c2b2d0).
+class OptionScreenBase {
+public:
+    explicit OptionScreenBase(OptionOwner* owner_) : owner(owner_), value78(0) {
+        memset(state, 0, sizeof(state));
+        flagb8 = 0;
+        valueb0 = 0;
+        cursor.init();
+        cursor.set(150.0f, 126.0f, 223.0f);
+    }
+    virtual ~OptionScreenBase();
+
+    OptionOwner* owner;               // +08
+    unsigned char pad10[8];
+    unsigned char state[0x60];        // +18
+    long value78;                     // +78
+    MenuCursor cursor;                // +80
+    long valueb0;                     // +b0
+    unsigned char flagb8;             // +b8
+};
+
+// An option line (0x2320 bytes): its base builds the menu_parts layout out of line, then the five animations.
+class OptionPanelBase {
+public:
+    OptionPanelBase(int id, int id2, const char* layout, const char* name, int mode); // 0x710039d3fc
+    virtual ~OptionPanelBase();
+
+    LightEffectNode* node;            // +08
+    LayoutAnimation* anims[5];        // +10: in, on_off, loop_0, select_0, out
+    unsigned char pad38[0x22c0];
+    int value22f8;                    // +22f8
+    unsigned char pad22fc[0x24];
+};
+
+extern const char kMenuPartsLayout[] __attribute__((visibility("hidden")));   // 0x71007d6051
+extern const char kFontMenu[] __attribute__((visibility("hidden")));          // 0x71007d6079
+extern const char kInAnim[] __attribute__((visibility("hidden")));            // 0x710073fffb
+extern const char kOnOffAnim[] __attribute__((visibility("hidden")));         // 0x71007d6062
+extern const char kLoop0Anim[] __attribute__((visibility("hidden")));         // 0x71007d6069
+extern const char kSelect0Anim[] __attribute__((visibility("hidden")));       // 0x71007d6070
+extern const char kOutAnim[] __attribute__((visibility("hidden")));           // 0x710074056c
+
+class OptionPanel : public OptionPanelBase {
+public:
+    OptionPanel() : OptionPanelBase(0x41ea, 0x41ea, kMenuPartsLayout, kFontMenu, 0) {
+        anims[0] = node->create_animation_3770(kInAnim, false);
+        anims[1] = node->create_animation_3770(kOnOffAnim, false);
+        anims[2] = node->create_animation_3770(kLoop0Anim, false);
+        anims[3] = node->create_animation_3770(kSelect0Anim, false);
+        anims[4] = node->create_animation_3770(kOutAnim, false);
+        value22f8 = 0x10;
+    }
+    virtual void v10();       // declared, not defined: the vtable stays external (GOT 0x7100c2b2b8)
+};
+
+class OptionPage {
+public:
+    OptionPage();                                                           // 0x71003a4034
+    unsigned char data[0x34a0];
+};
+class OptionKeyRow {
+public:
+    OptionKeyRow();                                                         // 0x71003a4c6c
+    unsigned char data[0x1150];
+};
+class OptionButtonRow {
+public:
+    OptionButtonRow();                                                      // 0x71003a554c
+    unsigned char data[0x1160];
+};
+
+extern const char kOptBgCntLayout[] __attribute__((visibility("hidden")));    // 0x71007d9190
+extern const char kBgIn[] __attribute__((visibility("hidden")));              // 0x71007d91a1
+extern const char kLineInGamepad[] __attribute__((visibility("hidden")));     // 0x71007d91a7
+extern const char kLineProconIn[] __attribute__((visibility("hidden")));      // 0x71007d91b7
+extern const char kLineGpL00In[] __attribute__((visibility("hidden")));       // 0x71007d91c6
+extern const char kLineGpR00In[] __attribute__((visibility("hidden")));       // 0x71007d91d6
+extern const char kLineGpL01In[] __attribute__((visibility("hidden")));       // 0x71007d91e6
+extern const char kLineGpR01In[] __attribute__((visibility("hidden")));       // 0x71007d91f6
+extern const char kWindowLIn[] __attribute__((visibility("hidden")));         // 0x71007d9206
+extern const char kWindowSIn[] __attribute__((visibility("hidden")));         // 0x71007d9212
+extern const char kArwIn[] __attribute__((visibility("hidden")));             // 0x71007dac35
+extern const char kArwLLoop[] __attribute__((visibility("hidden")));          // 0x71007d5b89
+extern const char kArwRLoop[] __attribute__((visibility("hidden")));          // 0x71007d5b94
+extern const char kBgGamepad[] __attribute__((visibility("hidden")));         // 0x71007d921e
+extern const char kBgProcon[] __attribute__((visibility("hidden")));          // 0x71007d9229
+extern const char kBgGamepadL[] __attribute__((visibility("hidden")));        // 0x71007d9233
+extern const char kBgGamepadR[] __attribute__((visibility("hidden")));        // 0x71007d9240
+extern const char kArw[] __attribute__((visibility("hidden")));               // 0x71007d830f
+extern const char kLineOnGamepad[] __attribute__((visibility("hidden")));     // 0x71007db2e6
+
+// 0x71003a60cc: the options screen (opt_bg_cnt.bflyt, 0x56960 bytes), ending in a tail call of its build (0x71003a6e7c).
+class OptionScreen : public OptionScreenBase {
+public:
+    explicit OptionScreen(OptionOwner* owner);
+    virtual ~OptionScreen();
+    void build();                                                           // 0x71003a6e7c
+
+    OptionPanel sound;                // +c0
+    OptionPanel voice;                // +23e0
+    OptionPanel vibration;            // +4700
+    OptionPanel camera_x;             // +6a20
+    OptionPanel camera_y;             // +8d40
+    OptionPanel camera_speed;         // +b060
+    OptionPanel message;              // +d380
+    OptionPanel minimap;              // +f6a0
+    OptionPanel more_panels[9];       // +119c0
+    int value255e0;                   // +255e0
+    unsigned char pad255e4;
+    unsigned char flag255e5;          // +255e5
+    unsigned char pad255e6;
+    unsigned char flag255e7;          // +255e7
+    unsigned char flag255e8;          // +255e8
+    unsigned char pad255e9;
+    unsigned char flag255ea;          // +255ea
+    unsigned char pad255eb[5];
+    OptionPage pages[9];              // +255f0
+    OptionKeyRow key_rows[9];         // +42f90
+    void* value4cb60;                 // +4cb60
+    unsigned char pad4cb68[0x48];
+    LightEffectNode* layout;          // +4cbb0
+    LayoutAnimation* bg_in;           // +4cbb8
+    void* value4cbc0;                 // +4cbc0
+    void* value4cbc8;                 // +4cbc8
+    LayoutAnimation* line_anims[4];   // +4cbd0: line_in_gamepad, line_procon_in, line_gp_l_00_in, line_gp_r_00_in
+    void* value4cbf0;                 // +4cbf0
+    LayoutAnimation* more_anims[7];   // +4cbf8: line_gp_l_01_in to arw_r_loop
+    void* value4cc30;                 // +4cc30
+    void* value4cc38;                 // +4cc38
+    void* value4cc40;                 // +4cc40
+    EffectGroup* backgrounds[5];      // +4cc48: bg_gamepad, bg_procon, bg_gamepad_l, bg_gamepad_r, -
+    unsigned char block4cc70[0x48];   // +4cc70
+    EffectGroup* arw;                 // +4ccb8
+    void* value4ccc0;                 // +4ccc0
+    void* value4ccc8;                 // +4ccc8
+    int style;                        // +4ccd0
+    long value4ccd4 __attribute__((packed)); // +4ccd4
+    int value4ccdc;                   // +4ccdc
+    OptionButtonRow button_rows[9];   // +4cce0
+    int value56940;                   // +56940
+    int pad56944;
+    int value56948;                   // +56948
+    int pad5694c[3];
+    OptionOwner* owner56958;          // +56958
+};
+
+OptionScreen::OptionScreen(OptionOwner* owner_)
+    : OptionScreenBase(owner_), value255e0(0), flag255e5(0), flag255e7(0), flag255e8(0), flag255ea(0),
+      value4cb60(nullptr), layout(nullptr), bg_in(nullptr), value4cbc0(nullptr), value4cbc8(nullptr),
+      value4cc30(nullptr), value4cc38(nullptr), value4cc40(nullptr), value4ccc0(nullptr), value4ccc8(nullptr),
+      value4ccd4(0), value4ccdc(0), value56940(0), value56948(0), owner56958(owner_) {
+    memset(backgrounds, 0, sizeof(backgrounds));
+    if (page_ids()) {
+        gEffectManager->create_node(&layout, 0x4202, kOptBgCntLayout);
+        gEffectManager->sync();
+    } else {
+        gEffectManager->create_node(&layout, 0x41f3, kOptBgCntLayout);
+        gEffectManager->flush();
+    }
+    bg_in = layout->create_animation_3770(kBgIn, true);
+    line_anims[0] = layout->create_animation_3770(kLineInGamepad, false);
+    line_anims[1] = layout->create_animation_3770(kLineProconIn, false);
+    line_anims[2] = layout->create_animation_3770(kLineGpL00In, false);
+    line_anims[3] = layout->create_animation_3770(kLineGpR00In, false);
+    value4cbf0 = nullptr;
+    more_anims[0] = layout->create_animation_3770(kLineGpL01In, false);
+    more_anims[1] = layout->create_animation_3770(kLineGpR01In, false);
+    more_anims[2] = layout->create_animation_3770(kWindowLIn, false);
+    more_anims[3] = layout->create_animation_3770(kWindowSIn, false);
+    more_anims[4] = layout->create_animation_3770(kArwIn, false);
+    more_anims[5] = layout->create_animation_3770(kArwLLoop, false);
+    more_anims[6] = layout->create_animation_3770(kArwRLoop, false);
+    backgrounds[0] = layout->group->find(kBgGamepad, 1);
+    backgrounds[1] = layout->group->find(kBgProcon, 1);
+    backgrounds[2] = layout->group->find(kBgGamepadL, 1);
+    backgrounds[3] = layout->group->find(kBgGamepadR, 1);
+    backgrounds[4] = nullptr;
+    arw = layout->group->find(kArw, 1);
+    memset(block4cc70, 0, sizeof(block4cc70));
+    layout->group->find(kLineOnGamepad, 1)->flags58 |= 1;
+    if (!page_ids())
+        gRandomSource.roll();
+    style = controller_style_3ce218();
+    if (style == 5)
+        move_x(arw, 30.0f);
+    build();
+}

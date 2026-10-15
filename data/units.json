@@ -18875,7 +18875,45 @@
     "kExpGaugePos": "0x71007da087",
     "kHeartContainersPos": "0x71007da095",
     "kHeartEff": "0x71007da9b5",
-    "kHeartBk": "0x71007da9ac"
+    "kHeartBk": "0x71007da9ac",
+    "got:gRandomSource": "0x7100c22c00",
+    "_Z23controller_style_3ce218v": "0x71003ce218",
+    "_ZN10MenuCursorC1Ev": "0x710037f550",
+    "_ZN10MenuCursor4initEv": "0x710037cc88",
+    "_ZN10MenuCursor3setEfff": "0x710037cd30",
+    "got:_ZTV16OptionScreenBase": "0x7100c2b2d0",
+    "_ZN15OptionPanelBaseC2EiiPKcS1_i": "0x710039d3fc",
+    "got:_ZTV11OptionPanel": "0x7100c2b2b8",
+    "_ZN10OptionPageC1Ev": "0x71003a4034",
+    "_ZN12OptionKeyRowC1Ev": "0x71003a4c6c",
+    "_ZN15OptionButtonRowC1Ev": "0x71003a554c",
+    "got:_ZTV12OptionScreen": "0x7100c2b330",
+    "_ZN12OptionScreen5buildEv": "0x71003a6e7c",
+    "_Z18load_global_334a04v": "0x7100334a04",
+    "kMenuPartsLayout": "0x71007d6051",
+    "kFontMenu": "0x71007d6079",
+    "kOnOffAnim": "0x71007d6062",
+    "kLoop0Anim": "0x71007d6069",
+    "kSelect0Anim": "0x71007d6070",
+    "kOptBgCntLayout": "0x71007d9190",
+    "kBgIn": "0x71007d91a1",
+    "kLineInGamepad": "0x71007d91a7",
+    "kLineProconIn": "0x71007d91b7",
+    "kLineGpL00In": "0x71007d91c6",
+    "kLineGpR00In": "0x71007d91d6",
+    "kLineGpL01In": "0x71007d91e6",
+    "kLineGpR01In": "0x71007d91f6",
+    "kWindowLIn": "0x71007d9206",
+    "kWindowSIn": "0x71007d9212",
+    "kArwIn": "0x71007dac35",
+    "kArwLLoop": "0x71007d5b89",
+    "kArwRLoop": "0x71007d5b94",
+    "kBgGamepad": "0x71007d921e",
+    "kBgProcon": "0x71007d9229",
+    "kBgGamepadL": "0x71007d9233",
+    "kBgGamepadR": "0x71007d9240",
+    "kArw": "0x71007d830f",
+    "kLineOnGamepad": "0x71007db2e6"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -28664,7 +28702,8 @@
     },
     "misc/s3_functions11.cpp": {
       "functions": {
-        "_ZN13ShopExpScreenC2Ev": "0x7100363040"
+        "_ZN13ShopExpScreenC2Ev": "0x7100363040",
+        "_ZN12OptionScreenC2EP11OptionOwner": "0x71003a60cc"
       },
       "map": {
         ".rodata.cst4": "0x710073b000",
