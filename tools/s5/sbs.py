@@ -26,7 +26,8 @@ ap.add_argument("--abs", action="store_true"); ap.add_argument("--obj")
 a = ap.parse_args()
 addr = int(a.addr, 16) & 0xffffffff
 man = json.load(open(os.path.join(M, "data", "units.json"), encoding="utf-8-sig"))
-obj = a.obj or os.path.splitext(a.cpp)[0] + ".o"
+os.makedirs(os.path.join(M, "build", "s5", "sbs"), exist_ok=True)  # never next to a unit's source
+obj = a.obj or os.path.join(M, "build", "s5", "sbs", os.path.splitext(os.path.basename(a.cpp))[0] + ".o")
 if not a.obj:
     c = subprocess.run([os.path.join(ROOT, man["compiler"]), *man["flags"], "-I", os.path.join(M, "include"), "-c", a.cpp,
                         "-o", obj], capture_output=True, text=True)
@@ -49,10 +50,26 @@ for x in a.map:
 mapping[".rodata.cst4"] = 0x73b000
 mapping[".rodata.cst16"] = 0x73dff0
 data, sections, symbols, relocs = check_obj.read_elf(obj)
+
+
+def placeholder_address(name):
+    """The address suffix of a placeholder name (callee_X, Class_X, ...), as in tools/s3/try.py: for a mangled
+    free function the identifier is cut at its length prefix, so a parameter code after the address
+    (callee_33840cl, a long parameter) is not read as part of it."""
+    mm = re.match(r"_Z(\d+)", name)
+    if mm:
+        ident = name[mm.end():mm.end() + int(mm.group(1))]
+        mi = re.search(r"_([0-9a-f]{5,6})$", ident)
+        if mi:
+            return int(mi.group(1), 16)
+    mm = re.search(r"_([0-9a-f]{5,6})(?=[A-Z]|$|E|P|v|i|f)", name)
+    return int(mm.group(1), 16) if mm else None
+
+
 for s in symbols:
-    mm = re.search(r"_([0-9a-f]{5,6})(?=[A-Z]|$|E|P|v|i|f)", s.name) if not s.is_section and s.shndx == 0 else None
-    if mm and s.name not in mapping:
-        mapping[s.name] = int(mm.group(1), 16)
+    va = placeholder_address(s.name) if not s.is_section and s.shndx == 0 else None
+    if va is not None and s.name not in mapping:
+        mapping[s.name] = va
 defined = [s.name for s in symbols if not s.is_section and s.shndx != 0 and s.size]
 name = a.name or next((d for d in defined if re.search(r"_0*%x(?![0-9a-f])" % addr, d)), None)
 if name is None:
@@ -60,9 +77,9 @@ if name is None:
 mapping[name] = addr
 for s in symbols:  # other defined functions named after their address
     if not s.is_section and s.shndx != 0 and s.size and s.name not in mapping:
-        mm = re.search(r"_([0-9a-f]{5,6})(?=[A-Z]|$|E|P|v|i|f)", s.name)
-        if mm:
-            mapping[s.name] = int(mm.group(1), 16)
+        va = placeholder_address(s.name)
+        if va is not None:
+            mapping[s.name] = va
 sizes = {check.address(r["Address"]): int(r["Size"]) for r in csv.DictReader(open(os.path.join(M, "data", "functions.csv"), newline=""))}
 size = sizes[addr]
 image = check_obj.IMAGE.read_bytes()

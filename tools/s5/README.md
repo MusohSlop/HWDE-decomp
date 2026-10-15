@@ -14,6 +14,27 @@ Run them with the project's Python, `python -B -I tools/s5/SCRIPT ...`, from `ma
 - `cc.py CPP [NAME...]` compiles a scratch file and prints the disassembly of its functions (unrelocated): for
   trying source forms of a small idiom side by side in one file.
 - `flt.py ADDR...` prints literal-pool words as floats.
+- `variants_cpp.py TEMPLATE ADDR SYM [--map ...] --slot KEY=a|b|... [--slot ...] [--show K]` compiles every
+  combination of a template's `{KEY}` options (`\n` for a newline, `||` between options that contain `|`) and
+  prints each variant's abstract and exact instruction diffs and word diffs, best last; stops at a match
+  (`build/s5/var/match.cpp`). Like s3's permtry.py, but it ranks all variants instead of stopping silently.
+- `ranges.py CPP|LL FUNC` prints the live ranges as the greedy allocator sees them (after the pre-RA scheduler):
+  each virtual register's first definition, last use and length in instructions, the ranges allocated first
+  (spanning blocks, or longer than 64 instructions for FPR128/GPR64: longest first, ties to the lower vreg) and the
+  register each got. For register-allocation-only near misses: the original's registers tell which ranges must be
+  longer than which.
+- `irsearch.py LL FUNC ADDR [--map ...] [--groups] [--iters N] [--temp T] [--seed S] [--work DIR]` searches
+  instruction orders of the function's largest block in its optimized IR (`clang -S -emit-llvm` of the scratch
+  file), compiling each order with the optimizer off (`-Xclang -disable-llvm-optzns`, about 0.15 s), scored by
+  abstract then exact instruction diffs. Numbered values are renamed so any order is valid IR. `--groups` moves
+  whole statements only (an instruction with several users or none, with the operands only it uses, kept
+  contiguous) plus swaps of a statement's two independent calls, with simulated annealing (`--temp`, restarts to the
+  best after `--restart` tries): orders a source file can give. `--gmin BEST.ll` (with `--groups`) then moves each
+  statement back toward the original order while neither distance grows and marks what stays moved (`*`); that
+  list is what to change in the source. Without `--groups` it moves single instructions (finds schedule matches
+  fast, but the orders rarely map back to source). Writes `gbest.ll`/`best.ll` and stops at a match (`match.ll`).
+  Use it for schedule- or register-only near misses where the pre-RA scheduler keeps the IR order (check with
+  `-mllvm -print-machineinstrs`: compare the input and output of "Machine Instruction Scheduler").
 
 ## Source patterns found by hand
 
@@ -105,3 +126,12 @@ Each with the functions it fixed; three or more make it a generator note.
 - Byte flags at constant indexes merged into `ldrh` where the original reads them one by one, and indexed ones
   addressed as `this + i` with the field offset in the load: make the array member an align-1 wrapper with
   `operator[]`. `3be490`, `3beef0`.
+- A long straight-line NEON block (the matrix inverse) where the shape matches but registers and the post-RA
+  interleaving do not: the pre-RA scheduler leaves such a block in IR order, so the source order sets each live
+  range's length, the greedy allocator gives the ranges longer than 64 instructions their registers longest first
+  (a tie goes to the lower vreg, the value defined first), and the post-RA scheduler then interleaves around the
+  registers that came out. Read off the original's registers which ranges must outrank which (`ranges.py`), and
+  move statements to lengthen or shorten them by single instructions; `irsearch.py --groups` finds such orders. For
+  the inverse: the d row's swizzles in the order d2, d1, d3 (the YX control's range otherwise ties c2's and wins on
+  vreg number) and each cofactor row multiplied by its sign in the same statement (c1-c3 one instruction longer).
+  `5a3ce0`, `3e1538` (first try on the shared `include/misc/matrix_inverse.h`).

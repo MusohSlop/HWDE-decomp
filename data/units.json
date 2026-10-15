@@ -18875,7 +18875,11 @@
     "kExpGaugePos": "0x71007da087",
     "kHeartContainersPos": "0x71007da095",
     "kHeartEff": "0x71007da9b5",
-    "kHeartBk": "0x71007da9ac"
+    "kHeartBk": "0x71007da9ac",
+    "got:gGlobalc21880_3e1538": "0x7100c21880",
+    "got:gGlobalc21dd0_3e1538": "0x7100c21dd0",
+    "_ZN9Obj3e153813callee_3e17a8EiPv": "0x71003e17a8",
+    "_Z12callee_402c4i": "0x71000402c4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -28669,6 +28673,17 @@
       },
       "functions": {
         "_ZN13ShopExpScreenC2Ev": "0x7100363040"
+      }
+    },
+    "misc/s5_functions03.cpp": {
+      "functions": {
+        "_ZN11Light5a3ce06updateEv": "0x71005a3ce0",
+        "_ZN9Obj3e15386updateEi": "0x71003e1538"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst8": "0x71007e2090",
+        ".rodata.cst16": "0x710073dff0"
       }
     }
   }
