@@ -1,8 +1,8 @@
 # Fourth session (branch matching-s4): hand-matching of non-constructor functions over 1,500 bytes below
 # 0x7100380000, and the giants in that range. Generator runs should skip every address listed here.
 # working: functions being hand-matched now; matched: functions matched on matching-s4; tried: parked, with reason.
-working: 35ccc4
-matched: f6fc0 1f00 176ce0 11298c f1278 1a4b48 20e224
+working:
+matched: f6fc0 1f00 176ce0 11298c f1278 1a4b48 20e224 1f9a98
 tried: c0308 (1,536 B, 40 off with registers abstracted: Reassociate operand ranks in the slerp and quaternion-to-matrix products, the order of the axis and translation address phis; docs/s4_wip/c0308.cpp)
 tried: 3e934 (1,620 B, 79 off with registers abstracted: our 0x1c and default cases tail-merge their field stores, scheduling around the 3334 call; docs/s4_wip/3e934.cpp)
 tried: 111d24 (2,676 B, 5 off, 1 with registers abstracted: the trip count and the -1.0f constant of the reset loop come out in the other order; docs/s4_wip/111d24.cpp)

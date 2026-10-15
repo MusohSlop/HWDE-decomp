@@ -2531,3 +2531,465 @@ void call_20e224(Table_20e224* p0) {
         memset(e.b + 0x190, 0, 0x50);
     }
 }
+
+class Arc25b394 {
+public:
+    Arc25b394();                                                             // 0x710025b394
+    ~Arc25b394();                                                            // 0x710025b3ac
+    void open(int, int, void*);                                              // 0x710025b4b4
+    unsigned char isOpen();                                                           // 0x710025b46c
+    void* entry(int);                                                        // 0x710025b738
+    void close();                                                            // 0x710025b40c
+
+    unsigned char pad[0x28];
+};
+
+class Tmp218c18 {
+public:
+    Tmp218c18();                                                             // 0x7100218c18
+    ~Tmp218c18();                                                            // 0x7100218c2c
+    void set(void*);                                                         // 0x7100218c34
+    int size();                                                              // 0x71002192c0
+    void* data(int, int);                                                    // 0x7100218cac
+    void release(int);                                                       // 0x7100218c68
+
+    unsigned char pad[0x10];
+};
+
+class Obj1fbbb0 {
+public:
+    Obj1fbbb0();                                                             // 0x71001fbbb0
+    ~Obj1fbbb0();                                                            // 0x71001fbbd0
+    void init(int, int, void*);                                              // 0x71001fbc04
+    void reset();                                                            // 0x71001fbbf0
+
+    unsigned char pad[0x20];
+};
+
+struct Unit1f9a98 {
+    unsigned char pad0[4];
+    unsigned short field_4;          // +4
+    unsigned char pad6[0x2c];
+    short field_32;                  // +32
+    unsigned char pad34[0x1c];
+};
+
+struct Mgr1f9a98 {
+    unsigned char pad0[4];
+    int field_4;                     // +4
+    long field_8;                    // +8
+    int field_10;                    // +10
+    long field_14 __attribute__((packed));    // +14
+};
+
+struct This1f9a98 {
+    unsigned char pad0[0x20];
+    short field_20[100];             // +20
+    short field_e8[100];             // +e8
+};
+
+// Reached through the GOT slot at 0x7100c21df8.
+extern Mgr1f9a98* gGlobalc21df8_1f9a98;
+// Reached through the GOT slot at 0x7100c216a0.
+extern Unit1f9a98* gGlobalc216a0_1f9a98;
+
+void* callee_20bd74();                                                       // 0x710020bd74
+void callee_20bfc0(void*);                                                   // 0x710020bfc0
+void callee_20c168(void*);                                                   // 0x710020c168
+void* callee_204728();                                                       // 0x7100204728
+void callee_204aac(void*);                                                   // 0x7100204aac
+void callee_204c5c(void*);                                                   // 0x7100204c5c
+void* callee_216d48();                                                       // 0x7100216d48
+void callee_216f14(void*);                                                   // 0x7100216f14
+void callee_216f9c(void*);                                                   // 0x7100216f9c
+void callee_2014f4(void*);                                                   // 0x71002014f4
+void callee_20a4fc(void*);                                                   // 0x710020a4fc
+void* callee_1feb28();                                                       // 0x71001feb28
+void callee_1feec4(void*);                                                   // 0x71001feec4
+void callee_1fb14c();                                                        // 0x71001fb14c
+void callee_20f3ec(void*, void*);                                            // 0x710020f3ec
+void* callee_d86c4();        // 0x71000d86c4
+void* callee_1fe7c8();        // 0x71001fe7c8
+void* callee_1ff050();        // 0x71001ff050
+void* callee_200fc0();        // 0x7100200fc0
+void* callee_201604();        // 0x7100201604
+void* callee_204ca8();        // 0x7100204ca8
+void* callee_20710c();        // 0x710020710c
+void* callee_2074c0();        // 0x71002074c0
+void* callee_208a70();        // 0x7100208a70
+void* callee_209a34();        // 0x7100209a34
+void* callee_209cb4();        // 0x7100209cb4
+void* callee_20a31c();        // 0x710020a31c
+void* callee_20acb0();        // 0x710020acb0
+void* callee_20b29c();        // 0x710020b29c
+void* callee_20b3d8();        // 0x710020b3d8
+void* callee_20b60c();        // 0x710020b60c
+void* callee_20b970();        // 0x710020b970
+void* callee_20c630();        // 0x710020c630
+void* callee_20c72c();        // 0x710020c72c
+void* callee_20dfd0();        // 0x710020dfd0
+void* callee_20ec80();        // 0x710020ec80
+void* callee_20ef00();        // 0x710020ef00
+void* callee_20f130();        // 0x710020f130
+void* callee_210328();        // 0x7100210328
+void* callee_21069c();        // 0x710021069c
+void* callee_214000();        // 0x7100214000
+void* callee_214890();        // 0x7100214890
+void* callee_214b80();        // 0x7100214b80
+void* callee_214d88();        // 0x7100214d88
+void* callee_2151a0();        // 0x71002151a0
+void* callee_215468();        // 0x7100215468
+void* callee_215b84();        // 0x7100215b84
+void callee_d8770(void*, Obj1fbbb0*);        // 0x71000d8770
+void callee_1fea4c(void*, Obj1fbbb0*);        // 0x71001fea4c
+void callee_1fea98(void*, Obj1fbbb0*);        // 0x71001fea98
+void callee_1ff0fc(void*, Obj1fbbb0*);        // 0x71001ff0fc
+void callee_2013bc(void*, Obj1fbbb0*);        // 0x71002013bc
+void callee_201424(void*, Obj1fbbb0*);        // 0x7100201424
+void callee_2016d4(void*, Obj1fbbb0*);        // 0x71002016d4
+void callee_204d54(void*, Obj1fbbb0*);        // 0x7100204d54
+void callee_204f60(void*, Obj1fbbb0*);        // 0x7100204f60
+void callee_2050ac(void*, Obj1fbbb0*);        // 0x71002050ac
+void callee_20519c(void*, Obj1fbbb0*);        // 0x710020519c
+void callee_205268(void*, Obj1fbbb0*);        // 0x7100205268
+void callee_2053c4(void*, Obj1fbbb0*);        // 0x71002053c4
+void callee_207068(void*, Obj1fbbb0*);        // 0x7100207068
+void callee_2070b4(void*, Obj1fbbb0*);        // 0x71002070b4
+void callee_20747c(void*, Obj1fbbb0*);        // 0x710020747c
+void callee_208a18(void*, Obj1fbbb0*);        // 0x7100208a18
+void callee_2099a0(void*, Obj1fbbb0*);        // 0x71002099a0
+void callee_209bf0(void*, Obj1fbbb0*);        // 0x7100209bf0
+void callee_20a46c(void*, Obj1fbbb0*);        // 0x710020a46c
+void callee_20ad5c(void*, Obj1fbbb0*);        // 0x710020ad5c
+void callee_20ae40(void*, Obj1fbbb0*);        // 0x710020ae40
+void callee_20af5c(void*, Obj1fbbb0*);        // 0x710020af5c
+void callee_20afb8(void*, Obj1fbbb0*);        // 0x710020afb8
+void callee_20b0d4(void*, Obj1fbbb0*);        // 0x710020b0d4
+void callee_20b344(void*, Obj1fbbb0*);        // 0x710020b344
+void callee_20b488(void*, Obj1fbbb0*);        // 0x710020b488
+void callee_20b6ec(void*, Obj1fbbb0*);        // 0x710020b6ec
+void callee_20ba1c(void*, Obj1fbbb0*);        // 0x710020ba1c
+void callee_20c5b4(void*, Obj1fbbb0*);        // 0x710020c5b4
+void callee_20c780(void*, Obj1fbbb0*);        // 0x710020c780
+void callee_20dd84(void*, Obj1fbbb0*);        // 0x710020dd84
+void callee_20de00(void*, Obj1fbbb0*);        // 0x710020de00
+void callee_20de7c(void*, Obj1fbbb0*);        // 0x710020de7c
+void callee_20def8(void*, Obj1fbbb0*);        // 0x710020def8
+void callee_20f014(void*, Obj1fbbb0*);        // 0x710020f014
+void callee_20f2cc(void*, Obj1fbbb0*);        // 0x710020f2cc
+void callee_2103e8(void*, Obj1fbbb0*);        // 0x71002103e8
+void callee_21082c(void*, Obj1fbbb0*);        // 0x710021082c
+void callee_211118(void*, Obj1fbbb0*);        // 0x7100211118
+void callee_2141b4(void*, Obj1fbbb0*);        // 0x71002141b4
+void callee_214a5c(void*, Obj1fbbb0*);        // 0x7100214a5c
+void callee_214c78(void*, Obj1fbbb0*);        // 0x7100214c78
+void callee_214e40(void*, Obj1fbbb0*);        // 0x7100214e40
+void callee_215308(void*, Obj1fbbb0*);        // 0x7100215308
+void callee_2158c0(void*, Obj1fbbb0*);        // 0x71002158c0
+void callee_215cf0(void*, Obj1fbbb0*);        // 0x7100215cf0
+
+// 0x71001f9a98: a loader: three archives, a staging buffer and a load object as locals with destructors, fifty entries loaded and handed on (the archive indexes the block keeps in callee-saved registers come out by themselves), then a search of the unit table whose unsigned counter indexes as int, which keeps it unrolled by 2
+void call_1f9a98(This1f9a98* p0) {
+    if (gGlobalc21df8_1f9a98 == nullptr) {
+        return;
+    }
+    Arc25b394 a0;
+    Arc25b394 a1;
+    Arc25b394 a2;
+    Tmp218c18 tmp;
+    Obj1fbbb0 obj;
+    callee_20bfc0(callee_20bd74());
+    callee_204aac(callee_204728());
+    callee_216f14(callee_216d48());
+    a0.open(0, 0, nullptr);
+    if (!a0.isOpen()) {
+        return;
+    }
+    a1.open(0, 1, nullptr);
+    if (!a1.isOpen()) {
+        return;
+    }
+    a2.open(0, 2, nullptr);
+    if (!a2.isOpen()) {
+        return;
+    }
+    tmp.set(a1.entry(0));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_211118(gGlobalc216a0_1f9a98, &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(0));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2013bc(callee_200fc0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(1));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_201424(callee_200fc0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(2));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2016d4(callee_201604(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(9));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20ad5c(callee_20acb0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(10));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20ae40(callee_20acb0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(11));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20af5c(callee_20acb0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(12));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20afb8(callee_20acb0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(13));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20b0d4(callee_20acb0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(14));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_1fea4c(callee_1fe7c8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(15));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_1fea98(callee_1fe7c8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(3));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2141b4(callee_214000(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(4));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_214a5c(callee_214890(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(5));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_214c78(callee_214b80(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(6));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_214e40(callee_214d88(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(7));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_215308(callee_2151a0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(8));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2158c0(callee_215468(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(1));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20def8(callee_20dfd0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(2));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20def8(callee_20ec80(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(3));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20dd84(callee_20ec80(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(4));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20de00(callee_20ec80(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(5));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20f014(callee_20ef00(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(16));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20a46c(callee_20a31c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(17));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20c780(callee_20c72c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(18));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20ba1c(callee_20b970(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(19));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20b488(callee_20b3d8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(20));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20b6ec(callee_20b60c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(21));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2103e8(callee_210328(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(22));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_215cf0(callee_215b84(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(23));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20b344(callee_20b29c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(24));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_204d54(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(25));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_204f60(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(26));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2050ac(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(27));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20519c(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(28));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_205268(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(29));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2053c4(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(0));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_207068(callee_20710c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(1));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2070b4(callee_20710c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(2));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_208a18(callee_208a70(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(3));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_209bf0(callee_209cb4(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(4));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20c5b4(callee_20c630(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(5));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2099a0(callee_209a34(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(6));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20747c(callee_2074c0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(30));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_1ff0fc(callee_1ff050(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(6));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20de7c(callee_20dfd0(), &obj);
+    callee_20de7c(callee_20ec80(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(7));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_21082c(callee_21069c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(8));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20dd84(callee_20dfd0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(9));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20de00(callee_20dfd0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(10));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20f2cc(callee_20f130(), &obj);
+    obj.reset();
+    tmp.release(0);
+    callee_20f3ec(callee_20f130(), a1.entry(11));
+    tmp.set(a1.entry(12));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_d8770(callee_d86c4(), &obj);
+    obj.reset();
+    tmp.release(0);
+    a0.close();
+    a1.close();
+    a2.close();
+    callee_1feec4(callee_1feb28());
+    Unit1f9a98* units = gGlobalc216a0_1f9a98;
+    for (unsigned int i = 0; i < 100; i++) {
+        p0->field_20[i] = -1;
+        p0->field_e8[i] = -1;
+        for (unsigned int j = 0; j < 0x44c; j++) {
+            if (static_cast<unsigned int>(units[static_cast<int>(j)].field_32) == i) {
+                p0->field_20[i] = j;
+                p0->field_e8[i] = units[static_cast<int>(j)].field_4;
+                break;
+            }
+        }
+    }
+    callee_1fb14c();
+    Mgr1f9a98* m = gGlobalc21df8_1f9a98;
+    m->field_4 = 0x15102600;
+    m->field_8 = 0;
+    m->field_10 = 0x15102600;
+    m->field_14 = 0;
+    callee_20c168(callee_20bd74());
+    callee_204c5c(callee_204728());
+    callee_2014f4(callee_200fc0());
+    callee_216f9c(callee_216d48());
+    callee_20a4fc(callee_20a31c());
+}
