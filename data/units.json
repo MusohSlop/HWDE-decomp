@@ -19216,7 +19216,8 @@
     "got:_ZTV18RequestBlock5f7984": "0x7100c2de00",
     "_ZN2nn2os15InitializeEventEPNS0_9EventTypeEbNS0_14EventClearModeE": "0x7100600ae0",
     "got:_ZTV9Mid2d4f14": "0x7100c2aa68",
-    "_Z14callee2_59583cPv": "0x710059583c"
+    "_Z14callee2_59583cPv": "0x710059583c",
+    "kCornerPlanes_a9aea8": "0x7100a9aea8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29115,7 +29116,8 @@
       },
       "functions": {
         "_ZN11Light5a3ce06updateEv": "0x71005a3ce0",
-        "_ZN9Obj3e15386updateEi": "0x71003e1538"
+        "_ZN9Obj3e15386updateEi": "0x71003e1538",
+        "_Z22frustum_corners_5f9facPK11Plane5f9facP13__Float32x4_t": "0x71005f9fac"
       }
     },
     "misc/variant_functions88.cpp": {

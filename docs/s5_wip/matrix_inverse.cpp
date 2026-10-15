@@ -1,4 +1,4 @@
-﻿// Fifth session, notes: the NEON 4x4 matrix inverse is matched and shared as include/misc/matrix_inverse.h (5a3ce0
+// Fifth session, notes: the NEON 4x4 matrix inverse is matched and shared as include/misc/matrix_inverse.h (5a3ce0
 // and 3e1538 in misc/s5_functions03.cpp). Copies left: 96e0c a6470 2212c4 242070 3d0ca4 3e6aa8 3f4b2c 41ff58 47f8ac
 // 482bc4 489450 4b2e34 54e330 5acba4 5ad154 5b5c1c 5b6cbc 5be884 5f9fac (1e26f8 and 5f4418 are a look-at, not the
 // inverse). The generator fails on all of them (zip/tbl/d registers), so each is written by hand around the inline.
