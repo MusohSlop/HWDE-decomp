@@ -4971,6 +4971,44 @@ def gen_function(a, ins):
             return f"{pad}{name} = {rhs};"
         return f"{pad}{typ} {name} = {rhs};"
     MORE_ = []
+    class RetHoist_(list):
+        pass
+    def ends_in_return_(its_):
+        if not its_:
+            return False
+        l_ = its_[-1]
+        if l_[0] == "return" or (l_[0] == "call" and l_[4]):
+            return True
+        if l_[0] == "diamond":
+            return ends_in_return_(l_[3]) and ends_in_return_(l_[4])
+        return False
+    def unhoist_(ls_):
+        out_ = list(ls_)
+        k_ = 0
+        while k_ < len(out_):
+            l_ = out_[k_]
+            if "\x04" not in l_:
+                k_ += 1
+                continue
+            pad_, rest_ = l_.split("\x04")
+            typ_, name_ = rest_.split("\x05")
+            if_ = k_ + 1
+            while "\x04" in out_[if_]:
+                if_ += 1
+            end_ = next((j_ for j_ in range(if_ + 1, len(out_)) if out_[j_] == pad_ + "}"), None)
+            if end_ is None:
+                raise Fail("hoisted diamond end")
+            if any(re.search(rf"\b{name_}\b", x_) for x_ in out_[end_ + 1:]):
+                out_[k_] = f"{pad_}{typ_} {name_};"
+                k_ += 1
+                continue
+            for j_ in range(if_, end_):
+                mm_ = re.match(rf"^(\s*){name_} = ", out_[j_])
+                if mm_:
+                    out_[j_] = f"{mm_.group(1)}{typ_} {out_[j_][len(mm_.group(1)):]}"
+                    break
+            del out_[k_]
+        return out_
     def has_cont_(its_):
         for it_ in its_:
             if it_[0] == "contassign":
@@ -5236,7 +5274,7 @@ def gen_function(a, ins):
             elif it[0] == "diamond":
                 _, cnd, decls_, taken_its, fall_its = it
                 for name, v in decls_:
-                    if hoist_stack:
+                    if hoist_stack and not isinstance(hoist_stack[-1], RetHoist_):
                         # declared in front of the enclosing loop, so the value is still in scope after it
                         hoist_stack[-1].append((vtype(('var', name)), name))
                     else:
@@ -5244,6 +5282,11 @@ def gen_function(a, ins):
                 f_, cc_ = cnd
                 if cc_ not in NEGCC:
                     raise Fail("negate")
+                hoist_ = ("nohoistret" not in knobs and not hoist_stack and taken_its
+                          and (ends_in_return_(fall_its) or ends_in_return_(taken_its)))
+                if_at_ = len(outl)
+                if hoist_:
+                    hoist_stack.append(RetHoist_())
                 if f_ is not None and f_[0] == "ccmp":
                     outl.append(f"{pad}if (!({cond(f_, cc_)})) {{")
                 else:
@@ -5253,6 +5296,8 @@ def gen_function(a, ins):
                     outl.append(f"{pad}}} else {{")
                     outl.extend(render(taken_its, indent + 1))
                 outl.append(f"{pad}}}")
+                if hoist_:
+                    outl[if_at_:if_at_] = [f"{pad}\x04{typ}\x05{name}" for typ, name in hoist_stack.pop()]
             elif it[0] == "contassign":
                 if len(it[1]) > 1:
                     for n_, v_ in it[1]:
@@ -5586,6 +5631,7 @@ def gen_function(a, ins):
             else:
                 pwidth[key_] = ty_
     lines = render(items, 1)
+    lines = unhoist_(lines)
     for p_, h_ in ESHIFT_.items():
         structs[loopelem[p_]] = {o_ - h_: v_ for o_, v_ in structs[loopelem[p_]].items()}
     decl_lines = []
