@@ -57,6 +57,19 @@ def build_one(a, knobs):
     return a, "built", (cpp, obj, sy, time.time() - t0)
 
 
+def placeholder_address(name):
+    """The address suffix of a placeholder name (callee_X, ...); a mangled free function's identifier is cut at its
+    length prefix, so a parameter code after the address (callee_33840cl) is not read as part of it."""
+    mm = re.match(r"_Z(\d+)", name)
+    if mm:
+        ident = name[mm.end():mm.end() + int(mm.group(1))]
+        mi = re.search(r"_([0-9a-f]{5,6})$", ident)
+        if mi:
+            return int(mi.group(1), 16)
+    mm = re.search(r"_([0-9a-f]{5,6})(?=[A-Z]|$|E|P|v|i|f)", name)
+    return int(mm.group(1), 16) if mm else None
+
+
 def classify(a, built, size, image, md, base_map):
     cpp, obj, sy, dt = built
     mapping = dict(base_map)
@@ -69,9 +82,9 @@ def classify(a, built, size, image, md, base_map):
         mapping[".rodata"] = check.address(sy["rodata"])
     data, sections, symbols, relocs = check_obj.read_elf(obj)
     for s in symbols:
-        mm = re.search(r"_([0-9a-f]{5,6})(?=[A-Z]|$|E|P|v|i|f)", s.name) if not s.is_section and s.shndx == 0 else None
-        if mm and s.name not in mapping:
-            mapping[s.name] = int(mm.group(1), 16)
+        va = placeholder_address(s.name) if not s.is_section and s.shndx == 0 else None
+        if va is not None and s.name not in mapping:
+            mapping[s.name] = va
     defined = [s.name for s in symbols if not s.is_section and s.shndx != 0 and s.size]
     name = next((d for d in defined if re.search(r"call_0*%x(?![0-9a-f])" % a, d)), None)
     if name is None:

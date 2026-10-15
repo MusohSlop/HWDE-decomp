@@ -647,3 +647,27 @@ Class2c6a58::Class2c6a58(PieceOwner* owner_)
     value28 = 0;
     state = 0;
 }
+
+// 0x71000799f0: a constructor on a polymorphic base constructed out of line (the generated version allocates the
+// vtable's register after the field stores; a real base gives the vtable store its place right after the call).
+class Base_7a0c8 {
+public:
+    Base_7a0c8();                                                           // 0x710007a0c8
+    virtual ~Base_7a0c8();
+    unsigned char pad8[0x50];
+};
+
+class Class799f0 : public Base_7a0c8 {
+public:
+    Class799f0();
+    virtual ~Class799f0();
+
+    void* f58;                // +58
+    float f60;                // +60
+    int f64[8];               // +64
+};
+
+Class799f0::Class799f0() : f58(nullptr), f60(1.0f) {
+    for (int i = 0; i < 8; i++)
+        f64[i] = -1;
+}
