@@ -206,6 +206,9 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   `noscalarlane`; a variable typed Vec4f only after its s-register uses were built rendered vector arithmetic);
 - select arms are fitted to the select's type and pointers of different types are compared as longs (knob
   `notypefit`; a pointer arm against an int arm, or two struct pointers compared, did not compile);
+- an 8-byte integer field whose load is used as a base is a pointer (knob `nolongbase`): a member's address kept in
+  a field (`add x9, x8, #0x1a0; stp x8, x9, [x20, #0x50]`) typed the field long, and its load as a base failed with
+  "non-pointer load base" (offset 0, a vtable slot, is left alone);
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as

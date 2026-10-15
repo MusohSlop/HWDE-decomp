@@ -1279,6 +1279,10 @@ def gen_function(a, ins):
                 ct0, child0 = structs[sn0][off0]
                 if ct0 == "ARRAY:void*" and len(cur) > 3 and cur[3] != "void*":
                     raise Fail("non-pointer load base")
+                if ct0 == "long" and "nolongbase" not in knobs and off0 != 0 and (len(cur) == 3 or cur[3] in ("void*", "long")):
+                    # an address kept in an 8-byte field: a pointer
+                    structs[sn0][off0] = ("void*", child0)
+                    ct0 = "void*"
                 if ct0 not in ("void*", "ARRAY:void*"):
                     raise Fail("non-pointer load base")
                 if child0 is None:
