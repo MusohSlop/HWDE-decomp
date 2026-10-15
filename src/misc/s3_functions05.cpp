@@ -640,3 +640,170 @@ public:
 };
 
 Container2d4a60::~Container2d4a60() {}
+
+struct Part356154 { ~Part356154(); unsigned char data[0x10]; };              // 0x7100356154
+struct Part37af54 { ~Part37af54(); unsigned char data[0x10]; };              // 0x710037af54
+struct Part34d974 { ~Part34d974(); unsigned char data[0xb0]; };              // 0x710034d974
+struct Part34dd88 { ~Part34dd88(); unsigned char data[0x10]; };              // 0x710034dd88
+struct Part37c8f0 { ~Part37c8f0(); unsigned char data[0x10]; };              // 0x710037c8f0
+struct Part37fccc { ~Part37fccc(); unsigned char data[0x10]; };              // 0x710037fccc
+struct Part386c90 { ~Part386c90(); unsigned char data[0x10]; };              // 0x7100386c90
+struct Part3527e8 { ~Part3527e8(); unsigned char data[0x10]; };              // 0x71003527e8
+
+// An object reference that releases its object, with a handle (+250 of 359794).
+struct RefHandle359794 {
+    ~RefHandle359794() { release_id(ref, 0x41ff); }
+    LayoutObj* ref;                 // +0
+    unsigned char pad8[0x18];
+    DtorHandle h;                   // +20
+};
+
+struct Ref359794 {
+    ~Ref359794() { release_id(ref, 0x41ff); }
+    LayoutObj* ref;
+};
+
+class Sub3c070 {
+public:
+    virtual void key();
+    unsigned char pad8[0x18];
+    Part34d974 elems[100];          // +20
+};
+
+class Sub40590 {
+public:
+    virtual void key();
+    unsigned char pad8[0x10];
+    Part34dd88 m18;                 // +18
+};
+
+class Sub8db78 {
+public:
+    virtual void key();
+    unsigned char pad8[0x10];
+    Part37c8f0 m18;                 // +18
+};
+
+class Sub969d0 {
+public:
+    virtual void key();
+    unsigned char pad8[0x10];
+    Part37fccc m18;                 // +18
+    unsigned char pad28[0x5c3a8 - 0x28];
+    Part386c90 m5c3a8;              // +5c3a8
+};
+
+// 0x7100359794 (D2): handles, members destroyed out of line, four polymorphic parts (one with 100 elements) and two
+// object references released in their own destructors, then the base's destructor as a tail call.
+class Class359794 : public Basec719c {
+public:
+    ~Class359794();
+
+    unsigned char pad8[0x28];
+    Part5d27b4 m30;                 // +30
+    unsigned char pad40[0x100];
+    Part5d27b4 m140;                // +140
+    unsigned char pad150[0x100];
+    RefHandle359794 r250;           // +250
+    unsigned char pad288[0x8];
+    Part356154 m290;                // +290
+    unsigned char pad2a0[0x354e8 - 0x2a0];
+    Part35ca18 m354e8;              // +354e8
+    unsigned char pad354f8[0x39930 - 0x354f8];
+    Ref359794 r39930;               // +39930
+    unsigned char pad39938[0x3bb70 - 0x39938];
+    Part37af54 m3bb70;              // +3bb70
+    unsigned char pad3bb80[0x3c070 - 0x3bb80];
+    Sub3c070 s3c070;                // +3c070
+    unsigned char pad40550[0x40590 - 0x40550];
+    Sub40590 s40590;                // +40590
+    unsigned char pad405b8[0x8db78 - 0x405b8];
+    Sub8db78 s8db78;                // +8db78
+    unsigned char pad8dba0[0x969d0 - 0x8dba0];
+    Sub969d0 s969d0;                // +969d0
+    unsigned char padf2d88[0x1397a0 - 0xf2d88];
+    Part3527e8 m1397a0;             // +1397a0
+    unsigned char pad1397b0[0x194fd0 - 0x1397b0];
+    DtorHandle h194fd0;             // +194fd0
+    unsigned char pad194fe8[0x48];
+    DtorHandle h195030;             // +195030
+    unsigned char pad195048[0x48];
+    DtorHandle h195090;             // +195090
+};
+
+Class359794::~Class359794() {}
+
+struct Part1f8720_299de0 { ~Part1f8720_299de0(); unsigned char data[0x8]; };          // 0x71001f8720
+struct Part29b370_299de0 { ~Part29b370_299de0(); unsigned char data[0x8]; };          // 0x710029b370
+struct Part5d27b4_299de0 { ~Part5d27b4_299de0(); unsigned char data[0x110]; };          // 0x71005d27b4
+struct Slot20_8_299de0 { unsigned char pad0[0x8]; DtorHandle h; };    // 0x20
+
+// 0x7100299de0 (D2, written by tools/s3/dtor2class.py): a body call, then handles (one run in a loop), frames, two
+// members in an array and a member destroyed out of line; the last handle is released as a tail call.
+class Class299de0 {
+public:
+    ~Class299de0();
+
+    void body_29a20c();                        // 0x710029a20c
+
+    unsigned char pad0[0x30];
+    DtorHandle h30;                         // +30
+    unsigned char pad48[0x8];
+    DtorHandle h50;                         // +50
+    unsigned char pad68[0x8];
+    DtorHandle h70;                         // +70
+    unsigned char pad88[0x8];
+    DtorHandle h90;                         // +90
+    unsigned char pada8[0xa8];
+    DtorHandle h150;                        // +150
+    unsigned char pad168[0x8];
+    DtorHandle h170;                        // +170
+    unsigned char pad188[0x8];
+    DtorHandle h190;                        // +190
+    unsigned char pad1a8[0x8];
+    DtorHandle h1b0;                        // +1b0
+    unsigned char pad1c8[0x168];
+    DtorHandle h330;                        // +330
+    unsigned char pad348[0x30];
+    Part29b370_299de0 m378;                        // +378
+    unsigned char pad380[0x7370];
+    Part5d27b4_299de0 a76f0[2];                    // +76f0
+    unsigned char pad7910[0x128];
+    Part1f8720_299de0 m7a38;                       // +7a38
+    unsigned char pad7a40[0x98];
+    Part1f8720_299de0 m7ad8;                       // +7ad8
+    unsigned char pad7ae0[0x98];
+    Part1f8720_299de0 m7b78;                       // +7b78
+    unsigned char pad7b80[0x98];
+    Part1f8720_299de0 m7c18;                       // +7c18
+    unsigned char pad7c20[0x98];
+    DtorHandle h7cb8;                       // +7cb8
+    unsigned char pad7cd0[0x88];
+    DtorHandle h7d58;                       // +7d58
+    unsigned char pad7d70[0x18d00];
+    Slot20_8_299de0 slots20a70[128];        // +20a70
+    unsigned char pad21a70[0x40];
+    DtorHandle h21ab0;                      // +21ab0
+    unsigned char pad21ac8[0x8];
+    DtorHandle h21ad0;                      // +21ad0
+    unsigned char pad21ae8[0x20];
+    DtorHandle h21b08;                      // +21b08
+    unsigned char pad21b20[0x18];
+    DtorHandle h21b38;                      // +21b38
+    unsigned char pad21b50[0x38];
+    DtorHandle h21b88;                      // +21b88
+    unsigned char pad21ba0[0x8];
+    DtorHandle h21ba8;                      // +21ba8
+    unsigned char pad21bc0[0x30];
+    Part1f8720_299de0 m21bf0;                      // +21bf0
+    unsigned char pad21bf8[0x98];
+    Part1f8720_299de0 m21c90;                      // +21c90
+    unsigned char pad21c98[0x98];
+    Part1f8720_299de0 m21d30;                      // +21d30
+    unsigned char pad21d38[0x98];
+    Part1f8720_299de0 m21dd0;                      // +21dd0
+};
+
+Class299de0::~Class299de0() {
+    body_29a20c();
+}

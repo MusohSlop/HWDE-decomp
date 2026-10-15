@@ -22,6 +22,7 @@ import capstone, check_obj, check
 HANDLE_GOT, HEAP_GOT = 0xc22f00, 0xc21db0
 ap = argparse.ArgumentParser()
 ap.add_argument("addr"); ap.add_argument("out"); ap.add_argument("--name")
+ap.add_argument("--no-prelude", action="store_true", help="leave out dtor_prelude.h's types (for a unit that has them)")
 a = ap.parse_args()
 addr = int(a.addr, 16) & 0xffffffff
 size = next(int(r["Size"]) for r in csv.DictReader(open(os.path.join(M, "data", "functions.csv"), newline=""))
@@ -53,6 +54,7 @@ for p_, i_ in ins.items():
     if (i_.mnemonic.startswith("b.") or i_.mnemonic in ("cbz", "cbnz", "b")) and t_ and int(t_.group(1), 16) <= p_:
         heads.add(int(t_.group(1), 16)); latches.add(p_); ranges.append((int(t_.group(1), 16), p_))
 it = 0
+kept_x0 = False
 it_head = {}   # iteration number -> its loop head
 LI = lambda: it if any(h <= pc <= l for h, l in ranges) else None   # the iteration number inside a loop
 while True:
@@ -86,6 +88,8 @@ while True:
             regs[X(ops[0])] = ("const", 0)
         else:
             regs[X(ops[0])] = regs.get(X(ops[1]))
+            if X(ops[0]) == "x0":
+                kept_x0 = X(ops[1]) in ["x%d" % r for r in range(19, 29)]   # an address kept across calls
     elif m == "movk":
         v = regs.get(X(ops[0]))
         sh = int(ops[2].split("#")[1], 0) if len(ops) > 2 else 0
@@ -150,17 +154,19 @@ while True:
             x0 = regs.get("x0")
             if not x0 or x0[0] != "this":
                 fail("call %x with x0 %s" % (tgt, x0))
-            events.append(("call", x0[1], tgt, LI()))
+            events.append(("call", x0[1], tgt, LI(), kept_x0))
             if m == "b":
                 break
             for k in range(19):
                 regs.pop("x%d" % k, None)
-    elif m == "blr":
+    elif m in ("blr", "br"):
         f, x0 = regs.get(X(ops[0])), regs.get("x0")
         if f and f[0] == "load" and f[1] == HANDLE_GOT and f[2] == 0x28 and x0 and x0[0] == "this":
             events.append(("release", x0[1], None, LI()))
         else:
             fail("indirect call %s x0 %s" % (f, x0))
+        if m == "br":   # the last handle released as a tail call
+            break
         for k in range(19):
             regs.pop("x%d" % k, None)
     elif m in ("cbz", "cbnz"):
@@ -190,6 +196,9 @@ while True:
         pass
     else:
         fail("instruction %s %s at %x" % (m, i.op_str, pc))
+    if ops and X(ops[0]) == "x0" and m not in ("str", "stur", "stp", "cbz", "cbnz", "cmp", "cmn", "blr", "br", "bl", "b") and \
+            not (m == "mov" and len(ops) == 2 and not ops[1].startswith("#") and ops[1] not in ("xzr", "wzr")):
+        kept_x0 = False
     if pc in latches and nxt > pc:  # the loop is left
         it += 1
     pc = nxt
@@ -197,17 +206,26 @@ while True:
 # pair handle stores with releases
 handles = []
 pend = {}
-for k, (kind, off, extra, li) in enumerate(events):
+for k, ev in enumerate(events):
+    kind, off, extra, li = ev[:4]
     if kind == "hstore":
         pend[off] = li
     elif kind == "release":
         if off not in pend:
             fail("release of +%#x without its vtable store" % off)
         handles.append((off, pend.pop(off)))
-calls = [(off, tgt, li) for kind, off, tgt, li in events if kind == "call"]
+calls = [(e[1], e[2], e[3]) for e in events if e[0] == "call"]
+kept_of = {(e[1], e[2]): e[4] for e in events if e[0] == "call"}
 base = None
 if calls and calls[-1][0] == 0:
     base = calls.pop()[1]
+# calls on this itself before anything is destroyed are the destructor's body: methods of the class
+body_calls = []
+first_destroy = next((k for k, e in enumerate(events) if e[0] in ("hstore", "release") or (e[0] == "call" and e[1] != 0)), len(events))
+for k, e in enumerate(events[:first_destroy]):
+    if e[0] == "call" and e[1] == 0:
+        body_calls.append(e[2])
+calls = [c for c in calls if not (c[0] == 0 and c[1] in body_calls)]
 stores = [e for e in events if e[0] == "store"]
 if stores:
     fail("plain stores in a destructor: " + ", ".join("+%#x" % e[1] for e in stores[:4]))
@@ -252,9 +270,25 @@ for off, li in handles:
         continue
     members.append((off, f"DtorHandle h{off:x};", 0x18))
 parts = {}
-for off, tgt, li in calls:
+part_size = {}
+# a run of calls to one destructor at a constant stride downwards whose last call takes its address from a register
+# kept across the run is a member array (Clang keeps the array's base); otherwise single members
+k = 0
+while k < len(calls):
+    off, tgt, li = calls[k]
+    run = [off]
+    while k + len(run) < len(calls) and calls[k + len(run)][1] == tgt and \
+            (len(run) < 2 or run[-1] - calls[k + len(run)][0] == run[0] - run[1]) and calls[k + len(run)][0] < run[-1]:
+        run.append(calls[k + len(run)][0])
     parts[tgt] = True
-    members.append((off, f"Part{tgt:x} m{off:x};", None))
+    if len(run) >= 2 and kept_of.get((run[-1], tgt)):
+        stride = run[0] - run[1]
+        part_size[tgt] = stride
+        members.append((run[-1], f"Part{tgt:x} a{run[-1]:x}[{len(run)}];", stride * len(run)))
+        k += len(run)
+    else:
+        members.append((off, f"Part{tgt:x} m{off:x};", None))
+        k += 1
 taken = [(off, off + (sz or 1)) for off, decl, sz in members]
 loop_handles = {r: [(h, h + 0x18) for h in loops[r]] for run in loop_runs for r in run}
 floor = 8 if vt_own or base else 0
@@ -317,13 +351,18 @@ for f in infos:
     members.append((f["lo"] - pos, f"{sname} slots{f['lo'] - pos:x}[{f['n']}];", stride * f["n"]))
 members.sort()
 out = []
-out.append(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "dtor_prelude.h"), encoding="utf-8").read().rstrip() + "\n")
+if not a.no_prelude:
+    out.append(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "dtor_prelude.h"), encoding="utf-8").read().rstrip() + "\n")
 for tgt in sorted(parts):
     out.append(f"struct Part{tgt:x} {{ ~Part{tgt:x}(); unsigned char data[0x8]; }};{' ' * 10}// 0x71{tgt:08x}")
 out += slot_types
 if base:
     out.append(f"\nclass Base{base:x} {{\npublic:\n    virtual ~Base{base:x}();{' ' * 10}// 0x71{base:08x}\n}};")
 out.append(f"\nclass {cls_name}{' : public Base%x' % base if base else ''} {{\npublic:\n    {'virtual ' if vt_own and not base else ''}~{cls_name}();\n")
+for b in body_calls:
+    out.append(f"    void body_{b:x}();{' ' * 24}// 0x71{b:08x}")
+if body_calls:
+    out.append("")
 pos = 8 if vt_own or base else 0
 for k, (off, decl, sz) in enumerate(members):
     if off < pos:
@@ -338,21 +377,31 @@ for k, (off, decl, sz) in enumerate(members):
             out[-1] = out[-1].replace("m%x;" % off, "m%x;" % off)
     pos = off + sz
 out.append("};\n")
-out.append(f"{cls_name}::~{cls_name}() {{}}\n")
+out.append(f"{cls_name}::~{cls_name}() {{" + "".join(f"\n    body_{b:x}();" for b in body_calls) + ("\n" if body_calls else "") + "}\n")
 text = "\n".join(out)
 # Part sizes: the smallest gap after any of its members, so nothing overlaps
 for tgt in parts:
-    gaps = [((members[k + 1][0] if k + 1 < len(members) else off + 8) - off) for k, (off, decl, sz) in enumerate(members)
-            if decl.startswith("Part%x " % tgt)]
+    gaps = [part_size[tgt]] if tgt in part_size else \
+        [((members[k + 1][0] if k + 1 < len(members) else off + 8) - off) for k, (off, decl, sz) in enumerate(members)
+         if decl.startswith("Part%x " % tgt)]
     text = text.replace(f"struct Part{tgt:x} {{ ~Part{tgt:x}(); unsigned char data[0x8]; }};",
-                        f"struct Part{tgt:x} {{ ~Part{tgt:x}(); unsigned char data[{max(1, min(gaps + [8])):#x}]; }};")
+                        f"struct Part{tgt:x} {{ ~Part{tgt:x}(); unsigned char data[{(part_size[tgt] if tgt in part_size else max(1, min(gaps + [8]))):#x}]; }};")
+if a.no_prelude:  # part and base types named after this function too, so a unit can hold several
+    for tgt in parts:
+        text = re.sub(r"\bPart%x\b" % tgt, "Part%x_%x" % (tgt, addr), text)
+    if base:
+        text = re.sub(r"\bBase%x\b" % base, "Base%x_%x" % (base, addr), text)
 open(a.out, "w", encoding="utf-8", newline="\n").write(text)
 maps = [f"got:gHandleHeapOwner=0x71{HEAP_GOT:08x}", f"got:_ZTV10DtorHandle=0x71{HANDLE_GOT:08x}"]
 if vt_own:
     maps.append(f"got:_ZTV{len(cls_name)}{cls_name}=0x71{vt_own:08x}")
 for tgt in parts:
-    maps.append(f"_ZN{len('Part%x' % tgt)}Part{tgt:x}D1Ev=0x71{tgt:08x}")
+    pn = ("Part%x_%x" % (tgt, addr)) if a.no_prelude else ("Part%x" % tgt)
+    maps.append(f"_ZN{len(pn)}{pn}D1Ev=0x71{tgt:08x}")
 if base:
-    maps.append(f"_ZN{len('Base%x' % base)}Base{base:x}D2Ev=0x71{base:08x}")
+    bn = ("Base%x_%x" % (base, addr)) if a.no_prelude else ("Base%x" % base)
+    maps.append(f"_ZN{len(bn)}{bn}D2Ev=0x71{base:08x}")
+for b in body_calls:
+    maps.append(f"_ZN{len(cls_name)}{cls_name}{len('body_%x' % b)}body_{b:x}Ev=0x71{b:08x}")
 print("name", f"_ZN{len(cls_name)}{cls_name}D2Ev")
 print("maps", " ".join("--map " + x for x in maps))
