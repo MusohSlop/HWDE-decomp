@@ -1,11 +1,26 @@
 // Work in progress (third session), not a unit: 0x7100038868, the same code as 0x71003e1dec, 0x7100441e94 and
-// 0x71003e350c (5,920 bytes each). Compiles to 5,900 bytes; 81 instructions still differ with registers abstracted:
-// the dispatch on the node mode (the original falls through into the record allocation and jumps from the
-// no-record mode-0 path straight into case 0), the stores of the flag-3 back lists (the original stores the
-// list pointer after every entry), the count-table loop addressing and the keep-branch start (start + count - 1
-// as an add of 0xffff). Check with tools/s3/try.py docs/s3_wip/38868.cpp 38868 --name _ZN10DrawSorter4sortEPihhh
+// 0x71003e350c (5,920 bytes each). Compiles to 5,896 bytes; 523 instructions differ, 82 with registers abstracted
+// (86 before the 2026-10-15 max stretch). Check with tools/s3/try.py docs/s3_wip/38868.cpp 38868 --name _ZN10DrawSorter4sortEPihhh
 // --map _Z13setup_counterP11DrawCounter=0x7100583bfc --map _Z11finish_typeP8DrawTypeP10DrawSorter=0x7100583e68
-
+//
+// Kept here: the remainder of the unordered placement counts down unsigned (i != 0); &owner->target is taken before
+// the stats test (the original computes x0 = owner + 8 there); the stats shift is computed before type->size[g] is
+// cleared. The flag-3 back lists already store the list pointer after every entry, as the original does.
+// Still different:
+// - The 16x unordered loop: the original keeps a plain down-counter (entered with cbnz, sub w8 #1 in the body,
+//   cbnz at the bottom). Every source form tried (int > 0, unsigned != 0, while (n--), do-while with a guard,
+//   64-bit and 16-bit counters) gives an offset counter (add #1, cmp #2, b.ge) or a counter that loop strength
+//   reduction negates (neg, add #1, cbnz); build/s3/w38868/loops*.cpp has the small test cases.
+// - The count-table loop: the original addresses counts[0][i] from the counts[1][255] base (base - 0x7fc + 4i).
+// - The mode dispatch: the original threads the no-record mode-0 path straight into case 0. With "unsigned int
+//   mode" InstCombine narrows the switch condition to i16 and JumpThreading cannot see through the trunc;
+//   "unsigned short mode" threads it and gives the original's lsr w12 / cmp w12 dispatch, but block placement then
+//   puts case 0 after cases 2 and 1 (155 abstract) instead of falling through from the dispatch, and the visible
+//   test's polarity flips (the original falls through into the record).
+// - The stats block: the original indexes counts[(u8)slot][slot >> 8] with a 32-bit index (ubfx #8, #24, then
+//   uxtw #1); ours widens it to 64 bits (lsr #7, and #0x1fe).
+// - The keep start: start + count - 1 as an add of 0xffff after start + (u16)count.
+// - Register allocation after the visible() call, and the addressing of the unroll-by-4 loops of cases 0 and 1.
 // Bucket sort of draw nodes by a normalised key, then a pass that sends every node's items to per-layer
 // front and back lists.
 
@@ -200,7 +215,7 @@ void DrawSorter::sort(int* lengths, unsigned char reverse_back, unsigned char or
             for (int i = blocks; i > 0; i--) {
                 PLACE16(place)
             }
-            for (int i = count & 15; i > 0; i--) {
+            for (unsigned int i = count & 15; i != 0; i--) {
                 place(node, scale);
             }
         } else {
@@ -269,6 +284,7 @@ void DrawSorter::sort(int* lengths, unsigned char reverse_back, unsigned char or
                     setup_counter(counter);
                 }
                 DrawStats* stats = owner->type->stats;
+                void* target = owner->target;
                 if (stats != nullptr && owner->type->size[node->id.slot.group] == 0) {
                     owner->type->start[node->id.slot.group] = stats->offset;
                     unsigned short slot = node->id.slot_bits;
@@ -277,7 +293,7 @@ void DrawSorter::sort(int* lengths, unsigned char reverse_back, unsigned char or
                 }
                 node->counter->counts[node->id.slot.group][node->id.slot.sub]--;
                 unsigned short remaining = --node->counter->remaining;
-                visible = owner->type->visible(owner->target, node);
+                visible = owner->type->visible(target, node);
                 unsigned short pending = node->counter->pending[node->id.slot.group][node->id.slot.sub];
                 count2c = pending + 1;
                 node->counter->pending[node->id.slot.group][node->id.slot.sub] = count2c;
@@ -291,8 +307,8 @@ void DrawSorter::sort(int* lengths, unsigned char reverse_back, unsigned char or
                     node->counter->pending[node->id.slot.group][node->id.slot.sub] = 0;
                     shift = 0;
                     if (owner->type->stats != nullptr) {
-                        owner->type->size[node->id.slot.group] = 0;
                         shift = owner->type->start[node->id.slot.group] - start;
+                        owner->type->size[node->id.slot.group] = 0;
                         owner->type->start[node->id.slot.group] = 0;
                     }
                     node->value18 = 0;

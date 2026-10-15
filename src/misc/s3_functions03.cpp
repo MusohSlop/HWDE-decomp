@@ -4246,3 +4246,259 @@ int call_5c238c(Arg5c238c_0* p0, void* p1, void* p2, void* p3) {
     p0->field_68 = reinterpret_cast<void*>(p0);
     return c0;
 }
+
+int callee_5c2d24(long);        // 0x71005c2d24
+
+struct Arg4b09c_0 {
+    long field_0;                // +0
+    void* field_8;               // +8
+    void* field_10;               // +10
+    int field_18;                 // +18
+    unsigned char pad1c[0x4];
+    void* field_20;               // +20
+    long field_28;                // +28
+    unsigned char pad30[0x58];
+    void* field_88;               // +88
+    int field_90;                 // +90
+    unsigned char pad94[0x4];
+    void* field_98;               // +98
+    long field_a0;                // +a0
+    unsigned char pada8[0x58];
+    void* field_100;               // +100
+};
+// Reached through the GOT slot at 0x7100c21ed0.
+extern unsigned char gGlobalc21ed0_4b09c[];
+// Reached through the GOT slot at 0x7100c21ed8.
+extern unsigned char gGlobalc21ed8_4b09c[];
+
+// 0x710004b09c: stores in the original's order (ordtry)
+int call_4b09c(Arg4b09c_0* p0) {
+    p0->field_10 = nullptr;
+    p0->field_18 = 0;
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc21ed0_4b09c) + 0x10);
+    p0->field_20 = nullptr;
+    p0->field_8 = nullptr;
+    callee_5c2d24(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x28));
+    p0->field_88 = nullptr;
+    p0->field_28 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc21ed8_4b09c) + 0x10);
+    p0->field_90 = 0;
+    p0->field_98 = nullptr;
+    int c1 = callee_5c2d24(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0xa0));
+    p0->field_a0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc21ed8_4b09c) + 0x10);
+    p0->field_100 = nullptr;
+    return c1;
+}
+
+int callee_59583c(void*);        // 0x710059583c
+
+class Node2207dc_v0 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+
+    int field_8;                 // +8
+};
+
+struct Arg2207dc_0 {
+    long field_0;                // +0
+    unsigned char pad8[0x38];
+    void* field_40;               // +40
+    Node2207dc_v0* field_48;      // +48
+};
+
+class Node2207dc_v7 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+    virtual void slot_4();
+    virtual void slot_5();
+    virtual void slot_6();
+    virtual void slot_7();
+    virtual void slot_8();
+    virtual void slot_9();
+    virtual void slot_10();
+    virtual void slot_11();
+    virtual void slot_12(void*);
+};
+
+struct Node2207dc_v5 {
+    unsigned char pad0[0x48];
+    Node2207dc_v7* field_48;      // +48
+    int field_50;                 // +50
+};
+// Reached through the GOT slot at 0x7100c23450.
+extern Node2207dc_v5* gGlobalc23450_2207dc;
+// Reached through the GOT slot at 0x7100c23448.
+extern unsigned char gGlobalc23448_2207dc[];
+
+// 0x71002207dc: stores in the original's order (ordtry)
+int call_2207dc(Arg2207dc_0* p0) {
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc23448_2207dc) + 0x10);
+    Node2207dc_v0* v0 = p0->field_48;
+    p0->field_40 = nullptr;
+    if (v0 != 0) {
+        int v1 = v0->field_8;
+        v0->field_8 = v1 - 1;
+        if ((v1 - 1) == 0) {
+            v0->slot_3();
+        }
+        p0->field_48 = nullptr;
+    }
+    Node2207dc_v5* v5 = gGlobalc23450_2207dc;
+    if (v5 != 0) {
+        int v6 = v5->field_50;
+        v5->field_50 = v6 - 1;
+        if ((v6 - 1) == 0) {
+            Node2207dc_v7* v7 = v5->field_48;
+            if (v7 != 0) {
+                v7->slot_12(v5);
+            }
+        }
+        gGlobalc23450_2207dc = nullptr;
+    }
+    return callee_59583c(p0);
+}
+
+int callee_4a1ae0(void*);        // 0x71004a1ae0
+
+class Node49d50c_v0 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+
+    int field_8;                 // +8
+};
+
+class Node49d50c_v5 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+
+    int field_8;                 // +8
+};
+
+class Node49d50c_v10 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+
+    int field_8;                 // +8
+};
+
+class Node49d50c_v15 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+
+    int field_8;                 // +8
+};
+
+struct Arg49d50c_0 {
+    long field_0;                // +0
+    unsigned char pad8[0x18];
+    long field_20;                // +20
+    unsigned char pad28[0x15a8];
+    Node49d50c_v0* field_15d0;      // +15d0
+    void* field_15d8;               // +15d8
+    Node49d50c_v5* field_15e0;      // +15e0
+    void* field_15e8;               // +15e8
+    Node49d50c_v10* field_15f0;     // +15f0
+    void* field_15f8;               // +15f8
+    Node49d50c_v15* field_1600;     // +1600
+};
+// Reached through the GOT slot at 0x7100c2cc30.
+extern unsigned char gGlobalc2cc30_49d50c[];
+
+// 0x710049d50c: stores in the original's order (ordtry)
+int call_49d50c(Arg49d50c_0* p0) {
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2cc30_49d50c) + 0x10);
+    Node49d50c_v0* v0 = p0->field_15d0;
+    p0->field_20 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2cc30_49d50c) + 0xa8);
+    if (v0 != 0) {
+        int v1 = v0->field_8;
+        v0->field_8 = v1 - 1;
+        if ((v1 - 1) == 0) {
+            v0->slot_3();
+        }
+        p0->field_15d0 = nullptr;
+    }
+    Node49d50c_v5* v5 = p0->field_15e0;
+    if (v5 != 0) {
+        int v6 = v5->field_8;
+        v5->field_8 = v6 - 1;
+        if ((v6 - 1) == 0) {
+            v5->slot_3();
+        }
+        p0->field_15e0 = nullptr;
+    }
+    Node49d50c_v10* v10 = p0->field_15f0;
+    if (v10 != 0) {
+        int v11 = v10->field_8;
+        v10->field_8 = v11 - 1;
+        if ((v11 - 1) == 0) {
+            v10->slot_3();
+        }
+        p0->field_15f0 = nullptr;
+    }
+    Node49d50c_v15* v15 = p0->field_1600;
+    if (v15 != 0) {
+        int v16 = v15->field_8;
+        v15->field_8 = v16 - 1;
+        if ((v16 - 1) == 0) {
+            v15->slot_3();
+        }
+        p0->field_1600 = nullptr;
+    }
+    p0->field_15d8 = nullptr;
+    p0->field_15e8 = nullptr;
+    p0->field_15f8 = nullptr;
+    return callee_4a1ae0(p0);
+}
+
+int callee_38f958(void*);        // 0x710038f958
+void callee_391fbc(long);        // 0x7100391fbc
+
+struct Arg392abc_0 {
+    long field_0;                // +0
+};
+// Reached through the GOT slot at 0x7100c2b1e8.
+extern unsigned char gGlobalc2b1e8_392abc[];
+
+// 0x7100392abc: stores in the original's order (ordtry)
+int call_392abc(Arg392abc_0* p0) {
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2b1e8_392abc) + 0x10);
+    long a0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2268);
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x25f8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x25c8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2598));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2568));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2538));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2508));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x24d8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x24a8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2478));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2448));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2418));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x23e8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x23b8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2388));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2358));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2328));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x22f8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x22c8));
+    callee_391fbc(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x2298));
+    callee_391fbc(a0);
+    return callee_38f958(p0);
+}

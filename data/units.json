@@ -18281,7 +18281,38 @@
     "_Z13callee_594144PviiiS_liff": "0x7100594144",
     "_Z13callee_5a7d6cPviiiS_S_iff": "0x71005a7d6c",
     "_Z13callee_5a81c4PviiS_S_S_iff": "0x71005a81c4",
-    "_Z13callee_1eff04PvlS_S_ff": "0x71001eff04"
+    "_Z13callee_1eff04PvlS_S_ff": "0x71001eff04",
+    "_Z11trace_begini": "0x71001763e8",
+    "_Z9trace_endi": "0x7100176418",
+    "_Z12attach_groupP15LightEffectNodeP11EffectGroup": "0x71001f8224",
+    "_ZN10ScrollList5setupEP15LightEffectNodeP15LayoutAnimationi": "0x71001f8820",
+    "_ZN10ScrollListC1Ev": "0x71001f8700",
+    "_ZN9CharaFaceC1Eb": "0x7100342280",
+    "_ZN15LightEffectNode16create_text_paneEv": "0x71001e4148",
+    "_ZN15LightEffectNode21create_animation_3770EPKcb": "0x71001e3770",
+    "_ZN13AttributeIcon5resetEv": "0x7100316804",
+    "_ZN13AttributeIcon8set_modeEi": "0x7100316a30",
+    "_ZN13AttributeIcon9set_groupEP11EffectGroup": "0x7100316974",
+    "_ZN13AttributeIconC1Ei": "0x71003166d4",
+    "got:gIconRects": "0x7100c22c38",
+    "got:gIconSource": "0x7100c22bf0",
+    "kChallengeRecordLayout": "0x71007da5b7",
+    "kIconGradeLayout": "0x71007da5ce",
+    "kNumAttackChgLayout": "0x71007da5df",
+    "kNumRupeeChgLayout": "0x71007da5f4",
+    "kNumRecordChallengeLayout": "0x71007da61d",
+    "kNumRecordChgLayout": "0x71007da608",
+    "kInAnim": "0x710073fffb",
+    "kEffAnim": "0x71007da638",
+    "kCharaNameTxtDummy": "0x71007da63c",
+    "kCharaFacePos": "0x71007da651",
+    "kCharaFace2pPos": "0x71007da660",
+    "kPadZlDummy": "0x71007da672",
+    "kPadZrDummy": "0x71007da67f",
+    "kGradeDummy": "0x71007d5bd7",
+    "kGradeAnim": "0x71007d7c7b",
+    "kNumberAnim": "0x71007da450",
+    "kChallengeRecordPanes": "0x7100bd7210"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -27489,7 +27520,11 @@
         "_Z11call_2d2498P11Arg2d2498_0": "0x71002d2498",
         "_Z11call_3182bcP11Arg3182bc_0": "0x71003182bc",
         "_Z8call_354P8Arg354_0i": "0x7100000354",
-        "_Z11call_5c238cP11Arg5c238c_0PvS1_S1_": "0x71005c238c"
+        "_Z11call_5c238cP11Arg5c238c_0PvS1_S1_": "0x71005c238c",
+        "_Z10call_4b09cP10Arg4b09c_0": "0x710004b09c",
+        "_Z11call_2207dcP11Arg2207dc_0": "0x71002207dc",
+        "_Z11call_49d50cP11Arg49d50c_0": "0x710049d50c",
+        "_Z11call_392abcP11Arg392abc_0": "0x7100392abc"
       }
     },
     "misc/variant_functions74.cpp": {
@@ -27980,6 +28015,24 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s3_functions08.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z11call_311824P11Arg311824_0": "0x7100311824"
+      }
+    },
+    "misc/s3_functions09.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_ZN21ChallengeRecordScreenC2Eb": "0x71003447f0"
       }
     }
   }
