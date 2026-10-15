@@ -1217,6 +1217,7 @@ def gen_function(a, ins):
             return v
         raise Fail("index ext")
     returns = []
+    UNDEF_ = set()      # argument registers passed uninitialised
     PAIRS_ = set()      # calls whose result is a 16-byte struct (its high half in x1 is used)
     calls_by_target_ = {}
     call_k_ = [None]
@@ -1290,6 +1291,9 @@ def gen_function(a, ins):
             v = regs.get(k)
             if v is not None and v[0] == "hi":
                 v = None
+            if v is None and "noundefarg" not in knobs and k < n - 1 and k in range(8):
+                UNDEF_.add(k)
+                v = ("undef", k)
             if v is None:
                 raise Fail("undefined arg")
             if v[0] == "param":
@@ -3171,7 +3175,7 @@ def gen_function(a, ins):
             return "long" if n in arith else "void*"
         return f"{p}*"
     def vtype(v):
-        if v[0] == "hi" or (v[0] == "var" and v[1] in PAIRS_):
+        if v[0] == "hi" or (v[0] == "var" and v[1] in PAIRS_) or v[0] == "undef":
             return "long"
         if v[0] == "retobj":
             return f"{RETN_}*"
@@ -3359,6 +3363,8 @@ def gen_function(a, ins):
             return f"{gname(base)}.field_{off:x}"
         return f"{expr(base)}->field_{off:x}"
     def expr(v, top=True):
+        if v[0] == "undef":
+            return f"u{v[1]}"
         if v[0] == "hi":
             return f"{v[1]}.b"
         if v[0] == "var" and v[1] in PAIRS_:
@@ -4368,6 +4374,8 @@ def gen_function(a, ins):
             decl_lines.append(f"    {sn} local_{hx_(st)};")
     if sret_:
         decl_lines.insert(0, f"    {RETN_} r;")
+    for k_ in sorted(UNDEF_, reverse=True):
+        decl_lines.insert(0, f"    long u{k_};")
     lines = decl_lines + lines
     if rtype == "void" and lines and lines[-1].strip() == "return;":
         lines.pop()
