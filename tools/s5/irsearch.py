@@ -31,6 +31,8 @@ LABEL = re.compile(r"^; <label>:(\d+):")
 NAMED = re.compile(r"^([-\w.$]+):")
 DEF = re.compile(r"^\s+(%[-\w.$]+) = ")
 VAL = re.compile(r"%[-\w.$]+")
+TERM = re.compile(r"^\s*(ret|br|switch|indirectbr|unreachable|resume|invoke|cleanupret|catchret|catchswitch)\b"
+                  r"|^\s*%[-\w.$]+ = (invoke|catchswitch)\b")
 
 
 def rename(lines):
@@ -96,11 +98,13 @@ def join_multiline(body):
 
 
 def split_blocks(body):
-    """body: lines between 'define ... {' and '}'. Returns [(label_line or None, [instr lines])]."""
+    """body: lines between 'define ... {' and '}'. Returns [(label_line or None, [instr lines])].
+    Comment lines are dropped (labels are already 'vN:'): '; uselistorder directives' after the last 'ret' would
+    otherwise end that block, and the real terminator could be moved."""
     body = join_multiline(body)
     blocks, cur, lab = [], [], None
     for l in body:
-        if not l.strip():
+        if not l.strip() or l.strip().startswith(";"):
             continue
         if NAMED.match(l):
             if cur or lab is not None:
@@ -167,7 +171,9 @@ class Block:
                 self.users[j].add(i)
                 if "@llvm.dbg." not in instrs[i]:
                     self.real_users[j].add(i)
-        self.term = n - 1
+        self.term = n - 1  # the terminator, pinned last (comment lines are gone, see split_blocks)
+        if not TERM.match(instrs[-1]):
+            sys.exit("irsearch: the block does not end in a terminator: " + instrs[-1].strip()[:80])
 
     def valid(self, order):
         pos = {x: k for k, x in enumerate(order)}
@@ -487,7 +493,7 @@ def read_order(path, blk, lab):
     while e < len(t) and not NAMED.match(t[e]) and t[e] != "}":
         e += 1
     idx = {l: k for k, l in enumerate(blk.instrs)}
-    return [idx[l] for l in t[s + 1: e] if l.strip()]
+    return [idx[l] for l in t[s + 1: e] if l.strip() and not l.strip().startswith(";")]
 
 
 def inversions(order):
