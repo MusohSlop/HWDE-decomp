@@ -1,6 +1,6 @@
 """Write a ByteMatch history file: one entry per published commit, with objdiff-style measures from functions.csv.
 
-Usage: bytematch_history.py REPO HEAD [MERGED] [--out FILE] [--first-parent]
+Usage: bytematch_history.py REPO HEAD [MERGED] [--out FILE] [--first-parent]   (GIT: the git executable)
 
 REPO is the published repository (the matching/-only copy), HEAD its branch as published and MERGED, optionally, a
 commit that will be merged into it next (the new subtree split). The commits are HEAD's mainline: its first-parent
@@ -18,12 +18,13 @@ are 0 (not tracked).
 import csv
 import io
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-GIT = r"C:/Users/grays/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/git/cmd/git.exe"
+GIT = os.environ.get("GIT", "git")     # the git executable (GIT names it when git is not on PATH)
 CSV_PATH = "data/functions.csv"
 HEADER = ["Address", "Quality", "Size", "Name"]
 
@@ -99,6 +100,7 @@ def main():
         ts, subject = git(repo, "show", "-s", "--format=%ct%x00%s", c).rstrip("\n").split("\0", 1)
         stamp = datetime.fromtimestamp(int(ts), timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         entries.append({"timestamp": stamp, "commit_sha": c, "commit_message": subject, "measures": m})
+    entries.sort(key=lambda e: e["timestamp"])    # oldest first: a merged side can be older than the merge before it
     text = json.dumps(entries, indent=1) + "\n"
     if out:
         out.parent.mkdir(parents=True, exist_ok=True)
