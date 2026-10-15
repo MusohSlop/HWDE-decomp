@@ -18361,7 +18361,20 @@
     "_Z13callee_5852bcPviS_fDv4_fS0_S0_S0_S0_S0_S0_": "0x71005852bc",
     "_Z13callee_5852bcPviS_ffffffff": "0x71005852bc",
     "_ZN10LayoutLineC1Ev": "0x71001f1594",
-    "_ZN10BufferSlotC1Ev": "0x710003ce04"
+    "_ZN10BufferSlotC1Ev": "0x710003ce04",
+    "got:_ZTV11Class3a43c4": "0x7100c2b328",
+    "got:_ZTV10Base3a43c4": "0x7100c2b2b0",
+    "got:gPageOverride": "0x7100c22da8",
+    "kLoadingLayout": "0x7100741e55",
+    "kLoadingAnim": "0x7100741e63",
+    "kTriforceAnim": "0x7100741e70",
+    "kLoadingDummy": "0x7100741e7e",
+    "kTriforce": "0x7100741e8c",
+    "kLoadingDummy00": "0x7100741e95",
+    "kSavingLayout": "0x7100741ea6",
+    "kSavingLoop": "0x7100741eb3",
+    "kSavingDummy": "0x7100741ebf",
+    "kSavingDummy00": "0x7100741ecc"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -27756,7 +27769,8 @@
         "_ZN11Class2cff80D2Ev": "0x71002cff80",
         "_ZN15Container2d4a60D2Ev": "0x71002d4a60",
         "_ZN11Class359794D2Ev": "0x7100359794",
-        "_ZN11Class299de0D2Ev": "0x7100299de0"
+        "_ZN11Class299de0D2Ev": "0x7100299de0",
+        "_ZN11Class3a43c4D2Ev": "0x71003a43c4"
       }
     },
     "misc/s3_functions06.cpp": {
@@ -28103,7 +28117,9 @@
     },
     "misc/s3_functions10.cpp": {
       "functions": {
-        "_ZN10RecordBankC2Ev": "0x71000193e8"
+        "_ZN10RecordBankC2Ev": "0x71000193e8",
+        "_ZN13LoadingScreenC2Ev": "0x71001eeed4",
+        "_ZN12SavingScreenC2Ev": "0x71001f1f88"
       },
       "map": {
         ".rodata.cst4": "0x710073b000",

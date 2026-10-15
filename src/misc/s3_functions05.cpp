@@ -807,3 +807,54 @@ public:
 Class299de0::~Class299de0() {
     body_29a20c();
 }
+
+void* load_global_334a04();                                 // 0x7100334a04
+struct PageOverride;
+// Reached through the GOT slot at 0x7100c22da8. Its type differs from the getter's, so the two null tests stay two
+// branches (two null tests of one pointer type are merged into one test of their or).
+extern PageOverride* gPageOverride;
+
+// Ids of the active page while no override is set.
+inline bool page_ids() { return !load_global_334a04() && !gPageOverride; }
+
+class Base3a43c4 {
+public:
+    // A call in each arm (so the two field loads are not merged through a select), tail-merged after placement.
+    virtual ~Base3a43c4() {
+        if (active) {
+            if (page_ids())
+                heap_note(gObjHeap, s8, id22fc);
+            else
+                heap_note(gObjHeap, s8, id2300);
+            closed();
+            active = 0;
+        }
+    }
+    virtual void v10(); virtual void v18(); virtual void v20(); virtual void v28(); virtual void v30();
+    virtual void v38(); virtual void v40(); virtual void v48();
+    virtual void closed();          // +50
+
+    unsigned char s8[0x22f4];       // +8
+    int id22fc;                     // +22fc
+    int id2300;                     // +2300
+    unsigned char pad2304[0x18];
+    unsigned char active;           // +231c
+};
+
+// 0x71003a43c4 (D2): its object released through the heap list of the page's mode, a handle, then its base's
+// inlined destructor.
+class Class3a43c4 : public Base3a43c4 {
+public:
+    ~Class3a43c4();
+
+    LayoutObj* p2320;               // +2320
+    unsigned char pad2328[0x40];
+    DtorHandle h2368;               // +2368
+};
+
+Class3a43c4::~Class3a43c4() {
+    if (page_ids())
+        release_id(p2320, 0x4202);
+    else
+        release_list68(p2320);
+}
