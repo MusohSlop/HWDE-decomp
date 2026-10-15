@@ -24,6 +24,8 @@ struct Part2dd3d4 { explicit Part2dd3d4(int mode); void* data[0x5c]; };    // 0x
 struct Part379e44 { Part379e44(); void* data[3]; };                        // 0x7100379e44
 struct Part2d6c5c { Part2d6c5c(); void* data[0x39]; };                      // 0x71002d6c5c
 struct Part2e2a90 { Part2e2a90(); void* data[0x441]; };                     // 0x71002e2a90
+struct Part2e2d30 { Part2e2d30(); void* data[0x111]; };                     // 0x71002e2d30
+struct Part2cdb5c { Part2cdb5c(); void* data[0xd]; };                       // 0x71002cdb5c
 
 // The base of 2defc0's panels (vtable GOT 0x7100c2abb0): two light resources and its owner.
 class PanelBase2defc0 {
@@ -291,6 +293,7 @@ public:
 class Game;
 Game* fetch_204728();                                                       // 0x7100204728
 unsigned char flag_204614(Game* game);                                      // 0x7100204614
+unsigned char flag_2045fc(Game* game);                                      // 0x71002045fc
 
 // An entry (0xf8 bytes): an id, pointers, a cleared buffer and two layout handles.
 struct Entry2eb9d4 {
@@ -415,4 +418,224 @@ Panel2eb9d4::Panel2eb9d4(void* owner_)
     p68 = nullptr;
     p70 = nullptr;
     b8 = flag_204614(fetch_204728());
+}
+
+// Seven bytes in four fields (cleared as one block).
+struct Header7 {
+    Header7() : a(0), b(0), c(0), d(false) {}
+
+    short a;                     // +00
+    short b;                     // +02
+    short c;                     // +04
+    bool d;                      // +06
+};
+
+// An entry (0xf0 bytes): eight pointers, three more, two layout handles and a header.
+struct Entry2e245c {
+    Entry2e245c() : p0(nullptr), p8(nullptr), p10(nullptr), p18(nullptr), p20(nullptr), p28(nullptr), p30(nullptr),
+                    p38(nullptr), p80(nullptr), p88(nullptr), p90(nullptr), ic8(-1), bcc(false), pe0(nullptr),
+                    pe8(nullptr) {}
+
+    void* p0;                    // +00
+    void* p8;                    // +08
+    void* p10;                   // +10
+    void* p18;                   // +18
+    void* p20;                   // +20
+    void* p28;                   // +28
+    void* p30;                   // +30
+    void* p38;                   // +38
+    unsigned char pad40[0x40];
+    void* p80;                   // +80
+    void* p88;                   // +88
+    void* p90;                   // +90
+    LayoutHandle h98;            // +98
+    LayoutHandle hb0;            // +b0
+    int ic8;                     // +c8
+    bool bcc;                    // +cc
+    unsigned char padcd[0xb];
+    Header7 hd8;                 // +d8
+    void* pe0;                   // +e0
+    void* pe8;                   // +e8
+};
+
+// Five pointers and a last one, the last set first.
+struct Ptrs4380 {
+    Ptrs4380() : p38(nullptr) {
+        p0 = nullptr;
+        p8 = nullptr;
+        p10 = nullptr;
+        p18 = nullptr;
+        p20 = nullptr;
+    }
+
+    void* p0;                    // +00
+    void* p8;                    // +08
+    void* p10;                   // +10
+    void* p18;                   // +18
+    void* p20;                   // +20
+    unsigned char pad28[0x10];
+    void* p38;                   // +38
+};
+
+// Seven pointers (reset in the body), two layout handles and a few fields.
+struct Block43c0 {
+    Block43c0() : i80(-1), b84(true), b85(true), i88(0) {
+        p0 = nullptr;
+        p8 = nullptr;
+        p10 = nullptr;
+        p18 = nullptr;
+        p20 = nullptr;
+        p28 = nullptr;
+        p30 = nullptr;
+    }
+
+    void* p0;                    // +00
+    void* p8;                    // +08
+    void* p10;                   // +10
+    void* p18;                   // +18
+    void* p20;                   // +20
+    void* p28;                   // +28
+    void* p30;                   // +30
+    unsigned char pad38[0x18];
+    LayoutHandle h50;            // +50
+    LayoutHandle h68;            // +68
+    int i80;                     // +80
+    bool b84;                    // +84
+    bool b85;                    // +85
+    int i88;                     // +88
+};
+
+// Three pointers, a buffer and a last pointer, the last set first.
+struct PtrBlock4450 {
+    PtrBlock4450() : p70(nullptr) {
+        p0 = nullptr;
+        p8 = nullptr;
+        p10 = nullptr;
+    }
+
+    void* p0;                    // +00
+    void* p8;                    // +08
+    void* p10;                   // +10
+    unsigned char buf[0x58];     // +18
+    void* p70;                   // +70
+};
+
+// Three pools after a pointer block; the block's buffer is cleared after the pools.
+struct PoolSet4450 {
+    PoolSet4450() : s3390(0), b3392(false) {
+        memset(ptrs.buf, 0, sizeof(ptrs.buf));
+    }
+
+    PtrBlock4450 ptrs;           // +00
+    SlotPool2dee48 pools[3];     // +78
+    short s3390;                 // +3390
+    bool b3392;                  // +3392
+};
+
+// Eight frames and their count.
+struct FrameGroup8 {
+    FrameGroup8() : count(0) {}
+
+    LayoutFrame frames[8];
+    int count;
+};
+
+// 128 frames and their count.
+struct FrameGroup128 {
+    FrameGroup128() : count(0) {}
+
+    LayoutFrame frames[128];
+    int count;
+};
+
+// 0x71002e245c: another panel of the screen without the panel base: two arrays of 36 entries, pointer blocks and
+// layout handles, a pool set like 2eb9d4's, frame groups, parts, and a flag fetched last. Blocks that are reset in a
+// sub-object's body (+4380's five pointers after its last, +43c0's seven after its handles) come out as in the
+// original only as sub-objects; the five bytes at +c1e0 are separate fields (one cleared block).
+class Panel2e245c {
+public:
+    explicit Panel2e245c(void* owner);
+
+    Entry2e245c entries_a[36];   // +0
+    Entry2e245c entries_b[36];   // +21c0
+    Ptrs4380 ptrs4380;           // +4380
+    Block43c0 block43c0;         // +43c0
+    PoolSet4450 poolset;         // +4450
+    unsigned char b77e8;         // +77e8
+    unsigned char pad77e9[0x783];
+    short s7f6c;                 // +7f6c
+    short s7f6e;                 // +7f6e
+    short s7f70;                 // +7f70
+    bool b7f72;                  // +7f72
+    bool b7f73;                  // +7f73
+    bool b7f74;                  // +7f74
+    bool b7f75;                  // +7f75
+    bool b7f76;                  // +7f76
+    unsigned char pad7f77[0x29];
+    void* p7fa0;                 // +7fa0
+    int i7fa8;                   // +7fa8
+    int i7fac;                   // +7fac
+    int i7fb0;                   // +7fb0
+    bool b7fb4;                  // +7fb4
+    int i7fb8;                   // +7fb8
+    FrameGroup8 frame_groups[5]; // +7fc0
+    Part2e2a90 part9528;         // +9528
+    void* pb730;                 // +b730
+    short sb738;                 // +b738
+    void* pb740;                 // +b740
+    void* pb748;                 // +b748
+    void* pb750;                 // +b750
+    void* pb758;                 // +b758
+    void* pb760;                 // +b760
+    unsigned char padb768[0x100];
+    unsigned char bufb868[0x78]; // +b868
+    void* pb8e0;                 // +b8e0
+    void* pb8e8;                 // +b8e8
+    void* pb8f0;                 // +b8f0
+    void* pb8f8;                 // +b8f8
+    void* pb900;                 // +b900
+    void* pb908;                 // +b908
+    void* pb910;                 // +b910
+    void* pb918;                 // +b918
+    void* pb920;                 // +b920
+    unsigned char padb928[0x28];
+    void* pb950;                 // +b950
+    Part2e2d30 partb958;         // +b958
+    unsigned char bc1e0;         // +c1e0
+    unsigned char bc1e1;         // +c1e1
+    unsigned char bc1e2;         // +c1e2
+    unsigned char bc1e3;         // +c1e3
+    unsigned char bc1e4;         // +c1e4
+    unsigned char padc1e5[0xb];
+    LightResource resc1f0;       // +c1f0
+    LightResource resc300;       // +c300
+    void* pc410;                 // +c410
+    unsigned char padc418[0x18];
+    Part2cdb5c partc430;         // +c430
+    int ic498;                   // +c498
+    void* pc4a0;                 // +c4a0
+    void* pc4a8;                 // +c4a8
+    FrameGroup128 frames_a;      // +c4b0
+    FrameGroup128 frames_b;      // +108b8
+    Part2e2d30 parts[5];         // +14cc0
+    Part379e44 part17768;        // +17768
+    unsigned char pad17780[0x8];
+    void* owner;                 // +17788
+};
+
+Panel2e245c::Panel2e245c(void* owner_)
+    : b77e8(0), s7f6c(0), s7f6e(0), s7f70(0), b7f72(false), b7f73(true), b7f74(false), b7f75(false), b7f76(false), p7fa0(nullptr),
+      i7fa8(-1), i7fac(-1), i7fb0(0), b7fb4(false), i7fb8(0), pb740(nullptr), pb748(nullptr), pb750(nullptr),
+      pb758(nullptr), pb760(nullptr), pb8e0(nullptr), pb8e8(nullptr), pb8f0(nullptr), pb920(nullptr), pb950(nullptr),
+      bc1e0(0), bc1e1(0), bc1e2(0), bc1e3(0), bc1e4(0), pc410(nullptr), ic498(-1), pc4a0(nullptr), pc4a8(nullptr),
+      owner(owner_) {
+    sb738 = 0;
+    pb730 = nullptr;
+    memset(bufb868, 0, sizeof(bufb868));
+    pb8f8 = nullptr;
+    pb900 = nullptr;
+    pb908 = nullptr;
+    pb910 = nullptr;
+    pb918 = nullptr;
+    b77e8 = flag_2045fc(fetch_204728());
 }
