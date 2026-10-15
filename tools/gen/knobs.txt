@@ -54,3 +54,6 @@ nopun
 nosplitstores
 copy64
 noloopjoin+oldlive
+voidret
+voidret+sink
+voidret+callinline
