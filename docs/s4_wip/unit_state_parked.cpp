@@ -245,3 +245,128 @@ int unit_gauge_41b7c(short id, float* ratio, int* kind) {
     *ratio = (a->limit498 - gUnitLimitMin) / (gUnitLimitMax - gUnitLimitMin);
     return 1;
 }
+
+// c69a0 (UnitWatcher::pose_c69a0, 740 B; declare void pose_c69a0(void* target); in UnitWatcher), 2 off: the
+// quaternion's fmul operands come out in other registers (cz, cx, sy); a 64-form search over operand orders runs in
+// worktrees\s4_perm\c69a0.
+void sin_cos_fd70(float angle, float* s, float* c);                         // 0x710000fd70
+
+// A rotation from three half angles (x, y, z order).
+static inline void quat_from_half_angles(Vec4f* q, float hx, float hy, float hz) {
+    float sx, cx, sy, cy, sz, cz;
+    sin_cos_fd70(hx, &sx, &cx);
+    sin_cos_fd70(hy, &sy, &cy);
+    sin_cos_fd70(hz, &sz, &cz);
+    q->x = sx * cy * cz - cx * sy * sz;
+    q->y = cx * sy * cz + sx * cy * sz;
+    q->z = cy * cx * sz - sx * sy * cz;
+    q->w = cy * cx * cz + sx * sy * sz;
+}
+
+static inline void set_pose(void* target, int id, float sx, float sy, float sz, float hx, float hy, float hz, float px,
+                            float py, float pz) {
+    Vec4f s;
+    s.x = sx;
+    s.y = sy;
+    s.z = sz;
+    s.w = 0.0f;
+    Vec4f q;
+    Vec4f p;
+    p.x = px;
+    p.y = py;
+    p.z = pz;
+    p.w = 0.0f;
+    quat_from_half_angles(&q, hx, hy, hz);
+    set_track_46c68(target, id, 4, &s);
+    set_track_46c68(target, id, 7, &q);
+    set_track_46c68(target, id, 1, &p);
+}
+// 0x71000c69a0
+void UnitWatcher::pose_c69a0(void* target) {
+    UnitState* s = state;
+    Unit* u = s->unit;
+    UnitActor* a = 0;
+    IF_UNIT_STATE_ACTIVE(u->state()->id, a = u->actor());
+    if (item_rank_1fb810(s->unit->state()->item()) != 0x15) return;
+    if (!unit_can_7c5a8(a, 0xc)) return;
+    set_pose(target, 0x1f4, 1.0f, 0.8f, 0.7f, -0.785398185f, 0.0872664601f, 0.0f, 0.0f, -3.0f, 4.0f);
+    set_pose(target, 0x1f5, 1.5f, 1.0f, 1.0f, -0.0884881988f, 0.0f, 0.0f, 0.0f, 21.86f, -8.12f);
+}
+// 17860 (UnitAim::update, 816 B), about 50 off: a first draft. The original keeps this in x20, has a 0xb0 frame with
+// the second area at sp+0xc apart from the matrix at sp+0x10, and reads the place's y/z pair first in the second copy.
+extern "C" float sqrtf(float value);                                        // 0x71006008a0 (import)
+
+struct Vec3f {
+    float x, y, z;
+};
+struct UnitPlace {
+    unsigned char pad0[0x20];
+    Vec3f pos;                // +20
+};
+struct UnitMatrix {
+    float rows[12];
+    Vec3f pos;                // +30
+    float w;
+};
+unsigned int unit_count_453984();                                           // 0x7100453984
+unsigned char unit_area_4549dc(int id, int* area);                          // 0x71004549dc
+void unit_matrix_453bb8(UnitMatrix* out, int id);                           // 0x7100453bb8
+unsigned char keep_target_ce28(int area, int ref_area, bool closer);       // 0x710000ce28
+
+static inline float distance(const Vec3f& a, const Vec3f& b) {
+    float dx = a.x - b.x;
+    float dy = a.y - b.y;
+    float dz = a.z - b.z;
+    return sqrtf(dx * dx + dy * dy + dz * dz);
+}
+
+class UnitAim {
+public:
+    void update();
+
+    // The target's position: the unit's own if the id is out of range.
+    Vec3f target_pos(int id) {
+        Vec3f p = self->place()->pos;
+        if (id >= 0 && static_cast<unsigned int>(id) < unit_count_453984()) {
+            UnitMatrix m;
+            unit_matrix_453bb8(&m, id);
+            p = m.pos;
+        }
+        return p;
+    }
+
+    // The target to keep: the current one unless the new one is preferred.
+    __attribute__((always_inline)) int pick(int current, int target, float dist, int ref_area) {
+        int area;
+        Vec3f p = target_pos(current);
+        if (current >= 0 && static_cast<unsigned int>(current) < unit_count_453984() &&
+            unit_area_4549dc(current, &area)) {
+            float d = distance(p, self->place()->pos);
+            if (!keep_target_ce28(area, ref_area, dist < d)) return current;
+        }
+        return target;
+    }
+    Unit* owner;              // +00
+    Unit* self;               // +08
+    int target;               // +10
+};
+
+// 0x7100017860
+void UnitAim::update() {
+    int t = target;
+    int ref_area;
+    if (t >= 0 && static_cast<unsigned int>(t) < unit_count_453984()) {
+        if (!unit_area_4549dc(t, &ref_area)) return;
+    }
+    Vec3f p = target_pos(t);
+    float dist = distance(p, self->place()->pos);
+    UnitActor* a = owner->actor();
+    int current = a->target_c0;
+    if (current == t) return;
+    t = pick(current, t, dist, ref_area);
+    a->target_c0 = t;
+    a->flags50 |= 0x1000;
+    UnitActor* b = 0;
+    IF_UNIT_STATE_ACTIVE(self->state()->id, b = self->actor());
+    b->target_4f8 = pick(b->target_4f8, t, dist, ref_area);
+}

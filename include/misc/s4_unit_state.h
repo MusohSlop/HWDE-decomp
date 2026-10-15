@@ -151,6 +151,13 @@ public:
     virtual void s3d8();
     virtual void s3e0();
     virtual int item();       // +3e8
+    virtual void s3f0();
+    virtual void s3f8();
+    virtual float rate400();  // +400
+    virtual void s408();
+    virtual float rate410();  // +410
+
+    int item_blocked();       // 0x71000bf440 (parked: docs/s4_wip/unit_state_parked.cpp)
 
     union {
         unsigned char kind;   // +08: bits 0-1 the side
@@ -244,7 +251,9 @@ public:
     unsigned char pad38[0x18];
     unsigned long flags50;    // +50: flag bits, read as (flags50 >> n) & 1 into an int
     struct UnitParts* parts;  // +58
-    unsigned char pad60[0x80];
+    unsigned char pad60[0x60];
+    int target_c0;            // +c0
+    unsigned char padc4[0x1c];
     short links[0x3c];        // +e0
     unsigned char pad158[0x304];
     int value45c;             // +45c
@@ -253,6 +262,8 @@ public:
     int value49c;             // +49c
     unsigned char pad4a0[0x44];
     unsigned short shape4e4;  // +4e4
+    unsigned char pad4e6[0x12];
+    int target_4f8;           // +4f8
 };
 
 class UnitBody;
@@ -266,7 +277,7 @@ public:
     virtual void v20();
     virtual UnitBody* body();    // +28
     virtual void v30();
-    virtual void v38();
+    virtual struct UnitPlace* place();  // +38
     virtual class UnitView* view();  // +40
     virtual UnitState* state();  // +48
 };
@@ -348,9 +359,9 @@ static inline Unit* find_unit(short id) { return gUnitTable_c21690->unit(id); }
 
 short side_unit_id_db3c(int side);                                          // 0x710000db3c
 
-// Whether the unit of a side can take an actor command.
-static inline int side_unit_can(int side, int cmd) {
-    Unit* u = find_unit(side_unit_id_db3c(side));
+// Whether a unit (by id), or the unit of a side, can take an actor command.
+static inline int unit_can(short id, int cmd) {
+    Unit* u = find_unit(id);
     if (!u) return 0;
     IF_UNIT_STATE_ACTIVE(u->state()->id, {
         UnitActor* a = u->actor();
@@ -358,4 +369,17 @@ static inline int side_unit_can(int side, int cmd) {
         return static_cast<unsigned char>(a->command(cmd));
     });
     return 0;
+}
+static inline int side_unit_can(int side, int cmd) { return unit_can(side_unit_id_db3c(side), cmd); }
+
+// unit_can with the action outside the test (goto): the original's shape in 3e350.
+static inline int unit_can_jump(short id, int cmd) {
+    Unit* u = find_unit(id);
+    if (!u) return 0;
+    IF_UNIT_STATE_ACTIVE(u->state()->id, goto active);
+    return 0;
+active:
+    UnitActor* a = u->actor();
+    if (!a) return 0;
+    return static_cast<unsigned char>(a->command(cmd));
 }

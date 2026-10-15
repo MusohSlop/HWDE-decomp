@@ -250,3 +250,68 @@ void Vector<T>::push_back_slow_path(T&& x) {
     v.end_++;
     swap_out(v);
 }
+
+// The same with an allocator A (static allocate(n), deallocate(p, n), max_size()), as libc++ builds it for an
+// allocator other than std::allocator: the old elements move one at a time (__construct_backward), not with memcpy.
+template <class T, class A>
+struct SplitBufferA {
+    T* first_;
+    T* begin_;
+    T* end_;
+    T* end_cap_;
+
+    SplitBufferA(size_t cap, size_t start) {
+        first_ = cap != 0 ? A::allocate(cap) : 0;
+        begin_ = end_ = first_ + start;
+        end_cap_ = first_ + cap;
+    }
+    ~SplitBufferA() {
+        if (first_) A::deallocate(first_, static_cast<size_t>(end_cap_ - first_));
+    }
+};
+
+template <class T, class A>
+struct VectorA : protected std::__vector_base_common<true> {
+    T* begin_;
+    T* end_;
+    T* end_cap_;
+
+    size_t size() const { return static_cast<size_t>(end_ - begin_); }
+    size_t capacity() const { return static_cast<size_t>(end_cap_ - begin_); }
+    size_t max_size() const {
+        const size_t a = A::max_size();
+        const size_t b = ~0UL >> 1;
+        return b < a ? b : a;
+    }
+
+    size_t recommend(size_t new_size) const {
+        const size_t ms = max_size();
+        if (new_size > ms) this->__throw_length_error();
+        const size_t cap = capacity();
+        if (cap >= ms / 2) return ms;
+        return max_of<size_t>(2 * cap, new_size);
+    }
+
+    void swap_out(SplitBufferA<T, A>& v) {
+        T* b = begin_;
+        T* e = end_;
+        while (e != b) {
+            *(v.begin_ - 1) = *--e;
+            --v.begin_;
+        }
+        swap_ptr(begin_, v.begin_);
+        swap_ptr(end_, v.end_);
+        swap_ptr(end_cap_, v.end_cap_);
+        v.first_ = v.begin_;
+    }
+
+    void push_back_slow_path(const T& x);
+};
+
+template <class T, class A>
+void VectorA<T, A>::push_back_slow_path(const T& x) {
+    SplitBufferA<T, A> v(recommend(size() + 1), size());
+    *v.end_ = x;
+    v.end_++;
+    swap_out(v);
+}

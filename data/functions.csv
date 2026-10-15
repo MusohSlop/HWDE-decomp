@@ -845,7 +845,7 @@ Address,Quality,Size,Name
 0x710003e26c,O,16,_Z13forward_3e26cv
 0x710003e27c,O,32,_Z18forward_pair_3e27cii
 0x710003e29c,O,180,_Z18unit_command_3e29c6UnitIdi
-0x710003e350,U,700,FUN_710003e350
+0x710003e350,O,700,_Z19any_side_busy_3e350v
 0x710003e60c,O,200,_Z18unit_command_3e60csi
 0x710003e6d4,U,108,FUN_710003e6d4
 0x710003e740,U,104,FUN_710003e740
@@ -5627,7 +5627,7 @@ Address,Quality,Size,Name
 0x71001e4b60,O,4,_Z12empty_1e4b60v
 0x71001e4b64,U,448,FUN_71001e4b64
 0x71001e4d24,U,276,FUN_71001e4d24
-0x71001e4f1c,U,400,FUN_71001e4f1c
+0x71001e4f1c,O,400,_ZN7VectorAIP9DrawEntry13HeapAllocatorIS1_Ls46EEE19push_back_slow_pathERKS1_
 0x71001e50b0,O,16,_Z12screen_faderv
 0x71001e50c0,U,364,FUN_71001e50c0
 0x71001e522c,O,64,_Z20destroy_screen_faderv
