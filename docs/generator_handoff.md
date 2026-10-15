@@ -202,6 +202,8 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   an index was typed void*, and `field[v]` did not compile);
 - a computed byte offset added to a base is parenthesized (knob `noaddrparen`; an offset that is a shift parsed as
   `(base + v) >> 1`);
+- a vector operand of scalar float arithmetic, a float compare, a conversion or fabs/neg is its lane 0 (knob
+  `noscalarlane`; a variable typed Vec4f only after its s-register uses were built rendered vector arithmetic);
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as

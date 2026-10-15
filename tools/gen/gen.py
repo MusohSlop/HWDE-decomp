@@ -4308,6 +4308,11 @@ def gen_function(a, ins):
                 return gname(base)
             return f"{gname(base)}.field_{off:x}"
         return f"{expr(base)}->field_{off:x}"
+    def sexpr_(v_, top_=False):
+        """A scalar float operand: a value typed Vec4f is its lane 0."""
+        if "noscalarlane" not in knobs and v_[0] not in ("fconst", "fparam") and vtype(v_) == "Vec4f":
+            return f"{expr(v_, False)}[0]"
+        return expr(v_, top_)
     def iexpr_(v_):
         """An index: a pointer-typed value goes through reinterpret_cast<long>."""
         e_ = expr(v_)
@@ -4421,18 +4426,18 @@ def gen_function(a, ins):
                 s_ += ".0"
             return s_ + "f"
         if v[0] == "fbin":
-            s_ = f"{expr(v[2], False)} {v[1]} {expr(v[3], False)}"
+            s_ = f"{sexpr_(v[2])} {v[1]} {sexpr_(v[3])}"
             return s_ if top else f"({s_})"
         if v[0] == "funary":
             if v[1] in ("floor", "ceil", "round", "trunc"):
-                return f"__builtin_{v[1]}f({expr(v[2])})"
-            return f"-{expr(v[2], False)}" if v[1] == "fneg" else f"__builtin_fabsf({expr(v[2])})"
+                return f"__builtin_{v[1]}f({sexpr_(v[2], True)})"
+            return f"-{sexpr_(v[2])}" if v[1] == "fneg" else f"__builtin_fabsf({sexpr_(v[2], True)})"
         if v[0] == "i2f":
             ut = ("unsigned long" if v[3] == "x" else "unsigned int") if v[1] else ("long" if v[3] == "x" else "int")
             return f"static_cast<float>(static_cast<{ut}>({expr(v[2])}))"
         if v[0] == "f2i":
             ut = ("unsigned long" if v[3] == "x" else "unsigned int") if v[1] else ("long" if v[3] == "x" else "int")
-            return f"static_cast<{ut}>({expr(v[2])})"
+            return f"static_cast<{ut}>({sexpr_(v[2], True)})"
         if v[0] == "fselect":
             s_ = f"{cond(*v[1])} ? {expr(v[2], False)} : {expr(v[3], False)}"
             return s_ if top else f"({s_})"
@@ -4552,7 +4557,7 @@ def gen_function(a, ins):
             form = FCC.get(cc)
             if not form:
                 raise Fail("fcc")
-            return form.format(x=expr(f[1], False), y=expr(f[2], False))
+            return form.format(x=sexpr_(f[1]), y=sexpr_(f[2]))
         if f is None or cc not in CC:
             raise Fail("cond")
         kind, x, y, w = f
