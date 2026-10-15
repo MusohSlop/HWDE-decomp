@@ -7360,3 +7360,77 @@ int call_3e0624(Arg3e0624_0* p0) {
     }
     return callee_58ce50(a50);
 }
+
+int callee2_59583c(void*);        // 0x710059583c
+
+class Node220870_v0 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+
+    int field_8;                 // +8
+};
+
+struct Arg220870_0 {
+    long field_0;                // +0
+    unsigned char pad8[0x38];
+    void* field_40;               // +40
+    Node220870_v0* field_48;      // +48
+};
+
+class Node220870_v7 {
+public:
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+    virtual void slot_4();
+    virtual void slot_5();
+    virtual void slot_6();
+    virtual void slot_7();
+    virtual void slot_8();
+    virtual void slot_9();
+    virtual void slot_10();
+    virtual void slot_11();
+    virtual void slot_12(void*);
+};
+
+struct Node220870_v5 {
+    unsigned char pad0[0x48];
+    Node220870_v7* field_48;      // +48
+    int field_50;                 // +50
+};
+// Reached through the GOT slot at 0x7100c23450.
+extern Node220870_v5* gGlobalc23450_220870;
+// Reached through the GOT slot at 0x7100c23448.
+extern unsigned char gGlobalc23448_220870[];
+
+// 0x7100220870: the member's vtable store before its pointer is read (generated source; its inventory size corrected in 0bba5b9)
+int call_220870(Arg220870_0* p0) {
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc23448_220870) + 0x10);
+    Node220870_v0* v0 = p0->field_48;
+    p0->field_40 = nullptr;
+    if (v0 != 0) {
+        int v1 = v0->field_8;
+        v0->field_8 = v1 - 1;
+        if ((v1 - 1) == 0) {
+            v0->slot_3();
+        }
+        p0->field_48 = nullptr;
+    }
+    Node220870_v5* v5 = gGlobalc23450_220870;
+    if (v5 != 0) {
+        int v6 = v5->field_50;
+        v5->field_50 = v6 - 1;
+        if ((v6 - 1) == 0) {
+            Node220870_v7* v7 = v5->field_48;
+            if (v7 != 0) {
+                v7->slot_12(v5);
+            }
+        }
+        gGlobalc23450_220870 = nullptr;
+    }
+    return callee2_59583c(p0);
+}

@@ -19178,7 +19178,45 @@
     "_Z13callee_4c7b90PvS_fff": "0x71004c7b90",
     "_Z11callee_fd70PvS_fDv4_fffffff": "0x710000fd70",
     "_Z13callee_3c5f70lii": "0x71003c5f70",
-    "_Z13callee_455c38lfffff": "0x7100455c38"
+    "_Z13callee_455c38lfffff": "0x7100455c38",
+    "gLocal73fffb_39e2f4": "0x710073fffb",
+    "gLocal740004_39e2f4": "0x7100740004",
+    "gLocal74056c_39e2f4": "0x710074056c",
+    "gLocal7d5b89_39e2f4": "0x71007d5b89",
+    "gLocal7d5b94_39e2f4": "0x71007d5b94",
+    "gLocal7d6062_39e2f4": "0x71007d6062",
+    "gLocal7d6079_39e2f4": "0x71007d6079",
+    "gLocal7db10c_39e2f4": "0x71007db10c",
+    "gLocal7db11f_39e2f4": "0x71007db11f",
+    "gLocal7db128_39e2f4": "0x71007db128",
+    "gLocal7db131_39e2f4": "0x71007db131",
+    "gLocal7db138_39e2f4": "0x71007db138",
+    "gLocal7db146_39e2f4": "0x71007db146",
+    "got:gGlobalc2af00_33bbb4": "0x7100c2af00",
+    "got:gGlobalc2b2c0_39e2f4": "0x7100c2b2c0",
+    "_Z13callee_33be48l": "0x710033be48",
+    "_Z13callee_39e820Pv": "0x710039e820",
+    "_Z13callee_33be48Pv": "0x710033be48",
+    "got:_ZTV12IdTableD4c9c": "0x7100c229e8",
+    "got:_ZTV11Block5f8348": "0x7100c2de18",
+    "got:_ZTV11Block5f6bf8": "0x7100c2ddf8",
+    "got:_ZTV10Pane1f1594": "0x7100c23138",
+    "got:_ZTV11Slots5332a0": "0x7100c2d2a0",
+    "got:_ZTV10List34a910": "0x7100c2af68",
+    "_ZN10Elem34a910D1Ev": "0x710034d974",
+    "got:_ZTV12Buffer5f3808": "0x7100c2dde8",
+    "_Z11free_601040Pv": "0x7100601040",
+    "got:_ZTV10Node5959d4": "0x7100c2d7a0",
+    "got:gNodeList5959d4": "0x7100c2d798",
+    "got:_ZTV13Counted5b38e8": "0x7100c2da40",
+    "got:gCount5b38e8": "0x7100c2da48",
+    "got:_ZTV11Group_d2784": "0x7100c229c0",
+    "_ZN9Part7572cC1Ev": "0x710007572c",
+    "got:_ZTV15OwnedHeap5c49fc": "0x7100c2dba8",
+    "got:_ZTV18RequestBlock5f7984": "0x7100c2de00",
+    "_ZN2nn2os15InitializeEventEPNS0_9EventTypeEbNS0_14EventClearModeE": "0x7100600ae0",
+    "got:_ZTV9Mid2d4f14": "0x7100c2aa68",
+    "_Z14callee2_59583cPv": "0x710059583c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -28408,7 +28446,8 @@
         "_Z11call_28b238P11Arg28b238_0": "0x710028b238",
         "_Z11call_30eadcP11Arg30eadc_0": "0x710030eadc",
         "_Z11call_397750P11Arg397750_0Pv": "0x7100397750",
-        "_Z11call_3e0624P11Arg3e0624_0": "0x71003e0624"
+        "_Z11call_3e0624P11Arg3e0624_0": "0x71003e0624",
+        "_Z11call_220870P11Arg220870_0": "0x7100220870"
       }
     },
     "misc/variant_functions74.cpp": {
@@ -29112,6 +29151,37 @@
         "_Z11call_3fe54cv": "0x71003fe54c",
         "_Z11call_40fd58liP11Arg40fd58_2": "0x710040fd58",
         "_Z11call_56b3c8P11Arg56b3c8_0P11Arg56b3c8_1": "0x710056b3c8"
+      }
+    },
+    "misc/s3_functions13.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z11call_4a295cP11Arg4a295c_0": "0x71004a295c",
+        "_Z11call_5a9f14P11Arg5a9f14_0": "0x71005a9f14"
+      }
+    },
+    "misc/s3_functions14.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_ZN12IdTableD4c9cC2Ev": "0x71000d4c9c",
+        "_ZN11Block5f8348C2Ev": "0x71005f8348",
+        "_ZN11Block5f6bf8C2Ev": "0x71005f6bf8",
+        "_ZN10Pane1f1594C2Ev": "0x71001f1594",
+        "_ZN11Slots5332a0C2EiP6RefObj": "0x71005332a0",
+        "_ZN10List34a910D2Ev": "0x710034a910",
+        "_ZN12Buffer5f3808D2Ev": "0x71005f3808",
+        "_ZN10Node5959d4D2Ev": "0x71005959d4",
+        "_ZN13Counted5b38e8C2Ev": "0x71005b38e8",
+        "_ZN11Group_d2784C2Ev": "0x71000d2784",
+        "_ZN15OwnedHeap5c49fcC2EP6RefObj": "0x71005c49fc",
+        "_ZN12Worker5f7984C2Ev": "0x71005f7984",
+        "_ZN9Mid2d4f14D2Ev": "0x71002d4f14"
       }
     }
   }
