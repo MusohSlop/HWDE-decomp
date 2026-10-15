@@ -1,0 +1,24 @@
+# Groups of docs/s4_wip/families_relaxed.txt for the fifth session (mains split: s5 takes first addresses 4e0000-4fffff; s4 below 4b4c80, s3 from 4b4c80 up).
+# first address, size x count, total bytes, members
+4e8cd8	924 x 6	5544	4e8cd8 4f01c4 4f10f4 4f1f20 4f2d48 4f3b68
+4e961c	872 x 6	5232	4e961c 4ea810 4eb8c4 4ec988 4eda4c 4eeb00
+4e9f78	872 x 6	5232	4e9f78 4eb294 4ec358 4ed41c 4ee4d0 4ef5ac
+4f0560	756 x 5	3780	4f0560 4f1490 4f22bc 4f30e4 4f3f04
+4fa810	732 x 4	2928	4fa810 4fad98 4fb320 4fc5a8
+4ea2e0	412 x 5	2060	4ea2e0 4eb5fc 4ec6c0 4ed784 4ee838
+4fa6dc	308 x 5	1540	4fa6dc 4fac64 4fb1ec 4fb774 4fc474
+4f97d8	704 x 2	1408	4f97d8 4f9d68
+4fe490	232 x 6	1392	4fe490 4fe5fc 4fe768 4fe8d4 4fea40 4febac
+4e1f6c	360 x 3	1080	4e1f6c 4e21e0 4e23e4
+4e7fb0	344 x 2	688	4e7fb0 4e810c
+4ec220	312 x 2	624	4ec220 4ed2e4
+4f1df4	300 x 2	600	4f1df4 4f2c1c
+4f9560	240 x 2	480	4f9560 4f96e8
+4e57a8	216 x 2	432	4e57a8 4fedf4
+4e6cc0	216 x 2	432	4e6cc0 4e6f78
+4f90f8	216 x 2	432	4f90f8 4f9248
+4f475c	192 x 2	384	4f475c 4f481c
+4f4914	172 x 2	344	4f4914 4f49c0
+4f94c8	152 x 2	304	4f94c8 4f9650
+4f9080	120 x 2	240	4f9080 4f91d0
+4e20d4	76 x 3	228	4e20d4 4e2348 4e254c

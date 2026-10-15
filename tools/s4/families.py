@@ -13,7 +13,9 @@ add/ldr/str through a register an adrp set (the :lo12: half). Other immediates (
 two functions in a family differ only in registers, callees and data addresses: one source (a template, a macro or
 the same inline code) can close every copy. Families of two or more are written to OUT sorted by total bytes:
 total, copies, size, then the addresses; the counts are printed. With --wide the functions of the whole image are
-grouped and every family with a copy in LO-HI is kept, its copies outside the range listed after a |.
+grouped and every family with a copy in LO-HI is kept, its copies outside the range listed after a |. With --relaxed
+every other immediate (field offsets, constants, shift amounts) becomes one token as well, so instantiations of one
+template over different types (other sizes, offsets and vtables) group together.
 """
 import os as _os
 M = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))  # the matching/ folder
@@ -26,6 +28,7 @@ ap.add_argument("out")
 ap.add_argument("--lo", default="0"); ap.add_argument("--hi", default="380000")
 ap.add_argument("--min", type=int, default=0)
 ap.add_argument("--skip", action="append", default=[])
+ap.add_argument("--relaxed", action="store_true", help="also abstract every other immediate (field offsets, constants)")
 ap.add_argument("--wide", action="store_true", help="group with the unmatched functions of the whole image and keep "
                 "the families with a copy in LO-HI (the copies outside are listed after a |)")
 a = ap.parse_args()
@@ -113,6 +116,8 @@ def shape(code, ad, size):
         # a register written here is no longer an adrp page
         if regs and not m.startswith(("str", "stp", "stur", "cmp", "cmn", "tst", "b", "cb", "tb", "ret")) and m != "adrp":
             page.discard(regs[0][1:])
+        if a.relaxed and not BRANCH.match(m):
+            ops = re.sub(r"#-?(0x[0-9a-f]+|\d+)", "#I", ops)
         out.append(m + " " + REG.sub(r"\1", ops))
     return tuple(out)
 
@@ -133,7 +138,7 @@ for ad, s in cands:
 fams = [v for v in groups.values() if len(v) >= 2 and any(lo <= ad < hi for ad, _ in v)]
 fams.sort(key=lambda v: (-sum(s for _, s in v), v[0][0]))
 with open(a.out, "w", encoding="utf-8", newline="\n") as f:
-    f.write(f"# Template families among unmatched functions {lo:x}-{hi:x} (tools/s4/families.py{' --wide' if a.wide else ''}): identical\n"
+    f.write(f"# Template families among unmatched functions {lo:x}-{hi:x} (tools/s4/families.py{' --wide' if a.wide else ''}{' --relaxed' if a.relaxed else ''}): identical\n"
             f"# opcode sequences with registers and relocation targets abstracted, constructor-shaped functions and"
             f" {len(skip)} skipped addresses left out.\n# total bytes, copies, size, addresses{' (copies outside the range after |)' if a.wide else ''}.\n")
     for v in fams:
