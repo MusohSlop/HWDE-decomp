@@ -290,6 +290,27 @@ def gen_function(a, ins):
     callees = {}        # target -> [arg types, ret type]
     counter = [0]
     addr_index = {i.address: k for k, i in enumerate(ins)}
+    ivec_loads_ = {}
+    if "noicvt" not in knobs:
+        for k_, i_ in enumerate(ins):
+            mm_ = re.fullmatch(r"([shb])(\d+), \[.*", i_.op_str) if i_.mnemonic in ("ldr", "ldur") else None
+            if not mm_ or i_.op_str.endswith("!") or re.search(r"\[(sp|x29)\b", i_.op_str):
+                continue
+            kind_, n_ = mm_.group(1), int(mm_.group(2))
+            for ij_ in ins[k_ + 1:k_ + 16]:
+                if kind_ == "h" and ij_.mnemonic in ("sshll", "ushll") and re.fullmatch(r"v\d+\.4s, v%d\.4h, #0" % n_, ij_.op_str):
+                    ivec_loads_[k_] = "short" if ij_.mnemonic == "sshll" else "unsigned short"
+                    break
+                if ij_.mnemonic in ("scvtf", "ucvtf") and re.fullmatch(r"s\d+, s%d" % n_, ij_.op_str):
+                    # a load of h or b zero-extends into the s register
+                    if kind_ == "s":
+                        ivec_loads_[k_] = "int" if ij_.mnemonic == "scvtf" else "unsigned int"
+                    elif ij_.mnemonic == "ucvtf":
+                        ivec_loads_[k_] = "unsigned short" if kind_ == "h" else "unsigned char"
+                    break
+                r_, w_ = frw(ij_)
+                if n_ in r_ or n_ in w_ or ij_.mnemonic in ("bl", "blr", "b", "br", "ret") or ij_.mnemonic.startswith("b."):
+                    break
     hoist_adds_ = set()
     for k_, i_ in enumerate(ins):
         ops_h_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", i_.op_str)]
@@ -1036,6 +1057,8 @@ def gen_function(a, ins):
             raise Fail("vector constant lane")
         if v[0] == "fsqrtp":
             raise Fail("fsqrt")
+        if v[0] == "ivec":
+            raise Fail("int in a vector register")
         if v[0] == "f2y":
             f2_type_(v)
             return v
@@ -2006,6 +2029,42 @@ def gen_function(a, ins):
                         raise Fail("vector half of a scalar")
                     regs[xn_] = ("vpart", vv_, 0 if ops[1][0] == "d" else 1)
                     if xn_ < 8: written.add(xn_)
+                k += 1; continue
+            if m in ("ldr", "ldur") and k in ivec_loads_ and len(ops) == 2:
+                # an int field loaded into a vector register for a conversion to float
+                ty_ = ivec_loads_[k]
+                fd = int(ops[0][1:])
+                b, off, idx, sh, ext, pre, post = memop2(ops[1], None)
+                if idx is not None:
+                    if sh not in (0, {"int": 2, "unsigned int": 2, "short": 1, "unsigned short": 1, "unsigned char": 0}[ty_]):
+                        raise Fail("int vector addressing")
+                    basev_ = regs.get(regname(b)[0])
+                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:" + ty_, base=basev_)
+                    iv = index_value(regs, idx, ext)
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off2, ty_)
+                    items.append(("leti", name, sn, off2, base, iv, ty_) if sh == 0 else ("leti", name, sn, off2, base, iv))
+                else:
+                    sn, base, off2 = field(regs, b, off, ty_)
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off2, ty_)
+                    items.append(("let", name, sn, off2, base))
+                    letbase[name] = base
+                regs["f"][fd] = ("ivec", ("var", name))
+                if fd < 8: regs.setdefault("fw", set()).add(fd)
+                k += 1; continue
+            if m in ("sshll", "ushll") and len(ops) == 3 and ops[2] in ("#0", "#0x0") and "noicvt" not in knobs \
+                    and re.fullmatch(r"v\d+\.4s", ops[0]) and re.fullmatch(r"v\d+\.4h", ops[1]) \
+                    and (regs["f"].get(int(ops[1][1:].split(".")[0])) or ("",))[0] == "ivec":
+                fd = int(ops[0][1:].split(".")[0])
+                regs["f"][fd] = regs["f"][int(ops[1][1:].split(".")[0])]
+                if fd < 8: regs.setdefault("fw", set()).add(fd)
+                k += 1; continue
+            if m in ("scvtf", "ucvtf") and len(ops) == 2 and re.fullmatch(r"s\d+", ops[0]) and re.fullmatch(r"s\d+", ops[1]) \
+                    and (regs["f"].get(int(ops[1][1:])) or ("",))[0] == "ivec":
+                fd = int(ops[0][1:])
+                regs["f"][fd] = ("i2f", m == "ucvtf", regs["f"][int(ops[1][1:])][1], "w")
+                if fd < 8: regs.setdefault("fw", set()).add(fd)
                 k += 1; continue
             vd_ = re.fullmatch(r"v(\d+)\.(4s|2d|16b)", ops[0]) if ops else None
             if vd_ and m in ("fadd", "fsub", "fmul", "fmla", "fmls", "fneg", "dup", "movi", "fmov") and "novec" not in knobs:
@@ -4577,6 +4636,12 @@ def gen_function(a, ins):
         else:
             gdecls.append(f"{note}extern {sn} g{sn}{hidden};{tail}")
         gsyms.append(sym)
+    def pack_(ct_, off_):
+        """The attribute that keeps a field of type ct_ at an offset its type is not aligned to."""
+        sz_ = SIZE.get(ct_[6:] if ct_.startswith("ARRAY:") else ct_)
+        if "nopackfield" in knobs or sz_ not in (2, 4, 8) or off_ % sz_ == 0:
+            return ""
+        return f" __attribute__((packed, aligned({off_ & -off_})))"
     for sn in order:
         if sn in gobjs and set(structs[sn]) <= {0}:
             continue
@@ -4591,7 +4656,7 @@ def gen_function(a, ins):
                     fl.append(f"    unsigned char pad{pos:x}[0x{off - pos:x}];")
                 tt_ = (f"{child}*" if child else ct[6:]) if ct.startswith("ARRAY:") else (f"{child}*" if child else ct)
                 fl.extend(bf_lines_(sn, off, tt_)) if (sn, off) in bitfields_ and tt_ in BFW_ and not ct.startswith("ARRAY:") else \
-                    fl.append(f"    {tt_} field_{off:x}{'[1]' if ct.startswith('ARRAY:') else ''};{' ' * max(1, 20 - len(tt_))}// +{off:x}")
+                    fl.append(f"    {tt_} field_{off:x}{'[1]' if ct.startswith('ARRAY:') else ''}{pack_(ct, off)};{' ' * max(1, 20 - len(tt_))}// +{off:x}")
                 pos = off + SIZE[ct[6:] if ct.startswith("ARRAY:") else ct]
             if pos > elemsizes[sn]:
                 raise Fail("element too small")
@@ -4621,12 +4686,12 @@ def gen_function(a, ins):
                     fl.append(f"    unsigned char pad{pos:x}[0x{off - pos:x}];")
                 if ct.startswith("ARRAY:"):
                     et_ = f"{child}*" if child else ct[6:]
-                    fl.append(f"    {et_} field_{off:x}[1];{' ' * max(1, 17 - len(et_))}// +{off:x}")
+                    fl.append(f"    {et_} field_{off:x}[1]{pack_(ct, off)};{' ' * max(1, 17 - len(et_))}// +{off:x}")
                     pos = off + SIZE[ct[6:]]
                     continue
                 t2 = f"{child}*" if child else ct
                 fl.extend(bf_lines_(sn, off, t2)) if (sn, off) in bitfields_ and t2 in BFW_ else \
-                    fl.append(f"    {t2} field_{off:x};{' ' * max(1, 20 - len(t2))}// +{off:x}")
+                    fl.append(f"    {t2} field_{off:x}{pack_(ct, off)};{' ' * max(1, 20 - len(t2))}// +{off:x}")
                 pos = off + SIZE[ct]
             sdefs.append(f"class {sn} {{\npublic:\n" + "\n".join(ml) + ("\n\n" + "\n".join(fl) if fl else "") + "\n};\n")
             continue
@@ -4638,12 +4703,12 @@ def gen_function(a, ins):
                 fl.append(f"    unsigned char pad{pos:x}[0x{off - pos:x}];")
             if ct.startswith("ARRAY:"):
                 et_ = f"{child}*" if child else ct[6:]
-                fl.append(f"    {et_} field_{off:x}[1];{' ' * max(1, 17 - len(et_))}// +{off:x}")
+                fl.append(f"    {et_} field_{off:x}[1]{pack_(ct, off)};{' ' * max(1, 17 - len(et_))}// +{off:x}")
                 pos = off + SIZE[ct[6:]]
                 continue
             t = f"{child}*" if child else ct
             fl.extend(bf_lines_(sn, off, t)) if (sn, off) in bitfields_ and t in BFW_ else \
-                fl.append(f"    {t} field_{off:x};{' ' * max(1, 20 - len(t))}// +{off:x}")
+                fl.append(f"    {t} field_{off:x}{pack_(ct, off)};{' ' * max(1, 20 - len(t))}// +{off:x}")
             pos = off + SIZE[ct]
         if "stackpad" in knobs and stackobjs and sn == stackobjs[max(stackobjs)]:
             local_ = None

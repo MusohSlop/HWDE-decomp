@@ -129,7 +129,14 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   (`bl f; mov v8.16b, v0.16b`) stayed untyped and failed a merge with a float ("merge types: int|float"); the call
   results in a used float merge, and in every float merge connected to it, are floats, unless one of them also
   reaches a merge outside the float registers (a call result is in x0 and s0) or its callee returns an int at
-  another call; a float merge with a side typed as an int or a pointer (the stale s0 of an int call) is dropped.
+  another call; a float merge with a side typed as an int or a pointer (the stale s0 of an int call) is dropped;
+- fields at offsets their type is not aligned to (knob `nopackfield`): a scalar field whose offset is not a multiple
+  of its size (a long at +45594) is declared `__attribute__((packed, aligned(N)))` with N the alignment of its
+  offset, so the compiler does not pad it to its natural alignment and move every later field;
+- int fields converted to float in a vector register (knob `noicvt`): `ldr s0, [..]; ucvtf s0, s0` (scvtf for int),
+  `ldr h0, [..]; ucvtf s0, s0` (an unsigned short, as `ldr h` zero-extends; `ldr b` for unsigned char) and
+  `ldr h0, [..]; sshll v0.4s, v0.4h, #0; scvtf s0, s0` (short, ushll for unsigned short) are int loads of the
+  field's type and `static_cast<float>` of them (these failed as "ucvtf", "scvtf" and "reg h0").
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
