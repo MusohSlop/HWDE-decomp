@@ -379,7 +379,12 @@ def gen_function(a, ins):
         def is_br_(i_):
             return i_.mnemonic in ("bl", "blr", "b", "br", "ret") or i_.mnemonic.startswith(("b.", "cbz", "cbnz", "tbz", "tbnz"))
         def flush_(groups_):
-            for (bs_, bd_, dl_), g_ in groups_.items():
+            for (bsk_, bdk_, dl_), g_ in groups_.items():
+                bs_, bd_ = bsk_[0], bdk_[0]
+                def vok_(g2_):
+                    # both bases hold the versions the pieces used where the copy is emitted
+                    v_ = vsnap_.get(min(ks2_ for _, _, _, ks2_ in g2_), {})
+                    return v_.get(bs_, 0) == bsk_[1] and v_.get(bd_, 0) == bdk_[1]
                 if len(g_) < 2:
                     continue
                 ivs_ = sorted((so_, so_ + sz_) for so_, sz_, _, _ in g_)
@@ -409,6 +414,8 @@ def gen_function(a, ins):
                                 while al_ > 1 and x_ % al_:
                                     al_ //= 2
                         ks_ = [kk_ for _, _, kl_, ks2_ in g_ for kk_ in (kl_, ks2_)]
+                        if not vok_(g_):
+                            continue
                         copy_skip_.update(ks_)
                         copy_emit_[min(ks2_ for _, _, _, ks2_ in g_)] = (bs_, bd_, lo_, lo_ + dl_, C_, len(runs_), al_, S_)
                     continue
@@ -461,10 +468,12 @@ def gen_function(a, ins):
                         while al_ > 1 and x_ % al_:
                             al_ //= 2
                 ks_ = [kk_ for _, _, kl_, ks2_ in g_ for kk_ in (kl_, ks2_)]
+                if not vok_(g_):
+                    continue
                 first_st_ = min(ks2_ for _, _, _, ks2_ in g_)
                 copy_skip_.update(ks_)
                 copy_emit_[first_st_] = (bs_, bd_, lo_, lo_ + dl_, R_, total_ // R_, al_, R_)
-        res_c_ = {}
+        res_c_, vsnap_, ver_ = {}, {}, {}
         addk_, constk_ = {}, {}
         ADDI_ = re.compile(r"(x\d+), (x\d+), #(0x[0-9a-f]+|\d+)(?:, lsl #(\d+))?$")
         MOVR_ = re.compile(r"(x\d+), (x\d+)$")
@@ -486,6 +495,7 @@ def gen_function(a, ins):
                     o_ += o2_
                 if b_ is not None and (b_ == m_.group(3) or "nocopybase" not in knobs):
                     res_c_[k_] = (b_, o_)
+                vsnap_[k_] = dict(ver_)
             new_ = None
             ma_ = ADDI_.match(i_.op_str) if i_.mnemonic == "add" else (MOVR_.match(i_.op_str) if i_.mnemonic == "mov" else None)
             if ma_:
@@ -498,6 +508,8 @@ def gen_function(a, ins):
                 sh_ = int(mk_.group(3)) if mk_.group(3) else 0
                 newc_ = (constk_["x" + mk_.group(1)] & ~(0xffff << sh_)) | (int(mk_.group(2), 0) << sh_)
             w4_ = {"x%d" % w_ for w_ in rw(i_)[1]}
+            for w_ in w4_:
+                ver_[w_] = ver_.get(w_, 0) + 1
             for w_ in w4_:
                 addk_.pop(w_, None); constk_.pop(w_, None)
             for d_ in [d_ for d_, (r_, _) in addk_.items() if r_ in w4_]:
@@ -516,14 +528,15 @@ def gen_function(a, ins):
                 flush_(groups_); groups_ = {}; written_c_ = set()
                 continue
             m_ = MEMC_.match(i_.op_str) if i_.mnemonic in ("ldr", "ldur") else None
-            if m_ and k_ in res_c_ and res_c_[k_][0] not in written_c_:
+            if m_ and k_ in res_c_ and (res_c_[k_][0] not in written_c_ or "nocopyver" not in knobs):
                 rk_, rn_ = m_.group(1), m_.group(2)
                 rb_, so_ = res_c_[k_]
                 rpat_ = re.compile(r"\b[%s]%s\b" % ("wx" if rk_ in "wx" else "qdsvbh", rn_))
                 for j_ in range(k_ + 1, min(len(ins), k_ + 8)):
                     ij_ = ins[j_]
                     mj_ = MEMC_.match(ij_.op_str) if ij_.mnemonic in ("str", "stur") else None
-                    if mj_ and mj_.group(1) == rk_ and mj_.group(2) == rn_ and j_ in res_c_ and res_c_[j_][0] not in written_c_ \
+                    if mj_ and mj_.group(1) == rk_ and mj_.group(2) == rn_ and j_ in res_c_ \
+                            and (res_c_[j_][0] not in written_c_ or "nocopyver" not in knobs) \
                             and not any(int(res_c_[j_][0][1:]) in rw(ins[jw_])[1] for jw_ in range(k_, j_)):
                         # the value must not be read again before it is overwritten
                         dead_ = True
@@ -540,7 +553,8 @@ def gen_function(a, ins):
                                 break
                         if dead_:
                             rd_, do_ = res_c_[j_]
-                            groups_.setdefault((rb_, rd_, do_ - so_), []).append((so_, SZC_[rk_], k_, j_))
+                            groups_.setdefault(((rb_, vsnap_[k_].get(rb_, 0)), (rd_, vsnap_[j_].get(rd_, 0)), do_ - so_), []) \
+                                .append((so_, SZC_[rk_], k_, j_))
                         break
                     if rpat_.search(ij_.op_str) or is_br_(ij_):
                         break

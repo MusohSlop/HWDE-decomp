@@ -173,7 +173,9 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   pieces that make equal runs at a constant stride with gaps between them are a loop copying one member per record
   (`d.names[i].name = s.names[i].name`, a 29-byte member at a 0x20 stride; knob `nocopystride`); and when the run
   only repeats a record pattern after a leading or before a trailing field, that field stays a field (a count
-  before its array; knob `nocopycut`, which prefers the cut whose records start with their largest piece);
+  before its array; knob `nocopycut`, which prefers the cut whose records start with their largest piece); a
+  copy's bases are told apart by register versions (knob `nocopyver`), so a copy from a pointer loaded in the same
+  block (a vector copied before its w is set) is found too, and emitted where both bases still hold those values;
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
