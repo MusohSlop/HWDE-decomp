@@ -118,7 +118,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   with the constant first, LLVM reassociated and hoisted `p + C` out of a loop into a callee-saved register;
 - float results of indirect calls (knob `novcallf`): when the instructions after a virtual call or a call through a
   function pointer read s0 before writing it, s0 is the call's result (as for direct calls), and a float call result
-  still in x0 no longer hides a changed s0 at the return (`bl f; fneg s0, s0; ret` returned the call result).
+  still in x0 no longer hides a changed s0 at the return (`bl f; fneg s0, s0; ret` returned the call result);
+- float argument counts without consumed temporaries (knob `nofargscan`): when a float register below the count (one
+  more than the highest float register written since the previous call) is undefined, the count is taken again from
+  the straight-line code before the call, counting only registers not read after their last write.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
