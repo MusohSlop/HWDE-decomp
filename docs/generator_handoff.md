@@ -115,7 +115,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   (knob `noelemaddr`): an element access on a pointer plus whole elements is
   `reinterpret_cast<Elem*>(reinterpret_cast<unsigned char*>(p) + static_cast<long>(i) * S + C)->field`, and a
   pointer plus an index plus a constant is `reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p) + i*S + C)`;
-  with the constant first, LLVM reassociated and hoisted `p + C` out of a loop into a callee-saved register.
+  with the constant first, LLVM reassociated and hoisted `p + C` out of a loop into a callee-saved register;
+- float results of indirect calls (knob `novcallf`): when the instructions after a virtual call or a call through a
+  function pointer read s0 before writing it, s0 is the call's result (as for direct calls), and a float call result
+  still in x0 no longer hides a changed s0 at the return (`bl f; fneg s0, s0; ret` returned the call result).
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
