@@ -26,3 +26,12 @@ Run them with the project's Python, `python -B -I tools/s4/SCRIPT ...`, from `ma
   tables, frame size) for the functions in LIST, sorted by a rough difficulty score, to pick quick hand-writes.
 - `copymap.py ADDR [SRCREG DSTREG]` lists the copied pieces (source offset, destination offset, width) of a
   straight-line copy function, to read the layout of serialisers such as `11298c`.
+- `ctorlayout.py ADDR [--size TARGET=BYTES ...] [--all] [--cpp]` reads a constructor's member layout from the
+  original's code, for the large vtable-less constructors that `tools/s3/vtscan.py` does not count (`e25dc`,
+  `ffdf8`): it follows `this` and the constants built with mov/movk through the function, takes each call on
+  `this`+offset as a member constructor, each `this`-based store as a field, and each of Clang's two array loops
+  (a byte count counted down, a pointer compared with the end) as a member array (several calls per iteration:
+  an array of structs), and stops at the first instruction it does not model (the body). It prints the members
+  in order with the gaps between them, runs of one constructor merged into arrays (Clang fully unrolls arrays of
+  up to 70 elements into separate calls, so a straight run is an array as well); `--cpp` prints them as member
+  declarations with byte pads for the gaps and a struct per multi-call loop.

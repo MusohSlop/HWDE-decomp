@@ -18109,6 +18109,7 @@
     "_ZN11InfoIconSetC1Ev": "0x71000e510c",
     "_ZN13InfoIconTableC1Ev": "0x71000e51c8",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "gLocal11fe14_11fe1c": "0x710011fe14",
     "gLocal11fe18_11fe1c": "0x710011fe18",
     "gLocal73c550_320e28": "0x710073c550",
@@ -18363,6 +18364,9 @@
     "_ZZN10Menu3bdbf013refresh_linesEvE6colors": "0x7100ca2ea8",
     "_ZGVZN10Menu3bdbf013refresh_linesEvE6colors": "0x7100ca2eb8"
 >>>>>>> 5dc3b45
+=======
+    "_ZN10LayoutLineC1Ev": "0x71001f1594"
+>>>>>>> 9fa1cbe
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -28069,6 +28073,7 @@
         "_ZN18InformationDisplayC2Ev": "0x71000e25dc"
       }
     },
+<<<<<<< HEAD
     "misc/variant_functions86.cpp": {
       "functions": {
         "_Z11call_120170P11Arg120170_0": "0x7100120170"
@@ -28094,6 +28099,12 @@
       },
       "functions": {
         "_ZN21ChallengeRecordScreenC2Eb": "0x71003447f0"
+=======
+    "misc/s4_ffdf8.cpp": {
+      "functions": {
+        "_ZN9PlayerHudC2Ei": "0x71000ffdf8",
+        "_ZN9PlayerHudC2Eiffffffff": "0x7100101ae4"
+>>>>>>> 9fa1cbe
       }
     }
   }
