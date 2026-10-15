@@ -20059,6 +20059,15 @@
     "_Z12attach_digitP9PanelNodeP11EffectGroup": "0x71001f829c",
     "_ZN9PanelNode16create_text_paneEv": "0x71001e4148",
     "got:_ZTV16OptionSliderBase": "0x7100c2b2c0",
+    "_ZN14DeckBase38cff0C2EPvi": "0x710038cff0",
+    "_ZN14DeckBase38cff03addEP10Base38c480": "0x710038dc8c",
+    "_ZN10StageEntryC1Ev": "0x7100395218",
+    "_ZN15StageMenu3953244loadEv": "0x7100395e10",
+    "_ZN10Base38c4809set_titleEPKc": "0x710038cc40",
+    "_ZN10Base38c4809set_valueEi": "0x710038cc6c",
+    "_ZN10Base38c4809set_shownEb": "0x710038cc74",
+    "_ZN10Page3940c4C1Ev": "0x71003940c4",
+    "got:_ZTV15StageMenu395324": "0x7100c2b218",
     "_ZN12SubInit31364C1Ev": "0x7100031364",
     "_ZN12SubInit313644initEv": "0x7100031378",
     "got:_ZTV13PoolSet0d04c4": "0x7100c21d78",
@@ -30398,12 +30407,17 @@
       }
     },
     "misc/s3_functions24.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
       "functions": {
         "_ZN10Page39ec78C2Ev": "0x710039ec78",
         "_ZN10Page3940c4C2Ev": "0x71003940c4",
         "_ZN10Page3a4034C2Ev": "0x71003a4034",
         "_ZN14DeckMenu38dca4C2EPv": "0x710038dca4",
-        "_ZN16OptionSliderBaseC2EiiiiiPKcS1_": "0x710039e2f4"
+        "_ZN16OptionSliderBaseC2EiiiiiPKcS1_": "0x710039e2f4",
+        "_ZN15StageMenu395324C2EPv": "0x7100395324"
       }
     },
     "misc/s5_functions04.cpp": {
