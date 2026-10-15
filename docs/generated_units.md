@@ -102,6 +102,7 @@ real classes.
 | `misc/s2_functions9.cpp` | second session, rerun of every generating but unmatched function over `0x7100380000` and up after `noretint` and `nosextarg` | as `misc/s2_functions1.cpp` |
 | `misc/s2_functions10.cpp` | second session, argument counts from known callee names (`noknownarity`; only the functions whose generated code changed) | as `misc/s2_functions1.cpp` |
 | `misc/s2_functions11.cpp` | second session, bitfield writes and constant division (`nobitfield`, `nodivmagic`; only the functions whose generated code changed) | as `misc/s2_functions1.cpp`; bitfield fields are unions of the whole field and `bfOFF_START` bitfields |
+| `misc/s2_functions12.cpp` | second session, paired int loads and pointer-plus-constant as byte-pointer arithmetic (`nopair32`, `noptradd`; only the functions whose generated code changed) | as `misc/s2_functions1.cpp` |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/loop_functions2.cpp` | loops with if/else bodies and pointer induction variables | as `misc/loop_functions.cpp`, plus element structs `ElemFUNC_rN` sized to the stride |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |

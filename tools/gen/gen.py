@@ -3248,6 +3248,13 @@ def gen_function(a, ins):
             return str(val) if -10 < val < 10 else (hex(val) if val > 0 else f"-{hex(-val)}")
         if v[0] == "bin" and "bytecast" in knobs and v[1] == "&" and v[3][0] == "const" and v[3][1] in (0xff, 0xffff) and not vtype(v[2]).endswith("*"):
             return f"static_cast<{'unsigned char' if v[3][1] == 0xff else 'unsigned short'}>({expr(v[2])})"
+        cv_ = (v[3][1] if v[3][0] == "const" else (v[3][2][1] & 0xffffffff if v[3][0] == "ext" and v[3][1] == "unsigned int" and v[3][2][0] == "const" else None)) \
+            if v[0] == "bin" and len(v) > 3 and isinstance(v[3], tuple) else None
+        if v[0] == "bin" and v[1] in ("+", "-") and v[4] == "x" and "noptradd" not in knobs and cv_ is not None \
+                and vtype(v[2]).endswith("*") and v[2][0] != "const":
+            c_ = cv_ if v[1] == "+" else -cv_
+            s = f"reinterpret_cast<long>(reinterpret_cast<unsigned char*>({expr(v[2])}) {'+' if c_ >= 0 else '-'} {hex(abs(c_))})"
+            return s
         if v[0] == "bin":
             x, y = expr(v[2], False), expr(v[3], False)
             if vtype(v[2]).endswith("*"):
