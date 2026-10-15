@@ -2391,6 +2391,34 @@ def gen_function(a, ins):
                 dn, w = regname(ops[0])
                 regs[dn] = regs[("spill", sbase)]
                 if dn < 8: written.add(dn)
+            elif ("nostackldp" not in knobs and sbase is not None and m == "ldp" and len(ops) == 3
+                    and all(re.fullmatch(r"[wx]\d+", o_) for o_ in ops[:2]) and ops[0][0] == ops[1][0]):
+                step_ = 8 if ops[0][0] == "x" else 4
+                for j_, rr_ in enumerate(ops[:2]):
+                    dn, w = regname(rr_)
+                    off_ = sbase + j_ * step_
+                    if not any(s0 <= off_ for s0 in starts) and ("spill", off_) in regs:
+                        regs[dn] = regs[("spill", off_)]
+                        if dn < 8: written.add(dn)
+                        continue
+                    ct = "void*" if w == "x" else "int"
+                    st = stack_obj(off_)
+                    sv = ("stackobj", st)
+                    sn = struct_for(sv)
+                    prev = structs[sn].get(off_ - st)
+                    if prev and prev[0] != ct and retype_ok_(sn, off_ - st, prev[0], ct):
+                        structs[sn][off_ - st] = (ct, None)
+                        prev = structs[sn][off_ - st]
+                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not widen_field_(sn, off_ - st, prev, ct):
+                        raise Fail("stack field clash")
+                    note_access_(sn, off_ - st, False)
+                    structs[sn].setdefault(off_ - st, (ct, None))
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off_ - st) if structs[sn][off_ - st][0] == ct else ("load", sn, off_ - st, ct)
+                    items.append(("let", name, sn, off_ - st, sv))
+                    letbase[name] = sv
+                    regs[dn] = ("var", name)
+                    if dn < 8: written.add(dn)
             elif sbase is not None and (m in LOAD or m == "ldur"):
                 dn, w = regname(ops[0])
                 mm2 = "ldr" if m == "ldur" else m
