@@ -5232,7 +5232,8 @@ def gen_function(a, ins):
                                         else expr(x) for x, pt in zip(args, iparams_))
                     argtext = ", ".join(
                         (f"reinterpret_cast<{pt}>({expr(x)})" if pt.endswith("*") and vtype(x) in ("long",) else
-                         (f"{'static' if vtype(x) == 'void*' else 'reinterpret'}_cast<{pt}>({expr(x)})" if pt.endswith("*") and vtype(x).endswith("*") and pt != vtype(x) and "const" not in pt else
+                         (f"{'static' if vtype(x) == 'void*' else 'reinterpret'}_cast<{pt}>({expr(x)})" if pt.endswith("*") and vtype(x).endswith("*") and pt != vtype(x)
+                          and ("const" not in pt or ("noconstarg" not in knobs and not vtype(x).startswith("const"))) else
                           (expr(x) if pt.endswith("*") else fit(expr(x), vtype(x), pt))))
                         for x, pt in zip(args, iparams_))
                     used_imports.add(mangled_)
