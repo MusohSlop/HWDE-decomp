@@ -138,6 +138,8 @@ class Device51ca70 {
 public:
     template <class T>
     T* create(const void* data, unsigned long size, int id, unsigned long extra, void* p5, int i6, void* p7, int i8);
+    template <class T, int Id>
+    T* create_default(const void* data, unsigned long size);
     unsigned char check_binding(int id, int binding);                                      // 0x71005298f8
 
     unsigned char pad0[0x29d0];
@@ -202,3 +204,262 @@ template RenderIndex* Device51ca70::create<RenderIndex>(const void*, unsigned lo
 template Derived_527a38* Device51ca70::create<Derived_527a38>(const void*, unsigned long, int, unsigned long, void*, int, void*, int);  // 0x710051d21c
 template RenderTriple* Device51ca70::create<RenderTriple>(const void*, unsigned long, int, unsigned long, void*, int, void*, int);      // 0x710051d5b4
 template Derived_5279dc* Device51ca70::create<Derived_5279dc>(const void*, unsigned long, int, unsigned long, void*, int, void*, int);  // 0x710051d84c
+
+// The plain form: ID fixed, no extra space and no other parameters (0x710051d1e8, 0x710051d818).
+template <class T, int Id>
+T* Device51ca70::create_default(const void* data, unsigned long size) {
+    return create<T>(data, size, Id, 0, nullptr, 0, nullptr, 0);
+}
+
+template Derived_527a38* Device51ca70::create_default<Derived_527a38, 2>(const void*, unsigned long);   // 0x710051d1e8
+template Derived_5279dc* Device51ca70::create_default<Derived_5279dc, 5>(const void*, unsigned long);   // 0x710051d818
+
+// Small relaxed groups.
+
+extern "C" float tanf(float value);
+extern "C" float expf(float value);
+extern "C" float logf(float value);
+
+// 57abc8 x7: a uniform value of N bytes written to the fragment stage's bank.
+struct FragmentStage57a {
+    unsigned char pad0[0x670];
+    unsigned int dirty;          // +670
+    unsigned char pad674[0x2c];
+    unsigned char* banks[16];    // +6a0
+};
+
+class UniformBase57a {
+public:
+    void prepare();              // 0x710057cc80
+
+    unsigned char pad0[0x58];
+    unsigned int handle;         // +58: bank in the top four bits, offset in the low 16
+    unsigned int pad5c;
+};
+
+template <int N, int Copy>
+class Uniform57a : public UniformBase57a {
+public:
+    void upload(FragmentStage57a* stage);
+
+    unsigned char value[N];      // +60
+};
+
+template <int N, int Copy>
+void Uniform57a<N, Copy>::upload(FragmentStage57a* stage) {
+    prepare();
+    const unsigned char* source = value;
+    unsigned int bank = handle >> 28;
+    memcpy(stage->banks[bank] + (handle & 0xffff), source, N);
+    stage->dirty |= 1 << bank;
+}
+
+template void Uniform57a<0x40, 0>::upload(FragmentStage57a*);   // 0x710057abc8
+template void Uniform57a<0x80, 0>::upload(FragmentStage57a*);   // 0x710057acb4
+template void Uniform57a<0x30, 0>::upload(FragmentStage57a*);   // 0x710057ada0
+template void Uniform57a<0x40, 1>::upload(FragmentStage57a*);   // 0x710057ae8c
+template void Uniform57a<0x50, 0>::upload(FragmentStage57a*);   // 0x710057af78
+template void Uniform57a<0x60, 0>::upload(FragmentStage57a*);   // 0x710057b064
+template void Uniform57a<0x70, 0>::upload(FragmentStage57a*);   // 0x710057b150
+
+// 4c0bb0 x3: an expression op: the next operand evaluated through the handler table, its tangent returned.
+typedef float (*Handler4c0b)(int** cursor);
+// Reached through the GOT slot at 0x7100c2cd08.
+extern Handler4c0b gExprHandlers4c0b[];
+
+template <float (*Function)(float)>
+float expr_apply(int** cursor) {
+    int* op = *cursor;
+    *cursor = op + 1;
+    return Function(gExprHandlers4c0b[*op](cursor));
+}
+
+template float expr_apply<tanf>(int**);   // 0x71004c0bb0
+template float expr_apply<expf>(int**);   // 0x71004c0be0
+template float expr_apply<logf>(int**);   // 0x71004c0c10
+
+// 554bb0/5d285c: a value copied into its holder.
+struct Value554a { unsigned char data[0x68]; };
+struct Value554b { unsigned char data[0x40]; };
+
+template <class T, int Offset>
+struct Holder554 {
+    void set(const T& value) { this->value = value; }
+    void assign(const T& value);
+
+    unsigned char pad0[Offset];
+    T value;
+};
+
+template <class T, int Offset>
+void Holder554<T, Offset>::assign(const T& value) {
+    this->value = value;
+}
+
+template void Holder554<Value554a, 0x18>::assign(const Value554a&);   // 0x7100554bb0
+template void Holder554<Value554b, 0x10>::assign(const Value554b&);   // 0x71005d285c
+
+// 5fd004/5fd028: a callback given the object's part at +48 and its owner's entry.
+struct Owner5fd0 {
+    unsigned char pad0[0x88];
+    void* entry;                 // +88
+};
+
+template <int Copy>
+struct Visitor5fd0 {
+    void visit(void (*callback)(void* part, void* entry, void* context), void* context);
+
+    unsigned char pad0[0x48];
+    unsigned char part[0x8];     // +48
+    Owner5fd0* owner;            // +50
+};
+
+template <int Copy>
+void Visitor5fd0<Copy>::visit(void (*callback)(void* part, void* entry, void* context), void* context) {
+    callback(part, owner->entry, context);
+}
+
+template void Visitor5fd0<0>::visit(void (*)(void*, void*, void*), void*);   // 0x71005fd004
+template void Visitor5fd0<1>::visit(void (*)(void*, void*, void*), void*);   // 0x71005fd028
+
+// 53217c/53413c: the size of a block of N entries (at least one) after its header.
+template <int Header>
+unsigned long block_size(unsigned int count) {
+    return Header + (count ? count : 1) * 8ul;
+}
+
+template unsigned long block_size<0x30>(unsigned int);   // 0x710053217c
+template unsigned long block_size<0x34>(unsigned int);   // 0x710053413c
+
+// 571464/5715b4: a call with a local for its result.
+long resolve_571484(void* a, void* b, void* c, void* d, void* e, long* result);   // 0x7100571484
+long resolve_5715d4(void* a, void* b, void* c, void* d, void* e, long* result);   // 0x71005715d4
+
+template <int Copy>
+long resolve_ignoring(void* a, void* b, void* c, void* d, void* e) {
+    long result;
+    if (Copy == 0)
+        return resolve_571484(a, b, c, d, e, &result);
+    return resolve_5715d4(a, b, c, d, e, &result);
+}
+
+template long resolve_ignoring<0>(void*, void*, void*, void*, void*);   // 0x7100571464
+template long resolve_ignoring<1>(void*, void*, void*, void*, void*);   // 0x71005715b4
+
+// 53ebe8/53f1e4: a call with a local for its result.
+struct Result53eb { long a, b; };
+long query_53ec08(void* a, void* b, Result53eb* result);                      // 0x710053ec08
+long query_53f204(void* a, void* b, Result53eb* result);                      // 0x710053f204
+
+template <int Copy>
+long query_ignoring(void* a, void* b) {
+    Result53eb result;
+    if (Copy == 0)
+        return query_53ec08(a, b, &result);
+    return query_53f204(a, b, &result);
+}
+
+template long query_ignoring<0>(void*, void*);   // 0x710053ebe8
+template long query_ignoring<1>(void*, void*);   // 0x710053f1e4
+
+namespace nn {
+namespace util {
+class RelocationTable {
+public:
+    void Relocate();
+};
+class BinaryFileHeader {
+public:
+    bool IsRelocated() const;
+    RelocationTable* GetRelocationTable();
+};
+}  // namespace util
+}  // namespace nn
+
+// 5f8d04/5f8d38: a resource file relocated in place (once) and returned.
+template <int Copy>
+nn::util::BinaryFileHeader* relocated(nn::util::BinaryFileHeader* header) {
+    if (!header->IsRelocated())
+        header->GetRelocationTable()->Relocate();
+    return header;
+}
+
+template nn::util::BinaryFileHeader* relocated<0>(nn::util::BinaryFileHeader*);   // 0x71005f8d04
+template nn::util::BinaryFileHeader* relocated<1>(nn::util::BinaryFileHeader*);   // 0x71005f8d38
+
+// 50de34/50efb8: a lookup that reports whether nothing was found.
+struct Key50de {
+    void* a;
+    void* b;
+};
+struct Out50de {
+    long a, b;
+};
+unsigned char find_50deac(Key50de* key, Out50de* first, Out50de* second, void* extra);   // 0x710050deac
+unsigned char find_50f030(Key50de* key, Out50de* first, Out50de* second, void* extra);   // 0x710050f030
+
+template <int Copy>
+bool missing(void* a, void* b) {
+    Out50de first;
+    Out50de second;
+    Key50de key = {a, b};
+    if (Copy == 0)
+        return !find_50deac(&key, &first, &second, nullptr);
+    return !find_50f030(&key, &first, &second, nullptr);
+}
+
+template bool missing<0>(void*, void*);   // 0x710050de34
+template bool missing<1>(void*, void*);   // 0x710050efb8
+
+// 4c2bec/4c3874, 4c2b44/4c382c, 4d5fa4/4d6058: expression ops reading a field of the record at BASE.
+// An op's result: two words.
+struct Result4c2b {
+    void* a;
+    void* b;
+};
+typedef Result4c2b (*Op4c2b)(int** cursor, void* value);
+typedef Result4c2b (*Entry4d5f)(int** cursor, void* context, unsigned char* field);
+// Reached through the GOT slots at 0x7100c2cd68 and 0x7100c2cd20.
+extern Op4c2b gExprOpsA[];
+extern Op4c2b gExprOpsB[];
+
+template <int Table>
+Op4c2b* expr_ops() {
+    return Table == 0 ? gExprOpsA : gExprOpsB;
+}
+
+// An expression: its code, first op and the record field it starts from.
+struct Expr4d5f {
+    unsigned char pad0[0x8];
+    int field_offset;            // +08
+    unsigned char padc[0x10];
+    int op;                      // +1c
+    int code[1];                 // +20
+};
+
+template <int Table>
+Result4c2b expr_evaluate(Expr4d5f* expr, unsigned char* base, void* context) {
+    unsigned char* field = base + expr->field_offset;
+    int* cursor = expr->code;
+    return reinterpret_cast<Entry4d5f*>(expr_ops<Table>())[expr->op](&cursor, context, field);
+}
+
+template Result4c2b expr_evaluate<0>(Expr4d5f*, unsigned char*, void*);   // 0x71004d5fa4
+template Result4c2b expr_evaluate<1>(Expr4d5f*, unsigned char*, void*);   // 0x71004d6058
+
+// 5c8dc4/5c8e0c: COUNT elements read in full, compared against EXPECTED bytes.
+class Reader5c8d {
+public:
+    virtual void v00(); virtual void v08(); virtual void v10(); virtual void v18();
+    virtual unsigned long read(void* buffer, void* offset, unsigned long size);   // +20
+};
+
+template <int Size>
+bool read_exactly(Reader5c8d* reader, void* buffer, unsigned long expected, unsigned int count) {
+    unsigned long size = static_cast<unsigned long>(count) * Size;
+    unsigned long got = reader->read(buffer, nullptr, size) == size ? size : 0;
+    return got == expected;
+}
+
+template bool read_exactly<0x30>(Reader5c8d*, void*, unsigned long, unsigned int);   // 0x71005c8dc4
+template bool read_exactly<0x18>(Reader5c8d*, void*, unsigned long, unsigned int);   // 0x71005c8e0c
