@@ -25273,6 +25273,16 @@
         "_Z11call_4c0758P11Arg4c0758_0": "0x71004c0758",
         "_Z11call_4c25bcP11Arg4c25bc_0PvP11Arg4c25bc_2": "0x71004c25bc"
       }
+    },
+    "misc/variant_functions71.cpp": {
+      "functions": {
+        "_Z8call_7bcP8Arg7bc_0": "0x71000007bc",
+        "_Z10call_cede0P10Argcede0_0": "0x71000cede0"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      }
     }
   }
 }

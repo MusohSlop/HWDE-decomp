@@ -12,7 +12,7 @@ Address,Quality,Size,Name
 0x710000053c,O,88,_Z8call_53cP8Arg53c_0i
 0x7100000614,O,76,_Z8call_614P8Arg614_0i
 0x71000006b4,O,96,_Z8call_6b4P8Arg6b4_0i
-0x71000007bc,U,32,FUN_71000007bc
+0x71000007bc,O,32,_Z8call_7bcP8Arg7bc_0
 0x7100000970,O,36,_Z8call_970P8Arg970_0
 0x7100000994,O,32,_Z8call_994P8Arg994_0
 0x71000009b4,O,72,_Z8call_9b4P8Arg9b4_0iff
@@ -2607,7 +2607,7 @@ Address,Quality,Size,Name
 0x71000ce9b4,U,408,FUN_71000ce9b4
 0x71000ced78,O,60,_Z10call_ced78P10Argced78_0
 0x71000cedc4,O,28,_Z20forward_result_cedc4P14Forwardedcedc4
-0x71000cede0,U,72,FUN_71000cede0
+0x71000cede0,O,72,_Z10call_cede0P10Argcede0_0
 0x71000ceee4,O,80,_Z17scaled_item_ceee4P10ItemSource
 0x71000cef54,O,80,_Z17scaled_item_cef54P10ItemSource
 0x71000cefa4,O,80,_Z17scaled_item_cefa4P10ItemSource
