@@ -183,6 +183,8 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   a block copy into (or out of) that local, whose struct is made as large as the copied range and aligned as the
   pieces show, its fields typed only by the other accesses (a vector copied into a local, its w set, the local
   passed on); a stack side addressed through x29 resolves to sp offsets through the frame offset (knob `nofpcopy`);
+  an ldp whose two registers are stored in the same order by one stp is one piece of twice the register size (knob
+  `nocopypair`; constructors copy 16-byte members through two x registers);
 - unused merges in loop bodies are pruned like those in straight code (knob `noloopprune`): a call in a conditional
   in a loop left s0 merged with the incoming s0, and the unused merge failed with "merge types: int|float";
 - a 64-bit load split into two neighbouring fields is found along the control flow (knob `nopairflow`): the scan

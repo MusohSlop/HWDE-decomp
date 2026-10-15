@@ -548,12 +548,17 @@ def gen_function(a, ins):
         ADDI_ = re.compile(r"(x\d+), (x\d+), #(0x[0-9a-f]+|\d+)(?:, lsl #(\d+))?$")
         MOVR_ = re.compile(r"(x\d+), (x\d+)$")
         MOVI_ = re.compile(r"[wx](\d+), #(0x[0-9a-f]+|\d+)$")
+        PAIRB_ = re.compile(r"[wxqds]\d+, ([wxqds])(\d+), \[(x\d+%s)(?:, #(-?0x[0-9a-f]+|-?\d+))?\](x)?$"
+                            % ("" if "nostackcopy" in knobs else "|sp"))
+        LDPC_ = re.compile(r"([wxqds])(\d+), ([wxqds])(\d+), \[(?:x\d+|sp)(?:, #(?:-?0x[0-9a-f]+|-?\d+))?\]$")
         MOVK_ = re.compile(r"[wx](\d+), #(0x[0-9a-f]+|\d+)(?:, lsl #(\d+))?$")
         for k_, i_ in enumerate(ins):
             if is_br_(i_):
                 addk_, constk_ = {}, {}
                 continue
             m_ = MEMC_.match(i_.op_str) if i_.mnemonic in ("ldr", "ldur", "str", "stur") else None
+            if m_ is None and i_.mnemonic in ("ldp", "stp") and "nocopypair" not in knobs:
+                m_ = PAIRB_.match(i_.op_str)
             if m_:
                 b_, o_ = m_.group(3), int(m_.group(4), 0) if m_.group(4) else 0
                 if m_.group(5) and m_.group(5) not in constk_:
@@ -631,6 +636,38 @@ def gen_function(a, ins):
                             rd_, do_ = res_c_[j_]
                             groups_.setdefault(((rb_, vsnap_[k_].get(rb_, 0)), (rd_, vsnap_[j_].get(rd_, 0)), do_ - so_), []) \
                                 .append((so_, SZC_[rk_], k_, j_))
+                        break
+                    if rpat_.search(ij_.op_str) or is_br_(ij_):
+                        break
+            mp_ = LDPC_.match(i_.op_str) if i_.mnemonic == "ldp" and "nocopypair" not in knobs else None
+            if mp_ and mp_.group(1) == mp_.group(3) and mp_.group(2) != mp_.group(4) and k_ in res_c_ \
+                    and (res_c_[k_][0] not in written_c_ or "nocopyver" not in knobs):
+                rk_, ra_, rb2_ = mp_.group(1), mp_.group(2), mp_.group(4)
+                rb_, so_ = res_c_[k_]
+                cls_ = "wx" if rk_ in "wx" else "qdsvbh"
+                rpat_ = re.compile(r"\b[%s](%s|%s)\b" % (cls_, ra_, rb2_))
+                for j_ in range(k_ + 1, min(len(ins), k_ + 8)):
+                    ij_ = ins[j_]
+                    mq_ = LDPC_.match(ij_.op_str) if ij_.mnemonic == "stp" else None
+                    if mq_ and mq_.group(1) == rk_ and mq_.group(3) == rk_ and mq_.group(2) == ra_ and mq_.group(4) == rb2_ \
+                            and j_ in res_c_ and (res_c_[j_][0] not in written_c_ or "nocopyver" not in knobs) \
+                            and (res_c_[j_][0] == "sp" or not any(int(res_c_[j_][0][1:]) in rw(ins[jw_])[1] for jw_ in range(k_, j_))):
+                        dead_ = True
+                        for rn_ in (ra_, rb2_):
+                            for jj_ in range(j_ + 1, len(ins)):
+                                ix_ = ins[jj_]
+                                if is_br_(ix_):
+                                    break
+                                r2_, w2_ = (frw(ix_) if rk_ not in "wx" else rw(ix_))
+                                if int(rn_) in r2_:
+                                    dead_ = False
+                                    break
+                                if int(rn_) in w2_:
+                                    break
+                        if dead_:
+                            rd_, do_ = res_c_[j_]
+                            groups_.setdefault(((rb_, vsnap_[k_].get(rb_, 0)), (rd_, vsnap_[j_].get(rd_, 0)), do_ - so_), []) \
+                                .append((so_, 2 * SZC_[rk_], k_, j_))
                         break
                     if rpat_.search(ij_.op_str) or is_br_(ij_):
                         break
