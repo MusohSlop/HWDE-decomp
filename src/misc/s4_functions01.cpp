@@ -2341,3 +2341,193 @@ void call_f1278(Srcf1278* p0, Dst11298c* p1) {
         p1->names[i].name = p0->names[i].name;
     }
 }
+
+struct RecC0_1a4b48 {
+    unsigned char pad0[0xa8];
+    unsigned char field_a8;          // +a8
+    unsigned char pada9[7];
+    void* field_b0;                  // +b0
+    unsigned char padb8[8];
+};
+
+struct Obj10_1a4b48 {
+    unsigned char b[0x10];
+};
+
+struct Pair_1a4b48 {
+    int v[4];
+};
+
+struct Str8a_1a4b48 {
+    char s[0x8a];
+};
+
+struct StrC3_1a4b48 {
+    char s[0xc3];
+};
+
+struct Str27_1a4b48 {
+    char s[0x27];
+};
+
+struct Str10_1a4b48 {
+    char s[0x10];
+};
+
+struct Rec24_1a4b48 {
+    int field_0;                     // +0
+    unsigned char pad4[4];
+    int field_8;                     // +8
+    unsigned char padc[0xc];
+    unsigned short field_18;         // +18
+    unsigned short field_1a;         // +1a
+    unsigned char field_1c;          // +1c
+    unsigned char pad1d;
+    unsigned short field_1e;         // +1e
+    unsigned short field_20;         // +20
+    unsigned char pad22[2];
+};
+
+struct __attribute__((packed)) TailSrc_1a4b48 {
+    unsigned char field_0;           // +0
+    unsigned char field_1;           // +1
+    unsigned char field_2;           // +2
+    Str10_1a4b48 name;               // +3
+    unsigned char field_13;          // +13
+    unsigned char field_14;          // +14
+    unsigned short field_15;         // +15
+    unsigned char field_17;          // +17
+    unsigned char field_18;          // +18
+    unsigned char field_19;          // +19
+    unsigned char field_1a;          // +1a
+};
+
+struct __attribute__((packed)) TailDst_1a4b48 {
+    unsigned char field_0;           // +0
+    unsigned char field_1;           // +1
+    unsigned char field_2;           // +2
+    Str10_1a4b48 name;               // +3
+    unsigned char field_13;          // +13
+    unsigned char field_14;          // +14
+    unsigned short field_15;         // +15
+    unsigned char field_17;          // +17
+    unsigned char field_18;          // +18
+    unsigned char field_19;          // +19
+};
+
+struct Src1a4b48 {
+    RecC0_1a4b48 recs[34];           // +0
+    Obj10_1a4b48 objs[2];            // +1980
+    unsigned char pad19a0[0x30];
+    int field_19d0;                  // +19d0
+    int field_19d4;                  // +19d4
+    int field_19d8;                  // +19d8
+    int field_19dc;                  // +19dc
+    int field_19e0;                  // +19e0
+    int field_19e4;                  // +19e4
+    int field_19e8;                  // +19e8
+    int field_19ec;                  // +19ec
+    unsigned char pad19f0[0x3e8];
+    Str8a_1a4b48 str8a;              // +1dd8
+    StrC3_1a4b48 strc3;              // +1e62
+    Str27_1a4b48 str27;              // +1f25
+    unsigned char field_1f4c;        // +1f4c
+    unsigned char field_1f4d;        // +1f4d
+    unsigned short field_1f4e;       // +1f4e
+    unsigned short field_1f50;       // +1f50
+    unsigned char pad1f52[2];
+    Pair_1a4b48 pairs[32];           // +1f54
+    Rec24_1a4b48 rec24[4];           // +2154
+    unsigned char pad21e4[0x27c];
+    TailSrc_1a4b48 tail;             // +2460
+};
+
+struct Dst1a4b48 {
+    RecC0_1a4b48 recs[34];           // +0
+    Pair_1a4b48 pairs[32];           // +1980
+    int field_1b80;                  // +1b80
+    unsigned short field_1b84;       // +1b84
+    unsigned short field_1b86;       // +1b86
+    short field_1b88;                // +1b88
+    short field_1b8a;                // +1b8a
+    unsigned char field_1b8c;        // +1b8c
+    unsigned char field_1b8d;        // +1b8d
+    unsigned short field_1b8e;       // +1b8e
+    unsigned char field_1b90;        // +1b90
+    unsigned char field_1b91;        // +1b91
+    unsigned char field_1b92;        // +1b92
+    unsigned char field_1b93;        // +1b93
+    Str8a_1a4b48 str8a;              // +1b94
+    StrC3_1a4b48 strc3;              // +1c1e
+    Str27_1a4b48 str27;              // +1ce1
+    Rec24_1a4b48 rec24[4];           // +1d08
+    TailDst_1a4b48 tail;             // +1d98
+};
+
+// Reached through the GOT slot at 0x7100c22d90.
+extern void* gGlobalc22d90_1a4b48;
+int callee_3f50e8(void*);                                                    // 0x71003f50e8
+
+// 0x71001a4b48: a save copier: struct-assignment loops (0xc0-byte records through memcpy, 16-byte pairs inline), three odd-sized strings, fields narrowed in source order, one id looked up when it is 800, a packed tail
+void call_1a4b48(Src1a4b48* p0, Dst1a4b48* p1) {
+    for (int i = 0; i < 34; i++) {
+        p1->recs[i] = p0->recs[i];
+    }
+    for (int i = 0; i < 32; i++) {
+        p1->pairs[i] = p0->pairs[i];
+    }
+    p1->str8a = p0->str8a;
+    p1->strc3 = p0->strc3;
+    p1->str27 = p0->str27;
+    p1->field_1b84 = p0->field_1f4e;
+    p1->field_1b86 = p0->field_1f50;
+    p1->field_1b88 = p0->field_19e0;
+    p1->field_1b8c = p0->field_19dc;
+    p1->field_1b80 = p0->field_19e4;
+    p1->field_1b8a = p0->field_19e8;
+    p1->field_1b91 = p0->field_19ec;
+    p1->field_1b92 = p0->field_1f4c;
+    p1->field_1b93 = p0->field_1f4d;
+    p1->field_1b8d = p0->field_19d4;
+    p1->field_1b90 = p0->field_19d8;
+    int v = p0->field_19d0;
+    if (v == 0x320) {
+        v = callee_3f50e8(gGlobalc22d90_1a4b48);
+    }
+    p1->field_1b8e = v;
+    for (int i = 0; i < 4; i++) {
+        p1->rec24[i].field_0 = p0->rec24[i].field_0;
+        p1->rec24[i].field_8 = p0->rec24[i].field_8;
+        p1->rec24[i].field_18 = p0->rec24[i].field_18;
+        p1->rec24[i].field_1e = p0->rec24[i].field_1e;
+        p1->rec24[i].field_20 = p0->rec24[i].field_20;
+        p1->rec24[i].field_1c = p0->rec24[i].field_1c;
+        p1->rec24[i].field_1a = p0->rec24[i].field_1a;
+    }
+    p1->tail.field_0 = p0->tail.field_0;
+    p1->tail.field_1 = p0->tail.field_1;
+    p1->tail.field_2 = p0->tail.field_2;
+    p1->tail.name = p0->tail.name;
+    p1->tail.field_13 = p0->tail.field_13;
+    p1->tail.field_14 = p0->tail.field_14;
+    p1->tail.field_15 = p0->tail.field_15;
+    p1->tail.field_17 = p0->tail.field_17;
+    p1->tail.field_18 = p0->tail.field_19;
+    p1->tail.field_19 = p0->tail.field_1a;
+}
+
+
+struct Elem1e0_20e224 {
+    unsigned char b[0x1e0];
+};
+
+struct Table_20e224 {
+    Elem1e0_20e224 entries[128];
+};
+
+// 0x710020e224: clears a 0x50-byte block in each of 128 table entries; the range-based for over the member array has a body cheap enough that Clang unrolls all 128 iterations, the last memset becoming a tail call
+void call_20e224(Table_20e224* p0) {
+    for (Elem1e0_20e224& e : p0->entries) {
+        memset(e.b + 0x190, 0, 0x50);
+    }
+}
