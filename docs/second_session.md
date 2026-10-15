@@ -98,4 +98,12 @@ from `worktrees\s5` on branch `matching-s5`.
 - The main session merges `matching-s4` and `matching-s5` like the other branches; a function matched on both sides
   keeps `master`'s copy.
 
+## Unattended searches
+
+Any unattended or overnight search (permutation searches on parked functions and the like) runs through
+`tools/lowprio.py`, which starts it at idle priority so every compiler it spawns yields to the sessions' own compile
+jobs, and caps its parallelism at the session's job share: `python tools/lowprio.py --jobs 1 -- COMMAND ...`. Such a
+search writes its results only inside its own worktree and never commits; the session reviews the hits and commits
+the matches itself.
+
 No session pushes anything.
