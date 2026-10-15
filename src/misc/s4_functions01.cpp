@@ -1,5 +1,7 @@
 // Large functions matched by hand, starting from generated source (fourth session). Struct, field and callee names
 // are placeholders after the address and offset, as in the generated units. Status: matching/README.md.
+// new[] here calls the imported operator new[] (the PLT stub at 0x7100600880), not the game's own at 0x71003ccc34;
+// the unit's map in data/units.json points _Znam at the stub.
 
 int callee_db3d8(void*, long, int);        // 0x71000db3d8
 void callee_f7a24(void*);        // 0x71000f7a24
@@ -2529,5 +2531,1380 @@ struct Table_20e224 {
 void call_20e224(Table_20e224* p0) {
     for (Elem1e0_20e224& e : p0->entries) {
         memset(e.b + 0x190, 0, 0x50);
+    }
+}
+
+class Arc25b394 {
+public:
+    Arc25b394();                                                             // 0x710025b394
+    ~Arc25b394();                                                            // 0x710025b3ac
+    void open(int, int, void*);                                              // 0x710025b4b4
+    unsigned char isOpen();                                                           // 0x710025b46c
+    void* entry(int);                                                        // 0x710025b738
+    void close();                                                            // 0x710025b40c
+
+    unsigned char pad[0x28];
+};
+
+class Tmp218c18 {
+public:
+    Tmp218c18();                                                             // 0x7100218c18
+    ~Tmp218c18();                                                            // 0x7100218c2c
+    void set(void*);                                                         // 0x7100218c34
+    int size();                                                              // 0x71002192c0
+    void* data(int, int);                                                    // 0x7100218cac
+    void release(int);                                                       // 0x7100218c68
+
+    unsigned char pad[0x10];
+};
+
+class Obj1fbbb0 {
+public:
+    Obj1fbbb0();                                                             // 0x71001fbbb0
+    ~Obj1fbbb0();                                                            // 0x71001fbbd0
+    void init(int, int, void*);                                              // 0x71001fbc04
+    void reset();                                                            // 0x71001fbbf0
+
+    unsigned char pad[0x20];
+};
+
+struct Unit1f9a98 {
+    unsigned char pad0[4];
+    unsigned short field_4;          // +4
+    unsigned char pad6[0x2c];
+    short field_32;                  // +32
+    unsigned char pad34[0x1c];
+};
+
+struct Mgr1f9a98 {
+    unsigned char pad0[4];
+    int field_4;                     // +4
+    long field_8;                    // +8
+    int field_10;                    // +10
+    long field_14 __attribute__((packed));    // +14
+};
+
+struct This1f9a98 {
+    unsigned char pad0[0x20];
+    short field_20[100];             // +20
+    short field_e8[100];             // +e8
+};
+
+// Reached through the GOT slot at 0x7100c21df8.
+extern Mgr1f9a98* gGlobalc21df8_1f9a98;
+// Reached through the GOT slot at 0x7100c216a0.
+extern Unit1f9a98* gGlobalc216a0_1f9a98;
+
+void* callee_20bd74();                                                       // 0x710020bd74
+void callee_20bfc0(void*);                                                   // 0x710020bfc0
+void callee_20c168(void*);                                                   // 0x710020c168
+void* callee_204728();                                                       // 0x7100204728
+void callee_204aac(void*);                                                   // 0x7100204aac
+void callee_204c5c(void*);                                                   // 0x7100204c5c
+void* callee_216d48();                                                       // 0x7100216d48
+void callee_216f14(void*);                                                   // 0x7100216f14
+void callee_216f9c(void*);                                                   // 0x7100216f9c
+void callee_2014f4(void*);                                                   // 0x71002014f4
+void callee_20a4fc(void*);                                                   // 0x710020a4fc
+void* callee_1feb28();                                                       // 0x71001feb28
+void callee_1feec4(void*);                                                   // 0x71001feec4
+void callee_1fb14c();                                                        // 0x71001fb14c
+void callee_20f3ec(void*, void*);                                            // 0x710020f3ec
+void* callee_d86c4();        // 0x71000d86c4
+void* callee_1fe7c8();        // 0x71001fe7c8
+void* callee_1ff050();        // 0x71001ff050
+void* callee_200fc0();        // 0x7100200fc0
+void* callee_201604();        // 0x7100201604
+void* callee_204ca8();        // 0x7100204ca8
+void* callee_20710c();        // 0x710020710c
+void* callee_2074c0();        // 0x71002074c0
+void* callee_208a70();        // 0x7100208a70
+void* callee_209a34();        // 0x7100209a34
+void* callee_209cb4();        // 0x7100209cb4
+void* callee_20a31c();        // 0x710020a31c
+void* callee_20acb0();        // 0x710020acb0
+void* callee_20b29c();        // 0x710020b29c
+void* callee_20b3d8();        // 0x710020b3d8
+void* callee_20b60c();        // 0x710020b60c
+void* callee_20b970();        // 0x710020b970
+void* callee_20c630();        // 0x710020c630
+void* callee_20c72c();        // 0x710020c72c
+void* callee_20dfd0();        // 0x710020dfd0
+void* callee_20ec80();        // 0x710020ec80
+void* callee_20ef00();        // 0x710020ef00
+void* callee_20f130();        // 0x710020f130
+void* callee_210328();        // 0x7100210328
+void* callee_21069c();        // 0x710021069c
+void* callee_214000();        // 0x7100214000
+void* callee_214890();        // 0x7100214890
+void* callee_214b80();        // 0x7100214b80
+void* callee_214d88();        // 0x7100214d88
+void* callee_2151a0();        // 0x71002151a0
+void* callee_215468();        // 0x7100215468
+void* callee_215b84();        // 0x7100215b84
+void callee_d8770(void*, Obj1fbbb0*);        // 0x71000d8770
+void callee_1fea4c(void*, Obj1fbbb0*);        // 0x71001fea4c
+void callee_1fea98(void*, Obj1fbbb0*);        // 0x71001fea98
+void callee_1ff0fc(void*, Obj1fbbb0*);        // 0x71001ff0fc
+void callee_2013bc(void*, Obj1fbbb0*);        // 0x71002013bc
+void callee_201424(void*, Obj1fbbb0*);        // 0x7100201424
+void callee_2016d4(void*, Obj1fbbb0*);        // 0x71002016d4
+void callee_204d54(void*, Obj1fbbb0*);        // 0x7100204d54
+void callee_204f60(void*, Obj1fbbb0*);        // 0x7100204f60
+void callee_2050ac(void*, Obj1fbbb0*);        // 0x71002050ac
+void callee_20519c(void*, Obj1fbbb0*);        // 0x710020519c
+void callee_205268(void*, Obj1fbbb0*);        // 0x7100205268
+void callee_2053c4(void*, Obj1fbbb0*);        // 0x71002053c4
+void callee_207068(void*, Obj1fbbb0*);        // 0x7100207068
+void callee_2070b4(void*, Obj1fbbb0*);        // 0x71002070b4
+void callee_20747c(void*, Obj1fbbb0*);        // 0x710020747c
+void callee_208a18(void*, Obj1fbbb0*);        // 0x7100208a18
+void callee_2099a0(void*, Obj1fbbb0*);        // 0x71002099a0
+void callee_209bf0(void*, Obj1fbbb0*);        // 0x7100209bf0
+void callee_20a46c(void*, Obj1fbbb0*);        // 0x710020a46c
+void callee_20ad5c(void*, Obj1fbbb0*);        // 0x710020ad5c
+void callee_20ae40(void*, Obj1fbbb0*);        // 0x710020ae40
+void callee_20af5c(void*, Obj1fbbb0*);        // 0x710020af5c
+void callee_20afb8(void*, Obj1fbbb0*);        // 0x710020afb8
+void callee_20b0d4(void*, Obj1fbbb0*);        // 0x710020b0d4
+void callee_20b344(void*, Obj1fbbb0*);        // 0x710020b344
+void callee_20b488(void*, Obj1fbbb0*);        // 0x710020b488
+void callee_20b6ec(void*, Obj1fbbb0*);        // 0x710020b6ec
+void callee_20ba1c(void*, Obj1fbbb0*);        // 0x710020ba1c
+void callee_20c5b4(void*, Obj1fbbb0*);        // 0x710020c5b4
+void callee_20c780(void*, Obj1fbbb0*);        // 0x710020c780
+void callee_20dd84(void*, Obj1fbbb0*);        // 0x710020dd84
+void callee_20de00(void*, Obj1fbbb0*);        // 0x710020de00
+void callee_20de7c(void*, Obj1fbbb0*);        // 0x710020de7c
+void callee_20def8(void*, Obj1fbbb0*);        // 0x710020def8
+void callee_20f014(void*, Obj1fbbb0*);        // 0x710020f014
+void callee_20f2cc(void*, Obj1fbbb0*);        // 0x710020f2cc
+void callee_2103e8(void*, Obj1fbbb0*);        // 0x71002103e8
+void callee_21082c(void*, Obj1fbbb0*);        // 0x710021082c
+void callee_211118(void*, Obj1fbbb0*);        // 0x7100211118
+void callee_2141b4(void*, Obj1fbbb0*);        // 0x71002141b4
+void callee_214a5c(void*, Obj1fbbb0*);        // 0x7100214a5c
+void callee_214c78(void*, Obj1fbbb0*);        // 0x7100214c78
+void callee_214e40(void*, Obj1fbbb0*);        // 0x7100214e40
+void callee_215308(void*, Obj1fbbb0*);        // 0x7100215308
+void callee_2158c0(void*, Obj1fbbb0*);        // 0x71002158c0
+void callee_215cf0(void*, Obj1fbbb0*);        // 0x7100215cf0
+
+// 0x71001f9a98: a loader: three archives, a staging buffer and a load object as locals with destructors, fifty entries loaded and handed on (the archive indexes the block keeps in callee-saved registers come out by themselves), then a search of the unit table whose unsigned counter indexes as int, which keeps it unrolled by 2
+void call_1f9a98(This1f9a98* p0) {
+    if (gGlobalc21df8_1f9a98 == nullptr) {
+        return;
+    }
+    Arc25b394 a0;
+    Arc25b394 a1;
+    Arc25b394 a2;
+    Tmp218c18 tmp;
+    Obj1fbbb0 obj;
+    callee_20bfc0(callee_20bd74());
+    callee_204aac(callee_204728());
+    callee_216f14(callee_216d48());
+    a0.open(0, 0, nullptr);
+    if (!a0.isOpen()) {
+        return;
+    }
+    a1.open(0, 1, nullptr);
+    if (!a1.isOpen()) {
+        return;
+    }
+    a2.open(0, 2, nullptr);
+    if (!a2.isOpen()) {
+        return;
+    }
+    tmp.set(a1.entry(0));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_211118(gGlobalc216a0_1f9a98, &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(0));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2013bc(callee_200fc0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(1));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_201424(callee_200fc0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(2));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2016d4(callee_201604(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(9));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20ad5c(callee_20acb0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(10));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20ae40(callee_20acb0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(11));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20af5c(callee_20acb0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(12));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20afb8(callee_20acb0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(13));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20b0d4(callee_20acb0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(14));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_1fea4c(callee_1fe7c8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(15));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_1fea98(callee_1fe7c8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(3));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2141b4(callee_214000(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(4));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_214a5c(callee_214890(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(5));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_214c78(callee_214b80(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(6));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_214e40(callee_214d88(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(7));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_215308(callee_2151a0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(8));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2158c0(callee_215468(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(1));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20def8(callee_20dfd0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(2));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20def8(callee_20ec80(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(3));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20dd84(callee_20ec80(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(4));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20de00(callee_20ec80(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(5));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20f014(callee_20ef00(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(16));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20a46c(callee_20a31c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(17));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20c780(callee_20c72c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(18));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20ba1c(callee_20b970(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(19));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20b488(callee_20b3d8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(20));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20b6ec(callee_20b60c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(21));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2103e8(callee_210328(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(22));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_215cf0(callee_215b84(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(23));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20b344(callee_20b29c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(24));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_204d54(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(25));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_204f60(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(26));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2050ac(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(27));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20519c(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(28));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_205268(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(29));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2053c4(callee_204ca8(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(0));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_207068(callee_20710c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(1));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2070b4(callee_20710c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(2));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_208a18(callee_208a70(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(3));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_209bf0(callee_209cb4(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(4));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20c5b4(callee_20c630(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(5));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_2099a0(callee_209a34(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a2.entry(6));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20747c(callee_2074c0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a0.entry(30));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_1ff0fc(callee_1ff050(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(6));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20de7c(callee_20dfd0(), &obj);
+    callee_20de7c(callee_20ec80(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(7));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_21082c(callee_21069c(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(8));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20dd84(callee_20dfd0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(9));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20de00(callee_20dfd0(), &obj);
+    obj.reset();
+    tmp.release(0);
+    tmp.set(a1.entry(10));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_20f2cc(callee_20f130(), &obj);
+    obj.reset();
+    tmp.release(0);
+    callee_20f3ec(callee_20f130(), a1.entry(11));
+    tmp.set(a1.entry(12));
+    obj.init(1, tmp.size(), tmp.data(0, 0));
+    callee_d8770(callee_d86c4(), &obj);
+    obj.reset();
+    tmp.release(0);
+    a0.close();
+    a1.close();
+    a2.close();
+    callee_1feec4(callee_1feb28());
+    Unit1f9a98* units = gGlobalc216a0_1f9a98;
+    for (unsigned int i = 0; i < 100; i++) {
+        p0->field_20[i] = -1;
+        p0->field_e8[i] = -1;
+        for (unsigned int j = 0; j < 0x44c; j++) {
+            if (static_cast<unsigned int>(units[static_cast<int>(j)].field_32) == i) {
+                p0->field_20[i] = j;
+                p0->field_e8[i] = units[static_cast<int>(j)].field_4;
+                break;
+            }
+        }
+    }
+    callee_1fb14c();
+    Mgr1f9a98* m = gGlobalc21df8_1f9a98;
+    m->field_4 = 0x15102600;
+    m->field_8 = 0;
+    m->field_10 = 0x15102600;
+    m->field_14 = 0;
+    callee_20c168(callee_20bd74());
+    callee_204c5c(callee_204728());
+    callee_2014f4(callee_200fc0());
+    callee_216f9c(callee_216d48());
+    callee_20a4fc(callee_20a31c());
+}
+
+
+
+struct R24_19c9a4 {
+    unsigned char b[0x24];
+};
+
+struct R58_19c9a4 {
+    unsigned char b[0x58];
+};
+
+struct R68_19c9a4 {
+    unsigned char b[0x68];
+};
+
+struct P10_19c9a4 {
+    int v[4];
+};
+
+struct R6c_19c9a4 {
+    unsigned char b[0x6c];
+};
+
+struct V2_19c9a4 {
+    float x, y;
+};
+
+struct V3_19c9a4 {
+    float x, y, z;
+};
+
+struct R18_19c9a4 {
+    V2_19c9a4 a;                     // +0
+    int b;                           // +8
+    V3_19c9a4 c;                     // +c
+};
+
+struct B4d0_19c9a4 {
+    unsigned char b[0x4d0];
+};
+
+struct Obj19c9a4 {
+    R24_19c9a4 r24[3];               // +0
+    R58_19c9a4 objs[120];            // +6c
+    P10_19c9a4 pairs[64];            // +29ac
+    R6c_19c9a4 recs[24];             // +2dac
+    R18_19c9a4 a18[5];               // +37cc
+    R18_19c9a4 b18[15];              // +3844
+    B4d0_19c9a4 block;               // +39ac
+};
+
+void callee_19b6c4(R58_19c9a4*, R68_19c9a4*);                                // 0x710019b6c4
+
+// 0x710019c9a4: a copier with eight sources: memcpy records written with the source address taken first (as the original sets x1 before x0), a per-element call loop, 16-byte pairs, and {pair, int, triple} records copied member by member, the fifteen-record run as a range-based for so that Clang unrolls it fully
+void call_19c9a4(Obj19c9a4* p0, R24_19c9a4* p1, R68_19c9a4* p2, P10_19c9a4* p3, R6c_19c9a4* p4, R18_19c9a4* p5, void* p6, B4d0_19c9a4* p7) {
+    for (int i = 0; i < 3; i++) {
+        const void* s = &p1[i];
+        void* d = &p0->r24[i];
+        memcpy(d, s, sizeof(R24_19c9a4));
+    }
+    for (int i = 0; i < 120; i++) {
+        callee_19b6c4(&p0->objs[i], &p2[i]);
+    }
+    for (int i = 0; i < 64; i++) {
+        const P10_19c9a4& s = p3[i];
+        p0->pairs[i] = s;
+    }
+    for (int i = 0; i < 24; i++) {
+        const void* s = &p4[i];
+        void* d = &p0->recs[i];
+        memcpy(d, s, sizeof(R6c_19c9a4));
+    }
+    for (int i = 0; i < 5; i++) {
+        const R18_19c9a4& s = p5[i];
+        p0->a18[i].a = s.a;
+        p0->a18[i].b = s.b;
+        p0->a18[i].c = s.c;
+    }
+    Tmp218c18 tmp;
+    tmp.set(p6);
+    R18_19c9a4* d = static_cast<R18_19c9a4*>(tmp.data(0, 0));
+    const R18_19c9a4* s = d;
+    for (R18_19c9a4& r : p0->b18) {
+        r.a = s->a;
+        r.b = s->b;
+        r.c = s->c;
+        s++;
+    }
+    p0->block = *p7;
+}
+
+#include "event/demo_effects.h"
+#include "event/demo_light_system.h"
+#include "event/layout_panes.h"
+
+class TextRenderer {
+public:
+    void set_area(TrackVec2* pos, TrackVec2* size, int a, int b, int c);    // 0x71001e709c
+    unsigned int draw(void* dest, const char* text, int line, int a, int alpha, float x,
+                      float y);                                             // 0x71001e73c0
+
+    unsigned char pad[0x20b98];
+    int align;                // +20b98
+    unsigned char pad20b9c[0x2d];
+    unsigned char wrap;       // +20bc9
+};
+// Reached through the GOT slot at 0x7100c22a30.
+extern TextRenderer* gTextRenderer;
+
+struct SharedState {
+    int value0;
+    int language;             // +04
+};
+SharedState* get_shared_state();                                            // 0x71002aae3c
+const char* message_text(int id);                                           // 0x7100217d64
+void set_pane_lines(PanelPane* pane, TrackLightTarget* lines, unsigned int count); // 0x71001e41d8
+void callee_1f7430(void*, int);                                             // 0x71001f7430
+
+// The flag bytes of a pane: +58 bit 0 visible, +5b the mode, alignment and wrap fields.
+struct PaneFlags_28b710 {
+    unsigned char pad0[0x58];
+    unsigned char visible : 1;   // +58 bit 0
+    unsigned char : 7;
+    unsigned char pad59[2];
+    unsigned char mode : 2;      // +5b bits 0-1
+    unsigned char align : 2;     // +5b bits 2-3
+    unsigned char wrap : 2;      // +5b bits 4-5
+    unsigned char : 2;
+};
+
+static inline PaneFlags_28b710* flags_28b710(PanelPane* pane) {
+    return reinterpret_cast<PaneFlags_28b710*>(pane);
+}
+
+extern const char kLayout_28b710[] __attribute__((visibility("hidden")));          // 0x71007d6225
+extern const char kGroup48_28b710[] __attribute__((visibility("hidden")));         // 0x71007d6126
+extern const char kGroup50_28b710[] __attribute__((visibility("hidden")));         // 0x71007d5ca9
+extern const char kGroup58_28b710[] __attribute__((visibility("hidden")));         // 0x71007d623a
+extern const char kPart18_28b710[] __attribute__((visibility("hidden")));          // 0x710073fffb
+extern const char kPart20_28b710[] __attribute__((visibility("hidden")));          // 0x7100740004
+extern const char kPart28_28b710[] __attribute__((visibility("hidden")));          // 0x710074056c
+extern const char kPane0_28b710[] __attribute__((visibility("hidden")));           // 0x71007d6247
+extern const char kPane1_28b710[] __attribute__((visibility("hidden")));           // 0x71007d6253
+extern const char kPane2_28b710[] __attribute__((visibility("hidden")));           // 0x71007d6262
+extern const char kPane3_28b710[] __attribute__((visibility("hidden")));           // 0x71007d626f
+extern const char kPane4_28b710[] __attribute__((visibility("hidden")));           // 0x71007d627f
+extern const char kGroupD078_28b710[] __attribute__((visibility("hidden")));       // 0x71007d628e
+extern const char kLayout2_28b710[] __attribute__((visibility("hidden")));         // 0x71007d629e
+extern const char kAnim_28b710[] __attribute__((visibility("hidden")));            // 0x71007d62ab
+extern const char kGroupDup_28b710[] __attribute__((visibility("hidden")));        // 0x71007d62b1
+
+class Class28b710 {
+public:
+    void initialize();                                                       // 0x710028b710: a window set-up written with the effect, pane and text-renderer types of the demo units: the text-area vectors are filled field by field (an aggregate initialiser stores them as one 64-bit constant that is hoisted too early) and the five panes are separate statements, so each slot's address stays in a register
+    void finish_setup();                                                     // 0x710028f4dc
+
+    LightEffectNode* node;           // +0
+    unsigned char pad8[8];
+    LightEffectNode* node2;          // +10
+    void* part18;                    // +18
+    void* part20;                    // +20
+    void* part28;                    // +28
+    unsigned char pad30[8];
+    LayoutAnimation* anim;           // +38
+    unsigned char pad40[8];
+    EffectGroup* group48;            // +48
+    EffectGroup* group50;            // +50
+    EffectGroup* group58;            // +58
+    unsigned char sources[0x458];    // +60
+    EffectGroup* copy;               // +4b8
+    TrackLightTarget lines0[32];     // +4c0
+    TrackLightTarget lines1[32];     // +15c0
+    TrackLightTarget lines2[32];     // +26c0
+    unsigned char pad37c0[0x9878];
+    unsigned int count0;             // +d038
+    unsigned int count1;             // +d03c
+    unsigned int count2;             // +d040
+    unsigned char padd044[0xc];
+    PanelPane* panes[5];             // +d050
+    EffectGroup* groupd078;          // +d078
+};
+
+// 0x710028b710
+void Class28b710::initialize() {
+    gEffectManager->create_node(&node, 0x4203, kLayout_28b710);
+    group48 = node->group->find(kGroup48_28b710, 1);
+    group50 = node->group->find(kGroup50_28b710, 1);
+    group58 = node->group->find(kGroup58_28b710, 1);
+    group58->alpha59 = 0;
+    part18 = callee_1e3770(node, const_cast<char*>(kPart18_28b710), 0);
+    part20 = callee_1e3770(node, const_cast<char*>(kPart20_28b710), 0);
+    part28 = callee_1e3770(node, const_cast<char*>(kPart28_28b710), 0);
+    callee_1f7430(sources, 0xc);
+    node->group->add(new LightEffect(0x10));
+    TextRenderer* renderer = gTextRenderer;
+    {
+        TrackVec2 pos;
+        pos.x = 0.0f;
+        pos.y = 0.0f;
+        TrackVec2 size;
+        size.x = 32.0f;
+        size.y = 32.0f;
+        renderer->set_area(&pos, &size, 0x53, 0x4e, 0);
+    }
+    renderer->wrap = 1;
+    renderer->align = 2;
+    count0 = renderer->draw(lines0, message_text(0x132), 0x20, 1, 0xff, 0.0f, 0.0f);
+    {
+        TrackVec2 pos;
+        pos.x = 0.0f;
+        pos.y = 0.0f;
+        TrackVec2 size;
+        size.x = 32.0f;
+        size.y = 32.0f;
+        renderer->set_area(&pos, &size, 0x53, 0x4e, 0);
+    }
+    renderer->wrap = 1;
+    renderer->align = 2;
+    count1 = renderer->draw(lines1, message_text(0x133), 0x20, 1, 0xff, 0.0f, 0.0f);
+    {
+        TrackVec2 pos;
+        pos.x = -64.0f;
+        pos.y = 0.0f;
+        TrackVec2 size;
+        size.x = 32.0f;
+        size.y = 32.0f;
+        renderer->set_area(&pos, &size, 0x5d, 0x4e, 0);
+    }
+    renderer->wrap = 1;
+    renderer->align = 2;
+    count2 = renderer->draw(lines2, message_text(0x137), 0x20, 1, 0xff, 0.0f, 0.0f);
+    panes[0] = new PanelPane;
+    panes[1] = new PanelPane;
+    panes[2] = new PanelPane;
+    panes[3] = new PanelPane;
+    panes[4] = new PanelPane;
+    node->group->find(kPane0_28b710, 1)->add(panes[0]);
+    node->group->find(kPane1_28b710, 1)->add(panes[1]);
+    node->group->find(kPane2_28b710, 1)->add(panes[2]);
+    node->group->find(kPane3_28b710, 1)->add(panes[3]);
+    node->group->find(kPane4_28b710, 1)->add(panes[4]);
+    flags_28b710(panes[0])->mode = 1;
+    flags_28b710(panes[1])->mode = 1;
+    flags_28b710(panes[2])->mode = 1;
+    flags_28b710(panes[2])->align = 2;
+    if (get_shared_state()->language != 0) {
+        flags_28b710(panes[2])->wrap = 1;
+    }
+    flags_28b710(panes[3])->align = 2;
+    flags_28b710(panes[4])->align = 2;
+    set_pane_lines(panes[0], lines0, count0);
+    set_pane_lines(panes[1], lines1, count1);
+    set_pane_lines(panes[2], lines2, count2);
+    flags_28b710(panes[2])->visible = 0;
+    groupd078 = node->group->find(kGroupD078_28b710, 1);
+    finish_setup();
+    gEffectManager->create_node(&node2, 0x4203, kLayout2_28b710);
+    anim = node2->create_animation(kAnim_28b710, true);
+    gEffectManager->finish(0x4203);
+    copy = node2->group->find(kGroupDup_28b710, 1)->duplicate(gResourceLoader->layout->root);
+    group58->add(copy);
+    node2->group->find(kGroupDup_28b710, 1)->flags58 &= ~1;
+}
+
+class MemStream {
+public:
+    MemStream();                                                             // 0x710053d304
+    virtual ~MemStream();
+    virtual void v10();
+    virtual void v18();
+    virtual int read(void* dst, void* unused, int size);                     // +20
+    unsigned char open(void* data, long offset, int size);                   // 0x710053d360
+    void close();                                                            // 0x710053d388
+
+    unsigned char pad8[0x18];
+};
+
+struct Header_d89b0 {
+    unsigned char b[0x10];
+};
+
+struct Rec_d89b0 {
+    unsigned char head[8];           // +0
+    unsigned char field_8;            // +8
+    unsigned char field_9;            // +9
+    unsigned short field_a;           // +a
+    unsigned short field_c;           // +c
+    unsigned short field_e;           // +e
+    unsigned char field_10;           // +10
+    unsigned char field_11;           // +11
+    unsigned short field_12;          // +12
+    unsigned char field_14;           // +14
+    unsigned char field_15;           // +15
+    unsigned short field_16;          // +16
+    unsigned char field_18;           // +18
+    unsigned char field_19;           // +19
+    unsigned char field_1a;           // +1a
+    unsigned char field_1b;           // +1b
+    unsigned char field_1c;           // +1c
+    unsigned char field_1d;           // +1d
+    unsigned short field_1e;          // +1e
+    unsigned short field_20;          // +20
+    unsigned char field_22;           // +22
+    unsigned char field_23;           // +23
+    unsigned short field_24;          // +24
+    unsigned short field_26;          // +26
+    unsigned short field_28;          // +28
+    unsigned char field_2a;           // +2a
+    unsigned char field_2b;           // +2b
+    unsigned char field_2c;           // +2c
+    unsigned char field_2d;           // +2d
+    unsigned char field_2e;           // +2e
+    unsigned char field_2f;           // +2f
+    unsigned short field_30;          // +30
+    unsigned char field_32;           // +32
+    unsigned char field_33;           // +33
+    unsigned short field_34;          // +34
+    unsigned short field_36;          // +36
+    unsigned short field_38;          // +38
+    unsigned short field_3a;          // +3a
+    unsigned short field_3c;          // +3c
+    unsigned char field_3e;           // +3e
+    unsigned char field_3f;           // +3f
+    unsigned short field_40;          // +40
+    unsigned short field_42;          // +42
+    unsigned short field_44;          // +44
+    unsigned char field_46;           // +46
+    unsigned char field_47;           // +47
+    unsigned short field_48;          // +48
+    unsigned short field_4a;          // +4a
+    unsigned short field_4c;          // +4c
+    unsigned short field_4e;          // +4e
+    unsigned short field_50;          // +50
+    unsigned char field_52;           // +52
+    unsigned char field_53;           // +53
+    unsigned char field_54;           // +54
+    unsigned char field_55;           // +55
+    unsigned short field_56;          // +56
+    unsigned short field_58;          // +58
+    unsigned short field_5a;          // +5a
+    unsigned short field_5c;          // +5c
+    unsigned char field_5e;           // +5e
+    unsigned char field_5f;           // +5f
+    int field_60;                     // +60
+    unsigned short field_64;          // +64
+    unsigned short field_66;          // +66
+    unsigned char field_68;           // +68
+    unsigned char field_69;           // +69
+    unsigned char field_6a;           // +6a
+    unsigned char field_6b;           // +6b
+    unsigned char field_6c;           // +6c
+    unsigned char field_6d;           // +6d
+    unsigned short field_6e;          // +6e
+    unsigned short field_70;          // +70
+    unsigned short field_72;          // +72
+    unsigned char field_74;           // +74
+    unsigned char field_75;           // +75
+    unsigned char field_76;           // +76
+    unsigned char field_77;           // +77
+    unsigned char field_78;           // +78
+    unsigned char field_79;           // +79
+    unsigned char field_7a;           // +7a
+    unsigned char field_7b;           // +7b
+    unsigned short field_7c;          // +7c
+    unsigned short field_7e;          // +7e
+    char field_80[0x40];              // +80
+    unsigned char field_c0;           // +c0
+    unsigned char field_c1;           // +c1
+    unsigned char field_c2;           // +c2
+    unsigned char field_c3;           // +c3
+    unsigned char field_c4;           // +c4
+    unsigned char field_c5;           // +c5
+    unsigned short field_c6;          // +c6
+    unsigned char field_c8;           // +c8
+    unsigned char field_c9;           // +c9
+    unsigned char field_ca;           // +ca
+    unsigned char field_cb;           // +cb
+    unsigned short field_cc;          // +cc
+    unsigned short field_ce;          // +ce
+    unsigned char field_d0;           // +d0
+    unsigned char field_d1;           // +d1
+    unsigned short field_d2;          // +d2
+    unsigned char field_d4;           // +d4
+    unsigned char field_d5;           // +d5
+    unsigned char field_d6;           // +d6
+    unsigned char field_d7;           // +d7
+    unsigned short field_d8;          // +d8
+    unsigned char field_da;           // +da
+    unsigned char field_db;           // +db
+    unsigned short field_dc;          // +dc
+    unsigned char field_de;           // +de
+    unsigned char field_df;           // +df
+    unsigned char field_e0;           // +e0
+    unsigned char field_e1;           // +e1
+    unsigned char field_e2;           // +e2
+    unsigned char field_e3;           // +e3
+    unsigned short field_e4;          // +e4
+    unsigned short field_e6;          // +e6
+    unsigned short field_e8;          // +e8
+    unsigned short field_ea;          // +ea
+    unsigned short field_ec;          // +ec
+    unsigned short field_ee;          // +ee
+    void* target;                    // +f0
+    unsigned char field_f8;           // +f8
+    unsigned char field_f9;           // +f9
+    unsigned short field_fa;          // +fa
+    unsigned char field_fc;           // +fc
+    unsigned char field_fd;           // +fd
+    unsigned short field_fe;          // +fe
+    unsigned short field_100;         // +100
+    unsigned short field_102;         // +102
+    unsigned char pad104[0xc];
+};
+static_assert(sizeof(Rec_d89b0) == 0x110, "record size");
+static_assert(__builtin_offsetof(Rec_d89b0, target) == 0xf0, "target");
+
+struct Pool_d89b0 {
+    unsigned char pad0[8];
+    Rec_d89b0* free;                 // +8
+};
+
+struct List_d89b0 {
+    Rec_d89b0** items;               // +0
+    unsigned short capacity;         // +8
+    unsigned short count;            // +a
+};
+
+struct Ctx_d89b0 {
+    void* data;                      // +0
+    int size;                        // +8
+    int count;                       // +c
+    unsigned int limit;              // +10
+    unsigned char pad14[4];
+    Pool_d89b0* pool;                // +18
+    List_d89b0* list;                // +20
+    void* table;                     // +28
+};
+
+void callee_4ca98(Rec_d89b0*);                                               // 0x710004ca98
+void* callee_4df50(void*, int);                                              // 0x710004df50
+
+// 0x71000d89b0: a record loader: a memory stream whose virtual read is called through a pointer (on the local object itself Clang calls it directly), one read per field in field order, the target id read into a local and resolved afterwards
+bool call_d89b0(Ctx_d89b0* p0) {
+    MemStream memory;
+    MemStream* stream = &memory;
+    if (!stream->open(p0->data, 0, p0->size)) {
+        return false;
+    }
+    Pool_d89b0* pool = p0->pool;
+    int count = p0->count;
+    unsigned int limit = p0->limit;
+    void* table = p0->table;
+    Header_d89b0 header;
+    stream->read(&header, nullptr, sizeof(header));
+    while (count != 0) {
+        Rec_d89b0* rec = pool->free;
+        if (rec != nullptr) {
+            pool->free = *reinterpret_cast<Rec_d89b0**>(rec);
+        }
+        callee_4ca98(rec);
+        stream->read(rec->head, nullptr, sizeof(rec->head));
+        stream->read(&rec->field_8, nullptr, sizeof(rec->field_8));
+        stream->read(&rec->field_9, nullptr, sizeof(rec->field_9));
+        stream->read(&rec->field_a, nullptr, sizeof(rec->field_a));
+        stream->read(&rec->field_c, nullptr, sizeof(rec->field_c));
+        stream->read(&rec->field_e, nullptr, sizeof(rec->field_e));
+        stream->read(&rec->field_10, nullptr, sizeof(rec->field_10));
+        stream->read(&rec->field_11, nullptr, sizeof(rec->field_11));
+        stream->read(&rec->field_12, nullptr, sizeof(rec->field_12));
+        stream->read(&rec->field_14, nullptr, sizeof(rec->field_14));
+        stream->read(&rec->field_15, nullptr, sizeof(rec->field_15));
+        stream->read(&rec->field_16, nullptr, sizeof(rec->field_16));
+        stream->read(&rec->field_18, nullptr, sizeof(rec->field_18));
+        stream->read(&rec->field_19, nullptr, sizeof(rec->field_19));
+        stream->read(&rec->field_1a, nullptr, sizeof(rec->field_1a));
+        stream->read(&rec->field_1b, nullptr, sizeof(rec->field_1b));
+        stream->read(&rec->field_1c, nullptr, sizeof(rec->field_1c));
+        stream->read(&rec->field_1d, nullptr, sizeof(rec->field_1d));
+        stream->read(&rec->field_1e, nullptr, sizeof(rec->field_1e));
+        stream->read(&rec->field_20, nullptr, sizeof(rec->field_20));
+        stream->read(&rec->field_22, nullptr, sizeof(rec->field_22));
+        stream->read(&rec->field_23, nullptr, sizeof(rec->field_23));
+        stream->read(&rec->field_24, nullptr, sizeof(rec->field_24));
+        stream->read(&rec->field_26, nullptr, sizeof(rec->field_26));
+        stream->read(&rec->field_28, nullptr, sizeof(rec->field_28));
+        stream->read(&rec->field_2a, nullptr, sizeof(rec->field_2a));
+        stream->read(&rec->field_2b, nullptr, sizeof(rec->field_2b));
+        stream->read(&rec->field_2c, nullptr, sizeof(rec->field_2c));
+        stream->read(&rec->field_2d, nullptr, sizeof(rec->field_2d));
+        stream->read(&rec->field_2e, nullptr, sizeof(rec->field_2e));
+        stream->read(&rec->field_2f, nullptr, sizeof(rec->field_2f));
+        stream->read(&rec->field_30, nullptr, sizeof(rec->field_30));
+        stream->read(&rec->field_32, nullptr, sizeof(rec->field_32));
+        stream->read(&rec->field_33, nullptr, sizeof(rec->field_33));
+        stream->read(&rec->field_34, nullptr, sizeof(rec->field_34));
+        stream->read(&rec->field_36, nullptr, sizeof(rec->field_36));
+        stream->read(&rec->field_38, nullptr, sizeof(rec->field_38));
+        stream->read(&rec->field_3a, nullptr, sizeof(rec->field_3a));
+        stream->read(&rec->field_3c, nullptr, sizeof(rec->field_3c));
+        stream->read(&rec->field_3e, nullptr, sizeof(rec->field_3e));
+        stream->read(&rec->field_3f, nullptr, sizeof(rec->field_3f));
+        stream->read(&rec->field_40, nullptr, sizeof(rec->field_40));
+        stream->read(&rec->field_42, nullptr, sizeof(rec->field_42));
+        stream->read(&rec->field_44, nullptr, sizeof(rec->field_44));
+        stream->read(&rec->field_46, nullptr, sizeof(rec->field_46));
+        stream->read(&rec->field_47, nullptr, sizeof(rec->field_47));
+        stream->read(&rec->field_48, nullptr, sizeof(rec->field_48));
+        stream->read(&rec->field_4a, nullptr, sizeof(rec->field_4a));
+        stream->read(&rec->field_4c, nullptr, sizeof(rec->field_4c));
+        stream->read(&rec->field_4e, nullptr, sizeof(rec->field_4e));
+        stream->read(&rec->field_50, nullptr, sizeof(rec->field_50));
+        stream->read(&rec->field_52, nullptr, sizeof(rec->field_52));
+        stream->read(&rec->field_53, nullptr, sizeof(rec->field_53));
+        stream->read(&rec->field_54, nullptr, sizeof(rec->field_54));
+        stream->read(&rec->field_55, nullptr, sizeof(rec->field_55));
+        stream->read(&rec->field_56, nullptr, sizeof(rec->field_56));
+        stream->read(&rec->field_58, nullptr, sizeof(rec->field_58));
+        stream->read(&rec->field_5a, nullptr, sizeof(rec->field_5a));
+        stream->read(&rec->field_5c, nullptr, sizeof(rec->field_5c));
+        stream->read(&rec->field_5e, nullptr, sizeof(rec->field_5e));
+        stream->read(&rec->field_5f, nullptr, sizeof(rec->field_5f));
+        stream->read(&rec->field_60, nullptr, sizeof(rec->field_60));
+        stream->read(&rec->field_64, nullptr, sizeof(rec->field_64));
+        stream->read(&rec->field_66, nullptr, sizeof(rec->field_66));
+        stream->read(&rec->field_68, nullptr, sizeof(rec->field_68));
+        stream->read(&rec->field_69, nullptr, sizeof(rec->field_69));
+        stream->read(&rec->field_6a, nullptr, sizeof(rec->field_6a));
+        stream->read(&rec->field_6b, nullptr, sizeof(rec->field_6b));
+        stream->read(&rec->field_6c, nullptr, sizeof(rec->field_6c));
+        stream->read(&rec->field_6d, nullptr, sizeof(rec->field_6d));
+        stream->read(&rec->field_6e, nullptr, sizeof(rec->field_6e));
+        stream->read(&rec->field_70, nullptr, sizeof(rec->field_70));
+        stream->read(&rec->field_72, nullptr, sizeof(rec->field_72));
+        stream->read(&rec->field_74, nullptr, sizeof(rec->field_74));
+        stream->read(&rec->field_75, nullptr, sizeof(rec->field_75));
+        stream->read(&rec->field_76, nullptr, sizeof(rec->field_76));
+        stream->read(&rec->field_77, nullptr, sizeof(rec->field_77));
+        stream->read(&rec->field_78, nullptr, sizeof(rec->field_78));
+        stream->read(&rec->field_79, nullptr, sizeof(rec->field_79));
+        stream->read(&rec->field_7a, nullptr, sizeof(rec->field_7a));
+        stream->read(&rec->field_7b, nullptr, sizeof(rec->field_7b));
+        stream->read(&rec->field_7c, nullptr, sizeof(rec->field_7c));
+        stream->read(&rec->field_7e, nullptr, sizeof(rec->field_7e));
+        stream->read(&rec->field_80, nullptr, sizeof(rec->field_80));
+        stream->read(&rec->field_c0, nullptr, sizeof(rec->field_c0));
+        stream->read(&rec->field_c1, nullptr, sizeof(rec->field_c1));
+        stream->read(&rec->field_c2, nullptr, sizeof(rec->field_c2));
+        stream->read(&rec->field_c3, nullptr, sizeof(rec->field_c3));
+        stream->read(&rec->field_c4, nullptr, sizeof(rec->field_c4));
+        stream->read(&rec->field_c5, nullptr, sizeof(rec->field_c5));
+        stream->read(&rec->field_c6, nullptr, sizeof(rec->field_c6));
+        stream->read(&rec->field_c8, nullptr, sizeof(rec->field_c8));
+        stream->read(&rec->field_c9, nullptr, sizeof(rec->field_c9));
+        stream->read(&rec->field_ca, nullptr, sizeof(rec->field_ca));
+        stream->read(&rec->field_cb, nullptr, sizeof(rec->field_cb));
+        stream->read(&rec->field_cc, nullptr, sizeof(rec->field_cc));
+        stream->read(&rec->field_ce, nullptr, sizeof(rec->field_ce));
+        stream->read(&rec->field_d0, nullptr, sizeof(rec->field_d0));
+        stream->read(&rec->field_d1, nullptr, sizeof(rec->field_d1));
+        stream->read(&rec->field_d2, nullptr, sizeof(rec->field_d2));
+        stream->read(&rec->field_d4, nullptr, sizeof(rec->field_d4));
+        stream->read(&rec->field_d5, nullptr, sizeof(rec->field_d5));
+        stream->read(&rec->field_d6, nullptr, sizeof(rec->field_d6));
+        stream->read(&rec->field_d7, nullptr, sizeof(rec->field_d7));
+        stream->read(&rec->field_d8, nullptr, sizeof(rec->field_d8));
+        stream->read(&rec->field_da, nullptr, sizeof(rec->field_da));
+        stream->read(&rec->field_db, nullptr, sizeof(rec->field_db));
+        stream->read(&rec->field_dc, nullptr, sizeof(rec->field_dc));
+        stream->read(&rec->field_de, nullptr, sizeof(rec->field_de));
+        stream->read(&rec->field_df, nullptr, sizeof(rec->field_df));
+        stream->read(&rec->field_e0, nullptr, sizeof(rec->field_e0));
+        stream->read(&rec->field_e1, nullptr, sizeof(rec->field_e1));
+        stream->read(&rec->field_e2, nullptr, sizeof(rec->field_e2));
+        stream->read(&rec->field_e3, nullptr, sizeof(rec->field_e3));
+        stream->read(&rec->field_e4, nullptr, sizeof(rec->field_e4));
+        stream->read(&rec->field_e6, nullptr, sizeof(rec->field_e6));
+        stream->read(&rec->field_e8, nullptr, sizeof(rec->field_e8));
+        stream->read(&rec->field_ea, nullptr, sizeof(rec->field_ea));
+        stream->read(&rec->field_ec, nullptr, sizeof(rec->field_ec));
+        stream->read(&rec->field_ee, nullptr, sizeof(rec->field_ee));
+        int id = 0;
+        stream->read(&id, nullptr, sizeof(id));
+        stream->read(&rec->field_f8, nullptr, sizeof(rec->field_f8));
+        stream->read(&rec->field_f9, nullptr, sizeof(rec->field_f9));
+        stream->read(&rec->field_fa, nullptr, sizeof(rec->field_fa));
+        stream->read(&rec->field_fc, nullptr, sizeof(rec->field_fc));
+        stream->read(&rec->field_fd, nullptr, sizeof(rec->field_fd));
+        stream->read(&rec->field_fe, nullptr, sizeof(rec->field_fe));
+        stream->read(&rec->field_100, nullptr, sizeof(rec->field_100));
+        stream->read(&rec->field_102, nullptr, sizeof(rec->field_102));
+        List_d89b0* list = p0->list;
+        list->items[list->count++] = rec;
+        if (id != -1 && (rec->head[6] & 0x20)) {
+            if (static_cast<unsigned int>(id) < limit) {
+                rec->target = callee_4df50(table, id);
+            }
+        } else {
+            rec->target = nullptr;
+        }
+        count--;
+    }
+    stream->close();
+    return true;
+}
+
+struct Arena_d98e0 {
+    unsigned char* base;             // +0
+    unsigned long used;              // +8
+    unsigned long capacity;          // +10
+
+    void* alloc(unsigned long size) {
+        unsigned long offset = used;
+        unsigned long end = offset + size;
+        if (end > capacity) {
+            return nullptr;
+        }
+        used = end;
+        return base + offset;
+    }
+};
+
+struct Ctx_d98e0 {
+    void* data;                      // +0
+    int size;                        // +8
+    unsigned char padc[4];
+    Pool_d89b0* pool;                // +10
+    Arena_d98e0* arena;              // +18
+    List_d89b0* list;                // +20
+};
+
+// 0x71000d98e0: the same record loader with the record count taken from the header and the item list carved from an arena; the byte count is a local computed before the arena is loaded
+unsigned int call_d98e0(Ctx_d98e0* p0) {
+    MemStream memory;
+    MemStream* stream = &memory;
+    if (!stream->open(p0->data, 0, p0->size)) {
+        return 0;
+    }
+    Header_d89b0 header;
+    stream->read(&header, nullptr, sizeof(header));
+    unsigned int n = *reinterpret_cast<unsigned int*>(header.b);
+    unsigned long bytes = n * sizeof(void*);
+    Arena_d98e0* arena = p0->arena;
+    if (arena->capacity - arena->used < bytes) {
+        return 0;
+    }
+    Pool_d89b0* pool = p0->pool;
+    List_d89b0* list = p0->list;
+    Rec_d89b0** items = static_cast<Rec_d89b0**>(arena->alloc(bytes));
+    list->items = items;
+    list->capacity = n;
+    for (unsigned int i = 0; i < list->capacity; i++) {
+        list->items[i] = nullptr;
+    }
+    for (unsigned int count = n; count != 0; count--) {
+        Rec_d89b0* rec = pool->free;
+        if (rec != nullptr) {
+            pool->free = *reinterpret_cast<Rec_d89b0**>(rec);
+        }
+        callee_4ca98(rec);
+        stream->read(rec->head, nullptr, sizeof(rec->head));
+        stream->read(&rec->field_8, nullptr, sizeof(rec->field_8));
+        stream->read(&rec->field_9, nullptr, sizeof(rec->field_9));
+        stream->read(&rec->field_a, nullptr, sizeof(rec->field_a));
+        stream->read(&rec->field_c, nullptr, sizeof(rec->field_c));
+        stream->read(&rec->field_e, nullptr, sizeof(rec->field_e));
+        stream->read(&rec->field_10, nullptr, sizeof(rec->field_10));
+        stream->read(&rec->field_11, nullptr, sizeof(rec->field_11));
+        stream->read(&rec->field_12, nullptr, sizeof(rec->field_12));
+        stream->read(&rec->field_14, nullptr, sizeof(rec->field_14));
+        stream->read(&rec->field_15, nullptr, sizeof(rec->field_15));
+        stream->read(&rec->field_16, nullptr, sizeof(rec->field_16));
+        stream->read(&rec->field_18, nullptr, sizeof(rec->field_18));
+        stream->read(&rec->field_19, nullptr, sizeof(rec->field_19));
+        stream->read(&rec->field_1a, nullptr, sizeof(rec->field_1a));
+        stream->read(&rec->field_1b, nullptr, sizeof(rec->field_1b));
+        stream->read(&rec->field_1c, nullptr, sizeof(rec->field_1c));
+        stream->read(&rec->field_1d, nullptr, sizeof(rec->field_1d));
+        stream->read(&rec->field_1e, nullptr, sizeof(rec->field_1e));
+        stream->read(&rec->field_20, nullptr, sizeof(rec->field_20));
+        stream->read(&rec->field_22, nullptr, sizeof(rec->field_22));
+        stream->read(&rec->field_23, nullptr, sizeof(rec->field_23));
+        stream->read(&rec->field_24, nullptr, sizeof(rec->field_24));
+        stream->read(&rec->field_26, nullptr, sizeof(rec->field_26));
+        stream->read(&rec->field_28, nullptr, sizeof(rec->field_28));
+        stream->read(&rec->field_2a, nullptr, sizeof(rec->field_2a));
+        stream->read(&rec->field_2b, nullptr, sizeof(rec->field_2b));
+        stream->read(&rec->field_2c, nullptr, sizeof(rec->field_2c));
+        stream->read(&rec->field_2d, nullptr, sizeof(rec->field_2d));
+        stream->read(&rec->field_2e, nullptr, sizeof(rec->field_2e));
+        stream->read(&rec->field_2f, nullptr, sizeof(rec->field_2f));
+        stream->read(&rec->field_30, nullptr, sizeof(rec->field_30));
+        stream->read(&rec->field_32, nullptr, sizeof(rec->field_32));
+        stream->read(&rec->field_33, nullptr, sizeof(rec->field_33));
+        stream->read(&rec->field_34, nullptr, sizeof(rec->field_34));
+        stream->read(&rec->field_36, nullptr, sizeof(rec->field_36));
+        stream->read(&rec->field_38, nullptr, sizeof(rec->field_38));
+        stream->read(&rec->field_3a, nullptr, sizeof(rec->field_3a));
+        stream->read(&rec->field_3c, nullptr, sizeof(rec->field_3c));
+        stream->read(&rec->field_3e, nullptr, sizeof(rec->field_3e));
+        stream->read(&rec->field_3f, nullptr, sizeof(rec->field_3f));
+        stream->read(&rec->field_40, nullptr, sizeof(rec->field_40));
+        stream->read(&rec->field_42, nullptr, sizeof(rec->field_42));
+        stream->read(&rec->field_44, nullptr, sizeof(rec->field_44));
+        stream->read(&rec->field_46, nullptr, sizeof(rec->field_46));
+        stream->read(&rec->field_47, nullptr, sizeof(rec->field_47));
+        stream->read(&rec->field_48, nullptr, sizeof(rec->field_48));
+        stream->read(&rec->field_4a, nullptr, sizeof(rec->field_4a));
+        stream->read(&rec->field_4c, nullptr, sizeof(rec->field_4c));
+        stream->read(&rec->field_4e, nullptr, sizeof(rec->field_4e));
+        stream->read(&rec->field_50, nullptr, sizeof(rec->field_50));
+        stream->read(&rec->field_52, nullptr, sizeof(rec->field_52));
+        stream->read(&rec->field_53, nullptr, sizeof(rec->field_53));
+        stream->read(&rec->field_54, nullptr, sizeof(rec->field_54));
+        stream->read(&rec->field_55, nullptr, sizeof(rec->field_55));
+        stream->read(&rec->field_56, nullptr, sizeof(rec->field_56));
+        stream->read(&rec->field_58, nullptr, sizeof(rec->field_58));
+        stream->read(&rec->field_5a, nullptr, sizeof(rec->field_5a));
+        stream->read(&rec->field_5c, nullptr, sizeof(rec->field_5c));
+        stream->read(&rec->field_5e, nullptr, sizeof(rec->field_5e));
+        stream->read(&rec->field_5f, nullptr, sizeof(rec->field_5f));
+        stream->read(&rec->field_60, nullptr, sizeof(rec->field_60));
+        stream->read(&rec->field_64, nullptr, sizeof(rec->field_64));
+        stream->read(&rec->field_66, nullptr, sizeof(rec->field_66));
+        stream->read(&rec->field_68, nullptr, sizeof(rec->field_68));
+        stream->read(&rec->field_69, nullptr, sizeof(rec->field_69));
+        stream->read(&rec->field_6a, nullptr, sizeof(rec->field_6a));
+        stream->read(&rec->field_6b, nullptr, sizeof(rec->field_6b));
+        stream->read(&rec->field_6c, nullptr, sizeof(rec->field_6c));
+        stream->read(&rec->field_6d, nullptr, sizeof(rec->field_6d));
+        stream->read(&rec->field_6e, nullptr, sizeof(rec->field_6e));
+        stream->read(&rec->field_70, nullptr, sizeof(rec->field_70));
+        stream->read(&rec->field_72, nullptr, sizeof(rec->field_72));
+        stream->read(&rec->field_74, nullptr, sizeof(rec->field_74));
+        stream->read(&rec->field_75, nullptr, sizeof(rec->field_75));
+        stream->read(&rec->field_76, nullptr, sizeof(rec->field_76));
+        stream->read(&rec->field_77, nullptr, sizeof(rec->field_77));
+        stream->read(&rec->field_78, nullptr, sizeof(rec->field_78));
+        stream->read(&rec->field_79, nullptr, sizeof(rec->field_79));
+        stream->read(&rec->field_7a, nullptr, sizeof(rec->field_7a));
+        stream->read(&rec->field_7b, nullptr, sizeof(rec->field_7b));
+        stream->read(&rec->field_7c, nullptr, sizeof(rec->field_7c));
+        stream->read(&rec->field_7e, nullptr, sizeof(rec->field_7e));
+        stream->read(&rec->field_80, nullptr, sizeof(rec->field_80));
+        stream->read(&rec->field_c0, nullptr, sizeof(rec->field_c0));
+        stream->read(&rec->field_c1, nullptr, sizeof(rec->field_c1));
+        stream->read(&rec->field_c2, nullptr, sizeof(rec->field_c2));
+        stream->read(&rec->field_c3, nullptr, sizeof(rec->field_c3));
+        stream->read(&rec->field_c4, nullptr, sizeof(rec->field_c4));
+        stream->read(&rec->field_c5, nullptr, sizeof(rec->field_c5));
+        stream->read(&rec->field_c6, nullptr, sizeof(rec->field_c6));
+        stream->read(&rec->field_c8, nullptr, sizeof(rec->field_c8));
+        stream->read(&rec->field_c9, nullptr, sizeof(rec->field_c9));
+        stream->read(&rec->field_ca, nullptr, sizeof(rec->field_ca));
+        stream->read(&rec->field_cb, nullptr, sizeof(rec->field_cb));
+        stream->read(&rec->field_cc, nullptr, sizeof(rec->field_cc));
+        stream->read(&rec->field_ce, nullptr, sizeof(rec->field_ce));
+        stream->read(&rec->field_d0, nullptr, sizeof(rec->field_d0));
+        stream->read(&rec->field_d1, nullptr, sizeof(rec->field_d1));
+        stream->read(&rec->field_d2, nullptr, sizeof(rec->field_d2));
+        stream->read(&rec->field_d4, nullptr, sizeof(rec->field_d4));
+        stream->read(&rec->field_d5, nullptr, sizeof(rec->field_d5));
+        stream->read(&rec->field_d6, nullptr, sizeof(rec->field_d6));
+        stream->read(&rec->field_d7, nullptr, sizeof(rec->field_d7));
+        stream->read(&rec->field_d8, nullptr, sizeof(rec->field_d8));
+        stream->read(&rec->field_da, nullptr, sizeof(rec->field_da));
+        stream->read(&rec->field_db, nullptr, sizeof(rec->field_db));
+        stream->read(&rec->field_dc, nullptr, sizeof(rec->field_dc));
+        stream->read(&rec->field_de, nullptr, sizeof(rec->field_de));
+        stream->read(&rec->field_df, nullptr, sizeof(rec->field_df));
+        stream->read(&rec->field_e0, nullptr, sizeof(rec->field_e0));
+        stream->read(&rec->field_e1, nullptr, sizeof(rec->field_e1));
+        stream->read(&rec->field_e2, nullptr, sizeof(rec->field_e2));
+        stream->read(&rec->field_e3, nullptr, sizeof(rec->field_e3));
+        stream->read(&rec->field_e4, nullptr, sizeof(rec->field_e4));
+        stream->read(&rec->field_e6, nullptr, sizeof(rec->field_e6));
+        stream->read(&rec->field_e8, nullptr, sizeof(rec->field_e8));
+        stream->read(&rec->field_ea, nullptr, sizeof(rec->field_ea));
+        stream->read(&rec->field_ec, nullptr, sizeof(rec->field_ec));
+        stream->read(&rec->field_ee, nullptr, sizeof(rec->field_ee));
+        int id = 0;
+        stream->read(&id, nullptr, sizeof(id));
+        stream->read(&rec->field_f8, nullptr, sizeof(rec->field_f8));
+        stream->read(&rec->field_f9, nullptr, sizeof(rec->field_f9));
+        stream->read(&rec->field_fa, nullptr, sizeof(rec->field_fa));
+        stream->read(&rec->field_fc, nullptr, sizeof(rec->field_fc));
+        stream->read(&rec->field_fd, nullptr, sizeof(rec->field_fd));
+        stream->read(&rec->field_fe, nullptr, sizeof(rec->field_fe));
+        stream->read(&rec->field_100, nullptr, sizeof(rec->field_100));
+        stream->read(&rec->field_102, nullptr, sizeof(rec->field_102));
+        List_d89b0* items_list = p0->list;
+        items_list->items[items_list->count++] = rec;
+        rec->target = nullptr;
+    }
+    stream->close();
+    return n;
+}
+
+class OutStream {
+public:
+    OutStream();                                                             // 0x710053d454
+    virtual ~OutStream();                                                    // 0x710053d488
+    virtual void v10();
+    virtual int write(void* src, void* unused, int size);                    // +18
+    unsigned char open(void* data, long offset, int size);                   // 0x710053d4b0
+    void close();                                                            // 0x710053d4d8
+    unsigned long tell();                                                    // 0x710053d568
+
+    unsigned char pad8[0x18];
+};
+
+struct Ctx_da854 {
+    void* src;                       // +0
+    void* dst;                       // +8
+    int src_size;                    // +10
+    int dst_size;                    // +14
+};
+
+// 0x71000da854: copies a 32-bit archive into a 64-bit one, widening every offset; the truncated table size is declared right after the 64-bit one so that IndVarSimplify leaves the 64-bit shift above the header loop
+void call_da854(Ctx_da854* p0) {
+    MemStream input;
+    OutStream output;
+    MemStream* in = &input;
+    OutStream* out = &output;
+    if (in->open(p0->src, 0, p0->src_size)) {
+        if (out->open(p0->dst, 0, p0->dst_size)) {
+            unsigned int counts[6] = {};
+            int zero = 0;
+            unsigned int total = 0;
+            for (int i = 0; i < 6; i++) {
+                in->read(&counts[i], nullptr, sizeof(counts[i]));
+                out->write(&counts[i], nullptr, sizeof(counts[i]));
+                total += counts[i];
+            }
+            unsigned long table = total * sizeof(unsigned int);
+            int table32 = table;
+            for (int i = 0; i < 6; i++) {
+                int offset = 0;
+                in->read(&offset, nullptr, sizeof(offset));
+                offset += 0x18;
+                out->write(&offset, nullptr, sizeof(offset));
+                out->write(&zero, nullptr, sizeof(zero));
+            }
+            unsigned int* offsets = new unsigned int[total + 1];
+            for (unsigned int i = 0; i < total; i++) {
+                int offset = 0;
+                in->read(&offset, nullptr, sizeof(offset));
+                offsets[i] = offset + table32 + 0x18 + i * 0x10;
+                out->write(&offsets[i], nullptr, sizeof(offsets[i]));
+                out->write(&zero, nullptr, sizeof(zero));
+            }
+            offsets[total] = p0->src_size + table32 + total * 0x10 + 0x18;
+            unsigned int index = 0;
+            for (int k = 0; k < 6; k++) {
+                for (unsigned int j = 0; j < counts[k]; j++) {
+                    index++;
+                    int adjust = table + 0x18 + index * 0x10;
+                    int a;
+                    in->read(&a, nullptr, sizeof(a));
+                    out->write(&a, nullptr, sizeof(a));
+                    int b;
+                    in->read(&b, nullptr, sizeof(b));
+                    out->write(&b, nullptr, sizeof(b));
+                    int c;
+                    in->read(&c, nullptr, sizeof(c));
+                    out->write(&c, nullptr, sizeof(c));
+                    int d;
+                    in->read(&d, nullptr, sizeof(d));
+                    out->write(&d, nullptr, sizeof(d));
+                    int e;
+                    in->read(&e, nullptr, sizeof(e));
+                    out->write(&e, nullptr, sizeof(e));
+                    int f;
+                    in->read(&f, nullptr, sizeof(f));
+                    out->write(&f, nullptr, sizeof(f));
+                    int g;
+                    in->read(&g, nullptr, sizeof(g));
+                    g += adjust;
+                    out->write(&g, nullptr, sizeof(g));
+                    out->write(&zero, nullptr, sizeof(zero));
+                    int h;
+                    in->read(&h, nullptr, sizeof(h));
+                    h += adjust;
+                    out->write(&h, nullptr, sizeof(h));
+                    out->write(&zero, nullptr, sizeof(zero));
+                    int i;
+                    in->read(&i, nullptr, sizeof(i));
+                    out->write(&i, nullptr, sizeof(i));
+                    int ptr;
+                    in->read(&ptr, nullptr, sizeof(ptr));
+                    int l;
+                    in->read(&l, nullptr, sizeof(l));
+                    out->write(&l, nullptr, sizeof(l));
+                    ptr += adjust;
+                    out->write(&ptr, nullptr, sizeof(ptr));
+                    out->write(&zero, nullptr, sizeof(zero));
+                    int m;
+                    in->read(&m, nullptr, sizeof(m));
+                    m += adjust;
+                    out->write(&m, nullptr, sizeof(m));
+                    out->write(&zero, nullptr, sizeof(zero));
+                    int word = 0;
+                    while (out->tell() < offsets[index]) {
+                        in->read(&word, nullptr, sizeof(word));
+                        out->write(&word, nullptr, sizeof(word));
+                    }
+                }
+            }
+            delete[] offsets;
+            out->close();
+        }
+        in->close();
     }
 }
