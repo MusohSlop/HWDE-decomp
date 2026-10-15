@@ -17372,7 +17372,13 @@
     "_Z14callee2_1e2360PvS_iS_": "0x71001e2360",
     "_Z14callee2_1f8720l": "0x71001f8720",
     "_Z14callee4_1e2218Pvli": "0x71001e2218",
-    "_Z14callee2_30fcc0l": "0x710030fcc0"
+    "_Z14callee2_30fcc0l": "0x710030fcc0",
+    "got:gRandom_c2cd10": "0x7100c2cd10",
+    "got:gSeed_c2cd18": "0x7100c2cd18",
+    "_Z13callee_52b938P13Context4bc6b8P13Program4bc6b8": "0x710052b938",
+    "_Z13callee_52ba34P13Context4bc6b8iiPv": "0x710052ba34",
+    "_Z13callee_52cc6cP13Context4bc6b8iiPv": "0x710052cc6c",
+    "_Z13callee_5303c0P13Context4bc6b8jii": "0x71005303c0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -26860,6 +26866,11 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/uniform_binders.cpp": {
+      "functions": {
+        "_ZN10Pass4bc6b84bindEP13Context4bc6b8if": "0x71004bc6b8"
       }
     }
   }
