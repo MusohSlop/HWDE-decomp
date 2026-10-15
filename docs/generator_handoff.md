@@ -162,7 +162,9 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   `ld1 {vN.s}[k]` inserts a float field into a lane, `st1 {vN.s}[k]` stores one, `ld1 {vN.d}[0]` loads a low half;
 - a vector and a scalar merged in one float register (knob `vlanemerge`, used when a function fails with
   "merge types: float|Vec4f"): the vector side is lane 0; the bits of a float used as an int (`fmov w, s` read
-  elsewhere) are an unsigned int through `__builtin_memcpy` in a lambda.
+  elsewhere) are an unsigned int through `__builtin_memcpy` in a lambda;
+- an array field also accessed as a scalar at its start (knob `noarrscalar`): the scalar keeps the field and the
+  indexed accesses go through `reinterpret_cast<T*>(&p->field)[i]` with T the element type.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
