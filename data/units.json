@@ -20916,7 +20916,34 @@
     "_Z16find_part_1e3770P15LightEffectNodePKci": "0x71001e3770",
     "got:gResourceSet": "0x7100c22a10",
     "_Z15resource_11a81cP11ResourceSeti": "0x71000db39c",
-    "_ZN8SlotView4bindEPvS0_": "0x71001f0df4"
+    "_ZN8SlotView4bindEPvS0_": "0x71001f0df4",
+    "_ZN9SceneView8set_viewEiii": "0x710037dd20",
+    "_ZN9SceneView4drawEPv": "0x710037f5f8",
+    "_ZN11Scene3311d011tick_singleEv": "0x71003312b8",
+    "_ZN11Scene3311d04tickEv": "0x71003315b8",
+    "_ZN11Scene39a9f411tick_singleEv": "0x710039aadc",
+    "_ZN11Scene39a9f44tickEv": "0x710039ae10",
+    "_ZN13MaterialEntry7stat_a1Ev": "0x71001ff92c",
+    "_ZN13MaterialEntry8stat_a99Ev": "0x71001ff934",
+    "_ZN13MaterialEntry9stat_a150Ev": "0x71001ff9b8",
+    "_ZN13MaterialEntry9stat_a200Ev": "0x71001ff9c0",
+    "_ZN13MaterialEntry9stat_a255Ev": "0x71001ff9c8",
+    "_ZN13MaterialEntry7stat_b1Ev": "0x71001ff93c",
+    "_ZN13MaterialEntry8stat_b99Ev": "0x71001ff944",
+    "_ZN13MaterialEntry9stat_b150Ev": "0x71001ff9d0",
+    "_ZN13MaterialEntry9stat_b200Ev": "0x71001ff9d8",
+    "_ZN13MaterialEntry9stat_b255Ev": "0x71001ff9e0",
+    "_ZN11RecordEntry7value_aEv": "0x7100210624",
+    "_ZN11RecordEntry7value_bEv": "0x7100210634",
+    "_ZN11RecordEntry4kindEv": "0x710021063c",
+    "_ZN10RecordBook5entryEi": "0x71002108dc",
+    "_ZN13ShaderProgram7uniformEPKc": "0x71005a3fac",
+    "_ZN11ShaderSetup4initEv": "0x710058ff40",
+    "kDarkenScale_2198fc": "0x710073ff56",
+    "kDarkenOffset_2198fc": "0x710073ff63",
+    "kRim_2198fc": "0x710073ff71",
+    "kRogiaThreshold_2229cc": "0x710073fefc",
+    "kRogiaTexThreshold_2229cc": "0x710073ff0c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -31341,6 +31368,49 @@
       "functions": {
         "_ZN9SlotTable4loadILi0EEEvv": "0x710011a81c",
         "_ZN9SlotTable4loadILi1EEEvv": "0x710011ae90"
+      }
+    },
+    "misc/s4_3311d0.cpp": {
+      "functions": {
+        "_ZN11Scene3311d06updateEv": "0x71003311d0",
+        "_ZN11Scene39a9f46updateEv": "0x710039a9f4"
+      }
+    },
+    "misc/s4_1fc968.cpp": {
+      "functions": {
+        "_Z8curve_atI6CurveAEiij": "0x71001fc968",
+        "_Z8curve_atI6CurveBEiij": "0x71001fcb28"
+      }
+    },
+    "misc/s4_3305ec.cpp": {
+      "functions": {
+        "_ZN10RecordList4initILi0EEEvv": "0x71003305ec",
+        "_ZN10RecordList4initILi1EEEvv": "0x710039a010"
+      }
+    },
+    "misc/s4_36ce3c.cpp": {
+      "map": {
+        ".rodata._ZN10FadeWindow6updateILi0EEEvv": "0x7100801c80",
+        ".rodata._ZN10FadeWindow6updateILi1EEEvv": "0x7100801ca8"
+      },
+      "functions": {
+        "_ZN10FadeWindow6updateILi0EEEvv": "0x710036ce3c",
+        "_ZN10FadeWindow6updateILi1EEEvv": "0x710036f0dc"
+      }
+    },
+    "misc/s4_c554.cpp": {
+      "map": {
+        ".rodata": "0x710073d0f8"
+      },
+      "functions": {
+        "_Z13remapped_c554i": "0x710000c554",
+        "_Z13remapped_c624i": "0x710000c624"
+      }
+    },
+    "misc/s4_2198fc.cpp": {
+      "functions": {
+        "_ZN12DarkenShader5setupEv": "0x71002198fc",
+        "_ZN11RogiaShader5setupEv": "0x71002229cc"
       }
     }
   }
