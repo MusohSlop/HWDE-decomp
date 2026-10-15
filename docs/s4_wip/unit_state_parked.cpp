@@ -370,3 +370,114 @@ void UnitAim::update() {
     IF_UNIT_STATE_ACTIVE(self->state()->id, b = self->actor());
     b->target_4f8 = pick(b->target_4f8, t, dist, ref_area);
 }
+
+// 2174c update: the side lookup returns int (now so in the header), and the 0xd2 test is the signed range
+// id >= 0 && id < 0xd2 on the short: that gives the original's mov w8, #0xffff; bfi; cmp with 0xd2fffe. Best so far, 2
+// off: "Unit* u = 0; if ((unsigned short)id <= 0x6d6 && id >= 0 && id < 0xd2) u = gUnitTable_c21690->unit(id);" keeps
+// the index as w0, sxth #3 but repeats the bound check; with units[id] the check is single but the index becomes
+// lsl/asr of a copy (3 off).
+
+// 1ac4c (Spawner::spawn, 920 B), 15 off: uses UnitTable::by_handle (header; the index check gives the bfi form, the
+// generation test is cmp x10, x8, lsr #16 here vs the original's ubfx x10, x8, #16, #16; cmp w10, w11); UnitState
+// value1a0/link1a0/item1a8 are in the header too. Left: that compare, block order around the 0xf/0x16 cases, the
+// fail path's 64-bit key load.
+struct SpawnKey {
+    int type;
+    int sub;
+};
+
+struct SpawnInfo {
+    unsigned char pad0[0x10];
+    unsigned char place[0x10];  // +10
+    union {
+        struct {
+            int type;         // +20
+            int sub;          // +24
+        };
+        SpawnKey key;         // +20
+    };
+    int value28;              // +28
+    unsigned char pad2c[4];
+    unsigned int handle;      // +30
+    unsigned char pad34[0xc];
+    int command;              // +40
+    int setting;              // +44
+    unsigned char slot;       // +48
+    unsigned char pad49[3];
+    float charge;             // +4c
+    bool start;               // +50
+    bool linked;              // +51
+};
+struct LinkedParts {
+    unsigned char pad0[0x4c];
+    short items[1];           // +4c
+};
+int spawn_kind_a070(int type);                                              // 0x710000a070
+void actor_setting_9dee8(UnitActor* actor, int setting);                    // 0x710009dee8
+void actor_command_86668(UnitActor* actor, int command);                    // 0x7100086668
+void actor_start_8162c(UnitActor* actor);                                   // 0x710008162c
+// Reached through the GOT slot at 0x7100c21a60.
+extern float gSpawnCharges[0x3c];
+
+class Spawner : public Unit {
+public:
+    void spawn(SpawnInfo* info);
+    Unit* create_1b134(int type, int sub, int kind);                        // 0x710001b134
+    void finish_185b0();                                                    // 0x71000185b0
+    void fail_1afe4(int type, short sub);                                   // 0x710001afe4
+    void init_187e0(int type, int sub, int kind, SpawnInfo* info, void* place);  // 0x71000187e0
+};
+
+// 0x710001ac4c
+void Spawner::spawn(SpawnInfo* info) {
+    if (info->linked) {
+        Unit* u = gUnitTable_c21690->by_handle(info->handle);
+        if (!u || (u->state()->kind & 4) || !gUnitTable_c21690->by_index(info->handle)) {
+            SpawnKey key = info->key;
+            fail_1afe4(key.type, key.sub);
+            return;
+        }
+    }
+    int kind = spawn_kind_a070(info->type);
+    Spawner* s = static_cast<Spawner*>(create_1b134(info->type, info->sub, kind));
+    if (!s) return;
+    s->init_187e0(info->type, info->sub, kind, info, info->place);
+    int type = info->type;
+    if (type >= 0xf) {
+        if (type == 0xf) {
+            UnitState* st = s->state();
+            st->value1a0 = info->value28;
+        } else if (!((type != 0x16) & (type != 0x17))) {
+            Unit* u = gUnitTable_c21690->by_handle(info->handle);
+            if (u && (u->state()->kind & 4)) u = 0;
+            if (u) u = gUnitTable_c21690->by_index(info->handle);
+            s->state()->link1a0 = u;
+            LinkedParts* parts = reinterpret_cast<LinkedParts*>(u->state()->info);
+            short item = parts->items[info->slot];
+            actor_setting_9dee8(s->actor(), info->setting);
+            UnitState* st1 = s->state();
+            if (static_cast<unsigned int>(item) <= 0x44b) st1->item1a8 = item;
+            unsigned int index = static_cast<short>(info->sub) - 0xd2;
+            UnitState* st = s->state();
+            float charge = info->charge;
+            if (index <= 0x3b) gSpawnCharges[index] = charge;
+            if (!(info->charge > 0.0f)) st->bits8 |= 0x100;
+        }
+    }
+    if (static_cast<unsigned int>(info->command) <= 0x3b) {
+        IF_UNIT_STATE_ACTIVE(s->state()->id, {
+            UnitActor* a = s->actor();
+            if (a) {
+                actor_command_86668(a, info->command);
+                unit_command_80bf8(a, info->command);
+            }
+        });
+    }
+    if (info->start) {
+        IF_UNIT_STATE_ACTIVE(s->state()->id, {
+            UnitActor* a = s->actor();
+            if (a) actor_start_8162c(a);
+        });
+    }
+    s->finish_185b0();
+}

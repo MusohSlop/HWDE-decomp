@@ -176,6 +176,12 @@ public:
     short unit_id;            // +24
     unsigned char pad26[0x32];
     struct UnitStateInfo* info;  // +58
+    unsigned char pad60[0x140];
+    union {
+        Unit* link1a0;        // +1a0
+        int value1a0;
+    };
+    int item1a8;              // +1a8
 };
 
 class UnitActor {
@@ -345,9 +351,14 @@ struct UnitTable {
     int give_211dc(short id, int item, unsigned char show, unsigned char notify, unsigned char quiet);
     unsigned char has_22640(struct UnitRef* ref);                            // 0x7100022640
     Unit* by_ref(struct UnitRef* ref);
-    Unit* unit_at(long id) { return static_cast<unsigned long>(id) <= 0x6d6 ? units[id] : 0; }
+    Unit* by_index(unsigned short index) { return units[index]; }
 
-    unsigned char pad37f0[0xf3b00 - 0x37f0];
+    // A unit by handle: the index in the low half (a signed range check), the generation in the high half.
+    Unit* by_handle(unsigned int handle);    Unit* unit_at(long id) { return static_cast<unsigned long>(id) <= 0x6d6 ? units[id] : 0; }
+
+    unsigned char pad37f0[0xefa8 - 0x37f0];
+    unsigned short generations[0x6d7];  // +efa8
+    unsigned char padfd56[0xf3b00 - 0xfd56];
     struct UnitRoster {
         unsigned int rank(Unit* unit);                                      // 0x710005d4d0
     } roster;                 // +f3b00
@@ -357,7 +368,7 @@ extern UnitTable* gUnitTable_c21690;
 
 static inline Unit* find_unit(short id) { return gUnitTable_c21690->unit(id); }
 
-short side_unit_id_db3c(int side);                                          // 0x710000db3c
+int side_unit_id_db3c(int side);                                            // 0x710000db3c
 
 // Whether a unit (by id), or the unit of a side, can take an actor command.
 static inline int unit_can(short id, int cmd) {
@@ -382,4 +393,11 @@ active:
     UnitActor* a = u->actor();
     if (!a) return 0;
     return static_cast<unsigned char>(a->command(cmd));
+}
+
+inline Unit* UnitTable::by_handle(unsigned int handle) {
+    short index = handle;
+    if (!(index >= 0 && index < 0x6d7)) return 0;
+    if (generations[index] != ((static_cast<unsigned long>(handle) >> 16) & 0xffff)) return 0;
+    return units[index];
 }

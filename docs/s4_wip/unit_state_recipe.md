@@ -90,8 +90,17 @@ if (st_ >= 0 && (st_ < 25 || !((st_ != 58) & (st_ != 59)))) {
 - Read the loop-invariant globals into locals before a loop; under -fno-strict-aliasing LICM won't hoist them past
   the stores (75434).
 
+- The side -> unit id lookup returns `int` (the id field is an int); callers truncate it to `short`. A signed range
+  test on that short (`id >= 0 && id < 0xd2`, or `< 0x6d7`) is what gives the odd `mov w8, #0xffff; bfi w8, w0, #16,
+  #16; cmp w8, <(C << 16) - 1>` form (2174c, 1ac4c); an unsigned test on it gives `and w8, w0, #0xffff; cmp`.
+- `unit_can_jump` (the action reached by goto) keeps a null unit's later lookups from being threaded away (3e350,
+  found by an unattended variant search).
+- Units by handle (1ac4c): index in the low half, generation in the high half (`UnitTable::by_handle`,
+  generations at +0xefa8).
+
 ## Status
 
-Matched: 33 (see `docs/s4_claims.txt`, "matched"). Parked with notes in `docs/s4_wip/unit_state_parked.cpp` and
-`docs/s4_wip/fa9c.cpp`: 2174c, bf440, 43e20, 8b910, 74eb0, 41b7c, 3e350, fa9c. Most of them are 2-16 instructions
+Matched: 34 (see `docs/s4_claims.txt`, "matched"). Parked with notes in `docs/s4_wip/unit_state_parked.cpp` and
+`docs/s4_wip/fa9c.cpp`: 2174c, bf440, 43e20, 8b910, 74eb0, 41b7c, c69a0, 17860, 1ac4c, fa9c. Not started: 3c784, 32fc4, 43770, 2209c, 34e88,
+42668, 17e84, ac28, 31edc, 8efc0 (spawn and effect routines of 900-3500 bytes). Most of them are 2-16 instructions
 off on block placement, tail merging or the ccmp choice; the shape of the test itself matches in all of them.
