@@ -35,3 +35,9 @@ Run them with the project's Python, `python -B -I tools/s4/SCRIPT ...`, from `ma
   in order with the gaps between them, runs of one constructor merged into arrays (Clang fully unrolls arrays of
   up to 70 elements into separate calls, so a straight run is an array as well); `--cpp` prints them as member
   declarations with byte pads for the gaps and a struct per multi-call loop.
+- `families.py OUT.txt [--lo HEX] [--hi HEX] [--min N] [--skip FILE ...] [--wide]` finds template families: unmatched
+  functions whose opcode sequences are identical once registers and relocation targets are abstracted (callees and
+  outside branches, adrp pages and their `:lo12:` halves, adr and literal loads; other immediates and in-function
+  branch distances stay), so one source can close every copy. Constructor-shaped functions and the SKIP files'
+  addresses are left out; `--wide` groups with the whole image and keeps the families with a copy in the range.
+  `docs/s4_wip/families.txt` is its output for `0`-`380000` with `--wide --skip docs/s3_scope.txt`.
