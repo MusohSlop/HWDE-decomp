@@ -90,6 +90,7 @@ real classes.
 | `misc/variant_functions62.cpp` | variant search, sixty-second run (functions changed by known callee arity, bitfield writes and constant division) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions63.cpp` | variant search, sixty-third run (functions changed by signed and 64-bit constant division and paired int loads) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions64.cpp` | variant search, sixty-fourth run (structs returned through `x8`) | as `misc/variant_functions26.cpp` |
+| `misc/variant_functions65.cpp` | variant search, sixty-fifth run (`voidret` over every generating, unmatched function below `0x7100380000`) | as `misc/variant_functions26.cpp` |
 | `misc/s2_functions1.cpp` | second session, first run over `0x7100380000` and up (the whole 4-byte constant pool, 16-byte vector constants from the literal pool) | as `misc/variant_functions26.cpp`; vector constants are `(Vec4f){...}` literals, mapped through `.rodata.cst16` |
 | `misc/s2_functions2.cpp` | second session, second run (float stack slots, `sqrtf`, float branches, indexed floats) | as `misc/s2_functions1.cpp` |
 | `misc/s2_functions3.cpp` | second session, third run (constant-store fields retyped, integer reads of two widths; only the newly generated functions) | as `misc/s2_functions1.cpp` |
