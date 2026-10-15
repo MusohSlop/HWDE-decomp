@@ -2160,6 +2160,38 @@ def gen_function(a, ins):
                     regs[xn_] = ("vpart", vv_, 0 if ops[1][0] == "d" else 1)
                     if xn_ < 8: written.add(xn_)
                 k += 1; continue
+            ml1_ = re.fullmatch(r"\{v(\d+)\.([sd])\}\[(\d)\], (\[x\d+\])(?:, #(0x[0-9a-f]+|\d+))?", i.op_str) if m in ("ld1", "st1") and "nold1" not in knobs else None
+            if ml1_ and not (m == "st1" and ml1_.group(2) == "d") and not (ml1_.group(2) == "d" and ml1_.group(3) != "0"):
+                vn_, lk_, li_ = int(ml1_.group(1)), ml1_.group(2), int(ml1_.group(3))
+                b, off, idx, sh, ext, pre, post = memop2(ml1_.group(4), ("#" + ml1_.group(5)) if ml1_.group(5) else None)
+                bnl_ = regname(b)[0]
+                if m == "ld1" and lk_ == "s":
+                    sn, base, off2 = field(regs, b, off, "float")
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off2, "float")
+                    items.append(("let", name, sn, off2, base))
+                    letbase[name] = base
+                    old_ = regs["f"].get(vn_)
+                    if old_ is None or not is_vecval_(old_):
+                        old_ = ("vundef",)
+                    regs["f"][vn_] = ("vins", old_, ("var", name), li_)
+                elif m == "ld1":
+                    sn, base, off2 = field(regs, b, off, "long")
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off2, "long")
+                    items.append(("let", name, sn, off2, base))
+                    letbase[name] = base
+                    regs["f"][vn_] = ("vlo", ("var", name))
+                else:
+                    vv_ = regs["f"].get(vn_)
+                    if not is_vecval_(vv_):
+                        raise Fail("lane store of a scalar")
+                    sn, base, off2 = field(regs, b, off, "float")
+                    items.append(("store", sn, off2, base, ("vlane", vv_, li_)))
+                if vn_ < 8 and m == "ld1": regs.setdefault("fw", set()).add(vn_)
+                if post is not None:
+                    regs[bnl_] = ("bin", "+", regs.get(bnl_), ("const", post, "x"), "x", "add")
+                k += 1; continue
             if m in ("ldr", "ldur") and k in ivec_loads_ and len(ops) == 2:
                 # an int field loaded into a vector register for a conversion to float
                 ty_ = ivec_loads_[k]
