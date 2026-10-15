@@ -1324,7 +1324,8 @@ def gen_function(a, ins):
                 ct0, child0 = structs[sn0][off0]
                 if ct0 == "ARRAY:void*" and len(cur) > 3 and cur[3] != "void*":
                     raise Fail("non-pointer load base")
-                if ct0 == "long" and "nolongbase" not in knobs and off0 != 0 and (len(cur) == 3 or cur[3] in ("void*", "long")):
+                if ct0 == "long" and "nolongbase" not in knobs and (off0 != 0 or "novptrlong" not in knobs) \
+                        and (len(cur) == 3 or cur[3] in ("void*", "long")):
                     # an address kept in an 8-byte field: a pointer
                     structs[sn0][off0] = ("void*", child0)
                     ct0 = "void*"
@@ -5345,6 +5346,11 @@ def gen_function(a, ins):
                 vt0_ = vtype(val)
                 view_, want_ = vu_view_("Vec4f" if vt0_ == "Vec4f" else ("float" if vt0_ == "float" else ("long" if vt0_ in ("long", "void*") or vt0_.endswith("*") else "int")), off - u_)
                 outl.append(f"{pad}{acc(base, u_)}.{view_} = {fit(expr(val), vt0_, want_)};")
+            elif it[0] == "store" and it[2] == 0 and it[1] in vtables and "novptrlong" not in knobs \
+                    and it[3][0] in ("param", "var"):
+                # field 0 of a class with virtual slots is its vtable pointer, declared by the class itself
+                _, sn, off, base, val = it
+                outl.append(f"{pad}*reinterpret_cast<long*>({expr(base)}) = {fit(expr(val), vtype(val), 'long')};")
             elif it[0] == "store":
                 _, sn, off, base, val = it
                 vt_, ft_ = vtype(val), ftype(sn, off)

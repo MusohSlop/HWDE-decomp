@@ -211,6 +211,9 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   "non-pointer load base" (offset 0, a vtable slot, is left alone);
 - a pointer loaded through a byte offset is untyped until used as a base (knob `nobyteptr`): a table of pointers
   walked by a byte index reads the bytes of a field typed as a byte array, so the loaded pointer had no struct;
+- a stored vtable pointer read back for a virtual call (knob `novptrlong`): field 0 typed long by the store of a
+  vtable address is retyped too, and a store to field 0 of a class with virtual slots is written through the object
+  pointer (`*reinterpret_cast<long*>(obj) = ...`), the class declaring no field 0;
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
