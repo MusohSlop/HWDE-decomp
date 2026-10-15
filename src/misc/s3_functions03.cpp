@@ -4038,3 +4038,141 @@ int call_2d2498(Arg2d2498_0* p0) {
     p0->field_11a18 = 0;
     return c27;
 }
+
+
+struct Node3182bc_v1 {
+    unsigned char pad0[0x2af8];
+    void* field_2af8;               // +2af8
+};
+
+struct Globalc22f00_3182bc {
+    unsigned char pad0[0x28];
+    void* field_28;               // +28
+};
+// Reached through the GOT slot at 0x7100c22f00.
+extern Globalc22f00_3182bc gGlobalc22f00_3182bc;
+// Reached through the GOT slot at 0x7100c21db0.
+extern Node3182bc_v1* gGlobalc21db0_3182bc;
+// Reached through the GOT slot at 0x7100c2adc8.
+extern unsigned char gGlobalc2adc8_3182bc[];
+
+struct Arg3182bc_0 {
+    long field_0;                // +0
+};
+
+// 0x71003182bc: written by hand in generated style (gen.py fails on its pre-indexed store): five handle pairs, both addresses of a pair computed before its first vtable store
+int call_3182bc(Arg3182bc_0* p0) {
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2adc8_3182bc) + 0x10);
+    void* v0 = gGlobalc22f00_3182bc.field_28;
+    long* h221e0 = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x221e0);
+    long* h221f8 = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x221f8);
+    *h221f8 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(&gGlobalc22f00_3182bc) + 0x10);
+    Node3182bc_v1* v1 = gGlobalc21db0_3182bc;
+    long m3;
+    if (v1 != 0) {
+        void* v2 = v1->field_2af8;
+        m3 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v2) + 0x10);
+    } else {
+        m3 = 0;
+    }
+    reinterpret_cast<void (*)(long, long)>(v0)(reinterpret_cast<long>(h221f8), m3);
+    *h221e0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(&gGlobalc22f00_3182bc) + 0x10);
+    Node3182bc_v1* v4 = gGlobalc21db0_3182bc;
+    long m6;
+    if (v4 != 0) {
+        void* v5 = v4->field_2af8;
+        m6 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v5) + 0x10);
+    } else {
+        m6 = 0;
+    }
+    reinterpret_cast<void (*)(long, long)>(v0)(reinterpret_cast<long>(h221e0), m6);
+    long* h19980 = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x19980);
+    long* h19998 = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x19998);
+    *h19998 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(&gGlobalc22f00_3182bc) + 0x10);
+    Node3182bc_v1* v7 = gGlobalc21db0_3182bc;
+    long m9;
+    if (v7 != 0) {
+        void* v8 = v7->field_2af8;
+        m9 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v8) + 0x10);
+    } else {
+        m9 = 0;
+    }
+    reinterpret_cast<void (*)(long, long)>(v0)(reinterpret_cast<long>(h19998), m9);
+    *h19980 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(&gGlobalc22f00_3182bc) + 0x10);
+    Node3182bc_v1* v10 = gGlobalc21db0_3182bc;
+    long m12;
+    if (v10 != 0) {
+        void* v11 = v10->field_2af8;
+        m12 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v11) + 0x10);
+    } else {
+        m12 = 0;
+    }
+    reinterpret_cast<void (*)(long, long)>(v0)(reinterpret_cast<long>(h19980), m12);
+    long* h11120 = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x11120);
+    long* h11138 = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x11138);
+    *h11138 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(&gGlobalc22f00_3182bc) + 0x10);
+    Node3182bc_v1* v13 = gGlobalc21db0_3182bc;
+    long m15;
+    if (v13 != 0) {
+        void* v14 = v13->field_2af8;
+        m15 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v14) + 0x10);
+    } else {
+        m15 = 0;
+    }
+    reinterpret_cast<void (*)(long, long)>(v0)(reinterpret_cast<long>(h11138), m15);
+    *h11120 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(&gGlobalc22f00_3182bc) + 0x10);
+    Node3182bc_v1* v16 = gGlobalc21db0_3182bc;
+    long m18;
+    if (v16 != 0) {
+        void* v17 = v16->field_2af8;
+        m18 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v17) + 0x10);
+    } else {
+        m18 = 0;
+    }
+    reinterpret_cast<void (*)(long, long)>(v0)(reinterpret_cast<long>(h11120), m18);
+    long* h88c0 = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x88c0);
+    long* h88d8 = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x88d8);
+    *h88d8 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(&gGlobalc22f00_3182bc) + 0x10);
+    Node3182bc_v1* v19 = gGlobalc21db0_3182bc;
+    long m21;
+    if (v19 != 0) {
+        void* v20 = v19->field_2af8;
+        m21 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v20) + 0x10);
+    } else {
+        m21 = 0;
+    }
+    reinterpret_cast<void (*)(long, long)>(v0)(reinterpret_cast<long>(h88d8), m21);
+    *h88c0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(&gGlobalc22f00_3182bc) + 0x10);
+    Node3182bc_v1* v22 = gGlobalc21db0_3182bc;
+    long m24;
+    if (v22 != 0) {
+        void* v23 = v22->field_2af8;
+        m24 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v23) + 0x10);
+    } else {
+        m24 = 0;
+    }
+    reinterpret_cast<void (*)(long, long)>(v0)(reinterpret_cast<long>(h88c0), m24);
+    long* h60 = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x60);
+    long* h78 = reinterpret_cast<long*>(reinterpret_cast<unsigned char*>(p0) + 0x78);
+    *h78 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(&gGlobalc22f00_3182bc) + 0x10);
+    Node3182bc_v1* v25 = gGlobalc21db0_3182bc;
+    long m27;
+    if (v25 != 0) {
+        void* v26 = v25->field_2af8;
+        m27 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v26) + 0x10);
+    } else {
+        m27 = 0;
+    }
+    reinterpret_cast<void (*)(long, long)>(v0)(reinterpret_cast<long>(h78), m27);
+    *h60 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(&gGlobalc22f00_3182bc) + 0x10);
+    Node3182bc_v1* v28 = gGlobalc21db0_3182bc;
+    long m30;
+    if (v28 != 0) {
+        void* v29 = v28->field_2af8;
+        m30 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v29) + 0x10);
+    } else {
+        m30 = 0;
+    }
+    reinterpret_cast<void (*)(long, long)>(v0)(reinterpret_cast<long>(h60), m30);
+    return callee_316aa4(p0);
+}
