@@ -32905,6 +32905,13 @@
         "_Z11call_3555b0P11Arg3555b0_0i": "0x71003555b0",
         "_Z11call_376d00P11Arg376d00_0": "0x7100376d00"
       }
+    },
+    "misc/s4_3db158.cpp": {
+      "functions": {
+        "_Z7collectILi0EEvP8DrawPairjP10FrameArenaPP10DrawRecord": "0x71003db158",
+        "_Z7collectILi1EEvP8DrawPairjP10FrameArenaPP10DrawRecord": "0x71003db330",
+        "_Z7collectILi2EEvP8DrawPairjP10FrameArenaPP10DrawRecord": "0x71003db508"
+      }
     }
   }
 }
