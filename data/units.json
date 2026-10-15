@@ -20943,7 +20943,22 @@
     "kDarkenOffset_2198fc": "0x710073ff63",
     "kRim_2198fc": "0x710073ff71",
     "kRogiaThreshold_2229cc": "0x710073fefc",
-    "kRogiaTexThreshold_2229cc": "0x710073ff0c"
+    "kRogiaTexThreshold_2229cc": "0x710073ff0c",
+    "fprintf": "0x7100600a70",
+    "abort": "0x7100600a80",
+    "_ZNSt11logic_errorC2EPKc": "0x7100600a50",
+    "_ZNKSt11logic_error4whatEv": "0x7100600a60",
+    "got:stderr": "0x7100c22f18",
+    "got:_ZTVSt12length_error": "0x7100c22f10",
+    "got:gPlaceTable": "0x7100c22bd8",
+    "_ZN9PlaceGrid4findEP4Vec4P10PlaceEntryi": "0x7100153cf4",
+    "_ZN9PlaceGrid4cellEPiS0_P4Vec4": "0x710014a8f0",
+    "_Z13area_has_gridi": "0x7100148fd8",
+    "_Z15set_actor_stateP5Actori": "0x71001349c0",
+    "_Z11place_actorP5ActorP4Vec4if": "0x7100133158",
+    "_ZN10PlaceRuleA5validEP5ActorP10PlaceEntry": "0x7100135698",
+    "_ZN10PlaceRuleB5validEP5ActorP10PlaceEntry": "0x7100135748",
+    "_ZN6Placer15fallback_heightEv": "0x7100136cf0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -31411,6 +31426,23 @@
       "functions": {
         "_ZN12DarkenShader5setupEv": "0x71002198fc",
         "_ZN11RogiaShader5setupEv": "0x71002229cc"
+      }
+    },
+    "misc/s4_1e09d0.cpp": {
+      "functions": {
+        "_ZN11SplitBufferIP10Elem1e0580E9push_backEOS1_": "0x71001e09d0",
+        "_ZN11SplitBufferIP10Elem1e0580E9push_backERKS1_": "0x71001e0d90",
+        "_ZN11SplitBufferIP10Elem1e0580E10push_frontEOS1_": "0x71001e0bb0",
+        "_ZN11SplitBufferIP10Elem1e0580E10push_frontERKS1_": "0x71001e0f70"
+      },
+      "map": {
+        ".rodata.str1.1": "0x7100740c0e"
+      }
+    },
+    "misc/s4_137730.cpp": {
+      "functions": {
+        "_ZN6Placer5placeI10PlaceRuleAEEvv": "0x7100137730",
+        "_ZN6Placer5placeI10PlaceRuleBEEvv": "0x710013789c"
       }
     }
   }
