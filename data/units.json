@@ -19462,7 +19462,22 @@
     "gAnimWait39ec78": "0x710074053d",
     "gAnimOn39ec78": "0x71007d5b89",
     "gAnimOff39ec78": "0x71007d5b94",
-    "gPaneE39ec78": "0x71007db187"
+    "gPaneE39ec78": "0x71007db187",
+    "got:_ZTV10Page3940c4": "0x7100c2b200",
+    "_ZN10Base38c480C2EiPKcPv": "0x710038c480",
+    "_ZN10Base38c48013set_animationEiPKci": "0x710038ccb0",
+    "gLayout3940c4": "0x71007db0d6",
+    "gAnimA3940c4": "0x71007d5b6c",
+    "gAnimB3940c4": "0x71007d5b72",
+    "gPaneA3940c4": "0x71007db0ea",
+    "gPaneB3940c4": "0x71007d830f",
+    "gPaneC3940c4": "0x71007db0af",
+    "got:_ZTV10Page3a4034": "0x7100c2b328",
+    "gLayout3a4034": "0x71007db195",
+    "gAnimA3a4034": "0x7100740004",
+    "gAnimB3a4034": "0x71007db1a6",
+    "gPaneA3a4034": "0x71007db1b1",
+    "gPaneB3a4034": "0x71007db1ba"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29599,7 +29614,9 @@
     },
     "misc/s3_functions24.cpp": {
       "functions": {
-        "_ZN10Page39ec78C2Ev": "0x710039ec78"
+        "_ZN10Page39ec78C2Ev": "0x710039ec78",
+        "_ZN10Page3940c4C2Ev": "0x71003940c4",
+        "_ZN10Page3a4034C2Ev": "0x71003a4034"
       }
     }
   }
