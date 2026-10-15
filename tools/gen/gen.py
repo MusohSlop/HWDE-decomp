@@ -3146,6 +3146,13 @@ def gen_function(a, ins):
                 hit_, miss_ = f"&{arr_}[{expr(pk[2])}]", f"&{arr_}[0]"
                 a_, b_ = (miss_, hit_) if pk[3] else (hit_, miss_)
                 return f"({cond(*pk[1])} ? {a_} : {b_})->field_{off:x}"
+            b1_ = base[1]
+            if "noelemaddr" not in knobs and b1_[0] == "bin" and b1_[1] == "+" and b1_[4] == "x" and cval_(b1_[3]) is not None \
+                    and b1_[2][0] != "const" and vtype(b1_[2]).endswith("*") and not vtype(base[2]).endswith("*"):
+                # base + i*stride + const as one byte-pointer expression, the constant last
+                c_ = cval_(b1_[3])
+                return f"reinterpret_cast<{en}*>(reinterpret_cast<unsigned char*>({expr(b1_[2])}) + static_cast<long>({expr(base[2])}) * {hex(base[3])}" \
+                    f" {'+' if c_ >= 0 else '-'} {hex(abs(c_))})->field_{off:x}"
             return f"reinterpret_cast<{en}*>({expr(base[1])})[{expr(base[2])}].field_{off:x}"
         if base[0] == "stackobj":
             sn = stackobjs[base[1]]
@@ -3294,6 +3301,15 @@ def gen_function(a, ins):
             return f"static_cast<{'unsigned char' if v[3][1] == 0xff else 'unsigned short'}>({expr(v[2])})"
         cv_ = (v[3][1] if v[3][0] == "const" else (v[3][2][1] & 0xffffffff if v[3][0] == "ext" and v[3][1] == "unsigned int" and v[3][2][0] == "const" else None)) \
             if v[0] == "bin" and len(v) > 3 and isinstance(v[3], tuple) else None
+        if v[0] == "bin" and v[1] in ("+", "-") and v[4] == "x" and "noelemaddr" not in knobs and cv_ is not None \
+                and v[2][0] == "bin" and v[2][1] == "+" and v[2][4] == "x":
+            pi_ = [(p_, i_) for p_, i_ in ((v[2][2], v[2][3]), (v[2][3], v[2][2]))
+                   if p_[0] != "const" and vtype(p_).endswith("*") and cval_(i_) is None and not vtype(i_).endswith("*")]
+            if pi_:
+                # (pointer + index) + constant as one byte-pointer expression, the constant last
+                p_, i_ = pi_[0]
+                c_ = cv_ if v[1] == "+" else -cv_
+                return f"reinterpret_cast<long>(reinterpret_cast<unsigned char*>({expr(p_)}) + {expr(i_, False)} {'+' if c_ >= 0 else '-'} {hex(abs(c_))})"
         if v[0] == "bin" and v[1] in ("+", "-") and v[4] == "x" and "noptradd" not in knobs and cv_ is not None \
                 and vtype(v[2]).endswith("*") and v[2][0] != "const":
             c_ = cv_ if v[1] == "+" else -cv_

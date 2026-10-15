@@ -107,7 +107,12 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   register holding a constant) into x19-x28 whose value is only copied into argument registers after at least one
   call is `long aN = ...;` at the add (Clang emits the address where the source computes it, so the original declared
   it early, typically the first element of an array it constructs or destroys); written at the call, the original's
-  extra saved register was missing; a function that fails with it is generated again without it.
+  extra saved register was missing; a function that fails with it is generated again without it;
+- indexed element addresses are one byte-pointer expression with the variable part first and the constant last
+  (knob `noelemaddr`): an element access on a pointer plus whole elements is
+  `reinterpret_cast<Elem*>(reinterpret_cast<unsigned char*>(p) + static_cast<long>(i) * S + C)->field`, and a
+  pointer plus an index plus a constant is `reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p) + i*S + C)`;
+  with the constant first, LLVM reassociated and hoisted `p + C` out of a loop into a callee-saved register.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
