@@ -1,0 +1,1168 @@
+// Fifth session, in progress: 0x71003c2280 (4,044 bytes), the stage panel's font renders: ten texts (stage name,
+// scenario, characters, the two "anyone" icons, difficulties) and three per-area texts for 32 areas, each drawn
+// into a 0x1a90-byte buffer by the font renderer (a GOT global), applied to a pane, the pane shown if anything was
+// drawn. Drafted on top of misc/s5_functions02.cpp; same size, 18 instructions off when registers are abstracted.
+// Settled: the field layout (the area entries are 0x5008 bytes), the stage remap of 3bd1d8, the three render
+// shapes (text fetched before begin with the buffer address taken before the text call; text fetched after begin
+// and the field stores, the width read inside the draw call; text right after the find for the two icon texts,
+// with pos and size built after the width), the draw's limit argument a signed char (mov w5, #0xff).
+// Still off: the remap's bounds test is cmp #0x20; b.hs here (reversed by block placement) where the original
+// has cmp #0x1f; b.hi (same layout); the first block's three selects are scheduled differently; the rock text's
+// pos is stored as two str instead of one stp (the 12.0 product is computed later here); the area loop's first
+// load (slot_kind[i] before the db() call fixes it but adds 4 bytes elsewhere).
+// Maps for tools/s5/sbs.py (name=address): got:gRenderer_c22a30=0x7100c22a30
+//   _ZN14Renderer3c22805beginEP11Vec2_3c2280S1_iib=0x71001e709c _ZN14Renderer3c22804drawEffPvPKtiba=0x71001e73c0
+//   _Z17apply_text_1e41d8P10Pane3bdbf0Pvj=0x71001e41d8 _Z18stage_kind_20f924i=0x710020f924
+//   _Z11text_218678i=0x7100218678 _Z11text_2181bci=0x71002181bc _Z11text_217d64i=0x7100217d64
+//   _Z11text_21840ci=0x710021840c _Z9db_20dfd0v=0x710020dfd0 _Z15area_of_20d8f4P9Rec3c2280=0x710020d8f4
+//   .rodata.cst4=0x710073b000 .rodata=0x7100804404
+// with --name _ZN10Menu3bdbf012update_fontsEv.
+
+// Large functions written by hand (fifth session), second unit. Struct, field and callee names are placeholders
+// after the address and offset, as in the generated units; string literals are named after the text and their
+// address (the linker merged two of them with other modules' strings). Status: matching/README.md.
+
+extern "C" void* memset(void*, int, unsigned long);
+
+extern const char kLine300_7db832[] __attribute__((visibility("hidden")));
+extern const char kLine301_7db83c[] __attribute__((visibility("hidden")));
+extern const char kLine302_7db846[] __attribute__((visibility("hidden")));
+extern const char kLine303_7db850[] __attribute__((visibility("hidden")));
+extern const char kLine00_7db82a[] __attribute__((visibility("hidden")));
+extern const char kLine01_7d7ef3[] __attribute__((visibility("hidden")));
+extern const char kLine02_7da0be[] __attribute__((visibility("hidden")));
+extern const char kLine04_7db85a[] __attribute__((visibility("hidden")));
+extern const char kLine05_7db862[] __attribute__((visibility("hidden")));
+extern const char kLine06_7db86a[] __attribute__((visibility("hidden")));
+extern const char kLine700_7db872[] __attribute__((visibility("hidden")));
+extern const char kLine701_7db87c[] __attribute__((visibility("hidden")));
+extern const char kLine702_7db886[] __attribute__((visibility("hidden")));
+extern const char kLine703_7db890[] __attribute__((visibility("hidden")));
+extern const char kLine08_7db89a[] __attribute__((visibility("hidden")));
+extern const char kLine09_7db8a2[] __attribute__((visibility("hidden")));
+extern const char kLine10_7db8aa[] __attribute__((visibility("hidden")));
+extern const char kLine11_7db8b2[] __attribute__((visibility("hidden")));
+extern const char kLine12_7db8ba[] __attribute__((visibility("hidden")));
+extern const char kLine13_7db8c2[] __attribute__((visibility("hidden")));
+extern const char kLine14_7db8ca[] __attribute__((visibility("hidden")));
+extern const char kLineDlc00_7db922[] __attribute__((visibility("hidden")));
+extern const char kLineDlc01_7db92e[] __attribute__((visibility("hidden")));
+extern const char kLine300Dlc_7db8d2[] __attribute__((visibility("hidden")));
+extern const char kLine04Dlc_7db8e0[] __attribute__((visibility("hidden")));
+extern const char kLine700Dlc_7db8ec[] __attribute__((visibility("hidden")));
+extern const char kLine302Dlc_7db8fa[] __attribute__((visibility("hidden")));
+extern const char kLine06Dlc_7db908[] __attribute__((visibility("hidden")));
+extern const char kLine702Dlc_7db914[] __attribute__((visibility("hidden")));
+extern const char kLineDlc04_7db952[] __attribute__((visibility("hidden")));
+extern const char kLineZds00_7db95e[] __attribute__((visibility("hidden")));
+extern const char kLineZds01_7db96a[] __attribute__((visibility("hidden")));
+extern const char kLineZds02_7db976[] __attribute__((visibility("hidden")));
+extern const char kLineZds03_7db982[] __attribute__((visibility("hidden")));
+extern const char kLineZds04_7db98e[] __attribute__((visibility("hidden")));
+extern const char kLineZds05_7db99a[] __attribute__((visibility("hidden")));
+extern const char kLineZds06_7db9a6[] __attribute__((visibility("hidden")));
+extern const char kLineZds07_7db9b2[] __attribute__((visibility("hidden")));
+extern const char kLineZds08_7db9be[] __attribute__((visibility("hidden")));
+extern const char kLineDlc02_7db93a[] __attribute__((visibility("hidden")));
+extern const char kLineDlc03_7db946[] __attribute__((visibility("hidden")));
+extern const char kArwU_7d5b66[] __attribute__((visibility("hidden")));
+extern const char kArwL_7d5b6c[] __attribute__((visibility("hidden")));
+extern const char kArwR_7d5b72[] __attribute__((visibility("hidden")));
+extern const char kArwD_7d5b78[] __attribute__((visibility("hidden")));
+extern const char* const kLine3Names_bdb860[3] __attribute__((visibility("hidden")));
+
+// A constructor, so a function-local static array of colours gets a guarded initialisation (3beef0).
+struct Color3bdbf0 {
+    unsigned char r, g, b, a;
+    Color3bdbf0(unsigned char r_, unsigned char g_, unsigned char b_, unsigned char a_) : r(r_), g(g_), b(b_), a(a_) {}
+};
+
+// A byte array read through an align-1 type, so adjacent flag loads are not merged into one wider load.
+template <int N>
+struct Bytes3bdbf0 {
+    unsigned char v[N];
+    unsigned char operator[](int i) const { return v[i]; }
+};
+
+struct Float3_3bdbf0 {
+    float x, y, z;
+};
+
+struct Pane3bdbf0 {
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+    virtual void slot_4();
+    virtual void set_vtx_color(int index, const Color3bdbf0& color);
+    virtual void slot_6();
+    virtual void slot_7();
+    virtual void slot_8();
+    virtual void slot_9();
+    virtual void slot_10();
+    virtual void slot_11();
+    virtual Pane3bdbf0* find_pane(const char* name, bool recursive);
+    unsigned char pad8[0x28];
+    Float3_3bdbf0 translate;          // +30
+    unsigned char pad3c[0xc];
+    float scale_x;                    // +48
+    float scale_y;                    // +4c
+    float width;                      // +50
+    float height;                     // +54
+    unsigned char flags;              // +58
+
+    void set_visible(bool visible) { flags = (flags & ~1) | (visible & 1); }
+    void set_translate(const Float3_3bdbf0& t) {
+        translate = t;
+        flags |= 0x10;
+    }
+};
+
+struct Layout3bdbf0 {
+    unsigned char pad0[0x18];
+    Pane3bdbf0* root;                 // +18
+};
+
+// Each colour is its own temporary, stored right before its call.
+static inline void set_white(Pane3bdbf0* pane) {
+    for (int i = 0; i < 4; i++) {
+        pane->set_vtx_color(i, Color3bdbf0{0xff, 0xff, 0xff, 0xff});
+    }
+}
+
+struct Vec2_3c2280 {
+    float x, y;
+};
+
+struct Renderer3c2280 {
+    unsigned char pad0[0x20b8c];
+    int color;                        // +20b8c
+    unsigned char pad20b90[0x8];
+    int mode;                         // +20b98
+    int align;                        // +20b9c
+    unsigned char pad20ba0[0x29];
+    unsigned char shadow;             // +20bc9
+    unsigned char outline;            // +20bca
+    void begin(Vec2_3c2280* pos, Vec2_3c2280* size, int a, int b, bool c);        // 0x71001e709c
+    unsigned int draw(float w, float y, void* buf, const unsigned short* text, int size, bool wrap, signed char limit);        // 0x71001e73c0
+};
+extern Renderer3c2280* gRenderer_c22a30;
+
+void apply_text_1e41d8(Pane3bdbf0* pane, void* buf, unsigned int n);        // 0x71001e41d8
+int stage_kind_20f924(int stage);        // 0x710020f924
+const unsigned short* text_218678(int id);        // 0x7100218678
+const unsigned short* text_2181bc(int stage);        // 0x71002181bc
+const unsigned short* text_217d64(int id);        // 0x7100217d64
+const unsigned short* text_21840c(int id);        // 0x710021840c
+
+struct Rec3c2280;
+struct Db3c2280 {
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual Rec3c2280* get(int stage);
+};
+Db3c2280* db_20dfd0();        // 0x710020dfd0
+int area_of_20d8f4(Rec3c2280* rec);        // 0x710020d8f4
+
+struct AreaObj3c2280 {
+    unsigned char pad0[0x24];
+    unsigned char active;             // +24
+};
+struct AreaAnim3c2280 {
+    unsigned char pad0[0x20];
+    float frame;                      // +20
+};
+struct Area3c2280 {
+    Pane3bdbf0* root;                 // +0
+    void* field_8;
+    Pane3bdbf0* name_pane;            // +10
+    Pane3bdbf0* attr_pane;            // +18
+    Pane3bdbf0* res_pane;             // +20
+    AreaObj3c2280* obj;               // +28
+    void* field_30;
+    AreaAnim3c2280* anim;             // +38
+    unsigned char pad40[0x18];
+    unsigned char name_buf[0x1a90];   // +58
+    unsigned char attr_buf[0x1a90];   // +1ae8
+    unsigned char res_buf[0x1a90];    // +3578
+};
+
+struct Menu3bdbf0 {
+    unsigned char pad0[0x3c];
+    int slot_kind[32];                // +3c
+    unsigned char padbc[0x420];
+    Bytes3bdbf0<32> has;              // +4dc
+    Bytes3bdbf0<32> owned;            // +4fc
+    unsigned char pad51c[0x20];
+    int stage;                        // +53c
+    unsigned char pad540[7];
+    unsigned char all_open;           // +547
+    unsigned char has_extra;          // +548
+    unsigned char pad549[0x2b7];
+    Layout3bdbf0* layout;             // +800
+    unsigned char pad808[0x158];
+    Pane3bdbf0* panes_960[2];         // +960
+    unsigned char pad970[0x10];
+    Pane3bdbf0* panes_980[2];         // +980
+    unsigned char pad990[0xb0];
+    Pane3bdbf0* sources_a40[4];       // +a40
+    unsigned char pada60[0x1c0];
+    Pane3bdbf0* font_panes[10];       // +c20
+    unsigned char padc70[0x60];
+    unsigned char font_bufs[10][0x1a90];       // +cd0
+    unsigned char pad11670[0xe08];
+    Area3c2280 areas[32];             // +12478
+    unsigned char padb2578[0x46b0];
+    int kinds[32];                    // +b6c28
+
+    Pane3bdbf0* find(const char* name) { return layout->root->find_pane(name, true); }
+    // The two forms of the same test: the first tests the stage's flag first, the second the all-open flag (so
+    // in a run of them the all-open load is shared and every test after it is threaded on its value).
+    bool is_open(int i) { return has[i] && (all_open || owned[i]); }
+    bool can_go(int i) { return all_open ? has[i] != 0 : has[i] && owned[i]; }
+    void update_fonts();
+    void update_arrows();
+    void show_line(int line, unsigned char visible);
+    void refresh_lines();
+};
+
+// A stage id to its slot: ids from 0x20 (DLC stages 200 to 232 and 100) are shifted down, then two ranges swap.
+static inline int stage_slot(int id) {
+    if (id >= 0x20) {
+        if (static_cast<unsigned>(id - 200) <= 0x20 || id == 100) {
+            id -= 0x44;
+        } else {
+            id = 0;
+        }
+        // Written negated: the +5 arm is the else block, so the compare stays "< 9" and is reversed only by block
+        // placement (cmp #9; b.hs), not "> 8".
+        if (!(id >= 18 && id <= 26)) {
+            if (id >= 27 && id <= 31) {
+                id -= 9;
+            }
+        } else {
+            id += 5;
+        }
+    }
+    return id;
+}
+
+// The same remapping, for the kind table: a stage index below 0x20 is remapped too.
+static inline int kind_slot(unsigned id) {
+    int s = id;
+    if (id >= 0x20) {
+        if (static_cast<unsigned>(id - 200) <= 0x20 || id == 100) {
+            s = id - 0x44;
+        } else {
+            s = 0;
+        }
+    }
+    if (!(s >= 18 && s <= 26)) {
+        if (s >= 27 && s <= 31) {
+            s -= 9;
+        }
+    } else {
+        s += 5;
+    }
+    return s;
+}
+
+// 0x71003bd1d8: places the four arrow panes and shows those that lead to an open stage from the current one.
+void Menu3bdbf0::update_arrows() {
+    find(kArwL_7d5b6c)->set_visible(false);
+    find(kArwR_7d5b72)->set_visible(false);
+    find(kArwU_7d5b66)->set_visible(false);
+    find(kArwD_7d5b78)->set_visible(false);
+    float z = find(kArwU_7d5b66)->translate.z;
+    find(kArwU_7d5b66)->set_translate(Float3_3bdbf0{-200.0f, 230.0f, z});
+    z = find(kArwD_7d5b78)->translate.z;
+    find(kArwD_7d5b78)->set_translate(Float3_3bdbf0{-200.0f, -250.0f, z});
+
+    int slot = stage_slot(stage);
+    int cur = static_cast<unsigned>(slot) < 0x20 ? slot_kind[slot] : -1;
+    if (is_open(20) || is_open(24)) {
+        if (cur == 4 || cur == 5) {
+            kinds[4] = 7;
+            kinds[5] = 7;
+        }
+    } else {
+        kinds[4] = 2;
+        kinds[5] = 2;
+    }
+    if (is_open(21) || is_open(25)) {
+        if (cur == 8 || cur == 9) {
+            kinds[8] = 8;
+            kinds[9] = 8;
+        }
+    } else {
+        kinds[8] = 2;
+        kinds[9] = 2;
+    }
+
+    switch (kinds[kind_slot(cur)]) {
+    case 1:
+        if (can_go(4) || can_go(6) || can_go(25) || can_go(8)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 2:
+        if (can_go(3)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(10)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        if (can_go(20) || can_go(24)) {
+            find(kArwU_7d5b66)->set_visible(true);
+        }
+        if (can_go(21) || can_go(25)) {
+            find(kArwD_7d5b78)->set_visible(true);
+        }
+        break;
+    case 3:
+        if (can_go(10)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(13)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 4:
+        if (can_go(13)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(16)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 5:
+        if (can_go(16)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(23)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 6:
+        find(kArwL_7d5b6c)->set_visible(true);
+        break;
+    case 7:
+        if (can_go(24)) {
+            find(kArwU_7d5b66)->set_visible(true);
+        }
+        if (can_go(6) || can_go(8) || can_go(21) || can_go(25)) {
+            find(kArwD_7d5b78)->set_visible(true);
+        }
+        if (can_go(3)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(10)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 8:
+        find(kArwU_7d5b66)->set_visible(true);
+        if (can_go(3)) {
+            find(kArwL_7d5b6c)->set_visible(true);
+        }
+        if (can_go(10)) {
+            find(kArwR_7d5b72)->set_visible(true);
+        }
+        break;
+    case 9:
+        find(kArwD_7d5b78)->set_visible(true);
+        break;
+    }
+}
+
+// 0x71003bdbf0: shows or hides the line panes of LINE (1 to 31) of a layout. VISIBLE is a byte whose bit 0 is
+// used (the original masks it where it computes the DLC lines' flag, so the shared tail uses orr there and bfxil
+// elsewhere); that flag is computed before its pane is looked up.
+void Menu3bdbf0::show_line(int line, unsigned char visible) {
+    switch (line) {
+    case 0x1:
+        find(kLine00_7db82a)->set_visible(visible & 1);
+        break;
+    case 0x2:
+        find(kLine01_7d7ef3)->set_visible(visible & 1);
+        break;
+    case 0x3:
+        find(kLine02_7da0be)->set_visible(visible & 1);
+        break;
+    case 0x4:
+    case 0x6:
+    case 0x8:
+        find(kLine300_7db832)->set_visible(visible & 1);
+        find(kLine301_7db83c)->set_visible(visible & 1);
+        find(kLine302_7db846)->set_visible(visible & 1);
+        find(kLine303_7db850)->set_visible(false);
+        break;
+    case 0x5:
+        find(kLine04_7db85a)->set_visible(visible & 1);
+        break;
+    case 0x7:
+        find(kLine05_7db862)->set_visible(visible & 1);
+        break;
+    case 0x9:
+        find(kLine06_7db86a)->set_visible(visible & 1);
+        break;
+    case 0xa:
+        set_white(find(kLine700_7db872));
+        find(kLine700_7db872)->set_visible(visible & 1);
+        set_white(find(kLine701_7db87c));
+        find(kLine701_7db87c)->set_visible(visible & 1);
+        set_white(find(kLine702_7db886));
+        find(kLine702_7db886)->set_visible(visible & 1);
+        find(kLine703_7db890)->set_visible(false);
+        break;
+    case 0xb:
+        find(kLine08_7db89a)->set_visible(visible & 1);
+        break;
+    case 0xc:
+        find(kLine09_7db8a2)->set_visible(visible & 1);
+        break;
+    case 0xd:
+        find(kLine10_7db8aa)->set_visible(visible & 1);
+        break;
+    case 0xe:
+        find(kLine11_7db8b2)->set_visible(visible & 1);
+        break;
+    case 0xf:
+        find(kLine12_7db8ba)->set_visible(visible & 1);
+        break;
+    case 0x10:
+        find(kLine13_7db8c2)->set_visible(visible & 1);
+        break;
+    case 0x11:
+        find(kLine14_7db8ca)->set_visible(visible & 1);
+        break;
+    case 0x12:
+        find(kLineDlc00_7db922)->set_visible(visible & 1);
+        break;
+    case 0x13:
+        find(kLineDlc01_7db92e)->set_visible(visible & 1);
+        break;
+    case 0x14: {
+        find(kLine300Dlc_7db8d2)->set_visible(visible & 1);
+        find(kLine04Dlc_7db8e0)->set_visible(visible & 1);
+        find(kLine700Dlc_7db8ec)->set_visible(visible & 1);
+        bool shown = all_open ? (visible & 1) : (has[20] ? owned[20] != 0 : false);
+        find(kLineDlc02_7db93a)->set_visible(shown);
+        break;
+    }
+    case 0x15: {
+        find(kLine302Dlc_7db8fa)->set_visible(visible & 1);
+        find(kLine06Dlc_7db908)->set_visible(visible & 1);
+        find(kLine702Dlc_7db914)->set_visible(visible & 1);
+        bool shown = all_open ? (visible & 1) : (has[21] ? owned[21] != 0 : false);
+        find(kLineDlc03_7db946)->set_visible(shown);
+        break;
+    }
+    case 0x16:
+        find(kLineDlc04_7db952)->set_visible(visible & 1);
+        break;
+    case 0x17:
+        find(kLineZds00_7db95e)->set_visible(visible & 1);
+        break;
+    case 0x18:
+        find(kLineZds01_7db96a)->set_visible(visible & 1);
+        set_white(find(kLine700Dlc_7db8ec));
+        break;
+    case 0x19:
+        find(kLineZds02_7db976)->set_visible(visible & 1);
+        set_white(find(kLine702Dlc_7db914));
+        break;
+    case 0x1a:
+        find(kLineZds03_7db982)->set_visible(visible & 1);
+        break;
+    case 0x1b:
+        find(kLineZds04_7db98e)->set_visible(visible & 1);
+        break;
+    case 0x1c:
+        find(kLineZds05_7db99a)->set_visible(visible & 1);
+        break;
+    case 0x1d:
+        find(kLineZds06_7db9a6)->set_visible(visible & 1);
+        break;
+    case 0x1e:
+        find(kLineZds07_7db9b2)->set_visible(visible & 1);
+        break;
+    case 0x1f:
+        find(kLineZds08_7db9be)->set_visible(visible & 1);
+        break;
+    }
+}
+
+static inline void show_line3(Menu3bdbf0* m) {
+    m->find(kLine300_7db832)->flags |= 1;
+    m->find(kLine301_7db83c)->flags |= 1;
+    m->find(kLine302_7db846)->flags |= 1;
+    m->find(kLine303_7db850)->flags &= ~1;
+}
+
+// A translate copied through a local into the const-reference setter: the local stays a stack temporary (no TBAA,
+// so a store between its load and its store may alias the source), with z kept in a register when nothing is
+// stored in between. As an inline function the local is promoted; as a macro it stays in this function's frame.
+#define COPY_TRANSLATE(dst, src)                \
+    do {                                        \
+        Float3_3bdbf0 t_ = (src)->translate;    \
+        (dst)->set_translate(t_);               \
+    } while (0)
+
+// 0x71003beef0: refreshes the lines of the third stage group and of the two DLC groups. The DLC flags start false
+// and are set in one block shared by both tests; the first lookup of each unlit line is a direct virtual call
+// with the name table read in its arguments (after the vtable load).
+void Menu3bdbf0::refresh_lines() {
+    static Color3bdbf0 colors[4] = {{0xff, 0xff, 0xff, 0xff}, {0xff, 0xff, 0xff, 0x00}, {0xff, 0xff, 0xff, 0xff},
+                                    {0xff, 0xff, 0xff, 0x00}};
+    bool lit[3] = {};
+    bool any = false;
+    if (has[4] && owned[4]) {
+        any = true;
+        lit[0] = true;
+    }
+    if (has[6] && owned[6]) {
+        any = true;
+        lit[1] = true;
+    }
+    if (has[8] && owned[8]) {
+        any = true;
+        lit[2] = true;
+    }
+    bool dlc0 = false;
+    if ((has[20] && owned[20]) || (has[24] && owned[24])) {
+        dlc0 = true;
+    }
+    bool dlc1 = false;
+    if ((has[21] && owned[21]) || (has[25] && owned[25])) {
+        dlc1 = true;
+    }
+    if (any) {
+        show_line3(this);
+        show_line3(this);
+        show_line3(this);
+        for (int i = 0; i < 3; i++) {
+            if (!lit[i]) {
+                layout->root->find_pane(kLine3Names_bdb860[i], true)->set_vtx_color(0, colors[0]);
+                const char* name = kLine3Names_bdb860[i];
+                find(name)->set_vtx_color(1, colors[1]);
+                find(name)->set_vtx_color(2, colors[2]);
+                find(name)->set_vtx_color(3, colors[3]);
+            }
+        }
+    }
+    if (dlc0) {
+        show_line(0x14, 1);
+        COPY_TRANSLATE(panes_960[0], sources_a40[0]);
+        COPY_TRANSLATE(panes_960[1], sources_a40[1]);
+        find(kLine300_7db832)->flags &= ~1;
+        find(kLine04_7db85a)->flags &= ~1;
+        find(kLine700_7db872)->flags &= ~1;
+    }
+    if (dlc1) {
+        show_line(0x15, 1);
+        COPY_TRANSLATE(panes_980[0], sources_a40[2]);
+        COPY_TRANSLATE(panes_980[1], sources_a40[3]);
+        find(kLine302_7db846)->flags &= ~1;
+        find(kLine06_7db86a)->flags &= ~1;
+        find(kLine702_7db886)->flags &= ~1;
+    }
+}
+
+struct AllocInfo448544 {
+    unsigned short tag;
+    unsigned short flags;
+    void* name;
+    explicit AllocInfo448544(unsigned short t) : tag(t), flags(0), name(nullptr) {}
+};
+
+struct Heap448544 {
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void slot_2();
+    virtual void slot_3();
+    virtual void slot_4();
+    virtual void slot_5();
+    virtual void slot_6();
+    virtual void slot_7();
+    virtual void slot_8();
+    virtual void* alloc(unsigned long size, int align, const AllocInfo448544& info);
+};
+
+// The allocation info is a temporary built in the call, so its stores come right before the call.
+static inline void* heap_alloc(Heap448544* heap, unsigned long size) {
+    return heap->alloc(size, 0x10, AllocInfo448544(0x2e));
+}
+
+struct Vec4_448544 {
+    float x, y, z, w;
+};
+
+struct Light448544 {
+    float v[8];
+};
+
+struct Texture448544 {
+    unsigned char pad0[0x50];
+    unsigned int lo : 10;
+    unsigned int format : 6;
+    unsigned int hi : 16;
+};
+
+struct Group448544 {
+    unsigned char pad0[0xb8];
+    void* first;                      // +b8
+    void* field_c0;                   // +c0
+    // Setters: the group is loaded before the value it is given.
+    void set_first(void* p) { first = p; }
+    void set_c0(void* p) { field_c0 = p; }
+    unsigned char padc8[0x38];
+};
+
+struct Item448544 {
+    unsigned char pad0[0x1a0];
+};
+
+struct Effect448544 {
+    virtual void slot_0();
+    virtual void slot_1();
+    virtual void attach(Group448544* group);
+    unsigned char pad8[0x18];
+    int field_20;                     // +20
+    unsigned char pad24[0xc];
+    int field_30;                     // +30
+    int field_34;                     // +34
+    int field_38;                     // +38
+    unsigned char pad3c[0x2c];
+    int field_68;                     // +68
+};
+
+struct Pool448544 {
+    long field_0;
+    long field_8;
+    unsigned long field_10;
+    int field_18;
+    unsigned char pad1c[0x7c];
+    unsigned char field_98;           // +98
+};
+
+struct Slot448544 {
+    unsigned char pad0[0xb0];
+};
+
+struct Global_c216f8 {
+    unsigned char pad0[0x10];
+    unsigned char field_10[1];        // +10
+};
+extern Global_c216f8 gGlobalc216f8_448544;
+extern void* gGlobalc21db0_448544;
+
+struct Scene448544;
+void callee_448124(Scene448544*);        // 0x7100448124
+void* callee_45c96c();        // 0x710045c96c
+void* callee_45c458(void*, int, int, bool, bool);        // 0x710045c458
+void callee_5c2d40(Heap448544*, void*, int, int, int, int);        // 0x71005c2d40
+void callee_459b54();        // 0x7100459b54
+void callee_459b64();        // 0x7100459b64
+Texture448544* callee_517b50(void*, int, int, int, int, int, int);        // 0x7100517b50
+void* callee_58f108(unsigned int*, Heap448544*);        // 0x710058f108
+void callee_58f37c(void*, Vec4_448544*);        // 0x710058f37c
+void callee_58f2c0(void*, int, Light448544*);        // 0x710058f2c0
+void callee_57d274(void*, void*, void*, void*, float, float, float, float, float, float);        // 0x710057d274
+void callee_57ce00(void*, int, bool);        // 0x710057ce00
+void* callee_4444f8();        // 0x71004444f8
+void* callee_444504();        // 0x7100444504
+void* callee_444510();        // 0x7100444510
+void* callee_44451c();        // 0x710044451c
+void callee_449f50(Group448544*);        // 0x7100449f50
+void callee_43e1bc(Item448544*);        // 0x710043e1bc
+void callee_449fec(Group448544*, int, void*, void*);        // 0x7100449fec
+void callee_43e560(Item448544*, int, Group448544*, void*, void*, int, Heap448544*);        // 0x710043e560
+void callee_44a6f4(Group448544*);        // 0x710044a6f4
+void callee_433d54(Effect448544*);        // 0x7100433d54
+void callee_4340c8(Effect448544*, Group448544*);        // 0x71004340c8
+void callee_433dfc(Effect448544*, Heap448544*);        // 0x7100433dfc
+void callee_43b234(void*);        // 0x710043b234
+void callee_43b408(void*);        // 0x710043b408
+void callee_43b288(void*, int, int, int, int, int, int, Heap448544*);        // 0x710043b288
+void callee_43b66c(void*, int);        // 0x710043b66c
+void callee_43c110(Slot448544*);        // 0x710043c110
+void callee_43c1b4(Slot448544*);        // 0x710043c1b4
+void callee_43c764(Slot448544*);        // 0x710043c764
+void callee_43c7f4(Slot448544*);        // 0x710043c7f4
+void callee_44113c(void*);        // 0x710044113c
+void callee_441234(void*, float, Heap448544*, int, int, int);        // 0x7100441234
+void callee_441a44(void*);        // 0x7100441a44
+void callee_441b38(void*, float, Heap448544*, int, int, int);        // 0x7100441b38
+void* callee_45164c();        // 0x710045164c
+void callee_451548();        // 0x7100451548
+void callee_45165c(void*);        // 0x710045165c
+
+struct Scene448544 {
+    unsigned char pad0[0x28];
+    Heap448544 heap;                  // +28
+    unsigned char pad30[0x58];
+    void* buffer;                     // +88
+    unsigned long buffer_pos;         // +90
+    unsigned long buffer_size;        // +98
+    unsigned char camera[0x170];      // +a0
+    unsigned char field_210[0x10];    // +210
+    unsigned char field_220[0x10];    // +220
+    void* field_230;                  // +230
+    Texture448544* texture;           // +238
+    void* field_240;                  // +240
+    Group448544* groups;              // +248
+    Item448544* items;                // +250
+    Effect448544* effect;             // +258
+    Pool448544* pool;                 // +260
+    Slot448544* slots_a;              // +268
+    Slot448544* slots_b;              // +270
+    int field_278;                    // +278
+    int field_27c;                    // +27c
+    void* field_280;                  // +280
+    void* field_288;                  // +288
+    unsigned char pad290[0xc];
+    unsigned char field_29c;          // +29c
+
+    void init();
+};
+
+// 0x7100448544: sets up the scene's heap, buffers and renderer objects. KIND is 8-byte aligned in the original's
+// frame (it sits below the saved d8, not in the 4-byte gap after it).
+void Scene448544::init() {
+    callee_448124(this);
+    void* mem = callee_45c458(callee_45c96c(), 0x10, 0x20000, true, false);
+    field_230 = mem;
+    callee_5c2d40(&heap, mem, 0x20000, 4, 4, 0x10);
+    {
+        void* p = heap_alloc(&heap, 0x1400);
+        buffer = p;
+        buffer_pos = 0;
+        buffer_size = p != nullptr ? 0x1400 : 0;
+    }
+    callee_459b54();
+    Texture448544* tex = callee_517b50(gGlobalc21db0_448544, 0x200, 0x200, 1, 9, 0, 1);
+    texture = tex;
+    if (tex != nullptr) {
+        tex->format = 5;
+    }
+    callee_459b64();
+    alignas(8) unsigned int kind = 0x8001;
+    Vec4_448544 color = {0.5f, 0.5f, 0.5f, 1.0f};
+    Light448544 light = {{0.5f, -0.7f, -0.5f, 0.0f, 5.0f, 5.0f, 5.0f, 1.0f}};
+    field_240 = callee_58f108(&kind, &heap);
+    callee_58f37c(field_240, &color);
+    callee_58f2c0(field_240, 1, &light);
+    callee_57d274(camera, field_220, field_210, gGlobalc216f8_448544.field_10, 0.0f, 0.69813168f, 64.0f, 95000.0f, 1.0f,
+                  1.0f);
+    callee_57ce00(camera, 1, true);
+    void* a = callee_4444f8();
+    void* b = callee_444504();
+    void* c = callee_444510();
+    void* d = callee_44451c();
+    {
+        Group448544* p = static_cast<Group448544*>(heap_alloc(&heap, 0x200));
+        Group448544* g = nullptr;
+        if (p != nullptr) {
+            callee_449f50(p);
+            callee_449f50(p + 1);
+            g = p;
+        }
+        groups = g;
+    }
+    {
+        Item448544* p = static_cast<Item448544*>(heap_alloc(&heap, 0x9c0));
+        Item448544* it = nullptr;
+        if (p != nullptr) {
+            for (int i = 0; i < 6; i++) {
+                callee_43e1bc(p + i);
+            }
+            it = p;
+        }
+        items = it;
+    }
+    callee_449fec(groups, 0, d, a);
+    callee_43e560(items, 0, groups, b, c, -1, &heap);
+    groups->set_first(items);
+    callee_44a6f4(groups);
+    callee_449fec(groups + 1, 1, d, a);
+    for (int i = 1; i < 6; i++) {
+        callee_43e560(items + i, 0, groups + 1, b, c, -1, &heap);
+    }
+    groups[1].set_first(items + 1);
+    callee_44a6f4(groups + 1);
+    {
+        Effect448544* p = static_cast<Effect448544*>(heap_alloc(&heap, 0x80));
+        Effect448544* e = nullptr;
+        if (p != nullptr) {
+            callee_433d54(p);
+            e = p;
+        }
+        effect = e;
+    }
+    effect->field_20 = 0x55;
+    effect->field_30 = -1;
+    effect->field_34 = -1;
+    effect->field_38 = 0;
+    groups->set_c0(effect);
+    effect->attach(groups);
+    callee_4340c8(effect, groups + 1);
+    effect->field_68 = 0;
+    callee_433dfc(effect, &heap);
+    Pool448544* pool_p;
+    {
+        Pool448544* p = static_cast<Pool448544*>(heap_alloc(&heap, 0x9a0));
+        pool_p = nullptr;
+        if (p != nullptr) {
+            p->field_0 = 0;
+            p->field_8 = -1;
+            p->field_10 = 0x10000ffffffffUL;
+            p->field_18 = 0;
+            callee_43b234(reinterpret_cast<unsigned char*>(p) + 0x20);
+            memset(reinterpret_cast<unsigned char*>(p) + 0xa0, 0, 0x880);
+            for (int i = 0; i < 4; i++) {
+                callee_43b408(reinterpret_cast<unsigned char*>(p) + 0x920 + i * 0x20);
+            }
+            pool_p = p;
+        }
+    }
+    pool = pool_p;
+    *reinterpret_cast<int*>(&pool_p->field_10) = 0;
+    callee_43b288(reinterpret_cast<unsigned char*>(pool_p) + 0x20, 0, 0x170000, 0x70000, 0x10000, 0x20, 4, &heap);
+    pool_p->field_98 = 1;
+    for (int i = 0; i < 4; i++) {
+        callee_43b66c(reinterpret_cast<unsigned char*>(pool_p) + 0x920 + i * 0x20, 0x80);
+    }
+    {
+        Slot448544* p = static_cast<Slot448544*>(heap_alloc(&heap, 0x2c0));
+        Slot448544* s = nullptr;
+        if (p != nullptr) {
+            for (int i = 0; i < 4; i++) {
+                callee_43c110(p + i);
+            }
+            s = p;
+        }
+        slots_a = s;
+    }
+    for (int i = 0; i < 4; i++) {
+        callee_43c1b4(slots_a + i);
+    }
+    field_278 = 0;
+    {
+        Slot448544* p = static_cast<Slot448544*>(heap_alloc(&heap, 0x2c0));
+        Slot448544* s = nullptr;
+        if (p != nullptr) {
+            for (int i = 0; i < 4; i++) {
+                callee_43c764(p + i);
+            }
+            s = p;
+        }
+        slots_b = s;
+    }
+    for (int i = 0; i < 4; i++) {
+        callee_43c7f4(slots_b + i);
+    }
+    field_27c = 0;
+    {
+        void* p = heap_alloc(&heap, 0x8c0);
+        void* o = nullptr;
+        if (p != nullptr) {
+            callee_44113c(p);
+            o = p;
+        }
+        field_280 = o;
+        callee_441234(o, 95000.0f, &heap, 4, 0x20, 4);
+    }
+    {
+        void* p = heap_alloc(&heap, 0x8c0);
+        void* o = nullptr;
+        if (p != nullptr) {
+            callee_441a44(p);
+            o = p;
+        }
+        field_288 = o;
+        callee_441b38(o, 95000.0f, &heap, 4, 0x20, 4);
+    }
+    if (callee_45164c() == nullptr) {
+        callee_451548();
+        callee_45165c(callee_45164c());
+        field_29c = 1;
+    }
+}
+
+extern const char kFontHen_7db79e[] __attribute__((visibility("hidden")));
+extern const char kFontScenario_7db7a7[] __attribute__((visibility("hidden")));
+extern const char kFontOpChara_7db7b5[] __attribute__((visibility("hidden")));
+extern const char kIconAnyone00_7db81b[] __attribute__((visibility("hidden")));
+extern const char kFontRock00_7dba8d[] __attribute__((visibility("hidden")));
+extern const char kIconAnyone01_7db9d8[] __attribute__((visibility("hidden")));
+extern const char kFontAnyone01_7db7d2[] __attribute__((visibility("hidden")));
+extern const char kFontDif01_7db7e1[] __attribute__((visibility("hidden")));
+extern const char kFontEasy_7db7ed[] __attribute__((visibility("hidden")));
+extern const char kFontNormal_7db7f7[] __attribute__((visibility("hidden")));
+extern const char kFontHard_7db803[] __attribute__((visibility("hidden")));
+extern const char kFontVeryhard_7db80d[] __attribute__((visibility("hidden")));
+extern const char kFontBtlAreaName_7da807[] __attribute__((visibility("hidden")));
+extern const char kFontEffAttribute_7da81a[] __attribute__((visibility("hidden")));
+extern const char kFontRes_7d5c8f[] __attribute__((visibility("hidden")));
+
+// 0x71003c2280: renders the stage panel's texts into their buffers and shows the panes that got any text.
+void Menu3bdbf0::update_fonts() {
+    for (int i = 0; i < 10; i++) {
+        font_panes[i]->flags &= ~1;
+    }
+    for (int i = 0; i < 32; i++) {
+        areas[i].name_pane->flags &= ~1;
+        areas[i].attr_pane->flags &= ~1;
+        areas[i].res_pane->flags &= ~1;
+    }
+    int slot = stage_slot(stage);
+    int cur = static_cast<unsigned>(slot) < 0x20 ? slot_kind[slot] : -1;
+    int kind = stage_kind_20f924(cur);
+    float scale = layout->root->scale_x;
+    {
+        Pane3bdbf0* p = find(kFontHen_7db79e);
+        Vec2_3c2280 pos = {0.0f, 0.0f};
+        float h = scale * p->height;
+        Vec2_3c2280 size = {h, h};
+        bool dlc = static_cast<unsigned>(cur - 0x1b) < 5;
+        int a = dlc ? 0x5f : 0x41;
+        int id = dlc ? 7 : kind;
+        int c = dlc ? 0x20 : 0x51;
+        void* buf = font_bufs[0];
+        const unsigned short* text = text_218678(id);
+        float w = scale * p->width;
+        Renderer3c2280* r = gRenderer_c22a30;
+        r->begin(&pos, &size, a, 0x4e, false);
+        r->shadow = 1;
+        r->outline = 1;
+        r->color = c;
+        r->mode = 2;
+        r->align = 1;
+        unsigned int n = r->draw(w, 0.0f, buf, text, 0x32, true, -1);
+        apply_text_1e41d8(font_panes[0], font_bufs[0], n);
+        font_panes[0]->set_visible(n != 0);
+    }
+    {
+        Pane3bdbf0* p = find(kFontScenario_7db7a7);
+        Vec2_3c2280 pos = {0.0f, 0.0f};
+        float h = scale * p->height;
+        Vec2_3c2280 size = {h, h};
+        void* buf = font_bufs[1];
+        const unsigned short* text = text_2181bc(cur);
+        float w = scale * p->width;
+        Renderer3c2280* r = gRenderer_c22a30;
+        r->begin(&pos, &size, 0x52, 0x4e, false);
+        r->shadow = 1;
+        r->outline = 1;
+        r->color = 0x53;
+        r->mode = 2;
+        r->align = 1;
+        unsigned int n = r->draw(w, 0.0f, buf, text, 0x32, true, -1);
+        apply_text_1e41d8(font_panes[1], font_bufs[1], n);
+        font_panes[1]->set_visible(n != 0);
+    }
+    if (all_open) {
+        Pane3bdbf0* p = find(kFontOpChara_7db7b5);
+        Vec2_3c2280 pos = {0.0f, 0.0f};
+        float h = scale * p->height;
+        Vec2_3c2280 size = {h, h};
+        void* buf = font_bufs[2];
+        const unsigned short* text = text_217d64(0x4c);
+        float w = scale * p->width;
+        Renderer3c2280* r = gRenderer_c22a30;
+        r->begin(&pos, &size, 0x5a, 0x41, false);
+        r->shadow = 1;
+        r->outline = 1;
+        r->color = 0x5b;
+        r->mode = 2;
+        r->align = 0;
+        unsigned int n = r->draw(w, 0.0f, buf, text, 0x32, true, -1);
+        apply_text_1e41d8(font_panes[2], font_bufs[2], n);
+        font_panes[2]->set_visible(n != 0);
+    }
+    if (find(kIconAnyone00_7db81b)->flags & 1) {
+        Pane3bdbf0* p = find(kFontRock00_7dba8d);
+        int px = static_cast<int>(scale * 83.0f);
+        int py = static_cast<int>(scale * 12.0f + 12.0f);
+        void* buf = font_bufs[3];
+        const unsigned short* text = text_217d64(0x94);
+        float w = scale * p->width;
+        Vec2_3c2280 pos = {static_cast<float>(px), static_cast<float>(py)};
+        float h = scale * p->height;
+        Vec2_3c2280 size = {h, h};
+        Renderer3c2280* r = gRenderer_c22a30;
+        r->begin(&pos, &size, 0x3c, 0x41, false);
+        r->shadow = 0;
+        r->outline = 1;
+        r->color = 0x3c;
+        r->mode = 2;
+        r->align = 1;
+        unsigned int n = r->draw(w, 0.0f, buf, text, 0x32, true, -1);
+        apply_text_1e41d8(font_panes[3], font_bufs[3], n);
+        font_panes[3]->set_visible(n != 0);
+    }
+    if (find(kIconAnyone01_7db9d8)->flags & 1) {
+        Pane3bdbf0* p = find(kFontAnyone01_7db7d2);
+        void* buf = font_bufs[4];
+        const unsigned short* text = text_217d64(0x94);
+        float w = scale * p->width;
+        Vec2_3c2280 pos = {0.0f, 0.0f};
+        float h = scale * p->height;
+        Vec2_3c2280 size = {h, h};
+        Renderer3c2280* r = gRenderer_c22a30;
+        r->begin(&pos, &size, 0x3c, 0x41, false);
+        r->shadow = 0;
+        r->outline = 1;
+        r->color = 0x3c;
+        r->mode = 2;
+        r->align = 1;
+        unsigned int n = r->draw(w, 0.0f, buf, text, 0x32, true, -1);
+        apply_text_1e41d8(font_panes[4], font_bufs[4], n);
+        font_panes[4]->set_visible(n != 0);
+    }
+    {
+        Pane3bdbf0* p = find(kFontDif01_7db7e1);
+        Vec2_3c2280 pos = {0.0f, 0.0f};
+        float h = scale * p->height;
+        Vec2_3c2280 size = {h, h};
+        Renderer3c2280* r = gRenderer_c22a30;
+        r->begin(&pos, &size, 0x3c, 0x41, false);
+        r->mode = 2;
+        r->align = 0;
+        void* buf = font_bufs[5];
+        const unsigned short* text = text_217d64(0x1e);
+        unsigned int n = r->draw(scale * p->width, 0.0f, buf, text, 0x32, true, -1);
+        apply_text_1e41d8(font_panes[5], font_bufs[5], n);
+        font_panes[5]->set_visible(n != 0);
+    }
+    {
+        Pane3bdbf0* p = find(kFontEasy_7db7ed);
+        Vec2_3c2280 pos = {0.0f, 0.0f};
+        float h = scale * p->height;
+        Vec2_3c2280 size = {h, h};
+        Renderer3c2280* r = gRenderer_c22a30;
+        r->begin(&pos, &size, 0x3c, 0x41, false);
+        r->mode = 2;
+        r->align = 1;
+        void* buf = font_bufs[6];
+        const unsigned short* text = text_217d64(0x1c);
+        unsigned int n = r->draw(scale * p->width, 0.0f, buf, text, 0x32, true, -1);
+        apply_text_1e41d8(font_panes[6], font_bufs[6], n);
+        font_panes[6]->set_visible(n != 0);
+    }
+    {
+        Pane3bdbf0* p = find(kFontNormal_7db7f7);
+        Vec2_3c2280 pos = {0.0f, 0.0f};
+        float h = scale * p->height;
+        Vec2_3c2280 size = {h, h};
+        Renderer3c2280* r = gRenderer_c22a30;
+        r->begin(&pos, &size, 0x3c, 0x41, false);
+        r->mode = 2;
+        r->align = 1;
+        void* buf = font_bufs[7];
+        const unsigned short* text = text_217d64(0x1d);
+        unsigned int n = r->draw(scale * p->width, 0.0f, buf, text, 0x32, true, -1);
+        apply_text_1e41d8(font_panes[7], font_bufs[7], n);
+        font_panes[7]->set_visible(n != 0);
+    }
+    {
+        Pane3bdbf0* p = find(kFontHard_7db803);
+        Vec2_3c2280 pos = {0.0f, 0.0f};
+        float h = scale * p->height;
+        Vec2_3c2280 size = {h, h};
+        Renderer3c2280* r = gRenderer_c22a30;
+        r->begin(&pos, &size, 0x3c, 0x41, false);
+        r->mode = 2;
+        r->align = 1;
+        void* buf = font_bufs[8];
+        const unsigned short* text = text_217d64(0x1e);
+        unsigned int n = r->draw(scale * p->width, 0.0f, buf, text, 0x32, true, -1);
+        apply_text_1e41d8(font_panes[8], font_bufs[8], n);
+        font_panes[8]->set_visible(n != 0);
+    }
+    if (has_extra) {
+        Pane3bdbf0* p = find(kFontVeryhard_7db80d);
+        Vec2_3c2280 pos = {0.0f, 0.0f};
+        float h = scale * p->height;
+        Vec2_3c2280 size = {h, h};
+        Renderer3c2280* r = gRenderer_c22a30;
+        r->begin(&pos, &size, 0x3c, 0x41, false);
+        r->mode = 2;
+        r->align = 1;
+        void* buf = font_bufs[9];
+        const unsigned short* text = text_217d64(0x1f);
+        unsigned int n = r->draw(scale * p->width, 0.0f, buf, text, 0x32, true, -1);
+        apply_text_1e41d8(font_panes[9], font_bufs[9], n);
+        font_panes[9]->set_visible(n != 0);
+    }
+    for (int i = 0; i < 32; i++) {
+        Area3c2280& a = areas[i];
+        int area = area_of_20d8f4(db_20dfd0()->get(slot_kind[i]));
+        if (a.obj != nullptr && a.obj->active) {
+            Pane3bdbf0* p = a.root->find_pane(kFontBtlAreaName_7da807, true);
+            Vec2_3c2280 pos = {0.0f, 0.0f};
+            float h = scale * p->height;
+            Vec2_3c2280 size = {h, h};
+            void* buf = a.name_buf;
+            const unsigned short* text = text_21840c(area);
+            float w = scale * p->width;
+            Renderer3c2280* r = gRenderer_c22a30;
+            r->begin(&pos, &size, 0x3c, 0x4b, false);
+            r->shadow = 1;
+            r->outline = 1;
+            r->color = 0x5c;
+            r->mode = 2;
+            r->align = 1;
+            unsigned int n = r->draw(w, 0.0f, buf, text, 0x32, true, -1);
+            apply_text_1e41d8(a.name_pane, a.name_buf, n);
+            a.name_pane->set_visible(n != 0);
+        } else {
+            a.name_pane->flags &= ~1;
+        }
+    }
+    for (int i = 0; i < 32; i++) {
+        Area3c2280& a = areas[i];
+        if (a.obj != nullptr && a.obj->active) {
+            Pane3bdbf0* p = a.root->find_pane(kFontEffAttribute_7da81a, true);
+            Vec2_3c2280 pos = {0.0f, 0.0f};
+            float h = scale * p->height;
+            Vec2_3c2280 size = {h, h};
+            void* buf = a.attr_buf;
+            const unsigned short* text = text_217d64(0x4e);
+            float w = scale * p->width;
+            Renderer3c2280* r = gRenderer_c22a30;
+            r->begin(&pos, &size, 0x41, 0x4e, false);
+            r->shadow = 1;
+            r->outline = 1;
+            r->color = 0x51;
+            r->mode = 2;
+            r->align = 2;
+            unsigned int n = r->draw(w, 0.0f, buf, text, 0x32, true, -1);
+            apply_text_1e41d8(a.attr_pane, a.attr_buf, n);
+            a.attr_pane->set_visible(n != 0);
+        }
+    }
+    for (int i = 0; i < 32; i++) {
+        Area3c2280& a = areas[i];
+        if (a.obj != nullptr && a.obj->active && a.anim->frame == 4.0f) {
+            Pane3bdbf0* p = a.root->find_pane(kFontRes_7d5c8f, true);
+            Vec2_3c2280 pos = {0.0f, 0.0f};
+            float h = scale * p->height;
+            Vec2_3c2280 size = {h, h};
+            void* buf = a.res_buf;
+            const unsigned short* text = text_217d64(0x7e);
+            float w = scale * p->width;
+            Renderer3c2280* r = gRenderer_c22a30;
+            r->begin(&pos, &size, 0x41, 0x4e, false);
+            r->shadow = 1;
+            r->outline = 1;
+            r->color = 0x51;
+            r->mode = 2;
+            r->align = 2;
+            unsigned int n = r->draw(w, 0.0f, buf, text, 0x32, true, -1);
+            apply_text_1e41d8(a.res_pane, a.res_buf, n);
+            a.res_pane->set_visible(n != 0);
+        }
+    }
+}
