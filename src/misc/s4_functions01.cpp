@@ -2051,3 +2051,226 @@ int call_1f00(int p0, Arg1f00_1* p1) {
     }
     return c472;
 }
+
+extern "C" void* memcpy(void*, const void*, unsigned long);
+extern "C" void* memset(void*, int, unsigned long);
+
+void callee_f1278(void*, long);        // 0x71000f1278
+void callee_11298c(void*, long);        // 0x710011298c
+int callee_115d9c(void*, long);        // 0x7100115d9c
+void callee_130e2c(void*, long);        // 0x7100130e2c
+int callee_16ef34();        // 0x710016ef34
+void callee_16f508(int, long);        // 0x710016f508
+int callee_170c58();        // 0x7100170c58
+int callee_172174(int);        // 0x7100172174
+int callee_1898b8(void*);        // 0x71001898b8
+int callee_18d5d8(void*);        // 0x710018d5d8
+int callee_18f0e0(void*);        // 0x710018f0e0
+int callee_18f104(void*, int);        // 0x710018f104
+void* callee_18f12c(void*);        // 0x710018f12c
+void callee_18f254(int, long);        // 0x710018f254
+void callee_193930(long, long);        // 0x7100193930
+void callee_1940f8(long, long);        // 0x71001940f8
+void callee_195d38(long, long);        // 0x7100195d38
+void callee_196378(long, long);        // 0x7100196378
+void callee_196888(int, long);        // 0x7100196888
+void callee_19711c(long, long);        // 0x710019711c
+void callee_198e8c(long, long);        // 0x7100198e8c
+void callee_199630(long, long);        // 0x7100199630
+void callee_19b4e8(long, long);        // 0x710019b4e8
+void callee_19be70(int, long);        // 0x710019be70
+void callee_1a1f20(void*, long, long);        // 0x71001a1f20
+void callee_1a4b48(int, long);        // 0x71001a4b48
+void callee_1a85f4(long, long);        // 0x71001a85f4
+void callee_1d68ac(void*);        // 0x71001d68ac
+
+struct Node176ce0_v1 {
+    unsigned char pad0[0x95a20];
+    void* field_95a20;               // +95a20
+};
+
+struct Globalc22ab0_176ce0 {
+    void* field_0;               // +0
+    void* field_8;               // +8
+};
+
+struct Elem176ce0_r6 {
+    unsigned char pad0[0x5a0];
+};
+
+struct Elem176ce0_r43 {
+    unsigned char pad0[0x50];
+};
+
+struct Elem176ce0_r89 {
+    unsigned char pad0[0x160];
+};
+
+struct Elem176ce0_r93 {
+    unsigned char pad0[0x6d0];
+};
+// Reached through the GOT slot at 0x7100c216e8.
+extern Node176ce0_v1* gGlobalc216e8_176ce0;
+// Reached through the GOT slot at 0x7100c22ca8.
+extern void* gGlobalc22ca8_176ce0;
+// Reached through the GOT slot at 0x7100c21698.
+extern void* gGlobalc21698_176ce0;
+// Reached through the GOT slot at 0x7100c22a60.
+extern void* gGlobalc22a60_176ce0;
+// Reached through the GOT slot at 0x7100c22be8.
+extern void* gGlobalc22be8_176ce0;
+// Reached through the GOT slot at 0x7100c22ab0.
+extern Globalc22ab0_176ce0 gGlobalc22ab0_176ce0;
+// Reached through the GOT slot at 0x7100c22a70.
+extern void* gGlobalc22a70_176ce0;
+
+// 0x7100176ce0: void; the output buffer is a byte pointer, so its member addresses are GEP offsets that constant hoisting leaves alone, and the copy loops step their two pointers with a 64-bit count
+void call_176ce0(unsigned char* p0) {
+    memset(reinterpret_cast<void*>(p0), 0, 0x40b40);
+    Node176ce0_v1* v1 = gGlobalc216e8_176ce0;
+    int c2 = callee_16ef34();
+    callee_16f508(c2, reinterpret_cast<long>(p0));
+    void* v4 = gGlobalc22ca8_176ce0;
+    callee_1d68ac(v4);
+    {
+        unsigned char* a = reinterpret_cast<unsigned char*>(v1) + 0x99dc0;
+        unsigned char* b = p0 + 0x1f4a8;
+        for (long i = 0; i < 0x80; i++) {
+            callee_193930(reinterpret_cast<long>(a), reinterpret_cast<long>(b));
+            a += 0x5a0;
+            b += 0x16;
+        }
+    }
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee40), reinterpret_cast<long>(p0 + 0x1ffa8));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcf150), reinterpret_cast<long>(p0 + 0x1ffe0));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcf460), reinterpret_cast<long>(p0 + 0x20018));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcf770), reinterpret_cast<long>(p0 + 0x20050));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcfa80), reinterpret_cast<long>(p0 + 0x20088));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcfd90), reinterpret_cast<long>(p0 + 0x200c0));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd00a0), reinterpret_cast<long>(p0 + 0x200f8));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd03b0), reinterpret_cast<long>(p0 + 0x20130));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd06c0), reinterpret_cast<long>(p0 + 0x20168));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd09d0), reinterpret_cast<long>(p0 + 0x201a0));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd0ce0), reinterpret_cast<long>(p0 + 0x201d8));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd0ff0), reinterpret_cast<long>(p0 + 0x20210));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd1300), reinterpret_cast<long>(p0 + 0x20248));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd1610), reinterpret_cast<long>(p0 + 0x20280));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd1920), reinterpret_cast<long>(p0 + 0x202b8));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd1c30), reinterpret_cast<long>(p0 + 0x202f0));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd1f40), reinterpret_cast<long>(p0 + 0x20328));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd2250), reinterpret_cast<long>(p0 + 0x20360));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd2560), reinterpret_cast<long>(p0 + 0x20398));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd2870), reinterpret_cast<long>(p0 + 0x203d0));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd2b80), reinterpret_cast<long>(p0 + 0x20408));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd2e90), reinterpret_cast<long>(p0 + 0x20440));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd31a0), reinterpret_cast<long>(p0 + 0x20478));
+    callee_195d38(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd34b0), reinterpret_cast<long>(p0 + 0x204b0));
+    callee_196378(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd37c0), reinterpret_cast<long>(p0 + 0x204e8));
+    callee_196378(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd37f0), reinterpret_cast<long>(p0 + 0x204e9));
+    callee_196378(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd3820), reinterpret_cast<long>(p0 + 0x204ea));
+    callee_196378(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd3850), reinterpret_cast<long>(p0 + 0x204eb));
+    callee_196378(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd3880), reinterpret_cast<long>(p0 + 0x204ec));
+    callee_196378(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd38b0), reinterpret_cast<long>(p0 + 0x204ed));
+    callee_196378(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd38e0), reinterpret_cast<long>(p0 + 0x204ee));
+    callee_196378(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd3910), reinterpret_cast<long>(p0 + 0x204ef));
+    callee_196378(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd3940), reinterpret_cast<long>(p0 + 0x204f0));
+    callee_196378(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xd3970), reinterpret_cast<long>(p0 + 0x204f1));
+    {
+        unsigned char* a = reinterpret_cast<unsigned char*>(v1) + 0xd39a0;
+        unsigned char* b = p0 + 0x204f2;
+        for (long i = 0; i < 0x40; i++) {
+            callee_198e8c(reinterpret_cast<long>(a), reinterpret_cast<long>(b));
+            a += 0x50;
+            b += 0x2;
+        }
+    }
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcedc0), reinterpret_cast<long>(p0 + 0x20572));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcedc5), reinterpret_cast<long>(p0 + 0x20575));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcedca), reinterpret_cast<long>(p0 + 0x20578));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcedcf), reinterpret_cast<long>(p0 + 0x2057b));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcedd4), reinterpret_cast<long>(p0 + 0x2057e));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcedd9), reinterpret_cast<long>(p0 + 0x20581));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcedde), reinterpret_cast<long>(p0 + 0x20584));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcede3), reinterpret_cast<long>(p0 + 0x20587));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcede8), reinterpret_cast<long>(p0 + 0x2058a));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xceded), reinterpret_cast<long>(p0 + 0x2058d));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcedf2), reinterpret_cast<long>(p0 + 0x20590));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcedf7), reinterpret_cast<long>(p0 + 0x20593));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcedfc), reinterpret_cast<long>(p0 + 0x20596));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee01), reinterpret_cast<long>(p0 + 0x20599));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee06), reinterpret_cast<long>(p0 + 0x2059c));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee0b), reinterpret_cast<long>(p0 + 0x2059f));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee10), reinterpret_cast<long>(p0 + 0x205a2));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee15), reinterpret_cast<long>(p0 + 0x205a5));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee1a), reinterpret_cast<long>(p0 + 0x205a8));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee1f), reinterpret_cast<long>(p0 + 0x205ab));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee24), reinterpret_cast<long>(p0 + 0x205ae));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee29), reinterpret_cast<long>(p0 + 0x205b1));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee2e), reinterpret_cast<long>(p0 + 0x205b4));
+    callee_19b4e8(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0xcee33), reinterpret_cast<long>(p0 + 0x205b7));
+    int c70 = callee_18f104(v1, 0);
+    callee_196888(c70, reinterpret_cast<long>(p0 + 0x205ba));
+    int c72 = callee_18f104(v1, 1);
+    callee_196888(c72, reinterpret_cast<long>(p0 + 0x205be));
+    int c74 = callee_18f104(v1, 2);
+    callee_196888(c74, reinterpret_cast<long>(p0 + 0x205c2));
+    int c76 = callee_18f104(v1, 3);
+    callee_196888(c76, reinterpret_cast<long>(p0 + 0x205c6));
+    int c78 = callee_18f104(v1, 4);
+    callee_196888(c78, reinterpret_cast<long>(p0 + 0x205ca));
+    int c80 = callee_18d5d8(v1);
+    callee_1a4b48(c80, reinterpret_cast<long>(p0 + 0x205d0));
+    int c82 = callee_18f0e0(v1);
+    callee_18f254(c82, reinterpret_cast<long>(p0 + 0x40130));
+    void* c84 = callee_18f12c(v1);
+    memcpy(p0 + 0x394a0, c84, 0x6c84);
+    callee_19711c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0x278), reinterpret_cast<long>(p0 + 0x22388));
+    callee_19711c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0x5b0), reinterpret_cast<long>(p0 + 0x22492));
+    callee_19711c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(v1) + 0x8e8), reinterpret_cast<long>(p0 + 0x2259c));
+    {
+        unsigned char* a = reinterpret_cast<unsigned char*>(v1) + 0xc20;
+        unsigned char* b = p0 + 0x226a8;
+        for (long i = 0; i < 0xf6; i++) {
+            callee_1940f8(reinterpret_cast<long>(a), reinterpret_cast<long>(b));
+            a += 0x160;
+            b += 0x7c;
+        }
+    }
+    {
+        unsigned char* a = reinterpret_cast<unsigned char*>(v1) + 0x15e60;
+        unsigned char* b = p0 + 0x29dd0;
+        for (long i = 0; i < 0x12c; i++) {
+            callee_199630(reinterpret_cast<long>(a), reinterpret_cast<long>(b));
+            a += 0x6d0;
+            b += 0xb0;
+        }
+    }
+    int n = callee_170c58();
+    if (n != 0) {
+        void** src = &v1->field_95a20;
+        unsigned char* b = p0 + 0x36c10;
+        long off = 0;
+        int i = 0;
+        do {
+            long a = (callee_172174(i) & 0xff) != 0 ? 0 : reinterpret_cast<long>(reinterpret_cast<unsigned char*>(*src) + off);
+            callee_1a85f4(a, reinterpret_cast<long>(b));
+            b += 0x28;
+            i++;
+            off += 0x3c;
+        } while (n != i);
+    }
+    void* v106 = gGlobalc21698_176ce0;
+    callee_1a1f20(v106, reinterpret_cast<long>(p0 + 0x38ce0), reinterpret_cast<long>(p0 + 0x38e60));
+    void* v108 = gGlobalc22a60_176ce0;
+    callee_11298c(v108, reinterpret_cast<long>(p0 + 0x40190));
+    void* v110 = gGlobalc22be8_176ce0;
+    callee_f1278(v110, reinterpret_cast<long>(p0 + 0x4056c));
+    int c112 = callee_1898b8(v1);
+    callee_19be70(c112, reinterpret_cast<long>(p0 + 0x40948));
+    void* v114 = gGlobalc22ab0_176ce0.field_0;
+    callee_130e2c(v114, reinterpret_cast<long>(p0 + 0x40b28));
+    void* v116 = gGlobalc22ab0_176ce0.field_8;
+    callee_130e2c(v116, reinterpret_cast<long>(p0 + 0x40b30));
+    void* v118 = gGlobalc22a70_176ce0;
+    callee_115d9c(v118, reinterpret_cast<long>(p0 + 0x40b38));
+}

@@ -12,3 +12,13 @@ Run them with the project's Python, `python -B -I tools/s4/SCRIPT ...`, from `ma
   unmatched functions of more than MIN bytes (default 1,500) in the address range (default `0`-`380000`), without
   the constructor-shaped ones (the vtable-store scan of `tools/s3/vtscan.py`) and without every address in the SKIP
   files (claims and scope files of the other sessions). Feed it to `tools/s3/rank.py --only` for the ranking.
+- `bytep.py IN.cpp OUT.cpp ADDR [PARAM...]` rewrites the `long pN` parameters of a generated function (default
+  `p0`) as `unsigned char*`, so `pN + C` is a byte-pointer offset instead of integer arithmetic. Clang's constant
+  hoisting rebases large integer offsets on a shared callee-saved base; offsets of a pointer are left alone, as in
+  the original's member addresses (`176ce0`).
+- `perm.py TEMPLATE ADDR NAME OUTDIR [--sym SYMJSON] [--map ...] [--slot KEY=a|b ...] [--slots SLOTS.json]` is an
+  unattended permutation search: every combination of the `{KEY}` options is compiled with `tools/s3/try.py`, one
+  line per combination goes to `OUTDIR/log.txt`, the best source to `OUTDIR/best.cpp`, a match to
+  `OUTDIR/match.cpp`. All scratch files stay in OUTDIR (outside the worktree, for example
+  `worktrees\s4_perm\ADDR\`). Start it through `tools/lowprio.py` so it runs at idle priority; a hit still has to
+  go into its unit and pass the full check.
