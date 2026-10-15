@@ -25201,6 +25201,19 @@
       "functions": {
         "_Z11call_38ff40P11Arg38ff40_0": "0x710038ff40"
       }
+    },
+    "misc/variant_functions69.cpp": {
+      "functions": {
+        "_Z11call_159558P11Arg159558_0": "0x7100159558",
+        "_Z11call_15b3c8P11Arg15b3c8_0": "0x710015b3c8",
+        "_Z11call_15bc88P11Arg15bc88_0": "0x710015bc88",
+        "_Z11call_15bcd4P11Arg15bcd4_0": "0x710015bcd4",
+        "_Z11call_15c098P11Arg15c098_0": "0x710015c098"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      }
     }
   }
 }
