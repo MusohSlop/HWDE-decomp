@@ -15840,7 +15840,11 @@
     "_Z13callee_3af87cPv": "0x71003af87c",
     "_Z13callee_3af904Pv": "0x71003af904",
     "_Z13callee_218fc0Pvii": "0x7100218fc0",
-    "_Z14callee2_2da374v": "0x71002da374"
+    "_Z14callee2_2da374v": "0x71002da374",
+    "gLocalcf0000_459c90": "0x7100cf0000",
+    "gLocalcf03f8_459c90": "0x7100cf03f8",
+    "_Z13callee_25b71cli": "0x710025b71c",
+    "_Z13callee_45bf78iPv": "0x710045bf78"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -24474,6 +24478,26 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s2_functions11.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z11call_381b68lii": "0x7100381b68",
+        "_Z11call_386198P11Arg386198_0i": "0x7100386198",
+        "_Z11call_3d63e4P11Arg3d63e4_0": "0x71003d63e4",
+        "_Z11call_3d69a4P11Arg3d69a4_0i": "0x71003d69a4",
+        "_Z11call_3d69dcP11Arg3d69dc_0": "0x71003d69dc",
+        "_Z11call_3d6a10P11Arg3d6a10_0i": "0x71003d6a10",
+        "_Z11call_3d6a50P11Arg3d6a50_0": "0x71003d6a50",
+        "_Z11call_3d6a8cP11Arg3d6a8c_0i": "0x71003d6a8c",
+        "_Z11call_3d6accP11Arg3d6acc_0": "0x71003d6acc",
+        "_Z11call_3d6b4cP11Arg3d6b4c_0": "0x71003d6b4c",
+        "_Z11call_3d70e0P11Arg3d70e0_0": "0x71003d70e0",
+        "_Z11call_3d711cP11Arg3d711c_0": "0x71003d711c"
       }
     }
   }

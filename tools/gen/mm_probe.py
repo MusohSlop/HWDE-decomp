@@ -1,10 +1,21 @@
 """Generate a probe unit with a generator, build it, and classify the first difference of each mismatch.
-usage: mm_probe.py GENERATOR.py LO HI"""
+usage: mm_probe.py GENERATOR.py LO HI
+       mm_probe.py GENERATOR.py LO HI --classes [--addr LO-HI] [--only FILE] [--knobs K] [--jobs N] [--tsv FILE]
+With --classes the tally runs in scratch units under build/ (data/units.json is not touched), in parallel, and
+sorts every mismatch into size / regalloc / schedule / other classes; see mm_tally.py."""
 import os as _os
 GENDIR = _os.path.dirname(_os.path.abspath(__file__))
 MATCHDIR = _os.path.dirname(_os.path.dirname(GENDIR))
 ROOTDIR = _os.path.dirname(MATCHDIR)
 import json, os, re, subprocess, sys, collections
+if "--classes" in sys.argv[1:]:
+    import importlib.util
+    spec_ = importlib.util.spec_from_file_location("mm_tally", os.path.join(GENDIR, "mm_tally.py"))
+    mm_tally = importlib.util.module_from_spec(spec_)
+    sys.path[:] = [p_ for p_ in sys.path if os.path.abspath(p_ or os.curdir) != GENDIR]
+    spec_.loader.exec_module(mm_tally)
+    mm_tally.main([x for x in sys.argv[1:] if x != "--classes"])
+    sys.exit(0)
 gen, lo, hi = sys.argv[1], sys.argv[2], sys.argv[3]
 m = MATCHDIR
 s = os.path.dirname(os.path.abspath(__file__))

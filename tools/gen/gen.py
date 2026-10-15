@@ -186,6 +186,7 @@ def mangled_arity(name):
 
 KNOWN_ARITY = {}
 ARITY_USED = [False]
+PAIR_USED = [False]
 for _n, _a in list(units["symbols"].items()) + [(_n2, _a2) for _u in units["units"].values() for _n2, _a2 in _u.get("functions", {}).items()]:
     if _n.startswith("got:") or re.search(r"(callee\d?|call|placeholder)_[0-9a-f]+", _n):
         continue
@@ -260,6 +261,41 @@ def gen_function(a, ins):
     callees = {}        # target -> [arg types, ret type]
     counter = [0]
     addr_index = {i.address: k for k, i in enumerate(ins)}
+    pair_loads_ = set()
+    for k_, i_ in enumerate(ins):
+        mm_ = re.fullmatch(r"x(\d+), \[(x\d+)(?:, #(0x[0-9a-f]+|\d+))?\]", i_.op_str) if i_.mnemonic in ("ldr", "ldur") else None
+        if not mm_ or mm_.group(1) in ("29", "30") or mm_.group(2) in ("x29", "x" + mm_.group(1)):
+            continue
+        rn_ = mm_.group(1)
+        xp_ = re.compile(r"\bx%s\b" % rn_)
+        wp_ = re.compile(r"\bw%s\b" % rn_)
+        hi_ = False
+        ok_ = True
+        for j_ in range(k_ + 1, min(len(ins), k_ + 40)):
+            ij_ = ins[j_]
+            ops_j_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", ij_.op_str)]
+            if ij_.mnemonic in ("lsr", "asr") and len(ops_j_) == 3 and xp_.fullmatch(ops_j_[1]) and ops_j_[2] in ("#0x20", "#32"):
+                hi_ = True
+                if xp_.fullmatch(ops_j_[0]):
+                    break
+                continue
+            if ij_.mnemonic == "ubfx" and len(ops_j_) == 4 and xp_.fullmatch(ops_j_[1]) and ops_j_[2] in ("#0x20", "#32") \
+                    and ops_j_[3] in ("#0x20", "#32"):
+                hi_ = True
+                if xp_.fullmatch(ops_j_[0]):
+                    break
+                continue
+            reads_ = ops_j_[1:] if ops_j_ and not ij_.mnemonic.startswith(("st", "cb", "tb", "cmp", "cmn", "tst")) else ops_j_
+            if any(xp_.search(o_) for o_ in reads_):
+                ok_ = False
+                break
+            if ops_j_ and (xp_.fullmatch(ops_j_[0]) or wp_.fullmatch(ops_j_[0])) \
+                    and not ij_.mnemonic.startswith(("st", "cb", "tb", "cmp", "cmn", "tst")):
+                break  # redefined
+            if ij_.mnemonic in ("ret", "b", "br", "bl", "blr"):
+                break
+        if ok_ and hi_:
+            pair_loads_.add(k_)
     jump_targets_ = set()
     for i_ in ins:
         if (i_.mnemonic in ("b", "cbz", "cbnz", "tbz", "tbnz") or i_.mnemonic.startswith("b.")) and "#" in i_.op_str:
@@ -521,9 +557,92 @@ def gen_function(a, ins):
             if a_[0] == b_[0]:
                 return a_[0], a_[1] + b_[1] if y_[1] == "+" else a_[1] - b_[1]
         return None
+    def i32_(v_):
+        """The 32-bit signed value v_ stands for (sign-extended operand of smull), or None."""
+        if v_[0] == "ext" and v_[1] == "int":
+            return v_[2]
+        return None
+    def smagic_ok_(M_, sh_):
+        """d when x * M >> sh (with the sign fix) is x / d for 32-bit signed x, else None."""
+        if M_ <= 0:
+            return None
+        d_ = round((1 << sh_) / M_)
+        if d_ < 2:
+            return None
+        import random as _r
+        rng_ = _r.Random(d_ * 7919 + sh_)
+        xs_ = [0, 1, -1, d_ - 1, d_, -d_, d_ + 1, -d_ - 1, (1 << 31) - 1, -(1 << 31), -(1 << 31) + 1] + \
+              [rng_.randrange(-(1 << 31), 1 << 31) for _ in range(2000)]
+        for x_ in xs_:
+            # both forms compute floor(x * M / 2**sh) plus one for a negative x
+            q_ = ((x_ * M_) >> sh_) + (1 if x_ < 0 else 0)
+            if q_ != abs(x_) // d_ * (1 if x_ >= 0 else -1):
+                return None
+        return d_
+    def sdivmagic_(v_):
+        """x / d and x % d for the signed multiply-high forms."""
+        if v_[0] != "bin" or v_[1] != "+" or v_[4] != "w":
+            return v_
+        for a_, b_ in ((v_[2], v_[3]), (v_[3], v_[2])):
+            # small magic: asr of the product, plus its sign bit
+            if a_[0] == "bin" and a_[1] == ">>" and a_[5] == "asr" and a_[4] == "x" and a_[3][0] == "const" and a_[3][1] >= 32 \
+                    and b_[0] == "bin" and b_[1] == ">>" and b_[5] == "lsr" and b_[3][0] == "const" and b_[3][1] == 63 \
+                    and a_[2] == b_[2] and a_[2][0] == "bin" and a_[2][1] == "*":
+                p_ = a_[2]
+                for x0_, m0_ in ((p_[2], p_[3]), (p_[3], p_[2])):
+                    x_ = i32_(x0_); mc_ = i32_(m0_) if m0_[0] == "ext" else m0_
+                    if x_ is None or mc_ is None or mc_[0] != "const":
+                        continue
+                    M_ = mc_[1] & 0xffffffff
+                    M_ = M_ - (1 << 32) if M_ >= 1 << 31 else M_
+                    d_ = smagic_ok_(M_, a_[3][1])
+                    if d_:
+                        return ("sdiv", x_, d_)
+            # large magic: ((hi(P) + x) >> s) + sign
+            if a_[0] == "bin" and a_[1] == ">>" and a_[5] == "asr" and a_[4] == "w" and a_[3][0] == "const" \
+                    and b_[0] == "bin" and b_[1] == ">>" and b_[5] == "lsr" and b_[3][0] == "const" and b_[3][1] == 31 \
+                    and a_[2] == b_[2] and a_[2][0] == "bin" and a_[2][1] == "+":
+                t_ = a_[2]
+                for h_, x0_ in ((t_[2], t_[3]), (t_[3], t_[2])):
+                    if not (h_[0] == "bin" and h_[1] == ">>" and h_[5] == "lsr" and h_[3][0] == "const" and h_[3][1] == 32
+                            and h_[2][0] == "bin" and h_[2][1] == "*"):
+                        continue
+                    p_ = h_[2]
+                    for xx_, m0_ in ((p_[2], p_[3]), (p_[3], p_[2])):
+                        x_ = i32_(xx_); mc_ = i32_(m0_) if m0_[0] == "ext" else m0_
+                        if x_ is None or mc_ is None or mc_[0] != "const" or x_ != x0_:
+                            continue
+                        M_ = mc_[1] & 0xffffffff  # x * (M - 2**32) + x * 2**32
+                        d_ = smagic_ok_(M_, 32 + a_[3][1])
+                        if d_:
+                            return ("sdiv", x_, d_)
+        return v_
     def divmagic_(v_):
         """x / d and x % d for the multiply-high forms of an unsigned 32-bit division by a constant."""
         if v_[0] != "bin":
+            return v_
+        if v_[1] == ">>" and v_[5] == "lsr" and v_[4] == "x" and v_[3][0] == "const" and v_[2][0] == "umulh" \
+                and "noudiv64" not in knobs:
+            s_ = v_[3][1]
+            for a_, b_ in ((v_[2][1], v_[2][2]), (v_[2][2], v_[2][1])):
+                if b_[0] != "const":
+                    continue
+                M_ = b_[1] & ((1 << 64) - 1)
+                pre_ = 0
+                x_ = a_
+                if a_[0] == "bin" and a_[1] == ">>" and a_[5] == "lsr" and a_[3][0] == "const":
+                    pre_, x_ = a_[3][1], a_[2]
+                if M_ == 0:
+                    continue
+                d_ = round((1 << (64 + s_ + pre_)) / M_)
+                if d_ < 2:
+                    continue
+                import random as _r
+                rng_ = _r.Random(d_)
+                xs_ = [0, 1, d_ - 1, d_, d_ + 1, (1 << 64) - 1, (1 << 63), (1 << 32) - 1] + [rng_.getrandbits(64) for _ in range(3000)] \
+                      + [rng_.getrandbits(64) // d_ * d_ + k_ for k_ in (-1, 0, 1) for _ in range(300)]
+                if all((((x2_ & ((1 << 64) - 1)) >> pre_) * M_ >> (64 + s_)) == (x2_ & ((1 << 64) - 1)) // d_ for x2_ in xs_):
+                    return ("udiv64", x_, d_)
             return v_
         if v_[1] == ">>" and v_[5] == "lsr" and v_[4] == "x" and v_[3][0] == "const" and v_[3][1] >= 32 \
                 and v_[2][0] == "bin" and v_[2][1] == "*":
@@ -540,10 +659,16 @@ def gen_function(a, ins):
                 if d_ >= 2 and M_ == -(-(1 << sh_) // d_) and 0 <= M_ * d_ - (1 << sh_) <= 1 << (sh_ - 32):
                     return ("udiv", x_, d_)
             return v_
+        if v_[1] == "-" and v_[4] in ("x", "w") and "noudiv64" not in knobs:
+            m_ = times_(v_[3])
+            if m_ is not None and m_[0][0] == "udiv64" and m_[0][2] == m_[1] and m_[0][1] == v_[2]:
+                return ("urem64", m_[0][1], m_[1])
         if v_[1] == "-" and v_[4] == "w":
             m_ = times_(v_[3])
             if m_ is not None and m_[0][0] == "udiv" and m_[0][2] == m_[1] and strip_u32_(m_[0][1]) == strip_u32_(v_[2]):
                 return ("urem", m_[0][1], m_[1])
+            if m_ is not None and m_[0][0] == "sdiv" and m_[0][2] == m_[1] and m_[0][1] == v_[2] and "nosdivmagic" not in knobs:
+                return ("srem", m_[0][1], m_[1])
         return v_
     def bf_lines_(sn_, off_, t_):
         W_ = BFW_[t_]
@@ -719,6 +844,10 @@ def gen_function(a, ins):
         v = regs.get(n)
         if v is None:
             raise Fail("undefined x%d" % n)
+        if v[0] == "pair32":
+            if w == "w":
+                return v[1]
+            raise Fail("paired load as 64 bits")
         if v[0] == "param":
             cur = pwidth.get(v[1])
             if cur is None:
@@ -2145,6 +2274,28 @@ def gen_function(a, ins):
                     items.append(("let", name, sn, 0, tmp))
                     regs[dn] = ("var", name)
                 if dn < 8: written.add(dn)
+            elif "nopair32" not in knobs and k in pair_loads_:
+                # two neighbouring int fields read by one 64-bit load
+                mm_ = re.fullmatch(r"x(\d+), \[(x\d+)(?:, #(0x[0-9a-f]+|\d+))?\]", i.op_str)
+                dn = int(mm_.group(1))
+                off_ = int(mm_.group(3), 0) if mm_.group(3) else 0
+                basev_ = regs.get(regname(mm_.group(2))[0])
+                halves_ = []
+                for o_ in (off_, off_ + 4):
+                    sn, base, off2 = field(regs, None, o_, "int", base=basev_)
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off2, "int")
+                    items.append(("let", name, sn, off2, base))
+                    letbase[name] = base
+                    halves_.append(("var", name))
+                regs[dn] = ("pair32", halves_[0], halves_[1])
+                PAIR_USED[0] = True
+                if dn < 8: written.add(dn)
+            elif "nopair32" not in knobs and m in ("lsr", "asr", "ubfx") and len(ops) >= 3 and re.fullmatch(r"x\d+", ops[1]) \
+                    and (regs.get(int(ops[1][1:])) or ("",))[0] == "pair32" and ops[2] in ("#0x20", "#32"):
+                dn, w = regname(ops[0])
+                regs[dn] = regs[int(ops[1][1:])][2]
+                if dn < 8: written.add(dn)
             elif m in LOAD or m == "ldp":
                 pair = m == "ldp"
                 dests = [ops[0], ops[1]] if pair else [ops[0]]
@@ -2450,6 +2601,10 @@ def gen_function(a, ins):
                 y = ("ext", "unsigned int" if m == "umull" else "int", use(regs, ops[2]))
                 regs[dn] = ("bin", "*", x, y, "x", "mul")
                 if dn < 8: written.add(dn)
+            elif m == "umulh" and len(ops) == 3 and "noudiv64" not in knobs:
+                dn, w = regname(ops[0])
+                regs[dn] = ("umulh", use(regs, ops[1]), use(regs, ops[2]))
+                if dn < 8: written.add(dn)
             elif m == "msub" and len(ops) == 4 and "nodivmagic" not in knobs:
                 dn, w = regname(ops[0])
                 x_ = use(regs, ops[1]); y_ = use(regs, ops[2]); z_ = use(regs, ops[3])
@@ -2498,6 +2653,8 @@ def gen_function(a, ins):
                 regs[dn] = ("bin", BIN[m], x, y, w, m)
                 if "nodivmagic" not in knobs:
                     regs[dn] = divmagic_(regs[dn])
+                if "nosdivmagic" not in knobs:
+                    regs[dn] = sdivmagic_(regs[dn])
                 if m == "and" and y[0] == "const" and y[1] in (0xff, 0xffff) and x[0] == "bin" and x[1] in ("-", "+") \
                         and x[2][0] == "param" and x[3][0] == "const" and pwidth.get(x[2][1]) in (None, "w") and "norange" not in knobs:
                     nty_ = "unsigned short" if y[1] == 0xffff else "unsigned char"
@@ -2662,7 +2819,7 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] == "copy":
             kids = [v[1]]
-        if v[0] in ("vlane", "vecu", "vpart", "udiv", "urem"):
+        if v[0] in ("vlane", "vecu", "vpart", "udiv", "urem", "sdiv", "srem", "udiv64", "urem64"):
             kids = [v[1]]
         if v[0] == "vins":
             kids = [v[1], v[2]]
@@ -2766,8 +2923,12 @@ def gen_function(a, ins):
             return "Vec4f"
         if v[0] == "vecu":
             return "VecU"
-        if v[0] in ("udiv", "urem"):
-            return "int"  # below 2**31: the divisor is at least 2
+        if v[0] in ("udiv", "urem", "sdiv", "srem"):
+            return "int"
+        if v[0] in ("udiv64", "urem64"):
+            return "unsigned long"
+        if v[0] == "umulh":
+            raise Fail("umulh")  # below 2**31: the divisor is at least 2
         if v[0] == "f2i":
             return "long" if v[3] == "x" else "int"
         if v[0] == "stackaddr":
@@ -2937,6 +3098,25 @@ def gen_function(a, ins):
             return f"{expr(v[1], False)}[{v[2]}]"
         if v[0] == "vparam":
             return f"p{v[1]}.v"
+        if v[0] == "udiv64":
+            xs_ = expr(v[1])
+            if vtype(v[1]).endswith("*"):
+                xs_ = f"reinterpret_cast<unsigned long>({xs_})"
+            s_ = f"static_cast<unsigned long>({xs_}) / {v[2]}ul"
+            return s_ if top else f"({s_})"
+        if v[0] == "urem64":
+            xs_ = expr(v[1])
+            if vtype(v[1]).endswith("*"):
+                xs_ = f"reinterpret_cast<unsigned long>({xs_})"
+            s_ = f"static_cast<unsigned long>({xs_}) % {v[2]}ul"
+            return s_ if top else f"({s_})"
+        if v[0] == "umulh":
+            raise Fail("umulh")
+        if v[0] in ("sdiv", "srem"):
+            if vtype(v[1]).endswith("*"):
+                raise Fail("division of a pointer")
+            s_ = f"static_cast<int>({expr(v[1])}) {'/' if v[0] == 'sdiv' else '%'} {v[2]}"
+            return s_ if top else f"({s_})"
         if v[0] in ("udiv", "urem"):
             xs_ = expr(v[1])
             if vtype(v[1]).endswith("*"):
@@ -4020,13 +4200,15 @@ for size, a in sorted(U, key=lambda x: x[1]):
         if False:
             raise Fail("no call")
         ARITY_USED[0] = False
+        PAIR_USED[0] = False
         try:
             text, sigs, gsyms = gen_function(a, ins)
         except Fail:
-            if not ARITY_USED[0]:
+            if not (ARITY_USED[0] or PAIR_USED[0]):
                 raise
-            # known argument counts made this function fail: generate it as before
-            KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | {"noknownarity"}
+            # known argument counts or a split 64-bit load made this function fail: generate it as before
+            KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | ({"noknownarity"} if ARITY_USED[0] else set()) \
+                | ({"nopair32"} if PAIR_USED[0] else set())
             text, sigs, gsyms = gen_function(a, ins)
         if len(text) > 2000000:
             raise Fail("output too large")

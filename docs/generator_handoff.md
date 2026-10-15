@@ -22,7 +22,7 @@ decompressed game image under `analysis/extracted/update/decompressed/` next to 
   image offsets) restrict the address range; `RV_ONLY` names a file of hex image offsets to restrict the run to
   (for a rerun of only the functions a generator change newly covers). Timed-out chunks are logged to
   `build/rvpar_slow.txt`.
-- `mm_probe.py gen.py LO HI` classifies the first differing instruction pair of every mismatch.
+- `mm_probe.py gen.py LO HI` classifies the first differing instruction pair of every mismatch. With `--classes` (and `--addr LO-HI`, `--only FILE`, `--knobs K`, `--jobs N`, `--tsv FILE`) it runs `mm_tally.py` instead: scratch units under `build/mmtally` (`data/units.json` is not touched), compiled in parallel, every function sorted into match / size / regalloc / schedule / other, with the size and other classes split by word difference and first differing pair.
 - `probe_one.py gen.py ADDR` generates one function into a scratch unit, prints its diff and source, and removes the
   scratch unit again.
 - `nm_probe.py gen.py FILE` does the same for the logged near misses under each knob set, so a generated match can
@@ -89,7 +89,16 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   anonymous struct of bitfields (Clang then computes the value before the load, as the original does);
 - unsigned division and modulo by a constant (knob `nodivmagic`): a multiply of a 32-bit unsigned value by a magic
   number shifted right by 32 or more, checked to be exact, is `x / d`, and `x - d * (x / d)` (msub, or shifted adds)
-  is `x % d`; `msub` is supported as `c - a*b`.
+  is `x % d`; `msub` is supported as `c - a*b`;
+- signed division and modulo by a constant (knob `nosdivmagic`): `smull` by a magic number with Clang's sign fix
+  (`asr` of the product plus its sign bit, or `asr` of high half plus x plus `lsr #31`), checked against truncating
+  division, is `x / d`, and `x - d * (x / d)` is `x % d`;
+- 64-bit unsigned division and modulo by a constant (knob `noudiv64`): `umulh` by a magic number and a shift (after a
+  shift of x for an even divisor), checked on extreme and random values, is `x / d`, and `x - d * (x / d)` is
+  `x % d`;
+- two int fields read by one 64-bit load (knob `nopair32`): an `ldr xN` whose value is only used as `wN` and as its
+  high word (`lsr`/`asr #32`, `ubfx #32, #32`) is two int field loads; a function where the split fails is
+  generated again without it.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
