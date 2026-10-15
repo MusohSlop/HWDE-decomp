@@ -48,6 +48,8 @@ Run them with the project's Python, `python -B -I tools/s5/SCRIPT ...`, from `ma
   (`--strict`: the exact distance may not grow either); both minimizers accept only moves that reduce the number of
   inverted pairs, so they always end. Multi-line instructions (`switch`) stay whole and terminators and phis stay
   in place; orders that fail to compile are counted and reported at the end, the first kept as `irs_tmp.ll.fail`.
+  Names ending in an address (`callee_X`, `kName_X`) and the functions of every unit resolve as in sbs.py (before
+  this fix, each reference to such a name counted as a difference: 386 off where sbs.py says 117 on `3ba734`).
 
 ## Source patterns found by hand
 
@@ -158,3 +160,21 @@ Each with the functions it fixed; three or more make it a generator note.
 - Fused multiply-adds with a constant splat as the first multiplicand (`fmla v, vSplat, vRow`): the transform is
   written `vfmaq_f32(r, vdupq_lane_f32(lo, 1), m.r[1])`; with a variable vector both forms give the by-element
   `fmla`, so the shared `XMVector4Transform` is written splat-first. `242070` (parked).
+- A loop whose body starts with the same call as the code after it (`bl get_game` at the top of the body and of
+  the unlock), with the original keeping the call in the body and the exit test at the bottom: write the loop as
+  its own inline function returning the result. Written in the caller, SimplifyCFG hoists the common call above
+  the loop test before LoopRotate runs, and the rotated loop then calls it in the preheader and the latch (and a
+  `bool ok` + `break` form also carries the flag in a register). Several `continue`s in such a loop become a
+  state switch (`orr #4; and #7; cmp #4`); one combined `if (... && ...) return false;` keeps the branches.
+  `45f07c` (eight loops).
+- Two values that leave a loop equal (a copy loop's index and the output count, both counting from 0) and the
+  original's register coalescing joins the loop counter with one of them (`mov w24, w8` after the loop): the order
+  of their declarations decides which (`unsigned int i, n;` against `n, i`, through the order of the phis);
+  register-only differences across a whole function can come from that one join. `59f778`.
+- `cmp a, b; csel wD, wB, wA, hi` is `a > b ? b : a` (`b < a ? b : a` gives `cmp b, a; csel ..., lo`). `59f778`.
+- A 16-byte zero stored as `stp xzr, xzr` into an array of a union holding a `float32x4_t`: copy a `static const`
+  zero of the union (lowered as a memset); value-initialisation stores a NEON zero (`movi; str q`). `59f778`.
+- A transform written into an output entry with all three results computed before the first store (`stp s, s;
+  str s` after the arithmetic): compute into locals, then store; storing each component as it is computed makes
+  the input reloaded after every store (the output may alias it), and returning the union by value sends it
+  through integer registers (`fmov; bfi; stp x`). `5a18e0`.

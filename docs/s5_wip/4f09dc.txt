@@ -1,0 +1,28 @@
+Fifth session, family (a): 0x71004f09dc, 0x71004f17f8, 0x71004f2620, 0x71004f3448 (1,532 bytes each, one template:
+identical opcodes, 33 differing words each against 4f09dc). Not drafted yet; this is the decode to start from.
+
+What it is: a contact search in the physics module of the vector five (docs/s5_wip/4eab78.cpp: same epsilon
+0.0011920929 at 0x73bbc4/0x73bcbc and the same normalise, x * inv, inv * y, inv * z). bool Owner::find(Out* out):
+  - if (count == 0) return false; count is a u64 at this+0x2420 (4f09dc), 0x2430 (4f17f8, 4f2620), 0x2440 (4f3448);
+    it is loaded again for the loop guard after the hit array's set-up (so it is two source reads).
+  - Hit hits[64] on the stack (0x30 bytes: a 16-byte vector at +0, two u64 at +0x10/+0x18, the entry pointer at
+    +0x20); the set-up stores a 32-bit zero at +0xc of every hit (64 stores, a constructor of the vector type?) and
+    zeroes the hit count (u64, the word after the array).
+  - for each entry (0x90 bytes, base this+0x20; the entry's points are at +0x40 (a) and +0x50 (b) in 4f09dc, the
+    walk pointer starting at entry+0x70/0x80/0x90 in the siblings, so the entry type differs per template):
+      if a and b are equal per component within the epsilon (b - eps <= a <= b + eps for x, y, z, as
+      fcmp + fccmp ls/hi), dir = the entry's normal (+0x30, copied as integers, w = 0); otherwise
+      d = a - b (NEON fsub on the two 16-byte vectors), dir = d * (1 / sqrt(dot3(d))) with dir.w = d.w;
+      if (dot3(normal, dir) > 0) continue;
+      0x71004e7928(&tmp.b, &entry, &entry.b); 0x71004f42c0(&tmp, this, &entry.a, &dir, &tmp.b);
+      each of tmp's two u64 with low byte 2 is masked to 22 bits (& 0x3fffff);
+      a scan over the hits so far (compiled to a counter, a pointer comparison against a stack address), then
+      hits[n] = {dir, tmp, &entry}; n++.
+  - insertion sort of the hits by the squared length of (entry->b - entry->a)... (the loop at 4f0d4c: shifts
+    entries up with memcpy of 0x28 bytes while the key is smaller).
+  - n == 0: out->found (+0x100) = 0, return true; otherwise the last hit: out[0..1] = the entry's two points with w = 1,
+    each transformed by the matrix at this+0x2430 (XMVector4Transform form: fmul by lane 0, fmla lanes 1-3, the
+    matrix reloaded for the second), out+0x20 = the hit's normal through the 3x3 part, normalised, w from the hit,
+    out+0x30/+0x38 = the hit's two u64, out->found = 1, return true.
+Callees (4f09dc): 0x71004e7928, 0x71004f42c0, sqrtf (0x71006008a0), memcpy (0x7100600870). The siblings' callees
+and constants differ in the 33 words; diff the four listings (tools/gen/dis.py) before writing the template.
