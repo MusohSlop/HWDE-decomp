@@ -19056,7 +19056,11 @@
     "got:_ZTV10Class799f0": "0x7100c221c0",
     "got:_ZTV11Class1f5118": "0x7100c231d0",
     "_Z14callee4_1e2360PvS_iS_": "0x71001e2360",
-    "_Z14callee4_1e2360PvliS_": "0x71001e2360"
+    "_Z14callee4_1e2360PvliS_": "0x71001e2360",
+    "got:gGlobalc21880_3e1538": "0x7100c21880",
+    "got:gGlobalc21dd0_3e1538": "0x7100c21dd0",
+    "_ZN9Obj3e153813callee_3e17a8EiPv": "0x71003e17a8",
+    "_Z12callee_402c4i": "0x71000402c4"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -28935,6 +28939,17 @@
         "_Z11call_5e6680l": "0x71005e6680",
         "_Z11call_5e753cl": "0x71005e753c",
         "_Z11call_5fd7f8lPv": "0x71005fd7f8"
+      }
+    },
+    "misc/s5_functions03.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst8": "0x71007e2090",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_ZN11Light5a3ce06updateEv": "0x71005a3ce0",
+        "_ZN9Obj3e15386updateEi": "0x71003e1538"
       }
     }
   }
