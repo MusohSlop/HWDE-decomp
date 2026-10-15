@@ -1,6 +1,7 @@
-"""irsbatch.py: run tools/s5/irsearch.py --groups over a list of near misses, one after another.
+"""irsbatch.py: run tools/s5/irsearch.py (--groups, or its plain mode with --plain) over a list of near misses,
+one after another.
 
-usage: irsbatch.py LIST [--iters N] [--loads-free] --work DIR
+usage: irsbatch.py LIST [--iters N] [--loads-free] [--plain] --work DIR
 
 LIST has one function per line (blank lines and # comments skipped):
     ADDR CPP [SYMS] [FUNC] [NAME=ADDR ...]
@@ -31,8 +32,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("list"); ap.add_argument("--iters", default="3000"); ap.add_argument("--work", required=True)
     ap.add_argument("--loads-free", action="store_true", help="passed on to irsearch.py: loads reorder among themselves")
+    ap.add_argument("--plain", action="store_true", help="irsearch.py's plain mode (single instructions) instead of --groups")
     a = ap.parse_args()
-    passthrough = ["--loads-free"] if a.loads_free else []
+    passthrough = ([] if a.plain else ["--groups"]) + (["--loads-free"] if a.loads_free else [])
     man = json.load(open(os.path.join(M, "data", "units.json"), encoding="utf-8-sig"))
     cc = os.path.join(os.path.dirname(M), man["compiler"])
     matched = False
@@ -60,7 +62,7 @@ def main():
             args += ["--map", x]
         with open(os.path.join(work, "log.txt"), "w", encoding="utf-8") as log:
             r = subprocess.run([sys.executable, "-B", "-I", os.path.join(M, "tools", "s5", "irsearch.py"),
-                                os.path.join(M, cpp), func, addr, *args, "--groups", *passthrough, "--iters", a.iters,
+                                os.path.join(M, cpp), func, addr, *args, *passthrough, "--iters", a.iters,
                                 "--work", work],
                                cwd=M, stdout=log, stderr=subprocess.STDOUT)
         o = open(os.path.join(work, "log.txt"), encoding="utf-8", errors="replace").read()
