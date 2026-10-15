@@ -4,10 +4,11 @@ one after another.
 usage: irsbatch.py LIST [--iters N] [--loads-free] [--plain] --work DIR
 
 LIST has one function per line (blank lines and # comments skipped):
-    ADDR CPP [SYMS] [FUNC] [NAME=ADDR ...]
+    ADDR CPP [SYMS] [FUNC] [NAME=ADDR ...] [@BLOCK]
 CPP is the scratch source (relative to matching/); irsearch.py emits its IR itself, with -g and use-list order kept.
 SYMS is a converter/rank .json whose gsyms and imports become --map arguments ('-' for none). FUNC is the mangled
-name ('-' or left out: the one defined function whose name contains ADDR). NAME=ADDR adds a --map.
+name ('-' or left out: the one defined function whose name contains ADDR). NAME=ADDR adds a --map; @BLOCK picks the
+block to reorder (irsearch.py --block; default the largest).
 Each function works in DIR/ADDR (its log in DIR/ADDR/log.txt); a match is copied to DIR/irs_match_ADDR.ll.
 One summary line per function: start score, best score, exit. Exit 0 when any function matched, else 1.
 Made to run unattended through bgsearch.py (idle priority); irsearch.py is the fifth session's tool, used as is.
@@ -43,9 +44,10 @@ def main():
         if not f:
             continue
         addr, cpp = f[0], f[1]
-        syms = f[2] if len(f) > 2 and "=" not in f[2] else "-"
-        func = f[3] if len(f) > 3 and "=" not in f[3] else "-"
+        syms = f[2] if len(f) > 2 and "=" not in f[2] and not f[2].startswith("@") else "-"
+        func = f[3] if len(f) > 3 and "=" not in f[3] and not f[3].startswith("@") else "-"
         extra = [x for x in f[2:] if "=" in x]
+        block = [x[1:] for x in f[2:] if x.startswith("@")]
         work = os.path.join(a.work, addr)
         os.makedirs(work, exist_ok=True)
         if func == "-":
@@ -60,6 +62,8 @@ def main():
         args = []
         for x in maps + extra:
             args += ["--map", x]
+        if block:
+            args += ["--block", block[0]]
         with open(os.path.join(work, "log.txt"), "w", encoding="utf-8") as log:
             r = subprocess.run([sys.executable, "-B", "-I", os.path.join(M, "tools", "s5", "irsearch.py"),
                                 os.path.join(M, cpp), func, addr, *args, *passthrough, "--iters", a.iters,

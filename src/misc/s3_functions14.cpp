@@ -385,3 +385,27 @@ Mid2d4f14::~Mid2d4f14() {
         open49f8 = 0;
     }
 }
+
+// 0x7100533118: a table of COUNT 0x48-byte items cleared in place; the items' address is taken before the count is
+// stored (it decides the registers).
+struct Item533118 {
+    void* first;
+    unsigned char data[0x40];
+};
+
+class Table533118 {
+public:
+    explicit Table533118(int count);
+    virtual ~Table533118();
+
+    int value8;               // +08
+    void* p10;                // +10
+    int count;                // +18
+    Item533118 items[1];      // +20
+};
+
+Table533118::Table533118(int count_) : value8(0), p10(nullptr) {
+    Item533118* p = items;
+    count = count_;
+    memset(p, 0, count_ * sizeof(Item533118));
+}

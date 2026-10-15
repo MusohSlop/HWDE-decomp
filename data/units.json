@@ -19421,7 +19421,8 @@
     "_ZN8AdvBoard13update_platesEv": "0x710029ecf8",
     "_ZN8AdvBoard11update_viewEv": "0x710029f47c",
     "_Z10apply_iconP11EffectGroupP12LayoutHandlePvPK8IconRect": "0x71001f7fe4",
-    "_ZN13EffectManager11create_nodeEP8NodeSlotiPKc": "0x71001e2360"
+    "_ZN13EffectManager11create_nodeEP8NodeSlotiPKc": "0x71001e2360",
+    "got:_ZTV11Table533118": "0x7100c2d298"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29361,7 +29362,8 @@
         "_ZN15OwnedHeap5c49fcC2EP6RefObj": "0x71005c49fc",
         "_ZN12Worker5f7984C2Ev": "0x71005f7984",
         "_ZN9Mid2d4f14D2Ev": "0x71002d4f14",
-        "_ZN10Node5959d4C2EPKc": "0x7100595930"
+        "_ZN10Node5959d4C2EPKc": "0x7100595930",
+        "_ZN11Table533118C2Ei": "0x7100533118"
       },
       "map": {
         ".rodata.cst4": "0x710073b000",
