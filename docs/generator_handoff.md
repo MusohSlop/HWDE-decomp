@@ -195,6 +195,17 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   sources) no longer fails with "lane of scalar";
 - an int and a float in one stack slot (knob `nostackpun`): the slot keeps its first type and the other access is a
   pun through a reinterpret_cast pointer, as for fields reached through pointers;
+- parameters first used while rendering are declared (knob `nolateparam`): a parameter that reaches the output only
+  through a merged value, a lane or float bits is registered where it is rendered (the parameter list is built after
+  the body), instead of being used undeclared;
+- an index typed as a pointer is written through `reinterpret_cast<long>` (knob `noptridx`; an 8-byte field holding
+  an index was typed void*, and `field[v]` did not compile);
+- a computed byte offset added to a base is parenthesized (knob `noaddrparen`; an offset that is a shift parsed as
+  `(base + v) >> 1`);
+- a vector operand of scalar float arithmetic, a float compare, a conversion or fabs/neg is its lane 0 (knob
+  `noscalarlane`; a variable typed Vec4f only after its s-register uses were built rendered vector arithmetic);
+- select arms are fitted to the select's type and pointers of different types are compared as longs (knob
+  `notypefit`; a pointer arm against an int arm, or two struct pointers compared, did not compile);
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as

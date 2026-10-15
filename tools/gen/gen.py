@@ -4264,16 +4264,16 @@ def gen_function(a, ins):
         return ("maddr", x[2], c_[1], have_[0].startswith("ARRAY:"))
     def acc(base, off):
         if base[0] == "sub2":
-            return f"{acc(base[1], base[2])}[{expr(base[3])}].field_{off:x}"
+            return f"{acc(base[1], base[2])}[{iexpr_(base[3])}].field_{off:x}"
         if base[0] == "sub":
-            return f"{acc(base[1], base[2])}[{expr(base[3])}]"
+            return f"{acc(base[1], base[2])}[{iexpr_(base[3])}]"
         if base[0] == "var" and base[1] in ESHIFT_ and base[1] not in IDX_:
             return f"{base[1]}->field_{off - ESHIFT_[base[1]]:x}"
         if base[0] == "var" and base[1] in IDX_:
             return f"{base[1]}[{IDX_[base[1]]}].field_{off - ESHIFT_.get(base[1], 0):x}"
         if base[0] == "bytes":
             sn_ = bytekinds[base]
-            return f"reinterpret_cast<{sn_}*>(reinterpret_cast<unsigned char*>({expr(base[1])}) + {expr(base[2])})->field_{off:x}"
+            return f"reinterpret_cast<{sn_}*>(reinterpret_cast<unsigned char*>({expr(base[1])}) + {expr(base[2], 'noaddrparen' in knobs)})->field_{off:x}"
         if base[0] == "select":
             sn_ = bytekinds[base]
             a_ = f"reinterpret_cast<{sn_}*>({expr(base[2])})->field_{off:x}"
@@ -4284,7 +4284,7 @@ def gen_function(a, ins):
             if base[2][0] == "pick":
                 pk = base[2]
                 arr_ = f"reinterpret_cast<{en}*>({expr(base[1])})"
-                hit_, miss_ = f"&{arr_}[{expr(pk[2])}]", f"&{arr_}[0]"
+                hit_, miss_ = f"&{arr_}[{iexpr_(pk[2])}]", f"&{arr_}[0]"
                 a_, b_ = (miss_, hit_) if pk[3] else (hit_, miss_)
                 return f"({cond(*pk[1])} ? {a_} : {b_})->field_{off:x}"
             b1_ = base[1]
@@ -4294,7 +4294,7 @@ def gen_function(a, ins):
                 c_ = cval_(b1_[3])
                 return f"reinterpret_cast<{en}*>(reinterpret_cast<unsigned char*>({expr(b1_[2])}) + static_cast<long>({expr(base[2])}) * {hex(base[3])}" \
                     f" {'+' if c_ >= 0 else '-'} {hex(abs(c_))})->field_{off:x}"
-            return f"reinterpret_cast<{en}*>({expr(base[1])})[{expr(base[2])}].field_{off:x}"
+            return f"reinterpret_cast<{en}*>({expr(base[1])})[{iexpr_(base[2])}].field_{off:x}"
         if base[0] == "stackobj":
             sn = stackobjs[base[1]]
             if set(structs[sn]) == {0} and sn not in stack_min_:
@@ -4308,6 +4308,17 @@ def gen_function(a, ins):
                 return gname(base)
             return f"{gname(base)}.field_{off:x}"
         return f"{expr(base)}->field_{off:x}"
+    def sexpr_(v_, top_=False):
+        """A scalar float operand: a value typed Vec4f is its lane 0."""
+        if "noscalarlane" not in knobs and v_[0] not in ("fconst", "fparam") and vtype(v_) == "Vec4f":
+            return f"{expr(v_, False)}[0]"
+        return expr(v_, top_)
+    def iexpr_(v_):
+        """An index: a pointer-typed value goes through reinterpret_cast<long>."""
+        e_ = expr(v_)
+        if "noptridx" not in knobs and vtype(v_).endswith("*"):
+            return f"reinterpret_cast<long>({e_})"
+        return e_
     def expr(v, top=True):
         if v[0] == "undef":
             return f"u{v[1]}"
@@ -4326,6 +4337,8 @@ def gen_function(a, ins):
             s_ = f"{c_} ? 0 : {expr(v[2], False)}" if v[3] else f"{c_} ? {expr(v[2], False)} : 0"
             return s_ if top else f"({s_})"
         if v[0] == "fparam":
+            if "nolateparam" not in knobs:
+                fparams.add(v[1])
             return f"f{v[1]}"
         if v[0] == "vconst":
             return "(Vec4f){" + ", ".join(expr(("fconst", x_)) for x_ in v[1]) + "}"
@@ -4413,18 +4426,18 @@ def gen_function(a, ins):
                 s_ += ".0"
             return s_ + "f"
         if v[0] == "fbin":
-            s_ = f"{expr(v[2], False)} {v[1]} {expr(v[3], False)}"
+            s_ = f"{sexpr_(v[2])} {v[1]} {sexpr_(v[3])}"
             return s_ if top else f"({s_})"
         if v[0] == "funary":
             if v[1] in ("floor", "ceil", "round", "trunc"):
-                return f"__builtin_{v[1]}f({expr(v[2])})"
-            return f"-{expr(v[2], False)}" if v[1] == "fneg" else f"__builtin_fabsf({expr(v[2])})"
+                return f"__builtin_{v[1]}f({sexpr_(v[2], True)})"
+            return f"-{sexpr_(v[2])}" if v[1] == "fneg" else f"__builtin_fabsf({sexpr_(v[2], True)})"
         if v[0] == "i2f":
             ut = ("unsigned long" if v[3] == "x" else "unsigned int") if v[1] else ("long" if v[3] == "x" else "int")
             return f"static_cast<float>(static_cast<{ut}>({expr(v[2])}))"
         if v[0] == "f2i":
             ut = ("unsigned long" if v[3] == "x" else "unsigned int") if v[1] else ("long" if v[3] == "x" else "int")
-            return f"static_cast<{ut}>({expr(v[2])})"
+            return f"static_cast<{ut}>({sexpr_(v[2], True)})"
         if v[0] == "fselect":
             s_ = f"{cond(*v[1])} ? {expr(v[2], False)} : {expr(v[3], False)}"
             return s_ if top else f"({s_})"
@@ -4458,6 +4471,8 @@ def gen_function(a, ins):
                 gobjs[sn] = v
             return f"&{gname(v)}" if structs[sn] else gname(v)
         if v[0] == "param":
+            if "nolateparam" not in knobs and v[1] not in pwidth:
+                pwidth[v[1]] = "x"
             return f"p{v[1]}"
         if v[0] == "var":
             if v[1] in IDX_:
@@ -4513,12 +4528,16 @@ def gen_function(a, ins):
                     if st_:
                         en = struct_for(("elem", y_, st_[0], st_[1]))
                         arr_ = f"reinterpret_cast<{en}*>({expr(y_)})"
-                        hit_, miss_ = f"&{arr_}[{expr(st_[0])}]", f"&{arr_}[0]"
+                        hit_, miss_ = f"&{arr_}[{iexpr_(st_[0])}]", f"&{arr_}[0]"
                         a_, b_ = (miss_, hit_) if swap else (hit_, miss_)
                         s_ = f"reinterpret_cast<long>({cond(*v[1])} ? {a_} : {b_})"
                         return s_
         if v[0] == "select":
-            s = f"{cond(*v[1])} ? {expr(v[2], False)} : {expr(v[3], False)}"
+            if "notypefit" not in knobs:
+                t_ = vtype(v)
+                s = f"{cond(*v[1])} ? {fit(expr(v[2], False), vtype(v[2]), t_)} : {fit(expr(v[3], False), vtype(v[3]), t_)}"
+            else:
+                s = f"{cond(*v[1])} ? {expr(v[2], False)} : {expr(v[3], False)}"
             return s if top else f"({s})"
         raise Fail("expr")
     FCC = {"eq": "{x} == {y}", "ne": "{x} != {y}", "mi": "{x} < {y}", "gt": "{x} > {y}", "ge": "{x} >= {y}",
@@ -4542,7 +4561,7 @@ def gen_function(a, ins):
             form = FCC.get(cc)
             if not form:
                 raise Fail("fcc")
-            return form.format(x=expr(f[1], False), y=expr(f[2], False))
+            return form.format(x=sexpr_(f[1]), y=sexpr_(f[2]))
         if f is None or cc not in CC:
             raise Fail("cond")
         kind, x, y, w = f
@@ -4573,6 +4592,8 @@ def gen_function(a, ins):
                 xs = f"reinterpret_cast<long>({expr(x)})"
             else:
                 ys = f"reinterpret_cast<long>({expr(y)})"
+        elif px_ and py_ and vtype(x) != vtype(y) and "notypefit" not in knobs:
+            xs, ys = f"reinterpret_cast<long>({expr(x)})", f"reinterpret_cast<long>({expr(y)})"
         return f"{xs} {CC[cc]} {ys}"
     def fit(e, have, want):
         ptr = lambda t: t.endswith("*")
@@ -4992,28 +5013,28 @@ def gen_function(a, ins):
             if it[0] == "leti" and len(it) > 6:
                 _, name, sn, off, base, iv, wt = it
                 bp_ = acc(base, off) if structs[sn].get(off, ("",))[0] == "ARRAY:unsigned char" else f"reinterpret_cast<unsigned char*>(&{acc(base, off)})"
-                outl.append(declare_line(pad, wt, name, f"*reinterpret_cast<{wt}*>(&{bp_}[{expr(iv)}])") if "declare_line" in dir() else f"{pad}{wt} {name} = *reinterpret_cast<{wt}*>(&{bp_}[{expr(iv)}]);")
+                outl.append(declare_line(pad, wt, name, f"*reinterpret_cast<{wt}*>(&{bp_}[{iexpr_(iv)}])") if "declare_line" in dir() else f"{pad}{wt} {name} = *reinterpret_cast<{wt}*>(&{bp_}[{iexpr_(iv)}]);")
                 continue
             if it[0] == "storei" and len(it) > 6:
                 _, sn, off, base, iv, val, wt = it
                 bp_ = acc(base, off) if structs[sn].get(off, ("",))[0] == "ARRAY:unsigned char" else f"reinterpret_cast<unsigned char*>(&{acc(base, off)})"
-                outl.append(f"{pad}*reinterpret_cast<{wt}*>(&{bp_}[{expr(iv)}]) = {fit(expr(val), vtype(val), wt)};")
+                outl.append(f"{pad}*reinterpret_cast<{wt}*>(&{bp_}[{iexpr_(iv)}]) = {fit(expr(val), vtype(val), wt)};")
                 continue
             if it[0] == "leti":
                 _, name, sn, off, base, iv = it[:6]
                 if (sn, off) in arr_scalar_:
                     el_ = arr_scalar_[(sn, off)]
-                    outl.append(declare_line(pad, el_, name, f"reinterpret_cast<{el_}*>(&{acc(base, off)})[{expr(iv)}]"))
+                    outl.append(declare_line(pad, el_, name, f"reinterpret_cast<{el_}*>(&{acc(base, off)})[{iexpr_(iv)}]"))
                     continue
-                outl.append(declare_line(pad, ftype(sn, off), name, f"{acc(base, off)}[{expr(iv)}]"))
+                outl.append(declare_line(pad, ftype(sn, off), name, f"{acc(base, off)}[{iexpr_(iv)}]"))
                 continue
             if it[0] == "storei":
                 _, sn, off, base, iv, val = it[:6]
                 if (sn, off) in arr_scalar_:
                     el_ = arr_scalar_[(sn, off)]
-                    outl.append(f"{pad}reinterpret_cast<{el_}*>(&{acc(base, off)})[{expr(iv)}] = {fit(expr(val), vtype(val), el_)};")
+                    outl.append(f"{pad}reinterpret_cast<{el_}*>(&{acc(base, off)})[{iexpr_(iv)}] = {fit(expr(val), vtype(val), el_)};")
                     continue
-                outl.append(f"{pad}{acc(base, off)}[{expr(iv)}] = {fit(expr(val), vtype(val), ftype(sn, off))};")
+                outl.append(f"{pad}{acc(base, off)}[{iexpr_(iv)}] = {fit(expr(val), vtype(val), ftype(sn, off))};")
                 continue
             if it[0] == "let" and "sink" in knobs and use_count.get(it[1], 0) == 1 and not (isinstance(vars_[it[1]], str) and vars_[it[1]] in structs):
                 lt0 = vars_[it[1]]
