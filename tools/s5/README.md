@@ -77,7 +77,12 @@ Each with the functions it fixed; three or more make it a generator note.
   branch merge in another (the merge then uses `orr`): the parameter is a byte (`unsigned char`) passed on as
   `p & 1`, not a `bool`. `3bdbf0`.
 - A temporary stored right before each call that takes it by reference (after the callee's vtable slot is
-  loaded): build it in the call (`f(i, Color{...})`), not as a local declared before the call. `3bdbf0`.
+  loaded): build it in the call (`f(i, Color{...})`), not as a local declared before the call. `3bdbf0`,
+  `448544` (the heap allocation info, `heap->alloc(size, 0x10, AllocInfo(0x2e))`, eleven times).
+- A small struct built field by field on the stack (`strh`, `strh wzr`, `str xzr`) where ours copies it from a
+  constant (`ldp`/`stp` from .rodata): give it a constructor instead of an aggregate initializer. `448544`.
+- A 4-byte local at an 8-aligned slot right above the saved `d8` where ours puts it 4 bytes higher: declare it
+  `alignas(8)`. `448544`.
 - String literals scattered across the string section (some merged with other modules' strings): declare each as
   `extern const char kName_ADDR[] __attribute__((visibility("hidden")))` and map it, instead of one
   `.rodata.str1.1` anchor. `3bdbf0` (41 strings).

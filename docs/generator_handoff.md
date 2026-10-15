@@ -136,7 +136,17 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - int fields converted to float in a vector register (knob `noicvt`): `ldr s0, [..]; ucvtf s0, s0` (scvtf for int),
   `ldr h0, [..]; ucvtf s0, s0` (an unsigned short, as `ldr h` zero-extends; `ldr b` for unsigned char) and
   `ldr h0, [..]; sshll v0.4s, v0.4h, #0; scvtf s0, s0` (short, ushll for unsigned short) are int loads of the
-  field's type and `static_cast<float>` of them (these failed as "ucvtf", "scvtf" and "reg h0").
+  field's type and `static_cast<float>` of them (these failed as "ucvtf", "scvtf" and "reg h0");
+- byte-offset accesses into typed fields (knob `nobytearr`): an unscaled register-indexed access of a value wider
+  than a byte made the field at its base a byte array, and a direct access of another type at that offset failed
+  with "field clash"; the typed field now wins and the byte-offset access goes through
+  `reinterpret_cast<unsigned char*>(&p->field)[i]` (real byte arrays keep their type);
+- float values through general registers (knob `nofbits`): `fmov sD, wN` of a constant is that float constant and of
+  an int field load retypes the field as a float; `fmov wD, sN` holds the float's bits, with `eor 0x80000000` a
+  negation, `and 0x7fffffff` an absolute value, a 32-bit store a float store and `fmov` back the float (floats in
+  parameter registers, as two-float structs passed in x registers, are not modelled yet);
+- conditional float compares (knob `nofccmp`): `fccmp sA, sB, #nzcv, cond` is a link of the compare chain as `ccmp`
+  is for ints, and a chain may end in a float condition (`mi`, `pl`, ...).
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
