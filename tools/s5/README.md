@@ -165,3 +165,14 @@ Each with the functions it fixed; three or more make it a generator note.
   `bool ok` + `break` form also carries the flag in a register). Several `continue`s in such a loop become a
   state switch (`orr #4; and #7; cmp #4`); one combined `if (... && ...) return false;` keeps the branches.
   `45f07c` (eight loops).
+- Two values that leave a loop equal (a copy loop's index and the output count, both counting from 0) and the
+  original's register coalescing joins the loop counter with one of them (`mov w24, w8` after the loop): the order
+  of their declarations decides which (`unsigned int i, n;` against `n, i`, through the order of the phis);
+  register-only differences across a whole function can come from that one join. `59f778`.
+- `cmp a, b; csel wD, wB, wA, hi` is `a > b ? b : a` (`b < a ? b : a` gives `cmp b, a; csel ..., lo`). `59f778`.
+- A 16-byte zero stored as `stp xzr, xzr` into an array of a union holding a `float32x4_t`: copy a `static const`
+  zero of the union (lowered as a memset); value-initialisation stores a NEON zero (`movi; str q`). `59f778`.
+- A transform written into an output entry with all three results computed before the first store (`stp s, s;
+  str s` after the arithmetic): compute into locals, then store; storing each component as it is computed makes
+  the input reloaded after every store (the output may alias it), and returning the union by value sends it
+  through integer registers (`fmov; bfi; stp x`). `5a18e0`.
