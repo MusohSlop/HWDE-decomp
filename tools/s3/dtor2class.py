@@ -140,7 +140,7 @@ while True:
                     else:
                         fail("vtable store at +%#x" % at)
                 else:
-                    events.append(("store", at, v, LI()))
+                    events.append(("store", at, v, LI(), 8 if ops[0][0] == "x" else 4, ops[k] in ("xzr", "wzr")))
         if mm and mm.lastindex and mm.lastindex >= 3 and mm.group(3) == "!" and b and b[0] == "this":
             regs[base] = ("this", b[1] + off)
         if post and b and b[0] == "this":
@@ -226,9 +226,12 @@ for k, e in enumerate(events[:first_destroy]):
     if e[0] == "call" and e[1] == 0:
         body_calls.append(e[2])
 calls = [c for c in calls if not (c[0] == 0 and c[1] in body_calls)]
-stores = [e for e in events if e[0] == "store"]
+# zero stores before anything is destroyed are the body's assignments (fields cleared, then the members destroyed)
+stores = [e for k, e in enumerate(events) if e[0] == "store" and not (k < first_destroy and e[5])]
 if stores:
     fail("plain stores in a destructor: " + ", ".join("+%#x" % e[1] for e in stores[:4]))
+body = [("call", e[2]) if e[0] == "call" else ("store", e[1], e[4]) for e in events[:first_destroy]
+        if e[0] == "store" or (e[0] == "call" and e[1] == 0)]
 
 # loop iterations: handles of one loop (same iteration set) with a constant stride between iterations
 members = []   # (off, decl, size)
@@ -289,7 +292,10 @@ while k < len(calls):
     else:
         members.append((off, f"Part{tgt:x} m{off:x};", None))
         k += 1
-taken = [(off, off + (sz or 1)) for off, decl, sz in members]
+for b in body:
+    if b[0] == "store" and not any(off == b[1] for off, _, _ in members):
+        members.append((b[1], f"{'long' if b[2] == 8 else 'int'} f{b[1]:x};", b[2]))
+taken =[(off, off + (sz or 1)) for off, decl, sz in members]
 loop_handles = {r: [(h, h + 0x18) for h in loops[r]] for run in loop_runs for r in run}
 floor = 8 if vt_own or base else 0
 infos = []
@@ -377,7 +383,8 @@ for k, (off, decl, sz) in enumerate(members):
             out[-1] = out[-1].replace("m%x;" % off, "m%x;" % off)
     pos = off + sz
 out.append("};\n")
-out.append(f"{cls_name}::~{cls_name}() {{" + "".join(f"\n    body_{b:x}();" for b in body_calls) + ("\n" if body_calls else "") + "}\n")
+out.append(f"{cls_name}::~{cls_name}() {{" + "".join(f"\n    body_{b[1]:x}();" if b[0] == "call" else f"\n    f{b[1]:x} = 0;"
+                                                    for b in body) + ("\n" if body else "") + "}\n")
 text = "\n".join(out)
 # Part sizes: the smallest gap after any of its members, so nothing overlaps
 for tgt in parts:

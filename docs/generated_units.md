@@ -114,6 +114,7 @@ real classes.
 | `misc/variant_functions85.cpp` | variant search, eighty-fifth run (`novecunion`, `nofround`) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions86.cpp` | variant search, eighty-sixth run (`noundefext`, `nofarity`) | as `misc/variant_functions26.cpp` |
 | `misc/variant_functions87.cpp` | variant search, eighty-seventh run (`voidret` sets over the functions that generate only with `voidret`) | as `misc/variant_functions26.cpp` |
+| `misc/variant_functions88.cpp` | variant search, eighty-eighth run (end-of-round pass, default and `voidret` pools) | as `misc/variant_functions26.cpp` |
 | `misc/s2_functions1.cpp` | second session, first run over `0x7100380000` and up (the whole 4-byte constant pool, 16-byte vector constants from the literal pool) | as `misc/variant_functions26.cpp`; vector constants are `(Vec4f){...}` literals, mapped through `.rodata.cst16` |
 | `misc/s2_functions2.cpp` | second session, second run (float stack slots, `sqrtf`, float branches, indexed floats) | as `misc/s2_functions1.cpp` |
 | `misc/s2_functions3.cpp` | second session, third run (constant-store fields retyped, integer reads of two widths; only the newly generated functions) | as `misc/s2_functions1.cpp` |
@@ -141,6 +142,7 @@ real classes.
 | `misc/s2_functions25.cpp` | second session, float rounding (`nofround`) and the functions of `0x7100380000` and up that generate since master's `noretthis` and `noread0` | as `misc/s2_functions13.cpp` |
 | `misc/s2_functions26.cpp` | second session, sqrtf slow paths, vectors from x registers, post-indexed float accesses, lane loads and stores, vector/scalar merges and float bits (`nosqrtpair`, `novcomb`, `nofpost`, `nold1`, `vlanemerge`, `nofbits`; only the functions whose generated code changed) | as `misc/s2_functions13.cpp` |
 | `misc/s2_functions27.cpp` | second session, a full pass with every knob set over all 1395 generating but unmatched functions of `0x7100380000` and up (matches the generator reached through other changes, master's included) | as `misc/s2_functions13.cpp` |
+| `misc/s2_functions28.cpp` | second session, the hourly full pass (the knob sets that produce matches) over the functions of `0x7100380000` and up that generate with default knobs or under `voidret` | as `misc/s2_functions13.cpp` |
 | `misc/loop_functions.cpp` | one bottom-tested loop | as `misc/general_functions.cpp`, plus loop-carried locals `rN` updated at the end of a `do`/`while` |
 | `misc/loop_functions2.cpp` | loops with if/else bodies and pointer induction variables | as `misc/loop_functions.cpp`, plus element structs `ElemFUNC_rN` sized to the stride |
 | `misc/virtual_calls.cpp` | functions with virtual calls | as `misc/call_functions3.cpp`, plus placeholder classes whose virtual methods `slot_K` stand for vtable slot `K` (slots not called are declared `void slot_K()`); some `callee_NNN` are known functions (for example `get_default_heap`, `DefaultHeap::release`) |
