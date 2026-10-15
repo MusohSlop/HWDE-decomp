@@ -21538,7 +21538,10 @@
     "_Z13callee_513d5cPvS_S_S_S_": "0x7100513d5c",
     "_Z13callee_521084PvliS_S_S_S_i": "0x7100521084",
     "_Z13callee_453558l": "0x7100453558",
-    "_Z13callee_45358cl": "0x710045358c"
+    "_Z13callee_45358cl": "0x710045358c",
+    "_ZN12RosterMember11value_527d8Ev": "0x71000527d8",
+    "_ZN12RosterMember11value_527fcEv": "0x71000527fc",
+    "_ZN10Scene5f79413prepare_60244Ev": "0x7100060244"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -32057,7 +32060,9 @@
     "misc/s4_5f794.cpp": {
       "functions": {
         "_ZN10Scene5f7945startILi0EEEvv": "0x710005f794",
-        "_ZN10Scene5f7945startILi1EEEvv": "0x7100060c2c"
+        "_ZN10Scene5f7945startILi1EEEvv": "0x7100060c2c",
+        "_ZN10Scene5f7947restartILi0EEEvv": "0x710006090c",
+        "_ZN10Scene5f7947restartILi1EEEvv": "0x7100061188"
       }
     },
     "misc/s4_20493c.cpp": {
@@ -32105,7 +32110,11 @@
     "misc/s4_4b76c.cpp": {
       "functions": {
         "_ZN8Registry4findILi0EEEP14RegistryObjecti": "0x710004b76c",
-        "_ZN8Registry4findILi1EEEP14RegistryObjecti": "0x7100075fd8"
+        "_ZN8Registry4findILi1EEEP14RegistryObjecti": "0x7100075fd8",
+        "_ZN8Registry11find_targetILi0EEEP14RegistryTargeti": "0x710004df50",
+        "_ZN8Registry11find_targetILi1EEEP14RegistryTargeti": "0x7100051eb0",
+        "_ZN17RegistryHost50c544findEi": "0x7100050c54",
+        "_ZN17RegistryHost50fb04findEi": "0x7100050fb0"
       }
     },
     "misc/s4_unit_state.cpp": {
@@ -32258,6 +32267,12 @@
         "_Z11call_461034P11Arg461034_0": "0x7100461034",
         "_Z11call_461064P11Arg461064_0": "0x7100461064",
         "_Z11call_4c9678P11Arg4c9678_0Pv": "0x71004c9678"
+      }
+    },
+    "misc/s4_5d448.cpp": {
+      "functions": {
+        "_ZN14UnitRosterList6lookupILi0EEEiP4Unit": "0x710005d448",
+        "_ZN14UnitRosterList6lookupILi1EEEiP4Unit": "0x710005d4d0"
       }
     }
   }
