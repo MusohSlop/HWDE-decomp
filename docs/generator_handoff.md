@@ -98,7 +98,11 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   `x % d`;
 - two int fields read by one 64-bit load (knob `nopair32`): an `ldr xN` whose value is only used as `wN` and as its
   high word (`lsr`/`asr #32`, `ubfx #32, #32`) is two int field loads; a function where the split fails is
-  generated again without it.
+  generated again without it;
+- a pointer plus a constant is byte-pointer arithmetic (knob `noptradd`),
+  `reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p) + C)`: written as integer arithmetic, Clang's constant
+  hoisting kept a large C in a callee-saved register across calls, one more saved register than the original (a
+  different frame and store pairing).
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
