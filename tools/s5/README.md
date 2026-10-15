@@ -256,3 +256,15 @@ Each with the functions it fixed; three or more make it a generator note.
 - An invariant product computed after a loop's count test (`cbz w8; ldr s1, [cf4]; fmul s9, s0, s1`) although it is
   only used inside: compute it before the loop in source; MachineSink moves it past the test. Written inside the
   loop body, the load stays in the loop (the call may change it). `5efb3c`.
+- Two call arguments built in stack slots that the original puts at the same offset (the direction for one call
+  and the point for the next, both at sp+0x50): pass them as temporaries to `const T&` parameters
+  (`shape.support(vec4(-v.x, -v.y, -v.z, 0.0f), nullptr)`); a temporary's lifetime ends with its full expression,
+  so stack colouring can give both one slot. A named local, even in a block scope, kept the second one elsewhere.
+  `4eab78` (x6; 9/36 -> 7/34 by edit distance, also fixed a `bfi`'s place).
+- A min/max scan whose `fcsel` for the first value sits between the products of the second (`fcmp s2, s1; ldp; fmul;
+  fmul; fcsel s1, ...`): compute both values before either update (`da = ...; db = ...; if (da < lo) ...; if (db >
+  hi) ...`). `4eab78` (x6, 13/75 -> 9/36 with the block-scoped slot above).
+- A diamond `if (c) v = a + b; else v = a;` where the original adds a first (`ldp q1, q0; fadd v0, v0, v1`) without
+  hoisting: after SROA every whole load of the non-promoted `a` is the same `load i128`, so a then-block that starts
+  with it is hoisted by SimplifyCFG (and the diamond becomes a select, `bsl`); a then-block that loads b first
+  stays a diamond, but Reassociate then orders the `fadd` by load rank (b first). Not solved; `4eab78`.
