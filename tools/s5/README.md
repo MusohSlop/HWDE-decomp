@@ -200,6 +200,16 @@ Each with the functions it fixed; three or more make it a generator note.
   only the data size (a 0x28-byte memcpy for a 0x30-byte, 16-aligned element). `4f09dc` (parked, x4).
 - A local whose original slot sits above the caller's arrays: inside an inlined (member) function its alloca moves
   to the top of the caller's entry block, ahead of the caller's own locals. `4f09dc` (parked, x4).
+- A union vector that the original keeps in one vector register (lanes read with `mov s1, v5.s[1]`, built from two
+  64-bit halves at a merge) but ours splits into 32-bit pieces in integer registers: SROA only vector-promotes an
+  alloca when one load or store covers it whole as a vector; copy into it as `v.v = other.v`, not `v = other`
+  (a memcpy). `4eab78` (97 -> 78; parked, x6 with its template copies).
+- A frame whose temporaries reuse the slots of earlier locals (dir and q at the sums' slot): give the earlier
+  locals a block scope so their lifetimes end (stack colouring merges only disjoint lifetimes). `4eab78` (x6),
+  `503bd0` (the inverse matrix's temporary, x2).
+- A union operator whose left operand is loaded as a vector and whose result goes through x0/x1: the left side by
+  reference and the right side by value (`operator+(const Vec4u& a, Vec4u b)`, the shape of a member operator).
+  `4eab78` (x6).
 - Compares whose operands come out swapped from a helper (`fcmp c, a` where the original has `fcmp a, c`): a static
   helper's reference parameters are turned into values by ArgumentPromotion, and InstCombine puts the argument
   (less complex) on the right; write the test in the caller (or in a non-static inline function). The last load
