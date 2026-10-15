@@ -1,5 +1,7 @@
 # Fifth session (branch matching-s5): hand-matching of non-constructor functions over 1,500 bytes at 0x380000 and
 # above, and the giants of that range. Generator runs should skip every address listed here.
 # working: functions being hand-matched now; matched: functions matched on matching-s5; tried: parked, with reason.
-working: 425de0
-matched: 415f00
+working:
+matched: 415f00 38e39c
+tried: 425de0 (2,148 B: the inventory merges a 36-byte jump-table dispatcher with about 80 small factory constructors that follow it; needs its functions.csv entry split before it can match)
+tried: 3ccf84 (3,100 B, 24 off, same size: only the tail differs, the shared reset block and the keep-flag test; docs/s5_wip/3ccf84.cpp)
