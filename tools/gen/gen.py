@@ -1197,6 +1197,40 @@ def gen_function(a, ins):
                         base = ("bytes", lhs, rhs)
         return base, off
     bytecast_fields_ = set()   # byte arrays made only by byte-offset accesses of wider values
+    vu_slots_ = set()          # (struct, offset) of 16-byte slots used as a vector and as lanes or halves
+    VU_T_ = {"float": 4, "int": 4, "unsigned int": 4, "void*": 8, "long": 8}
+    def vu_check_(sn_, o_, ct_):
+        """True when an access of type ct_ at o_ is a view of a vector slot (which becomes a VecU union)."""
+        if "novecunion" in knobs:
+            return False
+        fl_ = structs[sn_]
+        for u_ in (o_, o_ - 4, o_ - 8, o_ - 12):
+            if u_ >= 0 and fl_.get(u_, ("",))[0] == "Vec4f" and not (ct_ == "Vec4f" and u_ == o_):
+                if ct_ not in VU_T_ or (o_ - u_) % VU_T_[ct_]:
+                    return False
+                if any(u_ < o2_ < u_ + 16 and fl_[o2_][0] not in VU_T_ for o2_ in fl_):
+                    return False
+                vu_slots_.add((sn_, u_))
+                return True
+        if ct_ == "Vec4f":
+            inner_ = [o2_ for o2_ in fl_ if o_ <= o2_ < o_ + 16]
+            if inner_ and all(fl_[o2_][0] in VU_T_ and (o2_ - o_) % VU_T_[fl_[o2_][0]] == 0 for o2_ in inner_):
+                fl_[o_] = ("Vec4f", None)
+                vu_slots_.add((sn_, o_))
+                return True
+        return False
+    def vu_of_(sn_, o_):
+        return next((u_ for (s_, u_) in vu_slots_ if s_ == sn_ and u_ <= o_ < u_ + 16), None)
+    def vu_view_(ty_, d_):
+        if ty_ == "Vec4f" and d_ == 0:
+            return "v", "Vec4f"
+        if ty_ == "float":
+            return f"f[{d_ // 4}]", "float"
+        if ty_ in ("int", "unsigned int"):
+            return f"i[{d_ // 4}]", "int"
+        if ty_ in ("long", "void*"):
+            return f"l[{d_ // 8}]", "long"
+        raise Fail("vector slot view")
     def field(regs, base_reg, off, ct, base=None, cstore=False, bytecast=False):
         if base is None and base_reg is not None:
             bn, _ = regname(base_reg)
@@ -1265,6 +1299,11 @@ def gen_function(a, ins):
                 if ct != "ARRAY:unsigned char":
                     structs[sn][off] = (ct, None)
                     prev = structs[sn][off]
+        if not ct.startswith("ARRAY:") and vu_check_(sn, off, ct):
+            prev = None if structs[sn].get(off) is None else structs[sn][off]
+            if prev and prev[0] != ct:
+                note_access_(sn, off, cstore)
+                return sn, base, off
         if prev and prev[0] != ct:
             groups = [{"long", "void*"}, {"unsigned char", "signed char"}, {"unsigned short", "short"}]
             pun_ = prev[0] in ("int", "unsigned int", "float") and ct in ("int", "unsigned int", "float") and "float" in (prev[0], ct) and "nopun" not in knobs
@@ -2223,6 +2262,23 @@ def gen_function(a, ins):
                 regs["f"][fd] = ("i2f", m == "ucvtf", src_, regname(ops[1])[1])
                 if fd < 8: regs.setdefault("fw", set()).add(fd)
                 k += 1; continue
+            if m in ("fcvtms", "fcvtmu", "fcvtps", "fcvtpu", "fcvtas", "fcvtau") and len(ops) == 2 and re.fullmatch(r"s\d+", ops[1]) \
+                    and re.fullmatch(r"[wx]\d+", ops[0]) and "nofround" not in knobs:
+                dn, w = regname(ops[0])
+                rnd_ = {"m": "floor", "p": "ceil", "a": "round"}[m[4]]
+                regs[dn] = ("f2i", m.endswith("u"), ("funary", rnd_, fuse(regs["f"], ops[1])), w)
+                if dn < 8: written.add(dn)
+                k += 1; continue
+            if fdst and m in ("frintm", "frintp", "frinta", "frintz") and len(ops) == 2 and "nofround" not in knobs:
+                fd = fregname(fdst)
+                regs["f"][fd] = ("funary", {"m": "floor", "p": "ceil", "a": "round", "z": "trunc"}[m[5]], fuse(regs["f"], ops[1]))
+                if fd < 8: regs.setdefault("fw", set()).add(fd)
+                k += 1; continue
+            if fdst and m == "fnmul" and len(ops) == 3 and "nofround" not in knobs:
+                fd = fregname(fdst)
+                regs["f"][fd] = ("funary", "fneg", ("fbin", "*", fuse(regs["f"], ops[1]), fuse(regs["f"], ops[2])))
+                if fd < 8: regs.setdefault("fw", set()).add(fd)
+                k += 1; continue
             if m in ("fcvtzs", "fcvtzu") and len(ops) == 2 and re.fullmatch(r"s\d+", ops[1]):
                 dn, w = regname(ops[0])
                 regs[dn] = ("f2i", m == "fcvtzu", fuse(regs["f"], ops[1]), w)
@@ -2456,8 +2512,9 @@ def gen_function(a, ins):
                     if prev and prev[0] != ct_ and retype_ok_(sn, off_ - st, prev[0], ct_):
                         structs[sn][off_ - st] = (ct_, None)
                         prev = structs[sn][off_ - st]
-                    if prev and prev[0] != ct_:
+                    if prev and prev[0] != ct_ and not vu_check_(sn, off_ - st, ct_):
                         raise Fail("stack field clash")
+                    vu_check_(sn, off_ - st, ct_)
                     note_access_(sn, off_ - st, False)
                     structs[sn].setdefault(off_ - st, (ct_, None))
                     if load_:
@@ -2556,8 +2613,10 @@ def gen_function(a, ins):
                     if prev and prev[0] != ct and retype_ok_(sn, off_ - st, prev[0], ct):
                         structs[sn][off_ - st] = (ct, None)
                         prev = structs[sn][off_ - st]
-                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not widen_field_(sn, off_ - st, prev, ct):
+                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not vu_check_(sn, off_ - st, ct) \
+                            and not widen_field_(sn, off_ - st, prev, ct):
                         raise Fail("stack field clash")
+                    vu_check_(sn, off_ - st, ct)
                     note_access_(sn, off_ - st, False)
                     structs[sn].setdefault(off_ - st, (ct, None))
                     name = f"v{counter[0]}"; counter[0] += 1
@@ -2577,8 +2636,10 @@ def gen_function(a, ins):
                 if prev and prev[0] != ct and retype_ok_(sn, sbase - st, prev[0], ct):
                     structs[sn][sbase - st] = (ct, None)
                     prev = structs[sn][sbase - st]
-                if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not widen_field_(sn, sbase - st, prev, ct):
+                if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not vu_check_(sn, sbase - st, ct) \
+                        and not widen_field_(sn, sbase - st, prev, ct):
                     raise Fail("stack field clash")
+                vu_check_(sn, sbase - st, ct)
                 note_access_(sn, sbase - st, False)
                 structs[sn].setdefault(sbase - st, (ct, None))
                 name = f"v{counter[0]}"; counter[0] += 1
@@ -2633,8 +2694,9 @@ def gen_function(a, ins):
                     if prev and prev[0] != ct and val[0] != "const" and retype_ok_(sn, off_ - st, prev[0], ct):
                         structs[sn][off_ - st] = (ct, None)
                         prev = structs[sn][off_ - st]
-                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}):
+                    if prev and prev[0] != ct and not ({prev[0], ct} <= {"long", "void*"}) and not vu_check_(sn, off_ - st, ct):
                         raise Fail("stack field clash")
+                    vu_check_(sn, off_ - st, ct)
                     structs[sn].setdefault(off_ - st, (ct, None))
                     note_access_(sn, off_ - st, val[0] == "const")
                     items.append(("store", sn, off_ - st, sv, val))
@@ -3572,7 +3634,7 @@ def gen_function(a, ins):
                 return "float"
             if t in ("w", "int"):
                 return "int"
-            if t in ("long", "unsigned long"):
+            if t in ("long", "unsigned long", "short", "signed char", "unsigned short"):
                 return t
             if t in ("x", "void*", "?"):
                 return "void*" if t != "?" else "int"
@@ -3762,6 +3824,8 @@ def gen_function(a, ins):
             s_ = f"{expr(v[2], False)} {v[1]} {expr(v[3], False)}"
             return s_ if top else f"({s_})"
         if v[0] == "funary":
+            if v[1] in ("floor", "ceil", "round", "trunc"):
+                return f"__builtin_{v[1]}f({expr(v[2])})"
             return f"-{expr(v[2], False)}" if v[1] == "fneg" else f"__builtin_fabsf({expr(v[2])})"
         if v[0] == "i2f":
             ut = ("unsigned long" if v[3] == "x" else "unsigned int") if v[1] else ("long" if v[3] == "x" else "int")
@@ -4337,6 +4401,15 @@ def gen_function(a, ins):
                 if not (isinstance(lt0, tuple) and len(lt0) > 3 and lt0[3] != ftype(it[2], it[3])):
                     inline_map[it[1]] = acc(it[4], it[3])
                     continue
+            if it[0] == "let" and vu_of_(it[2], it[3]) is not None:
+                _, name, sn, off, base = it
+                u_ = vu_of_(sn, off)
+                lt_ = vars_[name]
+                ty_ = lt_[3] if isinstance(lt_, tuple) and len(lt_) > 3 else structs[sn][off][0]
+                view_, vt_ = vu_view_(ty_, off - u_)
+                rhs_ = f"{acc(base, u_)}.{view_}"
+                outl.append(declare_line(pad, ty_, name, rhs_ if ty_ == vt_ or ty_ == "unsigned int" else fit(rhs_, vt_, ty_)))
+                continue
             if it[0] == "let":
                 _, name, sn, off, base = it
                 t = ftype(sn, off)
@@ -4370,6 +4443,12 @@ def gen_function(a, ins):
                         raise Fail("copy base")
                     return f"reinterpret_cast<unsigned char*>({bs_}) + {o_:#x}" if o_ else f"reinterpret_cast<unsigned char*>({bs_})"
                 outl.append(f"{pad}__builtin_memcpy({byte_addr_(it[1], it[2])}, {byte_addr_(it[3], it[4])}, 8);")
+            elif it[0] == "store" and vu_of_(it[1], it[2]) is not None:
+                _, sn, off, base, val = it
+                u_ = vu_of_(sn, off)
+                vt0_ = vtype(val)
+                view_, want_ = vu_view_("Vec4f" if vt0_ == "Vec4f" else ("float" if vt0_ == "float" else ("long" if vt0_ in ("long", "void*") or vt0_.endswith("*") else "int")), off - u_)
+                outl.append(f"{pad}{acc(base, u_)}.{view_} = {fit(expr(val), vt0_, want_)};")
             elif it[0] == "store":
                 _, sn, off, base, val = it
                 vt_, ft_ = vtype(val), ftype(sn, off)
@@ -4692,6 +4771,31 @@ def gen_function(a, ins):
                 scan_uint_(x_)
     if "nouintloop" not in knobs:
         scan_uint_(items)
+    NARROW_EXT_ = {"short": "short", "signed char": "signed char", "unsigned short": "unsigned short"}
+    narrow_seen_ = {}
+    def scan_narrow_(o):
+        if isinstance(o, tuple):
+            if len(o) >= 3 and o[0] == "ext" and o[1] in NARROW_EXT_ and isinstance(o[2], tuple):
+                x_ = o[2]
+                if x_[0] == "var" and vars_.get(x_[1]) in ("?", "w") and x_[1].startswith("c"):
+                    narrow_seen_.setdefault(("v", x_[1]), set()).add(o[1])
+                elif x_[0] == "param" and pwidth.get(x_[1]) in (None, "w"):
+                    narrow_seen_.setdefault(("p", x_[1]), set()).add(o[1])
+            for y_ in o:
+                scan_narrow_(y_)
+        elif isinstance(o, list):
+            for y_ in o:
+                scan_narrow_(y_)
+    if "noshortidx" not in knobs:
+        scan_narrow_(items)
+        for (kind_, key_), tys_ in narrow_seen_.items():
+            if len(tys_) != 1:
+                continue
+            ty_ = tys_.pop()
+            if kind_ == "v":
+                vars_[key_] = ty_
+            else:
+                pwidth[key_] = ty_
     lines = render(items, 1)
     for p_, h_ in ESHIFT_.items():
         structs[loopelem[p_]] = {o_ - h_: v_ for o_, v_ in structs[loopelem[p_]].items()}
@@ -4779,13 +4883,20 @@ def gen_function(a, ins):
                 else:
                     ml.append(f"    virtual void slot_{k2}();")
             fl, pos = [], 8
+            vu_end_ = -1
             for off, (ct, child) in sorted(structs[sn].items()):
                 if off == 0:
+                    continue
+                if off < vu_end_:
                     continue
                 if off < pos:
                     raise Fail("overlap")
                 if off > pos:
                     fl.append(f"    unsigned char pad{pos:x}[0x{off - pos:x}];")
+                if (sn, off) in vu_slots_:
+                    fl.append(f"    VecU field_{off:x};               // +{off:x}")
+                    pos = vu_end_ = off + 16
+                    continue
                 if ct.startswith("ARRAY:"):
                     et_ = f"{child}*" if child else ct[6:]
                     fl.append(f"    {et_} field_{off:x}[1]{pack_(ct, off)};{' ' * max(1, 17 - len(et_))}// +{off:x}")
@@ -4798,11 +4909,18 @@ def gen_function(a, ins):
             sdefs.append(f"class {sn} {{\npublic:\n" + "\n".join(ml) + ("\n\n" + "\n".join(fl) if fl else "") + "\n};\n")
             continue
         fl, pos = [], 0
+        vu_end_ = -1
         for off, (ct, child) in sorted(structs[sn].items()):
+            if off < vu_end_:
+                continue
             if off < pos:
                 raise Fail("overlap")
             if off > pos:
                 fl.append(f"    unsigned char pad{pos:x}[0x{off - pos:x}];")
+            if (sn, off) in vu_slots_:
+                fl.append(f"    VecU field_{off:x}{pack_('Vec4f', off) if False else ''};               // +{off:x}")
+                pos = vu_end_ = off + 16
+                continue
             if ct.startswith("ARRAY:"):
                 et_ = f"{child}*" if child else ct[6:]
                 fl.append(f"    {et_} field_{off:x}[1]{pack_(ct, off)};{' ' * max(1, 17 - len(et_))}// +{off:x}")
@@ -4953,7 +5071,7 @@ FLOAT2_DECL = "struct Float2 {\n    float x;\n    float y;\n};\n\n"
 PAIR16_DECL = "// A 16-byte struct returned in x0 and x1.\nstruct Pair16 {\n    long a;\n    long b;\n};\n\n"
 VINS_DECL = ("static inline Vec4f vins(Vec4f v, float s, int i) {\n    v[i] = s;\n    return v;\n}\n"
              "static inline Vec4f vundef() {\n    Vec4f v;\n    return v;\n}\n\n")
-VECU_DECL = ("// A 16-byte vector passed and returned in two x registers.\nunion VecU {\n    Vec4f v;\n    long l[2];\n};\n"
+VECU_DECL = ("// A 16-byte vector passed and returned in two x registers.\nunion VecU {\n    Vec4f v;\n    long l[2];\n    float f[4];\n    int i[4];\n};\n"
              "static inline VecU vecu(Vec4f v) {\n    VecU u;\n    u.v = v;\n    return u;\n}\n\n")
 head = ("// Small functions generated by symbolic execution (calls, virtual calls, stack locals, guards, arrays, floats): loads and call results are named\n"
         "// locals in their original order. Struct, field and callee names are placeholders after the\n"

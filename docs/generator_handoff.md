@@ -146,7 +146,14 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   negation, `and 0x7fffffff` an absolute value, a 32-bit store a float store and `fmov` back the float (floats in
   parameter registers, as two-float structs passed in x registers, are not modelled yet);
 - conditional float compares (knob `nofccmp`): `fccmp sA, sB, #nzcv, cond` is a link of the compare chain as `ccmp`
-  is for ints, and a chain may end in a float condition (`mi`, `pl`, ...).
+  is for ints, and a chain may end in a float condition (`mi`, `pl`, ...);
+- stack vector slots used as lanes and halves (knob `novecunion`): a 16-byte stack slot used as a Vec4f and also as
+  float or int lanes or as 8-byte halves (`ldp x0, x1` to pass the vector in two x registers) is a `VecU` union
+  (`Vec4f v; long l[2]; float f[4]; int i[4];`), and each access goes through the view of its type; struct and class
+  members likewise (a Vec4f member whose lanes are also read or written as floats);
+- float rounding (knob `nofround`): `fcvtms`/`fcvtmu`, `fcvtps`/`fcvtpu`, `fcvtas`/`fcvtau` are the int conversion of
+  `__builtin_floorf`/`ceilf`/`roundf`, `frintm`/`frintp`/`frinta`/`frintz` those calls and `__builtin_truncf`, and
+  `fnmul` is `-(a * b)`.
 
 Knobs for source-order alternatives include `sink`, `callinline`, `revstores`, `globalfirst`, `swapif`,
 `bytecast`, `ptrloop`, `forkjoin`, `stackpad`, `narrowparam`, `norange`, `longconst`, `argfirst`,
