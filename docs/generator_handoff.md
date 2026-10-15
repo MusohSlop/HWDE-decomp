@@ -179,6 +179,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
 - single-piece copies (knob `copy1`, used when a function fails with a field clash or an overlap; `nocopy1` turns the
   retry off): an 8- or 16-byte value loaded and only stored at a constant delta is a block copy, so a constructor's
   16-byte member copy or a two-float member read as 8 bytes does not type the fields;
+- copies to and from stack locals (knob `nostackcopy`): a copy whose stack side lies in one addressed stack object is
+  a block copy into (or out of) that local, whose struct is made as large as the copied range and aligned as the
+  pieces show, its fields typed only by the other accesses (a vector copied into a local, its w set, the local
+  passed on);
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as

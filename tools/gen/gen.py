@@ -372,15 +372,30 @@ def gen_function(a, ins):
                 if n_ in r_ or n_ in w_ or ij_.mnemonic in ("bl", "blr", "b", "br", "ret") or ij_.mnemonic.startswith("b."):
                     break
     copy_skip_, copy_emit_ = set(), {}
+    stack_min_, stack_al_ = {}, {}     # stack structs: the size and alignment their block copies need
     valinit_imp_ = set()
     if "nostructcopy" not in knobs:
-        MEMC_ = re.compile(r"([wxqds])(\d+), \[(x\d+)(?:, #(-?0x[0-9a-f]+|-?\d+)|, (x\d+))?\]$")
+        MEMC_ = re.compile(r"([wxqds])(\d+), \[(x\d+%s)(?:, #(-?0x[0-9a-f]+|-?\d+)|, (x\d+))?\]$"
+                           % ("" if "nostackcopy" in knobs else "|sp"))
+        starts_c_ = sorted({imm(i_.op_str.split(",")[2]) for i_ in ins if i_.mnemonic == "add"
+                            and re.fullmatch(r"x(\d+), sp, #(0x[0-9a-f]+|\d+)", i_.op_str) and not i_.op_str.startswith("x29")}
+                           | {0 for i_ in ins if i_.mnemonic == "mov" and re.fullmatch(r"x\d+, sp", i_.op_str)
+                              and not i_.op_str.startswith("x29")})
         SZC_ = {"w": 4, "x": 8, "q": 16, "d": 8, "s": 4}
         def is_br_(i_):
             return i_.mnemonic in ("bl", "blr", "b", "br", "ret") or i_.mnemonic.startswith(("b.", "cbz", "cbnz", "tbz", "tbnz"))
         def flush_(groups_):
             for (bsk_, bdk_, dl_), g_ in groups_.items():
                 bs_, bd_ = bsk_[0], bdk_[0]
+                def stk_ok_(g2_):
+                    # a stack side lies in one addressed stack object
+                    r0_ = min(so_ for so_, _, _, _ in g2_)
+                    r1_ = max(so_ + sz_ for so_, sz_, _, _ in g2_)
+                    for b_, sh_ in ((bs_, 0), (bd_, dl_)):
+                        if b_ == "sp" and (not any(s_ <= r0_ + sh_ for s_ in starts_c_)
+                                           or any(r0_ + sh_ < s_ < r1_ + sh_ for s_ in starts_c_)):
+                            return False
+                    return True
                 def vok_(g2_):
                     # both bases hold the versions the pieces used where the copy is emitted
                     v_ = vsnap_.get(min(ks2_ for _, _, _, ks2_ in g2_), {})
@@ -414,7 +429,7 @@ def gen_function(a, ins):
                                 while al_ > 1 and x_ % al_:
                                     al_ //= 2
                         ks_ = [kk_ for _, _, kl_, ks2_ in g_ for kk_ in (kl_, ks2_)]
-                        if not vok_(g_):
+                        if not vok_(g_) or not stk_ok_(g_):
                             continue
                         copy_skip_.update(ks_)
                         copy_emit_[min(ks2_ for _, _, _, ks2_ in g_)] = (bs_, bd_, lo_, lo_ + dl_, C_, len(runs_), al_, S_)
@@ -468,7 +483,7 @@ def gen_function(a, ins):
                         while al_ > 1 and x_ % al_:
                             al_ //= 2
                 ks_ = [kk_ for _, _, kl_, ks2_ in g_ for kk_ in (kl_, ks2_)]
-                if not vok_(g_):
+                if not vok_(g_) or not stk_ok_(g_):
                     continue
                 first_st_ = min(ks2_ for _, _, _, ks2_ in g_)
                 copy_skip_.update(ks_)
@@ -537,7 +552,7 @@ def gen_function(a, ins):
                     mj_ = MEMC_.match(ij_.op_str) if ij_.mnemonic in ("str", "stur") else None
                     if mj_ and mj_.group(1) == rk_ and mj_.group(2) == rn_ and j_ in res_c_ \
                             and (res_c_[j_][0] not in written_c_ or "nocopyver" not in knobs) \
-                            and not any(int(res_c_[j_][0][1:]) in rw(ins[jw_])[1] for jw_ in range(k_, j_)):
+                            and (res_c_[j_][0] == "sp" or not any(int(res_c_[j_][0][1:]) in rw(ins[jw_])[1] for jw_ in range(k_, j_))):
                         # the value must not be read again before it is overwritten
                         dead_ = True
                         for jj_ in range(j_ + 1, len(ins)):
@@ -2506,8 +2521,20 @@ def gen_function(a, ins):
             if k in copy_skip_:
                 if k in copy_emit_:
                     bs_, bd_, slo_, dlo_, R_, n_, al_, st_ = copy_emit_[k]
-                    sv_ = use(regs, bs_) if regs.get(regname(bs_)[0]) is not None else None
-                    dv_ = use(regs, bd_) if regs.get(regname(bd_)[0]) is not None else None
+                    def stk_base_(o_):
+                        s0_ = stack_obj(o_)
+                        sn0_ = struct_for(("stackobj", s0_))
+                        stack_min_[sn0_] = max(stack_min_.get(sn0_, 0), o_ - s0_ + (n_ - 1) * st_ + R_)
+                        stack_al_[sn0_] = max(stack_al_.get(sn0_, 1), al_)
+                        return ("stackaddr", s0_), o_ - s0_
+                    if bs_ == "sp":
+                        sv_, slo_ = stk_base_(slo_)
+                    else:
+                        sv_ = use(regs, bs_) if regs.get(regname(bs_)[0]) is not None else None
+                    if bd_ == "sp":
+                        dv_, dlo_ = stk_base_(dlo_)
+                    else:
+                        dv_ = use(regs, bd_) if regs.get(regname(bd_)[0]) is not None else None
                     if sv_ is None or dv_ is None:
                         raise Fail("copy base")
                     items.append(("blkcopy", dv_, dlo_, sv_, slo_, R_, n_, al_, st_))
@@ -4044,7 +4071,7 @@ def gen_function(a, ins):
             st = stack_obj(v[1]); sn = stackobjs.get(st)
             if sn is None:
                 raise Fail("unused stack object")
-            if set(structs[sn]) == {0} and v[1] == st:
+            if set(structs[sn]) == {0} and v[1] == st and sn not in stack_min_:
                 return structs[sn][0][0] + "*"
             if v[1] == st:
                 return f"{sn}*"
@@ -4201,7 +4228,7 @@ def gen_function(a, ins):
             return f"reinterpret_cast<{en}*>({expr(base[1])})[{expr(base[2])}].field_{off:x}"
         if base[0] == "stackobj":
             sn = stackobjs[base[1]]
-            if set(structs[sn]) == {0}:
+            if set(structs[sn]) == {0} and sn not in stack_min_:
                 return f"local_{hx_(base[1])}"
             return f"local_{hx_(base[1])}.field_{off:x}"
         if base[0] == "retobj":
@@ -4234,6 +4261,8 @@ def gen_function(a, ins):
         if v[0] == "vconst":
             return "(Vec4f){" + ", ".join(expr(("fconst", x_)) for x_ in v[1]) + "}"
         if v[0] == "vlane":
+            if v[1][0] != "var":
+                return f"({expr(v[1], False)})[{v[2]}]"
             return f"{expr(v[1], False)}[{v[2]}]"
         if v[0] == "vparam":
             return f"p{v[1]}.v"
@@ -5398,7 +5427,7 @@ def gen_function(a, ins):
     # clang 3.9 gives the first declared local the highest address: stackdesc declares them from the top down
     for st in sorted(stackobjs, reverse="stackdesc" in knobs):
         sn = stackobjs[st]
-        if set(structs[sn]) == {0}:
+        if set(structs[sn]) == {0} and sn not in stack_min_:
             decl_lines.append(f"    {structs[sn][0][0]} local_{hx_(st)};")
         else:
             decl_lines.append(f"    {sn} local_{hx_(st)};")
@@ -5448,7 +5477,7 @@ def gen_function(a, ins):
     for sn in order:
         if sn in gobjs and set(structs[sn]) <= {0}:
             continue
-        if sn in stackobjs.values() and set(structs[sn]) <= {0}:
+        if sn in stackobjs.values() and set(structs[sn]) <= {0} and sn not in stack_min_:
             continue
         if sn in elemsizes:
             fl, pos = [], 0
@@ -5527,6 +5556,9 @@ def gen_function(a, ins):
             fl.extend(bf_lines_(sn, off, t)) if (sn, off) in bitfields_ and t in BFW_ else \
                 fl.append(f"    {t} field_{off:x}{pack_(ct, off)};{' ' * max(1, 20 - len(t))}// +{off:x}")
             pos = off + SIZE[ct]
+        if sn in stack_min_ and pos < stack_min_[sn]:
+            fl.append(f"    unsigned char pad{pos:x}[0x{stack_min_[sn] - pos:x}];")
+            pos = stack_min_[sn]
         if "stackpad" in knobs and stackobjs and sn == stackobjs[max(stackobjs)]:
             local_ = None
             for i_ in ins[:8]:
@@ -5547,7 +5579,8 @@ def gen_function(a, ins):
         if sn == RETN_ and sret_:
             # a user-declared copy makes the type non-trivial, so it is returned through x8 whatever its size
             fl = [f"    {sn}() {{}}", f"    {sn}(const {sn}&);"] + fl
-        sdefs.append(f"struct {sn} {{\n" + "\n".join(fl) + "\n};\n")
+        al2_ = f"__attribute__((aligned({stack_al_[sn]}))) " if stack_al_.get(sn, 1) > 1 else ""
+        sdefs.append(f"struct {al2_}{sn} {{\n" + "\n".join(fl) + "\n};\n")
     sigs = {}
     for t, (args, sig) in list(callees.items()):
         if import_of(t):
