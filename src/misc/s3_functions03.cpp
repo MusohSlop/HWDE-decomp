@@ -809,3 +809,33 @@ int call_36983c(Arg36983c_0* p0) {
     v116->field_5b = (v117 & 0xf3) | 8;
     return c113;
 }
+
+void callee_339098(long);        // 0x7100339098
+int callee_339154(void*);        // 0x7100339154
+void callee_37cd6c(long);        // 0x710037cd6c
+void callee_37dc14(long, int);        // 0x710037dc14
+void callee_37f568(long);        // 0x710037f568
+void callee_5d27b4(long);        // 0x71005d27b4
+
+struct Arg33b748_0 {
+    long field_0;                // +0
+    unsigned char pad8[0x3a8];
+    long field_3b0;                // +3b0
+};
+// Reached through the GOT slot at 0x7100c2aef8.
+extern unsigned char gGlobalc2aef8_33b748[];
+// Reached through the GOT slot at 0x7100c2aef0.
+extern unsigned char gGlobalc2aef0_33b748[];
+
+// 0x710033b748: the call at +0x3b8 passes a second argument, 0 (the generator had dropped it).
+int call_33b748(Arg33b748_0* p0) {
+    long a0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x3b0);
+    p0->field_0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2aef8_33b748) + 0x10);
+    callee_37dc14(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x3b8), 0);
+    p0->field_3b0 = reinterpret_cast<long>(reinterpret_cast<unsigned char*>(gGlobalc2aef0_33b748) + 0x10);
+    callee_37cd6c(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x3b8));
+    callee_5d27b4(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x3f0));
+    callee_37f568(reinterpret_cast<long>(reinterpret_cast<unsigned char*>(p0) + 0x3b8));
+    callee_339098(a0);
+    return callee_339154(p0);
+}
