@@ -1,23 +1,29 @@
-// Fifth session, in progress: 0x71004eab78 (1,524 bytes), the first of the vector six (4eab78 4ebc2c 4eccf0 4eddb4
+// Fifth session, parked: 0x71004eab78 (1,524 bytes), the first of the vector six (4eab78 4ebc2c 4eccf0 4eddb4
 // 4eee68 4e9984: one template over the shape at +20, 0x20/0x30/0x30/0x40/0x70/0x50 bytes, with its support and
 // closest callees; 4eee68's closest takes an extra null argument). It sums the entries' edge vectors and their
 // normals weighted by edge length, normalises both unless near zero (|c| < 0.0011920929 per component), picks the
 // normal sum or both (dot < 0.3), projects every entry on that direction (min of a, max of b, the best entry's b
 // becomes pos), then sets result from the shape's support and closest points (dot < 0.3) or by the projection,
-// and writes the frame-based direction to out, normalised. This draft is 15 instructions off abstracted (1,532 B).
+// and writes the frame-based direction to out, normalised. This draft is 8 instructions off abstracted, 71 exact
+// (1,520 B; the first 139 instructions are identical).
 // Settled (each measured): the engine vector is a union (by value it travels as two 64-bit integers); the sums
 // zeroed as two longs and kept in memory (the alternate pick takes their address); the sums, the near tests and
 // the pick of v in their own block scope (their slots are reused by dir and q, which gives the 0xd0 frame); the
-// alternate copied as a vector (v.v = alt.v: SROA only vector-promotes v when one access covers it as a vector;
-// with the memcpy form v is split into 32-bit pieces and lives in integer registers); operator+ takes its left side
-// by reference and its right side by value (the pick loads both sums as vectors, only the result goes through
-// x9/x8); the pick tested as !(dot < 0.3) is fine either way; the output's frame transform computed into locals
-// and stored after (78 -> 53 alone).
-// Still off: the near-zero tests of the sums (the original keeps the five compares as branches and the last as a
-// cset; ours folds the y and z pairs into and/cset values: per-pair helpers fold inside the helper, a flat chain
-// folds the last four, and early if-conversion turns the rest into csets; 27 off with either), the order of the
-// two products in the b projection, the zero of best before the count test, the dir build (bfi) and q's slot,
-// and the out near tests (x, z with +E first, y).
+// alternate copied as a vector (v.v = alt.v); operator+ takes its left side by reference and its right side by
+// value; the output's frame transform computed into locals and stored after.
+// Fixed in the second pass: the sums' near-zero flags come from an int helper with early returns (nz3: the last
+// compare is the returned value, zext'd in its own block, so SimplifyCFG cannot speculate it into an and; the
+// flag is an int, so it is tested with cbnz; 15 -> 10); the out test is x, then z with +E first, then y
+// (10 -> 8); the frame transform is written with the negated components added (f->x.x * -v.x + f->y.x * -v.y
+// ...: InstCombine folds the y and z negations into fsubs and keeps the frame element first); sum_a's update is
+// (e.b - e.a) + sum_a (the fadd keeps sum_a first).
+// Still off (all register or schedule level, 71 exact): the pick's fadd takes sum_a first (ldp q0, q1; the
+// original adds sum_b + sum_a, ldp q1, q0; no operator+ signature or operand order changes it, both by reference
+// turns the pick into a bsl), so v lands in v4 instead of v5; the zero of best is hoisted above the count test
+// (the original rematerialises it in the preheader and on the empty path, like the two float bounds); the b
+// projection's products and the min fcsel are scheduled differently; the dir build's bfi; d = p - pos and t's
+// products in other registers; q at sp+0x40 instead of sp+0x50; the out branch's post-indexed store of the
+// difference before the lane moves.
 // Maps: --map "_ZNK12Sphere4eab787supportEPK5Vec4uPv=0x7100506264" --map "_ZNK12Sphere4eab787closestEPK5Vec4u=0x7100506284"
 //   --map sqrtf=0x71006008a0 --name _ZN9Fit4eab786updateEP5Vec4u
 #include <arm_neon.h>
@@ -119,6 +125,12 @@ static inline Vec4u normalized3(Vec4u v) {
 static inline bool near_zero3(const Vec4u& v) {
     return near_zero(v.x) && near_zero(v.y) && near_zero(v.z);
 }
+static inline int nz3(const Vec4u& v) {
+    if (!(v.x > -0.0011920929f && v.x < 0.0011920929f)) return 0;
+    if (!(v.y > -0.0011920929f && v.y < 0.0011920929f)) return 0;
+    if (!(v.z > -0.0011920929f)) return 0;
+    return v.z < 0.0011920929f;
+}
 
 static inline float length3(const Vec4u& v) {
     return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -153,10 +165,10 @@ bool Fit4eab78::update(Vec4u* out) {
     for (unsigned long i = 0; i < count; i++) {
         FitEntry& e = entries[i];
         sum_b = sum_b + to_vec4(e.n) * length3(e.b - e.a);
-        sum_a = sum_a + (e.b - e.a);
+        sum_a = (e.b - e.a) + sum_a;
     }
-    bool zero_b = near_zero3(sum_b);
-    bool zero_a = near_zero3(sum_a);
+    int zero_b = nz3(sum_b);
+    int zero_a = nz3(sum_a);
     if (!zero_b) {
         float inv = 1.0f / length3(sum_b);
         sum_b.x = sum_b.x * inv;
@@ -214,13 +226,13 @@ bool Fit4eab78::update(Vec4u* out) {
         result = v * (lo - hi) + pos;
     }
     if (out != nullptr) {
-        if (near_zero(v.x) && near_zero(v.z) && near_zero(v.y)) {
+        if (near_zero(v.x) && v.z < 0.0011920929f && v.z > -0.0011920929f && near_zero(v.y)) {
             *out = to_vec4(frame->t) - pos;
         } else {
             Frame4eab78* f = frame;
-            float ox = -v.x * f->x.x - v.y * f->y.x - v.z * f->z.x;
-            float oy = -v.x * f->x.y - v.y * f->y.y - v.z * f->z.y;
-            float oz = -v.x * f->x.z - v.y * f->y.z - v.z * f->z.z;
+            float ox = f->x.x * -v.x + f->y.x * -v.y + f->z.x * -v.z;
+            float oy = f->x.y * -v.x + f->y.y * -v.y + f->z.y * -v.z;
+            float oz = f->x.z * -v.x + f->y.z * -v.y + f->z.z * -v.z;
             out->x = ox;
             out->y = oy;
             out->z = oz;

@@ -1,11 +1,11 @@
 # Fifth session (branch matching-s5): hand-matching of non-constructor functions over 1,500 bytes at 0x380000 and
 # above, and the giants of that range. Generator runs should skip every address listed here.
 # working: functions being hand-matched now; matched: functions matched on matching-s5; tried: parked, with reason.
-working: 4eab78 4ebc2c 4eccf0 4eddb4 4eee68 4e9984 (the vector five, handed over by main from s2, and 4e9984, a sixth copy: one template; 4eab78 drafted, 15 off abstracted (the near-zero tests of the sums and small scheduling), docs/s5_wip/4eab78.cpp)
+tried: 4eab78 4ebc2c 4eccf0 4eddb4 4eee68 4e9984 (the vector six: one template, all six instantiate at 8 off abstracted (4eee68 at 7); 4eab78 drafted at 8 off abstracted, 71 exact: the sums' near-zero flags from an int helper with early returns, the out test x/z/y with z reversed, the frame transform with negated components added; what is left is register and schedule level, the pick's fadd operand order, the zero of best, the b projection, dir/q; docs/s5_wip/4eab78.cpp)
 tried: 4f09dc 4f17f8 4f2620 4f3448 (family a: 1,532 B each, one template, a contact search of the vector five's module; 1,536 B here, 21 off abstracted each: the sort spills this instead of the hit count, the w lane's phi order; docs/s5_wip/4f09dc.cpp and .txt)
 tried: 503bd0 504188 (family d pair: 1,460 B each, a capsule-mesh GJK contact; 1,468 B here, 25 off abstracted: support-object store order, the solver's second point copied through a register, the 3x3 normal transform as in family a; docs/s5_wip/503bd0.cpp)
-tried: 3d7708 3d887c 3d98f8 (family d triple: 1,220 B each, a render batch grouped by shader; 1,204 B here, 58 off abstracted: the material reload at the loop head and the duplicated scan loops; docs/s5_wip/3d7708.cpp)
-working: 5efb3c (6,012 B giant: an audio voice state machine, surveyed; after the families)
+tried: 5efb3c (6,012 B giant, the stream voice update: same size here, edit distance 168 abstracted, 488 exact (tools/s5/lev.py); what is left is register allocation of the flags and the spill area, a few load placements and block layouts; docs/s5_wip/5efb3c.cpp)
+working: 400e40 (6,304 B giant: node transforms, next)
 working: 4030ac (13,924 B giant: surveyed, deferred to last; its large callees 402aec 406710 4068c0 406f8c 40a074 4095b8 22286c first)
 tried: 459ffc (1,920 B, in misc/text_format.cpp as a near miss, 2,168 B: the flag loop keeps its bool in the original and the length modifiers are kept as values; it writes the statics 45a850 needs)
 tried: 45b158 (2,464 B, 2,520 B here: padding loops solved by an explicit cap == 0 fill path; the sign mask, the a-f test and the frame size remain; docs/s5_wip/45b158.cpp)
