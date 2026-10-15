@@ -244,3 +244,14 @@ void call_415f00(State415f00* self, const State415f00* a, const State415f00* b) 
     d.field_36c = a->field_36c - b->field_36c;
     callee_3d4acc(self, &d);
 }
+
+typedef void* (*Factory425de0)(void*);
+extern Factory425de0 gFactories_bdf230[] __attribute__((visibility("hidden")));    // 0x7100bdf230
+
+// 0x7100425de0: creates object kind ID with ARG through the factory table (0x53 kinds), or returns null.
+void* create_425de0(int id, void* arg) {
+    if (static_cast<unsigned int>(id) < 0x53) {
+        return gFactories_bdf230[id](arg);
+    }
+    return nullptr;
+}
