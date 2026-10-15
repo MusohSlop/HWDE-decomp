@@ -520,6 +520,9 @@ def gen_function(a, ins):
         if stores_ > 0:
             copy_loads_.add(k_)
     loop_info = []
+    CONT_ = {}          # instruction index of a back edge that continues a loop -> its header
+    INF_ = set()        # headers of loops whose latch is an unconditional branch
+    back_edges_ = []
     epi_ = set()
     fwdjump_ = set()
     def raw_succ_(kk):
@@ -564,6 +567,10 @@ def gen_function(a, ins):
                 if not straight_ and "nofwdjump" not in knobs and not reaches_(addr_index[t], addr_index[i.address]):
                     fwdjump_.add(addr_index[i.address])
                     continue
+                if not straight_ and "nocont" not in knobs and "noloop" not in knobs:
+                    # collected first: the back edges to one header make one loop
+                    back_edges_.append((addr_index[t], addr_index[i.address], m == "b"))
+                    continue
                 if not straight_:
                     if m == "b" or "noloop" in knobs:
                         raise Fail("loop shape")
@@ -574,6 +581,25 @@ def gen_function(a, ins):
                         if not (disjoint_ or (nested_ and "nonest" not in knobs)):
                             raise Fail("nested loop")
                     loop_info.append((H0, L0))
+    # the last back edge to a header is the loop's latch (a conditional branch); the earlier ones continue the loop
+    groups_ = {}
+    for H0, L0, ub_ in back_edges_:
+        groups_.setdefault(H0, []).append((L0, ub_))
+    for H0 in sorted(groups_):
+        lst_ = sorted(groups_[H0])
+        L0, ub_ = lst_[-1]
+        if ub_:
+            if "noinfloop" in knobs:
+                raise Fail("loop shape")
+            INF_.add(H0)    # for (;;) left only through returns
+        for Lc_, _ in lst_[:-1]:
+            CONT_[Lc_] = H0
+        for H1, L1 in loop_info:
+            disjoint_ = L0 < H1 or H0 > L1
+            nested_ = (H1 < H0 and L0 < L1) or (H0 < H1 and L1 < L0)
+            if not (disjoint_ or (nested_ and "nonest" not in knobs)):
+                raise Fail("nested loop")
+        loop_info.append((H0, L0))
     # immediate post-dominators over the forward graph (loop back edges removed; returns and tail calls exit)
     EXIT_ = len(ins)
     latches_ = {L_ for H_, L_ in loop_info}
@@ -1741,6 +1767,8 @@ def gen_function(a, ins):
                 elif m in ("tbz", "tbnz"):
                     x = use(regs, ops[0]); bit = imm(ops[1])
                     cnd = (("tst", x, ("const", 1 << bit, regname(ops[0])[1]), regname(ops[0])[1]), "eq" if m == "tbz" else "ne")
+                elif m == "b" and imm(ops[0]) in addr_index and addr_index[imm(ops[0])] in INF_:
+                    cnd = None
                 else:
                     raise Fail("latch kind")
                 latch["cnd"] = cnd; latch["regs"] = copyregs(regs); latch["flags"] = flags; latch["written"] = set(written)
@@ -1817,6 +1845,8 @@ def gen_function(a, ins):
                     if e[0] == "bin":
                         return (e[0], e[1], subst(e[2]), subst(e[3])) + tuple(e[4:])
                     return e
+                if lt["cnd"] is None:
+                    lt["cnd"] = (("cmp", ("const", 1, "w"), ("const", 0, "w"), "w"), "ne")  # for (;;)
                 if lt["cnd"][0] is None or lt["cnd"][0][0] not in ("cmp", "tst"):
                     raise Fail("loop condition kind")
                 (fk, fx, fy, fw_), cc = lt["cnd"]
@@ -1833,6 +1863,35 @@ def gen_function(a, ins):
                 cond_new = ((fk, subst(fx), subst(fy), fw_), cc)
                 if pre[0]:
                     cond_new = lt["cnd"]
+                def fix_conts_(its_, inner_):
+                    out_ = []
+                    for it_ in its_:
+                        if it_[0] == "cont" and it_[2] == H:
+                            if inner_:
+                                raise Fail("continue from an inner loop")
+                            if any(shifts_.get(n_) for n_, v_, r_ in inits):
+                                raise Fail("continue rebased")
+                            asg_ = []
+                            for n_, v_, r_ in inits:
+                                nv_ = it_[1].get(r_)
+                                if nv_ is None:
+                                    raise Fail("continue carried lost")
+                                if nv_ != ("var", n_):
+                                    asg_.append((n_, nv_))
+                            it_ = ("contassign", asg_)
+                        elif it_[0] == "if":
+                            it_ = ("if", it_[1], fix_conts_(it_[2], inner_))
+                        elif it_[0] == "diamond":
+                            it_ = (it_[0], it_[1], it_[2], fix_conts_(it_[3], inner_), fix_conts_(it_[4], inner_))
+                        elif it_[0] == "loop":
+                            it_ = (it_[0], it_[1], fix_conts_(it_[2], True)) + tuple(it_[3:])
+                        out_.append(it_)
+                    return out_
+                body = fix_conts_(body, False)
+                if H in INF_:
+                    body = body + [("contassign", [(n_, nv_) for n_, nv_ in updates])]
+                    items.append(("loop", inits, body, [], (("cmp", ("const", 1, "w"), ("const", 0, "w"), "w"), "ne"), False))
+                    return items
                 items.append(("loop", inits, body, updates, cond_new, pre[0]))
                 for name, v, r in inits:
                     lregs[r] = ("var", name) if not shifts_.get(name) else ("bin", "+", ("var", name), ("const", shifts_[name], "x"), "x", "add")
@@ -1965,6 +2024,9 @@ def gen_function(a, ins):
                 r = call(regs, written, t, items, True)
                 items.append(("return", r))
                 returns.append(r)
+                return items
+            if m == "b" and CONT_.get(k) == addr_index[imm(ops[0])] and addr_index[imm(ops[0])] in in_loop:
+                items.append(("cont", copyregs(regs), addr_index[imm(ops[0])]))
                 return items
             if m == "b":
                 k = addr_index[imm(ops[0])]; continue
@@ -2111,6 +2173,9 @@ def gen_function(a, ins):
                 else:
                     x = use(regs, ops[0]); bit = imm(ops[1])
                     cnd = (("tst", x, ("const", 1 << bit, regname(ops[0])[1]), regname(ops[0])[1]), "eq" if m == "tbz" else "ne")
+                if CONT_.get(k) == t and t in in_loop:
+                    items.append(("if", cnd, [("cont", copyregs(regs), t)]))
+                    k += 1; continue
                 if t <= k and t not in epi_ and k not in fwdjump_:
                     raise Fail("backward branch in loop")
                 body = walk(t, copyregs(regs), flags, set(written), depth + 1)
@@ -3588,6 +3653,9 @@ def gen_function(a, ins):
                 mark_items(it[3]); mark_items(it[4])
             elif it[0] == "assign":
                 mark(it[2])
+            elif it[0] == "contassign":
+                for n_, v_ in it[1]:
+                    mark(v_)
             elif it[0] == "lete":
                 mark(it[2], True)
             elif it[0] == "loop":
@@ -4321,6 +4389,9 @@ def gen_function(a, ins):
                 count_items(it[3]); count_items(it[4])
             elif it[0] == "assign":
                 count(it[2])
+            elif it[0] == "contassign":
+                for n_, v_ in it[1]:
+                    count(v_)
             elif it[0] == "lete":
                 count(it[2])
             elif it[0] == "loop":
@@ -4499,6 +4570,15 @@ def gen_function(a, ins):
             return f"{pad}{name} = {rhs};"
         return f"{pad}{typ} {name} = {rhs};"
     MORE_ = []
+    def has_cont_(its_):
+        for it_ in its_:
+            if it_[0] == "contassign":
+                return True
+            if it_[0] == "if" and has_cont_(it_[2]):
+                return True
+            if it_[0] == "diamond" and (has_cont_(it_[3]) or has_cont_(it_[4])):
+                return True
+        return False
     def render(its, indent):
         outl = []
         pad = "    " * indent
@@ -4737,7 +4817,17 @@ def gen_function(a, ins):
                     outl.append(f"{pad}}} else {{")
                     outl.extend(render(taken_its, indent + 1))
                 outl.append(f"{pad}}}")
-            elif it[0] == "loop" and "ptrloop" not in knobs and index_form(it) is not None:
+            elif it[0] == "contassign":
+                if len(it[1]) > 1:
+                    for n_, v_ in it[1]:
+                        outl.append(f"{pad}{vtype(('var', n_))} next_{n_} = {fit(expr(v_), vtype(v_), vtype(('var', n_)))};")
+                    for n_, v_ in it[1]:
+                        outl.append(f"{pad}{n_} = next_{n_};")
+                else:
+                    for n_, v_ in it[1]:
+                        outl.append(f"{pad}{n_} = {fit(expr(v_), vtype(v_), vtype(('var', n_)))};")
+                outl.append(f"{pad}continue;")
+            elif it[0] == "loop" and "ptrloop" not in knobs and not has_cont_(it[2]) and index_form(it) is not None:
                 _, inits, body, updates, cnd, pre = it
                 ptrs_, ix_, newix_, drop_, cnd2_ = index_form(it)
                 body = HALFB_.get(id(it), body)
@@ -4823,6 +4913,7 @@ def gen_function(a, ins):
                 if pre:
                     MORE_.append(mn_)
                     outl.append(f"{pad}bool {mn_};")
+                do_at_ = len(outl)
                 outl.append(f"{pad}do {{")
                 outl.extend(body_lines)
                 inner = "    " * (indent + 1)
@@ -4843,7 +4934,15 @@ def gen_function(a, ins):
                 else:
                     for name, nv in updates:
                         outl.append(f"{inner}{name} = {upd_text(name, nv)};")
-                outl.append(f"{pad}}} while ({mn_ if pre else cond(*cnd)});")
+                if has_cont_(body):
+                    # continues jump straight back to the header: for (;;) with the condition at the bottom
+                    outl[do_at_] = f"{pad}for (;;) {{"
+                    outl.append(f"{inner}if (!({mn_ if pre else cond(*cnd)})) {{")
+                    outl.append(f"{inner}    break;")
+                    outl.append(f"{inner}}}")
+                    outl.append(f"{pad}}}")
+                else:
+                    outl.append(f"{pad}}} while ({mn_ if pre else cond(*cnd)});")
             elif it[0] == "lete":
                 outl.append(declare_line(pad, vtype(it[2]), it[1], expr(it[2])))
             elif it[0] == "assign":
