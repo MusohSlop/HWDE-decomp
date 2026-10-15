@@ -20078,6 +20078,17 @@
     "got:_ZTV9Mid2cfc60": "0x7100c2aa68",
     "_ZN10Tail2cf74cC1Ev": "0x71002cf74c",
     "kMid2cfc60Name": "0x71007d82d4",
+    "got:_ZTV12Screen313038": "0x7100c2ad78",
+    "got:_ZTV10NodeHolder": "0x7100c2ad48",
+    "got:_ZTV9CueHolder": "0x7100c2ad68",
+    "_Z9heap_noteP13EffectManagerPvi": "0x71002925c8",
+    "_ZN10Part2fb9f0D1Ev": "0x71002fb9f0",
+    "_ZN10Part304788D1Ev": "0x7100304788",
+    "_ZN10Part333318D1Ev": "0x7100333318",
+    "_ZN10Part327344D1Ev": "0x7100327344",
+    "_ZN10Part3192f0D1Ev": "0x71003192f0",
+    "_ZN10Part310454D1Ev": "0x7100310454",
+    "_ZN10Part3843f0D1Ev": "0x71003843f0",
     "kRecordLayout": "0x71007da88e",
     "kRecordAnimA": "0x7100740004",
     "kRecordAnimB": "0x710074053d",
@@ -30439,6 +30450,16 @@
     "misc/s3_functions26.cpp": {
       "functions": {
         "_ZN14DeckBase38cff0C2EPvi": "0x710038cff0"
+      }
+    },
+    "misc/s3_functions27.cpp": {
+      "functions": {
+        "_ZN12Screen313038D2Ev": "0x7100313038"
+      }
+    },
+    "misc/s3_functions28.cpp": {
+      "functions": {
+        "_Z11call_2defc0P11Arg2defc0_0Pv": "0x71002defc0"
       }
     },
     "misc/s5_functions04.cpp": {
