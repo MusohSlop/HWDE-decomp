@@ -30188,6 +30188,20 @@
         "_Z11call_54bc38P11Arg54bc38_0Pv": "0x710054bc38",
         "_Z11call_57cd4cP11Arg57cd4c_0PvS1_fffff": "0x710057cd4c"
       }
+    },
+    "misc/variant_functions91.cpp": {
+      "functions": {
+        "_Z11call_28c7fcP11Arg28c7fc_0": "0x710028c7fc",
+        "_Z11call_28c8c8P11Arg28c8c8_0": "0x710028c8c8",
+        "_Z11call_28c9fcP11Arg28c9fc_0": "0x710028c9fc",
+        "_Z11call_35bde4P11Arg35bde4_0": "0x710035bde4",
+        "_Z11call_35d518P11Arg35d518_0": "0x710035d518",
+        "_Z11call_365a0cP11Arg365a0c_0": "0x7100365a0c"
+      },
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      }
     }
   }
 }
