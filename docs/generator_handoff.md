@@ -200,6 +200,8 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   the body), instead of being used undeclared;
 - an index typed as a pointer is written through `reinterpret_cast<long>` (knob `noptridx`; an 8-byte field holding
   an index was typed void*, and `field[v]` did not compile);
+- a computed byte offset added to a base is parenthesized (knob `noaddrparen`; an offset that is a shift parsed as
+  `(base + v) >> 1`);
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as

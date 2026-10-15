@@ -4273,7 +4273,7 @@ def gen_function(a, ins):
             return f"{base[1]}[{IDX_[base[1]]}].field_{off - ESHIFT_.get(base[1], 0):x}"
         if base[0] == "bytes":
             sn_ = bytekinds[base]
-            return f"reinterpret_cast<{sn_}*>(reinterpret_cast<unsigned char*>({expr(base[1])}) + {expr(base[2])})->field_{off:x}"
+            return f"reinterpret_cast<{sn_}*>(reinterpret_cast<unsigned char*>({expr(base[1])}) + {expr(base[2], 'noaddrparen' in knobs)})->field_{off:x}"
         if base[0] == "select":
             sn_ = bytekinds[base]
             a_ = f"reinterpret_cast<{sn_}*>({expr(base[2])})->field_{off:x}"
