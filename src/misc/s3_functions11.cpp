@@ -140,7 +140,13 @@ public:
     float offset34;           // +34
     float offset38;           // +38
     unsigned char pad3c[0x1c];
-    unsigned char flags58;    // +58
+    union {
+        unsigned char flags58; // +58
+        struct {
+            unsigned char visible : 1;
+            unsigned char : 7;
+        };
+    };
     unsigned char alpha59;    // +59
     unsigned char pad5a;
     unsigned char : 2;
@@ -373,6 +379,180 @@ ShopExpScreen::ShopExpScreen()
     attack_up_list.setup(attack_up, attack_up_anim, 5);
 }
 
+extern const char kShopAttackLayout[] __attribute__((visibility("hidden")));    // 0x71007daa41
+extern const char kNumDefenseLayout[] __attribute__((visibility("hidden")));    // 0x71007d8009
+extern const char kNumSpeedLayout[] __attribute__((visibility("hidden")));      // 0x71007d6191
+extern const char kNumRangeLayout[] __attribute__((visibility("hidden")));      // 0x71007d61a1
+extern const char kWinAttackIn[] __attribute__((visibility("hidden")));         // 0x71007d9f7d
+extern const char kWinAttackOut[] __attribute__((visibility("hidden")));        // 0x71007d9f8b
+extern const char kAttackLoopA[] __attribute__((visibility("hidden")));         // 0x71007daa55
+extern const char kAttackLoopB[] __attribute__((visibility("hidden")));         // 0x71007daa62
+extern const char kNumDefense[] __attribute__((visibility("hidden")));          // 0x7100740d82
+extern const char kNumSpeed[] __attribute__((visibility("hidden")));            // 0x7100740db7
+extern const char kNumRange[] __attribute__((visibility("hidden")));            // 0x7100740dc1
+extern const char kTextTitle[] __attribute__((visibility("hidden")));           // 0x71007da00f
+extern const char kTextCaption[] __attribute__((visibility("hidden")));         // 0x71007da028
+extern const char kTextNote[] __attribute__((visibility("hidden")));            // 0x71007da038
+extern const char kTextLeft[] __attribute__((visibility("hidden")));            // 0x71007daa70
+extern const char kTextRight[] __attribute__((visibility("hidden")));           // 0x71007daa7d
+extern const char kNumPosA[] __attribute__((visibility("hidden")));             // 0x71007daa8c
+extern const char kNumPosB[] __attribute__((visibility("hidden")));             // 0x71007d61d0
+extern const char kTextBottom[] __attribute__((visibility("hidden")));          // 0x71007d7e75
+
+static inline void move_y(EffectGroup* group, float dy) {
+    group->offset34 += dy;
+    group->flags58 |= 0x10;
+}
+
+static inline void show_if(PanelPane* pane, int count) {
+    pane->visible = count != 0;
+}
+
+static inline void place_x(EffectGroup* group, float x) {
+    group->offset30 = x;
+    TrackVec2 yz = {};
+    *reinterpret_cast<TrackVec2*>(&group->offset34) = yz;
+    group->flags58 |= 0x10;
+}
+
+// 0x7100364878: the shop's attack screen (four number layouts with scroll lists, three text panes drawn from
+// messages, two plain ones and a layout handle).
+class ShopAttackScreen {
+public:
+    ShopAttackScreen();
+
+    LightEffectNode* layout;          // +00
+    LightEffectNode* attack;          // +08
+    LightEffectNode* defense;         // +10
+    LightEffectNode* speed;           // +18
+    LightEffectNode* range;           // +20
+    LayoutAnimation* anims[4];        // +28
+    LayoutAnimation* effects[3];      // +48
+    LayoutAnimation* number_anims[4]; // +60
+    EffectGroup* title;               // +80
+    EffectGroup* caption_pos;         // +88
+    EffectGroup* note;                // +90
+    EffectGroup* left;                // +98
+    EffectGroup* right;               // +a0
+    EffectGroup* num_pos_a;           // +a8
+    EffectGroup* num_pos_b;           // +b0
+    EffectGroup* bottom;              // +b8
+    TrackLightTarget lines[64];       // +c0
+    TrackLightTarget lines_b[64];     // +22c0
+    TrackLightTarget more_lines[128]; // +44c0
+    TrackLightTarget left_lines[32];  // +88c0
+    TrackLightTarget right_lines[32]; // +99c0
+    PanelPane* panes[5];              // +aac0
+    int title_lines;                  // +aae8
+    int caption_lines;                // +aaec
+    int note_lines;                   // +aaf0
+    int left_count;                   // +aaf4
+    int right_count;                  // +aaf8
+    ScrollList attack_list;           // +ab00
+    ScrollList defense_list;          // +aba0
+    ScrollList speed_list;            // +ac40
+    ScrollList range_list;            // +ace0
+    LayoutHandle handle;              // +ad80
+};
+
+ShopAttackScreen::ShopAttackScreen()
+    : layout(nullptr), attack(nullptr), defense(nullptr), speed(nullptr), range(nullptr), note(nullptr), left(nullptr),
+      right(nullptr), num_pos_a(nullptr), num_pos_b(nullptr), bottom(nullptr), title_lines(0), caption_lines(0),
+      note_lines(0), left_count(0), right_count(0) {
+    gEffectManager->create_node(&layout, 0x4203, kShopAttackLayout);
+    gEffectManager->create_node(&attack, 0x41e5, kNumAttackLayout);
+    gEffectManager->create_node(&defense, 0x41e5, kNumDefenseLayout);
+    gEffectManager->create_node(&speed, 0x41e5, kNumSpeedLayout);
+    gEffectManager->create_node(&range, 0x41e5, kNumRangeLayout);
+    attack->group->visible = false;
+    defense->group->visible = false;
+    speed->group->visible = false;
+    range->group->visible = false;
+    place_x(layout->group, 153.0f);
+    gEffectManager->sync();
+    anims[0] = layout->create_animation_3770(kWinAttackIn, true);
+    anims[1] = layout->create_animation_3770(kWinAttackOut, true);
+    anims[2] = layout->create_animation_3770(kAttackLoopA, true);
+    anims[3] = layout->create_animation_3770(kAttackLoopB, true);
+    effects[0] = layout->create_animation_3770(kEffectS, false);
+    effects[1] = layout->create_animation_3770(kEffectM, false);
+    effects[2] = layout->create_animation_3770(kEffectL, false);
+    gEffectManager->flush();
+    number_anims[0] = attack->create_animation_3770(kNumAttack, false);
+    number_anims[1] = defense->create_animation_3770(kNumDefense, false);
+    number_anims[2] = speed->create_animation_3770(kNumSpeed, false);
+    number_anims[3] = range->create_animation_3770(kNumRange, false);
+    title = layout->group->find(kTextTitle, 1);
+    caption_pos = layout->group->find(kTextCaption, 1);
+    note = layout->group->find(kTextNote, 1);
+    left = layout->group->find(kTextLeft, 1);
+    right = layout->group->find(kTextRight, 1);
+    num_pos_a = layout->group->find(kNumPosA, 1);
+    num_pos_b = layout->group->find(kNumPosB, 1);
+    bottom = layout->group->find(kTextBottom, 1);
+    num_pos_a->add(attack->group);
+    num_pos_a->add(defense->group);
+    num_pos_b->add(speed->group);
+    num_pos_b->add(range->group);
+    gEffectManager->sync();
+    attach_group(layout, caption_pos);
+    TextRenderer* renderer = gTextRenderer;
+    {
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = 28.0f;
+        size.y = 28.0f;
+        renderer->set_area(&pos, &size, 0x3c, 0x41, 0);
+        renderer->align = 2;
+        title_lines = renderer->draw(lines, message_text(0xa8), 0x40, 1, 0xff, 0.0f, 0.0f);
+    }
+    panes[0] = new PanelPane;
+    title->add(panes[0]);
+    move_y(panes[0], -2.0f);
+    panes[0]->align = 2;
+    set_pane_lines(panes[0], lines, title_lines);
+    show_if(panes[0], title_lines);
+    {
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = 28.0f;
+        size.y = 28.0f;
+        renderer->set_area(&pos, &size, 0x3c, 0x41, 0);
+        renderer->align = 2;
+        left_count = renderer->draw(left_lines, message_text(0x55), 0x20, 1, 0xff, 0.0f, 0.0f);
+    }
+    panes[3] = new PanelPane;
+    left->add(panes[3]);
+    move_y(panes[3], -2.0f);
+    panes[3]->align = 2;
+    set_pane_lines(panes[3], left_lines, left_count);
+    show_if(panes[3], left_count);
+    {
+        TrackVec2 pos = {};
+        TrackVec2 size;
+        size.x = 28.0f;
+        size.y = 28.0f;
+        renderer->set_area(&pos, &size, 0x41, 0x4e, 0);
+        renderer->align = 2;
+        right_count = renderer->draw(right_lines, message_text(0x56), 0x20, 1, 0xff, 0.0f, 0.0f);
+    }
+    panes[4] = new PanelPane;
+    right->add(panes[4]);
+    panes[4]->align = 2;
+    set_pane_lines(panes[4], right_lines, right_count);
+    show_if(panes[4], right_count);
+    panes[2] = new PanelPane;
+    note->add(panes[2]);
+    panes[2]->align = 2;
+    panes[1] = new PanelPane;
+    caption_pos->add(panes[1]);
+    move_y(caption_pos, -2.0f);
+    panes[1]->align = 2;
+    attack_list.setup(attack, number_anims[0], 5);
+    defense_list.setup(defense, number_anims[1], 5);
+    speed_list.setup(speed, number_anims[2], 10);
+    range_list.setup(range, number_anims[3], 10);
+}
 static inline void move_x(EffectGroup* pane, float dx) {
     pane->offset30 += dx;
     pane->flags58 |= 0x10;
@@ -409,21 +589,34 @@ public:
 // Base of the options screens (0xc0 bytes; vtable GOT 0x7100c2b2d0).
 class OptionScreenBase {
 public:
-    explicit OptionScreenBase(OptionOwner* owner_) : owner(owner_), value78(0) {
-        memset(state, 0, sizeof(state));
+    explicit OptionScreenBase(OptionOwner* owner_) : owner(owner_), value78(0), count(0) {
+        memset(list, 0, sizeof(list));
         flagb8 = 0;
         valueb0 = 0;
+        valueb4 = 0;
         cursor.init();
         cursor.set(150.0f, 126.0f, 223.0f);
     }
     virtual ~OptionScreenBase();
+    virtual void v10();
+    virtual void v18();
+    virtual void v20();
+    virtual void v28();
+    virtual void v30();
+    virtual void v38();
+    virtual void v40();
+    virtual void v48();
+    virtual void v50();
+    virtual void open();              // +58
 
     OptionOwner* owner;               // +08
     unsigned char pad10[8];
-    unsigned char state[0x60];        // +18
-    long value78;                     // +78
+    void* list[12];                   // +18: the listed panels
+    int value78;                      // +78
+    int count;                        // +7c
     MenuCursor cursor;                // +80
-    long valueb0;                     // +b0
+    int valueb0;                      // +b0
+    int valueb4;                      // +b4
     unsigned char flagb8;             // +b8
 };
 
@@ -432,10 +625,30 @@ class OptionPanelBase {
 public:
     OptionPanelBase(int id, int id2, const char* layout, const char* name, int mode); // 0x710039d3fc
     virtual ~OptionPanelBase();
+    virtual void v10();
+    virtual void v18();
+    virtual void v20();
+    virtual void v28();
+    virtual void v30();
+    virtual void v38();
+    virtual void v40();
+    virtual void v48();
+    virtual void v50();
+    virtual void v58();
+    virtual void v60();
+    virtual void v68();
+    virtual void v70();
+    virtual void v78();
+    virtual void v80();
+    virtual void v88();
+    virtual void v90();
+    virtual void place(int slot, int mode);                                // +98
 
     LightEffectNode* node;            // +08
     LayoutAnimation* anims[5];        // +10: in, on_off, loop_0, select_0, out
-    unsigned char pad38[0x22c0];
+    unsigned char pad38[0x22b0];
+    const char* title;                // +22e8
+    const char* sub;                  // +22f0
     int value22f8;                    // +22f8
     unsigned char pad22fc[0x24];
 };
@@ -592,4 +805,271 @@ OptionScreen::OptionScreen(OptionOwner* owner_)
     if (style == 5)
         move_x(arw, 30.0f);
     build();
+}
+const char* text_217dd8(int id);                                            // 0x7100217dd8
+const char* item_name(int item);                                            // 0x7100217d9c
+
+extern const char kSliderName[] __attribute__((visibility("hidden")));        // 0x71007db128
+extern const char kSliderLayout[] __attribute__((visibility("hidden")));      // 0x71007db152
+extern const char kRangeName[] __attribute__((visibility("hidden")));         // 0x71007db11f
+extern const char kRangeLayout[] __attribute__((visibility("hidden")));       // 0x71007db160
+
+// A slider line of the options (0xabf0 bytes), built out of line on a node page.
+class OptionSliderBase {
+public:
+    OptionSliderBase(int mode, int steps, int low, int value, int width, const char* name,
+                     const char* layout);                                   // 0x710039e2f4
+    virtual ~OptionSliderBase();
+    virtual void v10();
+    virtual void select(int index);                                         // +18
+    void refresh();                                                         // 0x710039e820
+    void set_title(const char* text) { title = text; }
+    void set_sub(const char* text) { sub = text; }
+    void set_left(const char* text) { left = text; refresh(); }
+    void set_right(const char* text) { right = text; refresh(); }
+    void set_low(const char* text) { low = text; refresh(); }
+    void set_high(const char* text) { high = text; refresh(); }
+
+    unsigned char pad8[0x22e0];
+    const char* title;                // +22e8
+    const char* sub;                  // +22f0
+    unsigned char pad22f8[0x88b8];
+    const char* left;                 // +abb0
+    const char* right;                // +abb8
+    const char* low;                  // +abc0
+    const char* high;                 // +abc8
+    unsigned char padabd0[0x20];
+};
+
+class OptionSlider : public OptionSliderBase {
+public:
+    OptionSlider() : OptionSliderBase(2, 0x2d, 0, 0, 0xdc, kSliderName, kSliderLayout) {}
+    virtual void v20();       // declared, not defined: the vtable stays external (GOT 0x7100c2b2f8)
+};
+
+// The panel's group goes to (x, y); the flag byte is read before x is stored.
+static inline void place_at(EffectGroup* group, float x, float y) {
+    group->offset34 = y;
+    group->offset38 = 0.0f;
+    unsigned char flags = group->flags58;
+    group->offset30 = x;
+    group->flags58 = flags | 0x10;
+}
+
+// 0x71003a34bc: an options screen of sliders (vtable GOT 0x7100c2b320): three sliders and three panels, listed in
+// order, ending in a tail call of its virtual open.
+class SliderOptionScreen : public OptionScreenBase {
+public:
+    explicit SliderOptionScreen(OptionOwner* owner);
+    virtual ~SliderOptionScreen();
+
+    template <class T> void add(T* panel) { list[count++] = panel; }
+
+    OptionSlider slider_a;            // +c0
+    OptionSlider slider_b;            // +acb0
+    OptionSlider slider_c;            // +158a0
+    OptionPanel panel_a;              // +20490
+    OptionPanel panel_b;              // +227b0
+    OptionPanel panel_c;              // +24ad0
+};
+
+SliderOptionScreen::SliderOptionScreen(OptionOwner* owner_) : OptionScreenBase(owner_) {
+    slider_a.select(0);
+    slider_a.title = message_text(0x28);
+    slider_a.sub = text_217dd8(9);
+    slider_a.left = message_text(0x21);
+    slider_a.refresh();
+    slider_a.right = message_text(0x22);
+    slider_a.refresh();
+    add(&slider_a);
+    slider_b.select(1);
+    slider_b.title = message_text(0x29);
+    slider_b.sub = text_217dd8(0xb);
+    slider_b.left = message_text(0x3a);
+    slider_b.refresh();
+    slider_b.right = message_text(0x3b);
+    slider_b.refresh();
+    add(&slider_b);
+    slider_c.select(2);
+    slider_c.title = message_text(0x2a);
+    slider_c.sub = text_217dd8(0xa);
+    slider_c.left = message_text(0x3a);
+    slider_c.refresh();
+    slider_c.right = message_text(0x3b);
+    slider_c.refresh();
+    add(&slider_c);
+    panel_a.place(3, 1);
+    if (load_global_334a04()) {
+        panel_a.title = message_text(0xe);
+        panel_a.sub = item_name(0x18f);
+    } else {
+        panel_a.title = message_text(0x2b);
+        panel_a.sub = text_217dd8(0xc);
+    }
+    add(&panel_a);
+    place_at(panel_b.node->group, -510.0f, -14.0f);
+    panel_b.place(6, 1);
+    panel_b.title = message_text(0x26);
+    panel_b.sub = text_217dd8(0x3a);
+    add(&panel_b);
+    place_at(panel_c.node->group, -510.0f, -56.0f);
+    panel_c.place(7, 1);
+    panel_c.title = message_text(0x27);
+    panel_c.sub = text_217dd8(0x3b);
+    add(&panel_c);
+    valueb0 = 0;
+    valueb4 = 6;
+    open();
+}
+struct Game;
+Game* fetch_204728();                                                       // 0x7100204728
+unsigned char game_has_flag(Game* game, int flag);                          // 0x71002026fc
+
+class OptionRangeA : public OptionSliderBase {
+public:
+    OptionRangeA() : OptionSliderBase(3, -0xb, 0x1e, -0x36, 0xaa, kRangeName, kRangeLayout) {}
+    virtual void v20();       // declared, not defined: the vtable stays external (GOT 0x7100c2b2e8)
+};
+
+class OptionRangeB : public OptionSliderBase {
+public:
+    OptionRangeB() : OptionSliderBase(4, -0x2a, 0, -0x53, 0x85, kRangeName, kRangeLayout) {}
+    virtual void v20();       // declared, not defined: the vtable stays external (GOT 0x7100c2b2f0)
+};
+
+// 0x71003a0e4c: an options screen with a range slider (vtable GOT 0x7100c2b2e0): the game's flag picks which of two
+// range sliders is shown; three sliders and two panels follow, listed in order.
+class RangeOptionScreen : public OptionScreenBase {
+public:
+    explicit RangeOptionScreen(OptionOwner* owner);
+    virtual ~RangeOptionScreen();
+
+    template <class T> void add(T* panel) { list[count++] = panel; }
+
+    OptionSliderBase* current;        // +c0
+    OptionRangeA range_a;             // +c8
+    OptionRangeB range_b;             // +acb8
+    OptionSlider slider_a;            // +158a8
+    OptionSlider slider_b;            // +20498
+    OptionSlider slider_c;            // +2b088
+    OptionPanel panel_a;              // +35c78
+    OptionPanel panel_b;              // +37f98
+};
+
+RangeOptionScreen::RangeOptionScreen(OptionOwner* owner_) : OptionScreenBase(owner_) {
+    if (game_has_flag(fetch_204728(), 0))
+        current = &range_b;
+    else
+        current = &range_a;
+    current->select(0);
+    current->set_title(message_text(0x1b));
+    current->set_sub(text_217dd8(0));
+    current->set_left(message_text(0x1c));
+    current->set_right(message_text(0x1d));
+    current->set_low(message_text(0x1e));
+    current->set_high(message_text(0x1f));
+    add(current);
+    slider_a.select(1);
+    slider_a.title = message_text(0xa3);
+    slider_a.sub = text_217dd8(0x4e);
+    add(&slider_a);
+    slider_b.select(2);
+    slider_b.title = message_text(0xc1);
+    slider_b.sub = text_217dd8(0x53);
+    add(&slider_b);
+    slider_c.select(3);
+    slider_c.title = message_text(0x13e);
+    slider_c.sub = item_name(0x15a);
+    add(&slider_c);
+    panel_a.place(6, 1);
+    panel_a.title = message_text(0x26);
+    panel_a.sub = text_217dd8(0x3a);
+    add(&panel_a);
+    panel_b.place(7, 1);
+    panel_b.title = message_text(0x27);
+    panel_b.sub = text_217dd8(0x3b);
+    add(&panel_b);
+    valueb0 = 0;
+    valueb4 = 6;
+    open();
+}
+// 0x71003a01e4: an options screen of six panels (vtable GOT 0x7100c2b2d8), four of them placed and listed.
+class PanelOptionScreen : public OptionScreenBase {
+public:
+    explicit PanelOptionScreen(OptionOwner* owner);
+    virtual ~PanelOptionScreen();
+
+    template <class T> void add(T* panel) { list[count++] = panel; }
+
+    OptionPanel panel_a;              // +c0
+    OptionPanel panel_b;              // +23e0
+    OptionPanel panel_c;              // +4700
+    OptionPanel panel_d;              // +6a20
+    OptionPanel panel_e;              // +8d40
+    OptionPanel panel_f;              // +b060
+};
+
+PanelOptionScreen::PanelOptionScreen(OptionOwner* owner_) : OptionScreenBase(owner_) {
+    panel_a.place(0, 1);
+    panel_a.title = message_text(0xc0);
+    panel_a.sub = text_217dd8(0x52);
+    add(&panel_a);
+    panel_d.place(1, 1);
+    panel_d.title = message_text(0x24);
+    panel_d.sub = text_217dd8(3);
+    add(&panel_d);
+    panel_e.place(2, 1);
+    panel_e.title = message_text(0x25);
+    panel_e.sub = text_217dd8(4);
+    add(&panel_e);
+    panel_f.place(7, 1);
+    panel_f.title = message_text(0x27);
+    panel_f.sub = text_217dd8(0x3b);
+    add(&panel_f);
+    valueb0 = 0;
+    valueb4 = 4;
+    open();
+}
+// 0x71003a1dd0: an options screen of four sliders and three panels (vtable GOT 0x7100c2b310), five of them listed.
+class SliderPanelOptionScreen : public OptionScreenBase {
+public:
+    explicit SliderPanelOptionScreen(OptionOwner* owner);
+    virtual ~SliderPanelOptionScreen();
+
+    template <class T> void add(T* panel) { list[count++] = panel; }
+
+    OptionSlider slider_a;            // +c0
+    OptionSlider slider_b;            // +acb0
+    OptionSlider slider_c;            // +158a0
+    OptionSlider slider_d;            // +20490
+    OptionPanel panel_a;              // +2b080
+    OptionPanel panel_b;              // +2d3a0
+    OptionPanel panel_c;              // +2f6c0
+    int value319e0;                   // +319e0
+};
+
+SliderPanelOptionScreen::SliderPanelOptionScreen(OptionOwner* owner_) : OptionScreenBase(owner_), value319e0(0) {
+    slider_a.select(0);
+    slider_a.title = message_text(0x20);
+    slider_a.sub = text_217dd8(1);
+    add(&slider_a);
+    slider_b.select(1);
+    slider_b.title = message_text(0xe9);
+    slider_b.sub = item_name(0x150);
+    add(&slider_b);
+    slider_c.select(2);
+    slider_c.title = message_text(0xea);
+    slider_c.sub = item_name(0x151);
+    add(&slider_c);
+    panel_a.place(3, 1);
+    panel_a.title = message_text(0xec);
+    panel_a.sub = item_name(0x152);
+    add(&panel_a);
+    panel_b.place(6, 1);
+    panel_b.title = message_text(0x26);
+    panel_b.sub = text_217dd8(0x3a);
+    add(&panel_b);
+    valueb0 = 0;
+    valueb4 = 5;
+    open();
 }
