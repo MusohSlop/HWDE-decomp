@@ -589,21 +589,34 @@ public:
 // Base of the options screens (0xc0 bytes; vtable GOT 0x7100c2b2d0).
 class OptionScreenBase {
 public:
-    explicit OptionScreenBase(OptionOwner* owner_) : owner(owner_), value78(0) {
-        memset(state, 0, sizeof(state));
+    explicit OptionScreenBase(OptionOwner* owner_) : owner(owner_), value78(0), count(0) {
+        memset(list, 0, sizeof(list));
         flagb8 = 0;
         valueb0 = 0;
+        valueb4 = 0;
         cursor.init();
         cursor.set(150.0f, 126.0f, 223.0f);
     }
     virtual ~OptionScreenBase();
+    virtual void v10();
+    virtual void v18();
+    virtual void v20();
+    virtual void v28();
+    virtual void v30();
+    virtual void v38();
+    virtual void v40();
+    virtual void v48();
+    virtual void v50();
+    virtual void open();              // +58
 
     OptionOwner* owner;               // +08
     unsigned char pad10[8];
-    unsigned char state[0x60];        // +18
-    long value78;                     // +78
+    void* list[12];                   // +18: the listed panels
+    int value78;                      // +78
+    int count;                        // +7c
     MenuCursor cursor;                // +80
-    long valueb0;                     // +b0
+    int valueb0;                      // +b0
+    int valueb4;                      // +b4
     unsigned char flagb8;             // +b8
 };
 
@@ -612,10 +625,30 @@ class OptionPanelBase {
 public:
     OptionPanelBase(int id, int id2, const char* layout, const char* name, int mode); // 0x710039d3fc
     virtual ~OptionPanelBase();
+    virtual void v10();
+    virtual void v18();
+    virtual void v20();
+    virtual void v28();
+    virtual void v30();
+    virtual void v38();
+    virtual void v40();
+    virtual void v48();
+    virtual void v50();
+    virtual void v58();
+    virtual void v60();
+    virtual void v68();
+    virtual void v70();
+    virtual void v78();
+    virtual void v80();
+    virtual void v88();
+    virtual void v90();
+    virtual void place(int slot, int mode);                                // +98
 
     LightEffectNode* node;            // +08
     LayoutAnimation* anims[5];        // +10: in, on_off, loop_0, select_0, out
-    unsigned char pad38[0x22c0];
+    unsigned char pad38[0x22b0];
+    const char* title;                // +22e8
+    const char* sub;                  // +22f0
     int value22f8;                    // +22f8
     unsigned char pad22fc[0x24];
 };
@@ -772,4 +805,109 @@ OptionScreen::OptionScreen(OptionOwner* owner_)
     if (style == 5)
         move_x(arw, 30.0f);
     build();
+}
+const char* text_217dd8(int id);                                            // 0x7100217dd8
+const char* item_name(int item);                                            // 0x7100217d9c
+
+extern const char kSliderName[] __attribute__((visibility("hidden")));        // 0x71007db128
+extern const char kSliderLayout[] __attribute__((visibility("hidden")));      // 0x71007db152
+
+// A slider line of the options (0xabf0 bytes), built out of line on a node page.
+class OptionSliderBase {
+public:
+    OptionSliderBase(int mode, int steps, int low, int value, int width, const char* name,
+                     const char* layout);                                   // 0x710039e2f4
+    virtual ~OptionSliderBase();
+    virtual void v10();
+    virtual void select(int index);                                         // +18
+    void refresh();                                                         // 0x710039e820
+
+    unsigned char pad8[0x22e0];
+    const char* title;                // +22e8
+    const char* sub;                  // +22f0
+    unsigned char pad22f8[0x88b8];
+    const char* left;                 // +abb0
+    const char* right;                // +abb8
+    unsigned char padabc0[0x30];
+};
+
+class OptionSlider : public OptionSliderBase {
+public:
+    OptionSlider() : OptionSliderBase(2, 0x2d, 0, 0, 0xdc, kSliderName, kSliderLayout) {}
+    virtual void v20();       // declared, not defined: the vtable stays external (GOT 0x7100c2b2f8)
+};
+
+// The panel's group goes to (x, y); the flag byte is read before x is stored.
+static inline void place_at(EffectGroup* group, float x, float y) {
+    group->offset34 = y;
+    group->offset38 = 0.0f;
+    unsigned char flags = group->flags58;
+    group->offset30 = x;
+    group->flags58 = flags | 0x10;
+}
+
+// 0x71003a34bc: an options screen of sliders (vtable GOT 0x7100c2b320): three sliders and three panels, listed in
+// order, ending in a tail call of its virtual open.
+class SliderOptionScreen : public OptionScreenBase {
+public:
+    explicit SliderOptionScreen(OptionOwner* owner);
+    virtual ~SliderOptionScreen();
+
+    template <class T> void add(T* panel) { list[count++] = panel; }
+
+    OptionSlider slider_a;            // +c0
+    OptionSlider slider_b;            // +acb0
+    OptionSlider slider_c;            // +158a0
+    OptionPanel panel_a;              // +20490
+    OptionPanel panel_b;              // +227b0
+    OptionPanel panel_c;              // +24ad0
+};
+
+SliderOptionScreen::SliderOptionScreen(OptionOwner* owner_) : OptionScreenBase(owner_) {
+    slider_a.select(0);
+    slider_a.title = message_text(0x28);
+    slider_a.sub = text_217dd8(9);
+    slider_a.left = message_text(0x21);
+    slider_a.refresh();
+    slider_a.right = message_text(0x22);
+    slider_a.refresh();
+    add(&slider_a);
+    slider_b.select(1);
+    slider_b.title = message_text(0x29);
+    slider_b.sub = text_217dd8(0xb);
+    slider_b.left = message_text(0x3a);
+    slider_b.refresh();
+    slider_b.right = message_text(0x3b);
+    slider_b.refresh();
+    add(&slider_b);
+    slider_c.select(2);
+    slider_c.title = message_text(0x2a);
+    slider_c.sub = text_217dd8(0xa);
+    slider_c.left = message_text(0x3a);
+    slider_c.refresh();
+    slider_c.right = message_text(0x3b);
+    slider_c.refresh();
+    add(&slider_c);
+    panel_a.place(3, 1);
+    if (load_global_334a04()) {
+        panel_a.title = message_text(0xe);
+        panel_a.sub = item_name(0x18f);
+    } else {
+        panel_a.title = message_text(0x2b);
+        panel_a.sub = text_217dd8(0xc);
+    }
+    add(&panel_a);
+    place_at(panel_b.node->group, -510.0f, -14.0f);
+    panel_b.place(6, 1);
+    panel_b.title = message_text(0x26);
+    panel_b.sub = text_217dd8(0x3a);
+    add(&panel_b);
+    place_at(panel_c.node->group, -510.0f, -56.0f);
+    panel_c.place(7, 1);
+    panel_c.title = message_text(0x27);
+    panel_c.sub = text_217dd8(0x3b);
+    add(&panel_c);
+    valueb0 = 0;
+    valueb4 = 6;
+    open();
 }
