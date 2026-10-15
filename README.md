@@ -3,7 +3,7 @@
 <!-- progress -->
 ![Progress map](docs/progress.png)
 
-11.07% of bytes (620,340 of 5,603,025) and 41.93% of functions (7,247 of 17,282) match exactly; 187 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
+11.14% of bytes (624,420 of 5,603,025) and 41.95% of functions (7,249 of 17,282) match exactly; 187 more are near misses. Green: exact match, blue: near miss, grey: not done; one rectangle per function, sized by bytes, grouped into 64 KB address blocks.
 <!-- /progress -->
 
 Byte-for-byte matching work for update 1.0.1 `main`. The behavior-equivalent reconstruction in `src/` stays untouched and serves as the semantic reference. See `handoff/MATCHING_HANDOFF.md` for the plan and `docs/toolchain.md` for compiler hashes.
@@ -45,7 +45,7 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 
 ## Results
 
-7,257 of 7,444 attempted functions match: 7,247 inventory functions (620,340 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 187 are near misses, all `m`.
+7,259 of 7,446 attempted functions match: 7,249 inventory functions (624,420 bytes) plus 10 bodies outside the baseline inventory: the worker trampoline `45df64`, the static initializers `25aa0c` and `258970`, the array destructor `258944`, the queue worker entry points `2599ac`/`2599c4`, the gate thunk `25a174`, the cache worker callbacks `25b218`/`25b25c` and the empty `TrackResources::update` (`25cd50`). The other 187 are near misses, all `m`.
 
 | Address | Function | Status |
 | --- | --- | --- |
@@ -427,6 +427,8 @@ Clang 4.0.1 fails three of the leaf queue functions; Clang 3.8.1 fails 7 of the 
 | 6 of 6 in `misc/s3_functions02.cpp` | the third session's hand fixes of generated source over 1,500 bytes: a `void` init function whose stack locals are declared in reverse (`362914`), quotients computed before a virtual call with the original's load order (`384a50`), a constructor with the first fields zeroed as one block and layout handles constructed in place (`3556b8`), and constructors whose member arrays are real arrays, with the rest of the function as their body, `new PanelPane` for the panes (`35f6e8`) and a cleared block of pointers as one `memset` (`118e44`), and float pairs stored as one 8-byte `Vec2` member (`369d3c`) | match |
 | 8 of 8 in `misc/s3_functions03.cpp` | the third session's constructor-shaped functions (vtable stores into `this`), from generated source: member arrays as real arrays and the rest as the constructor body, layout handles constructed in place, `new PanelPane` | match |
 | 2 of 2 in `misc/s3_functions04.cpp` | the third session's hand-written constructors: `187d78`, whose member table at `+998d8` allocates and clears its buffer in its own constructor, with `placement new[]` for an allocated array and three pointer arrays cleared last to first; `ef31c`, derived from a polymorphic base constructed out of line, with two groups of seven initialised entries and its last four fields set in the body | match |
+| 1 of 1 in `misc/s5_functions01.cpp` | the fifth session's hand matches over 1,500 bytes: `415f00`, a copy of an object with every field set to the difference of two others, the view blocks subtracted by inline `operator-` returning the block by value (angles wrapped to [-180, 180], pitches clamped to [-90, 90] with the negated test through `double`, see `tools/s5/README.md`) | match |
+| 1 of 1 in `misc/switches/switch_38e39c.cpp` | the fifth session's `38e39c`, a mode switch written as one `switch` with a shared tail (the original's shared sequences come from LLVM's tail merging), byte-sized `finished()` results, inline setters for the original's load order | match |
 | 2 of 2 in `misc/s4_functions01.cpp` | the fourth session's hand fixes of generated source over 1,500 bytes: a `void` function whose two inlined `0x37f0`-byte objects store their two-float field (24.0f, 24.0f) as two floats, so the merged 64-bit constant is built in place instead of hoisted into a callee-saved register (`f6fc0`); float results passed on as call arguments (`2578`'s result is `25fc`'s second argument, the results of `25fc` and `2684` go to the virtual calls) and `db3c` returning a `short` id, checked unsigned and used as a signed index (`1f00`) | match |
 | 35 of 35 in `misc/variant_functions16.cpp` | the variant search with library calls named after their imports (stub addresses mapped through the PLT relocations to the dynamic symbol names): C functions with their prototypes and `nn::os`/`nn::oe`/`nn::util` functions declared in their namespaces | match |
 | 107 of 107 in `misc/variant_functions15.cpp` | the variant search with element arrays that start inside a struct (the element base shifted by whole strides) and unscaled indexes on wider accesses as byte offsets (`*reinterpret_cast<T*>(&field[i])`) | match |

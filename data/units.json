@@ -16818,7 +16818,30 @@
     "_Z13callee_3dff58PvS_": "0x71003dff58",
     "_Z13callee_40b0dci": "0x710040b0dc",
     "_Z13callee_517b50Pviiiiib": "0x7100517b50",
-    "_Z13callee_14bbc4lPvS_iiiii": "0x710014bbc4"
+    "_Z13callee_14bbc4lPvS_iiiii": "0x710014bbc4",
+    "_Z13callee_3d4accP11State415f00S0_": "0x71003d4acc",
+    "got:gGlobalc2b170_38e39c": "0x7100c2b170",
+    "got:gGlobalc22dc0_38e39c": "0x7100c22dc0",
+    "_Z13callee_38dca4P12Mode0_38e39cP11Scene38e39c": "0x710038dca4",
+    "_Z13callee_39036cP12Mode1_38e39cP11Scene38e39c": "0x710039036c",
+    "_Z13callee_390854P12Mode2_38e39c": "0x7100390854",
+    "_Z13callee_390928P12Mode2_38e39ci": "0x7100390928",
+    "_Z13callee_390c60P12Mode3_38e39c": "0x7100390c60",
+    "_Z13callee_390dccP12Mode3_38e39ci": "0x7100390dcc",
+    "_Z13callee_391034P12Mode4_38e39c": "0x7100391034",
+    "_Z13callee_3911a0P12Mode4_38e39ci": "0x71003911a0",
+    "_Z13callee_391ab8P12Layers38e39cii": "0x7100391ab8",
+    "_Z13callee_391ac0P12Layers38e39ci": "0x7100391ac0",
+    "_Z13callee_391ac4P12Layers38e39ci": "0x7100391ac4",
+    "_Z13callee_392080P12Mode7_38e39cP11Scene38e39c": "0x7100392080",
+    "_Z13callee_395324P12Mode5_38e39cP11Scene38e39c": "0x7100395324",
+    "_Z13callee_397750P12Mode6_38e39cP11Scene38e39c": "0x7100397750",
+    "_Z13callee_39bbecP12Mode9_38e39cP11Scene38e39c": "0x710039bbec",
+    "_Z13callee_39be08P12Mode9_38e39c": "0x710039be08",
+    "_Z13callee_39c6d8P12Mode9_38e39c": "0x710039c6d8",
+    "_Z13callee_39cc64P12Mode9_38e39ci": "0x710039cc64",
+    "_Z13callee_3c745cP11Scene38e39ciii": "0x71003c745c",
+    "_Z13callee_3c750cP11Scene38e39c": "0x71003c750c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -26114,6 +26137,23 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s5_functions01.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z11call_415f00P11State415f00PKS_S2_": "0x7100415f00"
+      }
+    },
+    "misc/switches/switch_38e39c.cpp": {
+      "map": {
+        ".rodata": "0x71008033d4"
+      },
+      "functions": {
+        "_ZN11Scene38e39c8set_modeEii": "0x710038e39c"
       }
     }
   }
