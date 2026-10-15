@@ -2,11 +2,12 @@
 # above, and the giants of that range. Generator runs should skip every address listed here.
 # working: functions being hand-matched now; matched: functions matched on matching-s5; tried: parked, with reason.
 working: 4eab78 4ebc2c 4eccf0 4eddb4 4eee68 (the vector five, handed over by main from s2: one template; 4eab78 drafted, 97 off abstracted, docs/s5_wip/4eab78.cpp)
+working: 5efb3c (6,012 B giant: a branchy state update)
 working: 4030ac (13,924 B giant: surveyed, deferred to last; its large callees 402aec 406710 4068c0 406f8c 40a074 4095b8 22286c first)
 tried: 459ffc (1,920 B, in misc/text_format.cpp as a near miss, 2,168 B: the flag loop keeps its bool in the original and the length modifiers are kept as values; it writes the statics 45a850 needs)
 tried: 45b158 (2,464 B, 2,520 B here: padding loops solved by an explicit cap == 0 fill path; the sign mask, the a-f test and the frame size remain; docs/s5_wip/45b158.cpp)
 matched: 415f00 38e39c 45a850 425de0 4bc6b8 3bdbf0 448544 3bd1d8 3beef0 5a3ce0 3e1538 5f9fac 45f07c 59f778 5a18e0
-tried: 3ba734 (7,108 B giant, 7,100 B here, 125 off abstracted: register allocation of this and the layout addresses, and the DLC branch of the plate loop; docs/s5_wip/3ba734.cpp)
+tried: 3ba734 (7,108 B giant, 7,080 B here, 117 off abstracted: register allocation of this and the layout addresses, and the DLC branch of the plate loop; docs/s5_wip/3ba734.cpp)
 tried: 4abdcc (2,256 B, 2,252 B here, 110 instructions off abstracted: scheduling of the light loop and of the camera loads; docs/s5_wip/4abdcc.cpp)
 tried: 4b2e34 (4,600 B, not drafted: it inlines the NEON matrix inverse, now include/misc/matrix_inverse.h)
 tried: 3b0428 (1,800 B, 1,764 B here, 37 off abstracted: the second mode == 7 test is jump-threaded through the mode == 3 arm, the last loop's exit is not the original's sum of flags, one value spilled differently; docs/s5_wip/3b0428.cpp)

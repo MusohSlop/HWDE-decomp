@@ -1,16 +1,18 @@
 // Fifth session, in progress: 0x71003ba734 (7,108 bytes), the stage-select menu's build (Menu3bdbf0::build in
 // misc/s5_functions02.cpp's class: five layouts, the 32 stage panes, the face, plate, battle-area, attribute and
-// recommend panes with their animations, ten text panes). 7,100 bytes here, 125 instructions off abstracted.
-// Settled: every helper inlined (always_inline: the anim creation of 3b4e98, bind_new_anim, add_text); each of the
-// plate, area and attribute loops starts with the find_pane of the template pane, so SimplifyCFG hoists it into the
-// latch and the hide after the loop reuses it (as in the original); the stage slot is remapped by a three-case
-// chain (18-22 +9, 23-26 -5, 27-31 -5) and the DLC test is computed first in its branch.
-// Still off: the original keeps this in x24 and the five layout addresses in x25/x27/x19/x26/x22 from the start
-// (here this is spilled early), and its DLC branch keeps slot < 32 as a bool across the hide calls (a phi from
-// jump threading); the rest is register allocation and spill slots.
-// To build: python build/s5/g3ba/mk.py turns misc/s5_functions02.cpp's menu part plus this file into a scratch unit
-// (the pane gains slots 13-16, rotate, scale, size and origin; the menu's panes become panes[32]); 3bd1d8, 3bdbf0 and
-// 3beef0 still compare with 0 word diffs there.
+// recommend panes with their animations, ten text panes). 7,080 bytes here, 117 instructions off abstracted.
+// Settled: the five layout addresses taken into locals at the top (the original computes them before the first
+// memset and keeps them in callee-saved registers; 125 to 117 off, main's idea); every helper inlined
+// (always_inline: the anim creation of 3b4e98, bind_new_anim, add_text); each of the plate, area and attribute
+// loops starts with the find_pane of the template pane, so SimplifyCFG hoists it into the latch and the hide after
+// the loop reuses it (as in the original); the stage slot is remapped by a three-case chain (18-22 +9, 23-26 -5,
+// 27-31 -5) and the DLC test is computed first in its branch.
+// Still off: the original keeps this in x24 and the layout addresses in x25/x27/x19/x26/x22 (here x19 holds this
+// and the addresses get x25/x27/x26/x23/x20), and its DLC branch keeps slot < 32 as a bool across the hide calls
+// (a phi from jump threading); the rest is register allocation and spill slots.
+// To build: python -B -I docs/s5_wip/3ba734_mk.py [OUT.cpp] turns misc/s5_functions02.cpp's menu part plus this file
+// into a scratch unit (the pane gains slots 13-16, rotate, scale, size and origin; the menu's panes become
+// panes[32]); 3bd1d8, 3bdbf0 and 3beef0 still compare with 0 word diffs there.
 // Maps: got:gMgr_c22a00=0x7100c22a00 got:gApp_c21db0=0x7100c21db0 got:_ZTV10Anim3ba734=0x7100c2a698
 //   got:_ZTV10Text3ba734=0x7100c22f68 got:kStagePanes_bdb398=0x7100c2b450 got:kFaceParents_bdb498=0x7100c2b458
 //   with --name _ZN10Menu3bdbf05buildEv.
@@ -77,13 +79,18 @@ void Menu3bdbf0::build() {
     if (ready) {
         return;
     }
+    Layout3bdbf0** l0 = &layout;
+    Layout3bdbf0** l1 = &plates;
+    Layout3bdbf0** l2 = &areas;
+    Layout3bdbf0** l3 = &attributes;
+    Layout3bdbf0** l4 = &recommend;
     memset(panes, 0, sizeof(Pane3bdbf0*) * 32);
     memset(&rcm_pos, 0, 0x80);
-    layout = nullptr;
-    plates = nullptr;
-    areas = nullptr;
-    attributes = nullptr;
-    recommend = nullptr;
+    *l4 = nullptr;
+    *l3 = nullptr;
+    *l2 = nullptr;
+    *l1 = nullptr;
+    *l0 = nullptr;
     field_11670 = -1;
     for (int i = 0; i < 11; i++) {
         faces[i].pane = nullptr;
@@ -95,11 +102,11 @@ void Menu3bdbf0::build() {
         attrs[i].pane = nullptr;
     }
     rcm = nullptr;
-    gMgr_c22a00->load(&layout, 0x4200, kSnaSeleParts_7db544);
-    gMgr_c22a00->load(&plates, 0x4200, kSnaPlateParts_7db559);
-    gMgr_c22a00->load(&areas, 0x4200, kSnaBtlarea_7db56f);
-    gMgr_c22a00->load(&attributes, 0x41e5, kIconAttribute_7d5c0b);
-    gMgr_c22a00->load(&recommend, 0x41e5, kIconRecommend_7da6d1);
+    gMgr_c22a00->load(l0, 0x4200, kSnaSeleParts_7db544);
+    gMgr_c22a00->load(l1, 0x4200, kSnaPlateParts_7db559);
+    gMgr_c22a00->load(l2, 0x4200, kSnaBtlarea_7db56f);
+    gMgr_c22a00->load(l3, 0x41e5, kIconAttribute_7d5c0b);
+    gMgr_c22a00->load(l4, 0x41e5, kIconRecommend_7da6d1);
     Sys3ba734* sys = gApp_c21db0->sys;
     gMgr_c22a00->sync();
     gMgr_c22a00->attach_resource(res_830);
