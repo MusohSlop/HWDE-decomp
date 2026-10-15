@@ -18061,7 +18061,16 @@
     "kArwU_7d5b66": "0x71007d5b66",
     "kArwL_7d5b6c": "0x71007d5b6c",
     "kArwR_7d5b72": "0x71007d5b72",
-    "kArwD_7d5b78": "0x71007d5b78"
+    "kArwD_7d5b78": "0x71007d5b78",
+    "_ZN10InfoMarkerC1Ev": "0x71001f18e8",
+    "_ZN9InfoGaugeC1Ev": "0x71001305e4",
+    "_ZN9InfoTimerC1Ev": "0x71000e05d4",
+    "_ZN12InfoMapPanelC1Ev": "0x71000e4ee0",
+    "_ZN11InfoIconSetC1Ev": "0x71000e510c",
+    "_ZN13InfoIconTableC1Ev": "0x71000e51c8",
+    "kLine3Names_bdb860": "0x7100bdb860",
+    "_ZZN10Menu3bdbf013refresh_linesEvE6colors": "0x7100ca2ea8",
+    "_ZGVZN10Menu3bdbf013refresh_linesEvE6colors": "0x7100ca2eb8"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -27687,6 +27696,7 @@
       "functions": {
         "_ZN10Menu3bdbf013update_arrowsEv": "0x71003bd1d8",
         "_ZN10Menu3bdbf09show_lineEih": "0x71003bdbf0",
+        "_ZN10Menu3bdbf013refresh_linesEv": "0x71003beef0",
         "_ZN11Scene4485444initEv": "0x7100448544"
       }
     },
@@ -27744,6 +27754,14 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s4_e25dc.cpp": {
+      "map": {
+        ".rodata.str1.1": "0x71007403e7"
+      },
+      "functions": {
+        "_ZN18InformationDisplayC2Ev": "0x71000e25dc"
       }
     }
   }

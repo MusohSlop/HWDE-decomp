@@ -49,9 +49,19 @@ extern const char kArwU_7d5b66[] __attribute__((visibility("hidden")));
 extern const char kArwL_7d5b6c[] __attribute__((visibility("hidden")));
 extern const char kArwR_7d5b72[] __attribute__((visibility("hidden")));
 extern const char kArwD_7d5b78[] __attribute__((visibility("hidden")));
+extern const char* const kLine3Names_bdb860[3] __attribute__((visibility("hidden")));
 
+// A constructor, so a function-local static array of colours gets a guarded initialisation (3beef0).
 struct Color3bdbf0 {
     unsigned char r, g, b, a;
+    Color3bdbf0(unsigned char r_, unsigned char g_, unsigned char b_, unsigned char a_) : r(r_), g(g_), b(b_), a(a_) {}
+};
+
+// A byte array read through an align-1 type, so adjacent flag loads are not merged into one wider load.
+template <int N>
+struct Bytes3bdbf0 {
+    unsigned char v[N];
+    unsigned char operator[](int i) const { return v[i]; }
 };
 
 struct Float3_3bdbf0 {
@@ -100,15 +110,21 @@ struct Menu3bdbf0 {
     unsigned char pad0[0x3c];
     int slot_kind[32];                // +3c
     unsigned char padbc[0x420];
-    unsigned char has[32];            // +4dc
-    unsigned char owned[32];          // +4fc
+    Bytes3bdbf0<32> has;              // +4dc
+    Bytes3bdbf0<32> owned;            // +4fc
     unsigned char pad51c[0x20];
     int stage;                        // +53c
     unsigned char pad540[7];
     unsigned char all_open;           // +547
     unsigned char pad548[0x2b8];
     Layout3bdbf0* layout;             // +800
-    unsigned char pad808[0xb6420];
+    unsigned char pad808[0x158];
+    Pane3bdbf0* panes_960[2];         // +960
+    unsigned char pad970[0x10];
+    Pane3bdbf0* panes_980[2];         // +980
+    unsigned char pad990[0xb0];
+    Pane3bdbf0* sources_a40[4];       // +a40
+    unsigned char pada60[0xb61c8];
     int kinds[32];                    // +b6c28
 
     Pane3bdbf0* find(const char* name) { return layout->root->find_pane(name, true); }
@@ -118,6 +134,7 @@ struct Menu3bdbf0 {
     bool can_go(int i) { return all_open ? has[i] != 0 : has[i] && owned[i]; }
     void update_arrows();
     void show_line(int line, unsigned char visible);
+    void refresh_lines();
 };
 
 // A stage id to its slot: ids from 0x20 (DLC stages 200 to 232 and 100) are shifted down, then two ranges swap.
@@ -384,6 +401,82 @@ void Menu3bdbf0::show_line(int line, unsigned char visible) {
     case 0x1f:
         find(kLineZds08_7db9be)->set_visible(visible & 1);
         break;
+    }
+}
+
+static inline void show_line3(Menu3bdbf0* m) {
+    m->find(kLine300_7db832)->flags |= 1;
+    m->find(kLine301_7db83c)->flags |= 1;
+    m->find(kLine302_7db846)->flags |= 1;
+    m->find(kLine303_7db850)->flags &= ~1;
+}
+
+// A translate copied through a local into the const-reference setter: the local stays a stack temporary (no TBAA,
+// so a store between its load and its store may alias the source), with z kept in a register when nothing is
+// stored in between. As an inline function the local is promoted; as a macro it stays in this function's frame.
+#define COPY_TRANSLATE(dst, src)                \
+    do {                                        \
+        Float3_3bdbf0 t_ = (src)->translate;    \
+        (dst)->set_translate(t_);               \
+    } while (0)
+
+// 0x71003beef0: refreshes the lines of the third stage group and of the two DLC groups. The DLC flags start false
+// and are set in one block shared by both tests; the first lookup of each unlit line is a direct virtual call
+// with the name table read in its arguments (after the vtable load).
+void Menu3bdbf0::refresh_lines() {
+    static Color3bdbf0 colors[4] = {{0xff, 0xff, 0xff, 0xff}, {0xff, 0xff, 0xff, 0x00}, {0xff, 0xff, 0xff, 0xff},
+                                    {0xff, 0xff, 0xff, 0x00}};
+    bool lit[3] = {};
+    bool any = false;
+    if (has[4] && owned[4]) {
+        any = true;
+        lit[0] = true;
+    }
+    if (has[6] && owned[6]) {
+        any = true;
+        lit[1] = true;
+    }
+    if (has[8] && owned[8]) {
+        any = true;
+        lit[2] = true;
+    }
+    bool dlc0 = false;
+    if ((has[20] && owned[20]) || (has[24] && owned[24])) {
+        dlc0 = true;
+    }
+    bool dlc1 = false;
+    if ((has[21] && owned[21]) || (has[25] && owned[25])) {
+        dlc1 = true;
+    }
+    if (any) {
+        show_line3(this);
+        show_line3(this);
+        show_line3(this);
+        for (int i = 0; i < 3; i++) {
+            if (!lit[i]) {
+                layout->root->find_pane(kLine3Names_bdb860[i], true)->set_vtx_color(0, colors[0]);
+                const char* name = kLine3Names_bdb860[i];
+                find(name)->set_vtx_color(1, colors[1]);
+                find(name)->set_vtx_color(2, colors[2]);
+                find(name)->set_vtx_color(3, colors[3]);
+            }
+        }
+    }
+    if (dlc0) {
+        show_line(0x14, 1);
+        COPY_TRANSLATE(panes_960[0], sources_a40[0]);
+        COPY_TRANSLATE(panes_960[1], sources_a40[1]);
+        find(kLine300_7db832)->flags &= ~1;
+        find(kLine04_7db85a)->flags &= ~1;
+        find(kLine700_7db872)->flags &= ~1;
+    }
+    if (dlc1) {
+        show_line(0x15, 1);
+        COPY_TRANSLATE(panes_980[0], sources_a40[2]);
+        COPY_TRANSLATE(panes_980[1], sources_a40[3]);
+        find(kLine302_7db846)->flags &= ~1;
+        find(kLine06_7db86a)->flags &= ~1;
+        find(kLine702_7db886)->flags &= ~1;
     }
 }
 

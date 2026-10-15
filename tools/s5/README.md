@@ -93,3 +93,15 @@ Each with the functions it fixed; three or more make it a generator note.
 - A run of "flag and (all or owned)" tests where the original loads the all flag once at the top and duplicates
   the rest on its value (each test after it threaded): the helper tests the all flag first,
   `all ? has[i] != 0 : has[i] && owned[i]`; the form `has[i] && (all || owned[i])` reloads it per test. `3bd1d8`.
+- A 12-byte struct copied through a stack temporary (x,y as one 8-byte load stored to the stack and reloaded, z
+  stored too or kept in a register with `mov w9, w9`): copy into a local and pass it to a const-reference setter,
+  inside a macro, not an inline function (inlined, the local is promoted). Without TBAA a store between the load
+  and the store keeps both halves in memory. `3beef0` (four copies), `3be490` (four).
+- A virtual lookup whose vtable load comes before the load of its name argument (`ldr x8, [x0]` before
+  `ldr x21, [table, i, lsl #3]`): call the virtual function directly with the table read in its arguments, not
+  through an inline helper taking the name. `3beef0`, `3be490`.
+- A flag set in one block reached from both tests of an `||` (one `mov w25, #1`): `bool f = false; if (a || b)
+  f = true;` -- an if/else assigning true and false, or the expression itself, duplicates the true block. `3beef0`.
+- Byte flags at constant indexes merged into `ldrh` where the original reads them one by one, and indexed ones
+  addressed as `this + i` with the field offset in the load: make the array member an align-1 wrapper with
+  `operator[]`. `3be490`, `3beef0`.
