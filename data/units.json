@@ -17471,7 +17471,15 @@
     "_ZN9Sub37f5684stopEv": "0x710037cd6c",
     "got:_ZTV11Class2b9f9c": "0x7100c2a9b8",
     "_ZN10Elem2b81b4D1Ev": "0x71002b81b4",
-    "_ZN9Sub2b6e945clearEv": "0x71002b6e94"
+    "_ZN9Sub2b6e945clearEv": "0x71002b6e94",
+    "got:_ZTV11Class2c6a58": "0x7100c2aa30",
+    "_Z10table_freeP8TableObj": "0x71005d43a0",
+    "got:_ZTV11Class2cff80": "0x7100c2aa98",
+    "got:_ZTV9Mid2cff80": "0x7100c2aa68",
+    "_Z9heap_noteP7ObjHeapPvi": "0x71002925c8",
+    "got:_ZTV12PanelA2d4a60": "0x7100c2aa88",
+    "got:_ZTV12PanelB2d4a60": "0x7100c2aa90",
+    "_ZN10Part3c5cc0D1Ev": "0x71003c5cc0"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -26846,7 +26854,11 @@
         "_ZN11Class2b4df0D2Ev": "0x71002b4df0",
         "_ZN11Class2beea8D2Ev": "0x71002beea8",
         "_ZN11Class2c18c0D2Ev": "0x71002c18c0",
-        "_ZN11Class2b9f9cD2Ev": "0x71002b9f9c"
+        "_ZN11Class2b9f9cD2Ev": "0x71002b9f9c",
+        "_ZN11Class2c6a58D2Ev": "0x71002c6a58",
+        "_ZN15TableElem2bd8ccD2Ev": "0x71002bd8cc",
+        "_ZN11Class2cff80D2Ev": "0x71002cff80",
+        "_ZN15Container2d4a60D2Ev": "0x71002d4a60"
       }
     },
     "misc/s3_functions06.cpp": {

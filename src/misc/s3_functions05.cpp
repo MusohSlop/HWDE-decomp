@@ -454,3 +454,189 @@ Class2b9f9c::~Class2b9f9c() {
     release_in(f20, 0x4213);
     release_in(f28, 0x421c);
 }
+
+inline void release_linked68(LayoutObj*& p) {
+    if (p) {
+        ObjLink* l = p->link;
+        if (l->owner)
+            link_drop(l->owner, l);
+        if (p) {
+            ObjHeap* heap = gObjHeap;
+            void* root = gHandleHeapOwner->heap + 0x10;
+            obj_detach(p, root);
+            p->destroy();
+            heap_return(heap->list68, p);
+            p = nullptr;
+        }
+        p = nullptr;
+    }
+}
+
+struct Elem2c6a58 {
+    LayoutObj* obj;                 // +0
+    unsigned char pad8[0x10];
+    DtorHandle h;                   // +18
+};
+
+// 0x71002c6a58 (D2): releases the objects of its 20 elements and two of its own, then destroys the elements
+// (each one's handle, in a loop).
+class Class2c6a58 {
+public:
+    virtual ~Class2c6a58();
+
+    unsigned char pad8[0x10];
+    LayoutObj* f18;                 // +18
+    LayoutObj* f20;                 // +20
+    unsigned char pad28[0x70 - 0x28];
+    Elem2c6a58 elems[20];           // +70
+};
+
+Class2c6a58::~Class2c6a58() {
+    for (int i = 0; i < 20; i++)
+        release_linked68(elems[i].obj);
+    release_id(f18, 0x421a);
+    release_id(f20, 0x421a);
+}
+
+class TableObj {
+public:
+    virtual ~TableObj();
+    virtual void v10();
+    virtual void attach(void* root);    // +18
+};
+
+void table_free(TableObj* obj);         // 0x71005d43a0
+
+// 0x71002bd8cc (D2): the elements of 2beea8's array, a table of 17 objects and a handle.
+struct TableElem2bd8cc {
+    ~TableElem2bd8cc();
+
+    unsigned char pad0[0x10];
+    LayoutObj* obj;                 // +10
+    unsigned char pad18[0x20];
+    TableObj* table[17];            // +38
+    DtorHandle h;                   // +c0
+    unsigned char padd8[0x8];
+};
+
+TableElem2bd8cc::~TableElem2bd8cc() {
+    void* root = handle_root_heap();
+    for (int i = 0; i < 17; i++) {
+        if (table[i]) {
+            table[i]->attach(root);
+            link_drop(obj->link, reinterpret_cast<ObjLink*>(table[i]));
+            TableObj* t = table[i];
+            if (t) {
+                t->~TableObj();
+                table_free(t);
+            }
+            table[i] = nullptr;
+        }
+    }
+    release_in(obj, 0x4217);
+}
+
+inline void release68_in(LayoutObj*& p) {
+    if (p) {
+        ObjHeap* heap = gObjHeap;
+        void* root = gHandleHeapOwner->heap + 0x10;
+        obj_detach(p, root);
+        p->destroy();
+        heap_return(heap->list68, p);
+        p = nullptr;
+    }
+}
+
+void heap_note(ObjHeap* heap, void* at, int n);              // 0x71002925c8
+
+class Mid2cff80 : public Basec719c {
+public:
+    virtual ~Mid2cff80() {
+        if (open49f8) {
+            heap_note(gObjHeap, s140, n49e0);
+            closed();
+            open49f8 = 0;
+        }
+    }
+    virtual void v10(); virtual void v18(); virtual void v20(); virtual void v28(); virtual void v30();
+    virtual void v38(); virtual void v40(); virtual void v48(); virtual void v50(); virtual void v58();
+    virtual void v60(); virtual void v68(); virtual void v70(); virtual void v78(); virtual void v80();
+    virtual void closed();          // +88
+
+    unsigned char pad8[0x28];
+    Part5d27b4 m30;                 // +30
+    unsigned char pad40[0x100];
+    unsigned char s140[0x48a0];     // +140
+    int n49e0;                      // +49e0
+    unsigned char pad49e4[0x14];
+    unsigned char open49f8;         // +49f8
+    unsigned char pad49f9[0x7];
+};
+
+// 0x71002cff80 (D2): a gate that releases one object, a member and a handle, then the inlined destructor of its base
+// (its own vtable store and body) and the next base's destructor as a tail call.
+class Class2cff80 : public Mid2cff80 {
+public:
+    ~Class2cff80();
+
+    unsigned char pad4a00[0x9c40 - 0x4a00];
+    DtorHandle h9c40;               // +9c40
+    unsigned char pad9c58[0x18];
+    Part5d27b4 m9c70;               // +9c70
+    unsigned char pad9c80[0x100];
+    LayoutObj* p9d80;               // +9d80
+    unsigned char pad9d88[0xafa0 - 0x9d88];
+    struct Gate { unsigned char closed; void shut(LayoutObj*& p) { if (!closed) { release68_in(p); closed = 0; } } } gate;   // +afa0
+};
+
+Class2cff80::~Class2cff80() {
+    gate.shut(p9d80);
+}
+
+// Panels of the container: Mid2cff80 with one handle at its end.
+class PanelA2d4a60 : public Mid2cff80 {
+public:
+    virtual void key();
+    unsigned char pad4a00[0x18];
+    DtorHandle h;                   // +4a18
+};
+
+class PanelB2d4a60 : public Mid2cff80 {
+public:
+    virtual void key();
+    unsigned char pad4a00[0x1220];
+    DtorHandle h;                   // +5c20
+    unsigned char pad5c38[0x8];
+};
+
+template <unsigned long N> class Plain2d4a60 : public Basec719c {
+public:
+    unsigned char pad8[N - 8];
+};
+
+struct Part3c5cc0 { ~Part3c5cc0(); unsigned char data[0x10]; };              // 0x71003c5cc0
+
+// 0x71002d4a60 (D2): a container without a vtable of its own; its members' destructors are inlined where they are
+// inline (the panels and the first Mid2cff80) and called otherwise.
+class Container2d4a60 {
+public:
+    ~Container2d4a60();
+
+    Mid2cff80 m0;                   // +0
+    unsigned char pad4a00[0x200];
+    PanelA2d4a60 a4c00;             // +4c00
+    PanelA2d4a60 a9630;             // +9630
+    unsigned char pade060[0x10];
+    PanelB2d4a60 be070;             // +e070
+    Class2cff80 c13cb0;             // +13cb0
+    unsigned char pad1ec70_[0x1ec70 - 0x13cb0 - sizeof(Class2cff80)];
+    Plain2d4a60<0x4bc0> p1ec70;     // +1ec70
+    Plain2d4a60<0x4bc0> p23830;     // +23830
+    Plain2d4a60<0x9728> p283f0;     // +283f0
+    Plain2d4a60<0x11a20> p31b18;    // +31b18
+    Plain2d4a60<0x12418> p43538;    // +43538
+    Plain2d4a60<0x12648> p55950;    // +55950
+    Part3c5cc0 p67f98;              // +67f98
+};
+
+Container2d4a60::~Container2d4a60() {}
