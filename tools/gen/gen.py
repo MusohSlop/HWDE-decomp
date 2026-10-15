@@ -1498,6 +1498,10 @@ def gen_function(a, ins):
                     raise Fail("callee arity")
                 for k_ in range(len(alist_), want_):
                     v_ = snap0_.get(k_)
+                    if v_ is None and "noundefext" not in knobs and k_ < 8:
+                        # the register was clobbered: this call passes an uninitialised value the callee ignores
+                        UNDEF_.add(k_)
+                        v_ = ("undef", k_)
                     if v_ is None:
                         raise Fail("callee arity")
                     if v_[0] == "param" and pwidth.get(v_[1]) is None:
