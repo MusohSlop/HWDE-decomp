@@ -4717,6 +4717,8 @@ def gen_function(a, ins):
                         bs_ = f"&local_{hx_(b_[1])}"
                     elif b_[0] in ("param", "var", "gotaddr", "local"):
                         bs_ = expr(b_)
+                    elif b_[0] in ("bin", "stackaddr", "elem", "maddr", "select", "ext"):
+                        bs_ = expr(b_)
                     else:
                         raise Fail("copy base")
                     return f"reinterpret_cast<unsigned char*>({bs_}) + {o_:#x}" if o_ else f"reinterpret_cast<unsigned char*>({bs_})"
