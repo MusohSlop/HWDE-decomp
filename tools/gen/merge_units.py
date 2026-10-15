@@ -1,7 +1,8 @@
 """Merge two versions of matching/data/units.json: start from OURS and add every symbol and unit from THEIRS.
 A symbol or unit function that both define with different values is an error (nothing is written).
 With BASE (the common ancestor's version), entries THEIRS deleted and OURS left unchanged are deleted too, so a
-function moved from one unit to another (or a unit removed) on the other branch merges cleanly.
+function moved from one unit to another (or a unit removed) on the other branch merges cleanly, and a unit entry
+(a section map, a function's address) one side changed and the other left at its base value takes the change.
 usage: merge_units.py OURS THEIRS OUT [BASE]"""
 import json, sys
 ours = json.load(open(sys.argv[1], encoding="utf-8-sig"))
@@ -35,6 +36,12 @@ for un, spec in theirs["units"].items():
         for n, a in spec.get(part, {}).items():
             have = mine.setdefault(part, {}).get(n)
             if have is not None and have != a:
+                was = (base or {}).get("units", {}).get(un, {}).get(part, {}).get(n)
+                if base is not None and was == a:
+                    continue  # THEIRS kept the base value and OURS changed it: keep ours
+                if base is not None and was == have:
+                    mine[part][n] = a  # OURS kept the base value and THEIRS changed it: take theirs
+                    continue
                 conflicts.append(f"{un} {part} {n}: {have} vs {a}")
             mine[part].setdefault(n, a)
     for k, v in spec.items():

@@ -319,6 +319,36 @@ def gen_function(a, ins):
     vars_ = {}          # name -> type (or 'w'/'x' pending, or struct name)
     callees = {}        # target -> [arg types, ret type]
     counter = [0]
+    if "nosqrtpair" not in knobs:
+        # move `fcmp sD, sD` down to its b.vc/b.vs over instructions that neither use sD nor the flags
+        tg_ = set()
+        for i_ in ins:
+            if i_.mnemonic in ("b", "bl", "cbz", "cbnz", "tbz", "tbnz") or i_.mnemonic.startswith("b."):
+                m_ = re.search(r"#(0x[0-9a-f]+|\d+)$", i_.op_str)
+                if m_:
+                    tg_.add(int(m_.group(1), 0))
+        k_ = 0
+        while k_ < len(ins) - 1:
+            i_ = ins[k_]
+            ops_ = [o_.strip() for o_ in i_.op_str.split(",")]
+            if i_.mnemonic == "fcmp" and len(ops_) == 2 and ops_[0] == ops_[1] and re.fullmatch(r"s\d+", ops_[0]) \
+                    and ins[k_ + 1].mnemonic not in ("b.vc", "b.vs"):
+                n_ = int(ops_[0][1:])
+                kb_ = None
+                for j_ in range(k_ + 1, min(len(ins), k_ + 10)):
+                    ij_ = ins[j_]
+                    if ij_.mnemonic in ("b.vc", "b.vs"):
+                        kb_ = j_
+                        break
+                    if ij_.address in tg_ or ij_.mnemonic in ("b", "bl", "blr", "br", "ret", "cbz", "cbnz", "tbz", "tbnz") \
+                            or ij_.mnemonic.startswith(("b.", "cmp", "cmn", "tst", "fcmp", "ccmp", "fccmp", "subs", "adds", "ands", "bics")):
+                        break
+                    r_, w_ = frw(ij_)
+                    if n_ in r_ or n_ in w_:
+                        break
+                if kb_ is not None:
+                    ins = ins[:k_] + ins[k_ + 1:kb_] + [ins[k_]] + ins[kb_:]
+            k_ += 1
     addr_index = {i.address: k for k, i in enumerate(ins)}
     ivec_loads_ = {}
     if "noicvt" not in knobs:
@@ -1010,7 +1040,7 @@ def gen_function(a, ins):
         """A 128-bit float vector value (Vec4f)."""
         if v is None:
             return False
-        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg", "vparam", "vins", "vundef"):
+        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg", "vparam", "vins", "vundef", "vcomb", "vecuv"):
             return True
         if v[0] == "var":
             tv_ = vars_.get(v[1])
@@ -2037,6 +2067,10 @@ def gen_function(a, ins):
                         if a_ is None or b_ is None or (kind != "s" and n not in (live_f if kind else live_i)):
                             (merged["f"] if kind == "f" else merged)[n] = None
                             continue
+                        if kind == "f" and "vlanemerge" in knobs and is_vecval_(a_) != is_vecval_(b_) \
+                                and not any(x_[0] in ("ivec", "fbits") for x_ in (a_, b_)):
+                            # a vector on one arm and a scalar on the other: the scalar is lane 0
+                            a_, b_ = [("vlane", x_, 0) if is_vecval_(x_) else x_ for x_ in (a_, b_)]
                         if kind == "f" and "nofmerge" not in knobs:
                             # a float register holds floats: an untyped call result merged there is one, and an
                             # int or pointer side (or a call result merged in a general register at this join too)
@@ -2152,6 +2186,12 @@ def gen_function(a, ins):
                             regs["f"][fn_] = ("vparam", lo_[1])
                         elif lo_[0] == "vpart" and xv_[0] == "vpart" and lo_[1] == xv_[1] and lo_[2] == 0 and xv_[2] == 1:
                             regs["f"][fn_] = lo_[1]
+                        elif "novcomb" not in knobs and lo_[0] == "var" and xv_ == ("hi", lo_[1]) and vars_.get(lo_[1]) in ("?", "VecU"):
+                            # a call returning a 16-byte vector in x0 and x1
+                            vars_[lo_[1]] = "VecU"
+                            regs["f"][fn_] = ("vecuv", lo_)
+                        elif "novcomb" not in knobs and lo_[0] not in ("vpart", "hi") and xv_[0] not in ("vpart", "hi"):
+                            regs["f"][fn_] = ("vcomb", lo_, xv_)
                         else:
                             raise Fail("vector halves")
                     if fn_ < 8: regs.setdefault("fw", set()).add(fn_)
@@ -2163,6 +2203,38 @@ def gen_function(a, ins):
                         raise Fail("vector half of a scalar")
                     regs[xn_] = ("vpart", vv_, 0 if ops[1][0] == "d" else 1)
                     if xn_ < 8: written.add(xn_)
+                k += 1; continue
+            ml1_ = re.fullmatch(r"\{v(\d+)\.([sd])\}\[(\d)\], (\[x\d+\])(?:, #(0x[0-9a-f]+|\d+))?", i.op_str) if m in ("ld1", "st1") and "nold1" not in knobs else None
+            if ml1_ and not (m == "st1" and ml1_.group(2) == "d") and not (ml1_.group(2) == "d" and ml1_.group(3) != "0"):
+                vn_, lk_, li_ = int(ml1_.group(1)), ml1_.group(2), int(ml1_.group(3))
+                b, off, idx, sh, ext, pre, post = memop2(ml1_.group(4), ("#" + ml1_.group(5)) if ml1_.group(5) else None)
+                bnl_ = regname(b)[0]
+                if m == "ld1" and lk_ == "s":
+                    sn, base, off2 = field(regs, b, off, "float")
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off2, "float")
+                    items.append(("let", name, sn, off2, base))
+                    letbase[name] = base
+                    old_ = regs["f"].get(vn_)
+                    if old_ is None or not is_vecval_(old_):
+                        old_ = ("vundef",)
+                    regs["f"][vn_] = ("vins", old_, ("var", name), li_)
+                elif m == "ld1":
+                    sn, base, off2 = field(regs, b, off, "long")
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off2, "long")
+                    items.append(("let", name, sn, off2, base))
+                    letbase[name] = base
+                    regs["f"][vn_] = ("vlo", ("var", name))
+                else:
+                    vv_ = regs["f"].get(vn_)
+                    if not is_vecval_(vv_):
+                        raise Fail("lane store of a scalar")
+                    sn, base, off2 = field(regs, b, off, "float")
+                    items.append(("store", sn, off2, base, ("vlane", vv_, li_)))
+                if vn_ < 8 and m == "ld1": regs.setdefault("fw", set()).add(vn_)
+                if post is not None:
+                    regs[bnl_] = ("bin", "+", regs.get(bnl_), ("const", post, "x"), "x", "add")
                 k += 1; continue
             if m in ("ldr", "ldur") and k in ivec_loads_ and len(ops) == 2:
                 # an int field loaded into a vector register for a conversion to float
@@ -2335,7 +2407,8 @@ def gen_function(a, ins):
                 tgt_ = imm(br_.op_str)
                 def skip_moves_(jj_, end_=None):
                     while jj_ < len(ins) and (end_ is None or ins[jj_].address < end_) and (ins[jj_].mnemonic in ("mov", "fmov") or (
-                            ins[jj_].mnemonic in ("str", "ldr", "stur", "ldur") and "nosqrtspill" not in knobs and re.fullmatch(r"[qds]\d+, \[(sp|x29)(, #-?(0x[0-9a-f]+|\d+))?\]", ins[jj_].op_str))):
+                            ins[jj_].mnemonic in ("str", "ldr", "stur", "ldur") and "nosqrtspill" not in knobs and re.fullmatch(r"[qds]\d+, \[(sp|x29)(, #-?(0x[0-9a-f]+|\d+))?\]", ins[jj_].op_str)) or (
+                            ins[jj_].mnemonic in ("stp", "ldp") and "nosqrtpair" not in knobs and re.fullmatch(r"([qds])\d+, \1\d+, \[(sp|x29)(, #-?(0x[0-9a-f]+|\d+))?\]", ins[jj_].op_str))):
                         jj_ += 1
                     return jj_
                 def is_sqrtf_(i_, mn_):
@@ -2354,7 +2427,12 @@ def gen_function(a, ins):
                     for n2 in list(regs):
                         if isinstance(n2, int) and n2 < 19:
                             regs[n2] = None
-                    regs["f"] = {n3: v3 for n3, v3 in regs["f"].items() if 8 <= n3 <= 15}
+                    kept_ = set()
+                    if "nosqrtpair" not in knobs:
+                        for i_ in ins[k + 2:addr_index[tgt_]]:
+                            if i_.mnemonic in ("ldr", "ldp", "ldur") and re.search(r"\[(sp|x29)\b", i_.op_str):
+                                kept_ |= {int(r2_[1:]) for r2_ in re.findall(r"\b[qds]\d+\b", i_.op_str.split("[")[0])}
+                    regs["f"] = {n3: v3 for n3, v3 in regs["f"].items() if 8 <= n3 <= 15 or n3 in kept_}
                     regs["f"][fd] = r_
                     regs["fw"] = {fd} if fd < 8 else set()
                     written = set()
@@ -2396,9 +2474,23 @@ def gen_function(a, ins):
                 regs["f"][fd] = ("fconst", _st.unpack("<f", d[addr_:addr_ + 4])[0])
                 if fd < 8: regs.setdefault("fw", set()).add(fd)
                 k += 1; continue
-            if fdst and m in ("ldr", "ldur") and len(ops) == 2 and not (ops[1].startswith("[sp") or ops[1].startswith("[x29")):
+            if fdst and m in ("ldr", "ldur") and (len(ops) == 2 or (len(ops) == 3 and ops[2].startswith("#") and ops[1].endswith("]")
+                                                                     and "nofpost" not in knobs)) \
+                    and not (ops[1].startswith("[sp") or ops[1].startswith("[x29")):
                 fd = fregname(fdst)
-                b, off, idx, sh, ext, pre, post = memop2(ops[1], None)
+                b, off, idx, sh, ext, pre, post = memop2(ops[1], ops[2] if len(ops) == 3 else None)
+                if post is not None:
+                    # the load at the base, then the base advanced
+                    bnp_ = regname(b)[0]
+                    sn, base, off2 = field(regs, b, off, "float")
+                    name = f"v{counter[0]}"; counter[0] += 1
+                    vars_[name] = ("load", sn, off2, "float")
+                    items.append(("let", name, sn, off2, base))
+                    letbase[name] = base
+                    regs["f"][fd] = ("var", name)
+                    if fd < 8: regs.setdefault("fw", set()).add(fd)
+                    regs[bnp_] = ("bin", "+", regs.get(bnp_), ("const", post, "x"), "x", "add")
+                    k += 1; continue
                 if idx is not None:
                     # a float read through a byte offset, or a float array element
                     if sh not in (0, 2):
@@ -2503,9 +2595,17 @@ def gen_function(a, ins):
                     else:
                         items.append(("store", sn, off2, base, fuse(regs["f"], fr_)))
                 k += 1; continue
-            if ops and re.fullmatch(r"s\d+", ops[0]) and m in ("str", "stur") and len(ops) == 2 and not (ops[1].startswith("[sp") or ops[1].startswith("[x29")):
+            if ops and re.fullmatch(r"s\d+", ops[0]) and m in ("str", "stur") and (len(ops) == 2 or (len(ops) == 3 and ops[2].startswith("#")
+                                                                                      and ops[1].endswith("]") and "nofpost" not in knobs)) \
+                    and not (ops[1].startswith("[sp") or ops[1].startswith("[x29")):
                 val = fuse(regs["f"], ops[0])
-                b, off, idx, sh, ext, pre, post = memop2(ops[1], None)
+                b, off, idx, sh, ext, pre, post = memop2(ops[1], ops[2] if len(ops) == 3 else None)
+                if post is not None:
+                    bnp_ = regname(b)[0]
+                    sn, base, off2 = field(regs, b, off, "float")
+                    items.append(("store", sn, off2, base, val))
+                    regs[bnp_] = ("bin", "+", regs.get(bnp_), ("const", post, "x"), "x", "add")
+                    k += 1; continue
                 if idx is not None:
                     if sh not in (0, 2):
                         raise Fail("float addressing")
@@ -2728,7 +2828,8 @@ def gen_function(a, ins):
                     sv = ("stackobj", st)
                     sn = struct_for(sv)
                     prev = structs[sn].get(off_ - st)
-                    if prev and prev[0] != ct and val[0] == "const" and w == "x" and SIZE.get(prev[0], 8) < 8:
+                    if prev and prev[0] != ct and val[0] == "const" and w == "x" and SIZE.get(prev[0], 8) < 8 \
+                            and vu_of_(sn, off_ - st) is None:
                         items.extend(const_pieces_(sn, off_ - st, 8, val[1], sv))
                         continue
                     if prev and prev[0] != ct and val[0] != "const" and retype_ok_(sn, off_ - st, prev[0], ct):
@@ -3375,7 +3476,7 @@ def gen_function(a, ins):
     def split_wide_const_stores(its):
         out_ = []
         for it in its:
-            if it[0] == "store" and len(it) == 5 and it[4][0] == "const" and it[4][2] == "x":
+            if it[0] == "store" and len(it) == 5 and it[4][0] == "const" and it[4][2] == "x" and vu_of_(it[1], it[2]) is None:
                 ft_ = structs[it[1]].get(it[2], ("long", None))[0]
                 if SIZE.get(ft_, 8) < 8:
                     out_.extend(const_pieces_(it[1], it[2], 8, it[4][1], it[3]))
@@ -3434,8 +3535,12 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] in ("vlane", "vecu", "vpart", "udiv", "urem", "sdiv", "srem", "udiv64", "urem64", "f2y"):
             kids = [v[1]]
-        if v[0] == "vins":
+        if v[0] in ("vins", "vcomb"):
             kids = [v[1], v[2]]
+        if v[0] == "fbits":
+            kids = [v[1]]
+        if v[0] == "vecuv":
+            kids = [v[1]]
         if v[0] == "vbin":
             kids = [v[2], v[3]]
         if v[0] in ("vneg", "vsplat"):
@@ -3582,7 +3687,7 @@ def gen_function(a, ins):
         return f"{p}*"
     def vtype(v):
         if v[0] == "fbits":
-            raise Fail("float bits")
+            return "unsigned int"
         if v[0] == "hi" or (v[0] == "var" and v[1] in PAIRS_) or v[0] == "undef":
             return "long"
         if v[0] == "fundef":
@@ -3593,10 +3698,12 @@ def gen_function(a, ins):
             return RETN_
         if v[0] in ("fparam", "fconst", "fbin", "funary", "i2f", "fselect", "vlane"):
             return "float"
-        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg", "vparam", "vins", "vundef"):
+        if v[0] in ("vconst", "vbin", "vsplat", "vfma", "vneg", "vparam", "vins", "vundef", "vcomb", "vecuv"):
             return "Vec4f"
         if v[0] == "vecu":
             return "VecU"
+        if v[0] == "vpart" and "novcomb" not in knobs:
+            return "long"
         if v[0] in ("udiv", "urem", "sdiv", "srem"):
             return "int"
         if v[0] in ("udiv64", "urem64"):
@@ -3678,6 +3785,8 @@ def gen_function(a, ins):
                 return "int"
             if t in ("long", "unsigned long", "short", "signed char", "unsigned short"):
                 return t
+            if t == "VecU":
+                return "VecU"
             if t in ("x", "void*", "?"):
                 return "void*" if t != "?" else "int"
             return f"{t}*"
@@ -3827,6 +3936,17 @@ def gen_function(a, ins):
             return s_ if top else f"({s_})"
         if v[0] == "vins":
             return f"vins({expr(v[1])}, {expr(v[2])}, {v[3]})"
+        if v[0] == "fbits":
+            return f"[&] {{ unsigned int b_; float f_ = {expr(v[1])}; __builtin_memcpy(&b_, &f_, 4); return b_; }}()"
+        if v[0] == "vecuv":
+            return f"{expr(v[1])}.v"
+        if v[0] == "vpart" and "novcomb" not in knobs:
+            return f"vecu({expr(v[1])}).l[{v[2]}]"
+        if v[0] == "vcomb":
+            def u64_(x_):
+                tx_ = vtype(x_)
+                return f"reinterpret_cast<unsigned long>({expr(x_)})" if tx_.endswith("*") else f"static_cast<unsigned long>({expr(x_)})"
+            return f"(Vec4f)vcombine_f32(vcreate_f32({u64_(v[1])}), vcreate_f32({u64_(v[2])}))"
         if v[0] == "vundef":
             return "vundef()"
         if v[0] == "vecu":
@@ -5042,7 +5162,15 @@ for size, a in sorted(U, key=lambda x: x[1]):
         HOIST_USED[0] = False
         TRIVIAL_USED[0] = False
         try:
-            text, sigs, gsyms = gen_function(a, ins)
+            try:
+                text, sigs, gsyms = gen_function(a, ins)
+            except Fail as e_:
+                if not ("merge types" in str(e_) and "Vec4f" in str(e_) and "float" in str(e_)
+                        and "vlanemerge" not in KNOB_MAP.get(a, DEFAULT_KNOBS) and "novlanemerge" not in KNOB_MAP.get(a, DEFAULT_KNOBS)):
+                    raise
+                # a vector and a scalar merged in one float register: the vector side is lane 0
+                KNOB_MAP[a] = set(KNOB_MAP.get(a, DEFAULT_KNOBS)) | {"vlanemerge"}
+                text, sigs, gsyms = gen_function(a, ins)
         except Fail:
             if not (ARITY_USED[0] or PAIR_USED[0] or HOIST_USED[0] or TRIVIAL_USED[0]):
                 raise
@@ -5147,7 +5275,7 @@ for mn in sorted(IMPORTS_USED):
         imp_lines.append(f'extern "C" {r_} {mn}({", ".join(ps_)});')
 cdecl_text = "\n".join(imp_lines) + "\n\n" + "\n".join(f"{rts} {nm}_{t:x}({', '.join(atypes)});{' ' * 8}// 0x71{t:08x}" for (t, atypes, nm), rts in sorted(CALLEES.items())
                        if not any(x.endswith("*") and x != "void*" for x in list(atypes) + [rts]))
-open(out, "w", encoding="utf-8", newline="\n").write(head + ("#include <arm_neon.h>\n\n" if any("float32x4_t" in d_ for d_ in defs) else "") + (VEC4_DECL if any("Vec4f" in d_ or "VecU" in d_ or "vins(" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + (PAIR16_DECL if any("Pair16" in d_ for d_ in defs) else "") + (VECU_DECL if any("VecU" in d_ for d_ in defs) else "") + (VINS_DECL if any("vins(" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))
+open(out, "w", encoding="utf-8", newline="\n").write(head + ("#include <arm_neon.h>\n\n" if any("float32x4_t" in d_ or "vcombine_f32" in d_ for d_ in defs) else "") + (VEC4_DECL if any("Vec4f" in d_ or "VecU" in d_ or "vins(" in d_ for d_ in defs) else "") + (FLOAT2_DECL if any("Float2" in d_ for d_ in defs) else "") + (PAIR16_DECL if any("Pair16" in d_ for d_ in defs) else "") + (VECU_DECL if any("VecU" in d_ for d_ in defs) else "") + (VINS_DECL if any("vins(" in d_ for d_ in defs) else "") + cdecl_text + "\n\n" + "\n".join(defs))
 m = MATCHDIR
 if os.environ.get("SYMOUT"):
     json.dump({"unit": unit, "gsyms": sorted(GSYMS),
