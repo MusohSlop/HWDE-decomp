@@ -267,3 +267,90 @@ public:
 };
 
 Grid40a68c::~Grid40a68c() {}
+// A table of entries whose objects are released, each nulled once its count reaches zero.
+struct ObjTable57dc10 {
+    struct Entry {
+        Counted574024* object;
+        void* p8;
+    };
+    unsigned int count;          // +00
+    unsigned char pad4[0xc];
+    Entry entries[1];            // +10
+};
+
+// A table of slots that hold objects, released under the object manager's lock.
+struct RefTable57dc10 {
+    unsigned int count;          // +00
+    unsigned char pad4[0x4];
+    Counted574024** slots[1];    // +08
+};
+
+class Notify57dc10 {
+public:
+    virtual void v00(); virtual void v08(); virtual void v10(); virtual void v18();
+    virtual void notify();       // +20
+};
+
+// 0x710057dc10 (D2): vtable GOT 0x7100c2d6f0; four tables of objects, an object, a notification, and the last table
+// freed on its heap.
+class Channel57dc10 : public ChannelBase {
+public:
+    virtual void anchor();
+    ~Channel57dc10();
+
+    Heap497370* heap;            // +10
+    Counted574024* p18;          // +18
+    unsigned char pad20[0x28];
+    ObjTable57dc10* table48;     // +48
+    ObjTable57dc10* table50;     // +50
+    RefTable57dc10* table58;     // +58
+    unsigned char pad60[0x58];
+    RefTable57dc10* tableb8;     // +b8
+    unsigned char padc0[0x20];
+    Notify57dc10* pe0;           // +e0
+};
+
+static inline void release_objects(ObjTable57dc10* table) {
+    if (table) {
+        for (unsigned int i = 0; i < table->count; i++) {
+            ObjTable57dc10::Entry& entry = table->entries[i];
+            if (Counted574024* object = entry.object) {
+                if (--object->refs == 0) {
+                    object->destroy();
+                    entry.object = nullptr;
+                }
+            }
+        }
+    }
+}
+
+static inline void release_slots(RefTable57dc10* table) {
+    for (unsigned int i = 0; i < table->count; i++) {
+        if (Counted574024* object = *table->slots[i]) {
+            nn::os::LockMutex(manager_mutex());
+            int refs = --object->refs;
+            nn::os::UnlockMutex(manager_mutex());
+            if (refs == 0) {
+                object->destroy();
+                *table->slots[i] = nullptr;
+            }
+        }
+    }
+}
+
+Channel57dc10::~Channel57dc10() {
+    release_objects(table48);
+    if (table58)
+        release_slots(table58);
+    release_objects(table50);
+    if (Counted574024* p = p18) {
+        if (--p->refs == 0)
+            p->destroy();
+    }
+    if (pe0)
+        pe0->notify();
+    if (tableb8) {
+        release_slots(tableb8);
+        heap->free(tableb8);
+    }
+}
