@@ -1,5 +1,5 @@
-// Screen constructors written by hand (third session): large screens built from many out-of-line parts. Names are
-// descriptive placeholders. Status: matching/README.md.
+// Large constructors written by hand (third session): a screen and a set of pools built from many out-of-line parts.
+// Names are descriptive placeholders. Status: matching/README.md.
 
 // The panel base (0x40 bytes), constructed out of line.
 class PanelBase_316a64 {
@@ -142,4 +142,45 @@ Screen31d204::Screen31d204()
         slots[k].reset();
     for (int i = 0; i < 100; i++)
         names[i] = 0;
+}
+
+struct SubInit31364 {
+    SubInit31364();                                                         // 0x7100031364
+    void init();                                                            // 0x7100031378
+    unsigned char data[0x10];
+};
+
+struct PoolItem {
+    SubInit31364 sub;
+    unsigned char pad10[0x8];
+};
+
+// 0x71000d04c4: four pools of items with byte tables (vtable GOT 0x7100c21d78) and three parts, the parts set up and
+// the pools cleared again.
+class PoolSet0d04c4 {
+public:
+    PoolSet0d04c4();
+    virtual ~PoolSet0d04c4();
+
+    void* p8;                         // +08
+    SubInit31364 a;                   // +10
+    SubInit31364 b;                   // +20
+    SubInit31364 c;                   // +30
+    PoolItem items_a[1260];           // +40
+    unsigned char used_a[0x2790];     // +7660
+    PoolItem items_b[60];             // +9df0
+    unsigned char used_b[0x2790];     // +a390
+    PoolItem items_c[210];            // +cb20
+    unsigned char used_c[0x698];      // +ded0
+    PoolItem items_d[10];             // +e568
+    unsigned char used_d[0x698];      // +e658
+};
+
+PoolSet0d04c4::PoolSet0d04c4() : p8(nullptr), used_a(), used_b(), used_c(), used_d() {
+    a.init();
+    b.init();
+    c.init();
+    unsigned char* bytes = reinterpret_cast<unsigned char*>(items_a);
+    for (int i = 0; i < 0xecb0; i++)
+        bytes[i] = 0;
 }

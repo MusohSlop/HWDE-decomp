@@ -20058,7 +20058,10 @@
     "kRangeDigits": "0x71007db146",
     "_Z12attach_digitP9PanelNodeP11EffectGroup": "0x71001f829c",
     "_ZN9PanelNode16create_text_paneEv": "0x71001e4148",
-    "got:_ZTV16OptionSliderBase": "0x7100c2b2c0"
+    "got:_ZTV16OptionSliderBase": "0x7100c2b2c0",
+    "_ZN12SubInit31364C1Ev": "0x7100031364",
+    "_ZN12SubInit313644initEv": "0x7100031378",
+    "got:_ZTV13PoolSet0d04c4": "0x7100c21d78"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -30249,7 +30252,8 @@
     },
     "misc/s3_functions25.cpp": {
       "functions": {
-        "_ZN12Screen31d204C2Ev": "0x710031d204"
+        "_ZN12Screen31d204C2Ev": "0x710031d204",
+        "_ZN13PoolSet0d04c4C2Ev": "0x71000d04c4"
       }
     },
     "misc/s5_functions04.cpp": {
