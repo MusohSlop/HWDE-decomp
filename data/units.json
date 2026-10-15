@@ -18839,7 +18839,43 @@
     "kEffLoopAnim": "0x71007d7fac",
     "kEffOutAnim": "0x71007d7fb5",
     "kFontTitle": "0x71007d7dca",
-    "_ZN11EffectGroup8set_nameEPKc": "0x71005d9abc"
+    "_ZN11EffectGroup8set_nameEPKc": "0x71005d9abc",
+    "_ZN13AnimTransformC2Ev": "0x71005d026c",
+    "_ZN13AnimTransformnwEm": "0x71005d4380",
+    "got:_ZTV18AnimTransformBasic": "0x7100c2a698",
+    "_ZN11EffectGroup8duplicateEPv": "0x71005dec80",
+    "_ZN7ExpPart6attachEP11EffectGroup": "0x710030ff30",
+    "_ZN8ExpGaugeC1Ei": "0x710030ff4c",
+    "_ZN8ExpGauge5resetEv": "0x71003100ac",
+    "_ZN10HeartGaugeC1Ei": "0x710031012c",
+    "_ZN10HeartGauge5resetEv": "0x710031028c",
+    "_ZN11LevelNumberC1Ei": "0x71003102fc",
+    "_ZN11LevelNumber5resetEv": "0x7100310520",
+    "_ZN8HeartRowC1Ei": "0x7100310b88",
+    "_ZN8HeartRow5resetEv": "0x7100310d14",
+    "kShopExpLayout": "0x71007da967",
+    "kNumAttackLayout": "0x71007d7e4f",
+    "kNumAttackUpLayout": "0x71007da9bf",
+    "kWinExpIn": "0x71007da9d3",
+    "kWinExpOut": "0x71007da9de",
+    "kHeartEffLoop": "0x71007da9ea",
+    "kEffectS": "0x71007da9f9",
+    "kEffectM": "0x71007daa02",
+    "kEffectL": "0x71007daa0b",
+    "kNumAttack": "0x7100740d77",
+    "kNumAttackUp": "0x7100740d91",
+    "kFontAttack": "0x71007daa14",
+    "kTextLvDummy": "0x71007d8d2c",
+    "kTextExpDummy": "0x71007d9fb5",
+    "kTextLvmax": "0x71007d9fc4",
+    "kExp": "0x71007d9fcf",
+    "kHeartPos": "0x710074005e",
+    "kNumLevelPos": "0x71007d8d3a",
+    "kHeartPosDlc": "0x71007daa20",
+    "kExpGaugePos": "0x71007da087",
+    "kHeartContainersPos": "0x71007da095",
+    "kHeartEff": "0x71007da9b5",
+    "kHeartBk": "0x71007da9ac"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -28624,6 +28660,15 @@
         "_ZN12SavingScreenC2Ev": "0x71001f1f88",
         "_ZN14GetPieceScreenC2Ev": "0x7100391bd8",
         "_ZN11Class2c6a58C2EP10PieceOwner": "0x71002c63ac"
+      }
+    },
+    "misc/s3_functions11.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_ZN13ShopExpScreenC2Ev": "0x7100363040"
       }
     }
   }
