@@ -4533,7 +4533,11 @@ def gen_function(a, ins):
                         s_ = f"reinterpret_cast<long>({cond(*v[1])} ? {a_} : {b_})"
                         return s_
         if v[0] == "select":
-            s = f"{cond(*v[1])} ? {expr(v[2], False)} : {expr(v[3], False)}"
+            if "notypefit" not in knobs:
+                t_ = vtype(v)
+                s = f"{cond(*v[1])} ? {fit(expr(v[2], False), vtype(v[2]), t_)} : {fit(expr(v[3], False), vtype(v[3]), t_)}"
+            else:
+                s = f"{cond(*v[1])} ? {expr(v[2], False)} : {expr(v[3], False)}"
             return s if top else f"({s})"
         raise Fail("expr")
     FCC = {"eq": "{x} == {y}", "ne": "{x} != {y}", "mi": "{x} < {y}", "gt": "{x} > {y}", "ge": "{x} >= {y}",
@@ -4588,6 +4592,8 @@ def gen_function(a, ins):
                 xs = f"reinterpret_cast<long>({expr(x)})"
             else:
                 ys = f"reinterpret_cast<long>({expr(y)})"
+        elif px_ and py_ and vtype(x) != vtype(y) and "notypefit" not in knobs:
+            xs, ys = f"reinterpret_cast<long>({expr(x)})", f"reinterpret_cast<long>({expr(y)})"
         return f"{xs} {CC[cc]} {ys}"
     def fit(e, have, want):
         ptr = lambda t: t.endswith("*")

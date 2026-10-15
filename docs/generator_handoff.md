@@ -204,6 +204,8 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   `(base + v) >> 1`);
 - a vector operand of scalar float arithmetic, a float compare, a conversion or fabs/neg is its lane 0 (knob
   `noscalarlane`; a variable typed Vec4f only after its s-register uses were built rendered vector arithmetic);
+- select arms are fitted to the select's type and pointers of different types are compared as longs (knob
+  `notypefit`; a pointer arm against an int arm, or two struct pointers compared, did not compile);
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
