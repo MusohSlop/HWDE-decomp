@@ -29218,6 +29218,12 @@
         "_Z11call_40fd58liP11Arg40fd58_2": "0x710040fd58",
         "_Z11call_56b3c8P11Arg56b3c8_0P11Arg56b3c8_1": "0x710056b3c8"
       }
+    },
+    "misc/s4_298094.cpp": {
+      "functions": {
+        "_ZN7AdvUnit8can_moveEjj": "0x7100298094",
+        "_ZN7AdvUnit8can_warpEi": "0x7100298390"
+      }
     }
   }
 }
