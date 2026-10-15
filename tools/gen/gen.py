@@ -981,6 +981,11 @@ def gen_function(a, ins):
                 fparams.add(v[1])
             return v
         raise Fail("lane of scalar")
+    def f2_type_(x_):
+        if x_ is not None and x_[0] == "f2y":
+            if vars_.get(x_[1][1]) not in ("?", "f", "Float2"):
+                raise Fail("float pair of an int")
+            vars_[x_[1][1]] = "Float2"
     def fuse(fregs, r):
         ml_ = re.fullmatch(r"v(\d+)\.s\[(\d)\]", r)
         if ml_:
@@ -997,6 +1002,9 @@ def gen_function(a, ins):
             raise Fail("vector constant lane")
         if v[0] == "fsqrtp":
             raise Fail("fsqrt")
+        if v[0] == "f2y":
+            f2_type_(v)
+            return v
         if v[0] == "var" and vars_.get(v[1]) == "?":
             vars_[v[1]] = "f"
         return v
@@ -1212,6 +1220,28 @@ def gen_function(a, ins):
     PAIRS_ = set()      # calls whose result is a 16-byte struct (its high half in x1 is used)
     calls_by_target_ = {}
     call_k_ = [None]
+    def freg_read_next_(k_, n_):
+        """Float register n_ is read before it is written after instruction k_ (straight-line code, following
+        unconditional jumps, up to the next call or return)."""
+        j_, steps_ = k_ + 1, 0
+        while j_ < len(ins) and steps_ < 200:
+            steps_ += 1
+            i_ = ins[j_]
+            if i_.mnemonic in ("bl", "blr", "br", "ret"):
+                return False
+            if i_.mnemonic == "b":
+                t_ = addr_index.get(imm(i_.op_str))
+                if t_ is None or t_ <= j_:
+                    return False
+                j_ = t_
+                continue
+            r_, w_ = frw(i_)
+            if n_ in r_:
+                return True
+            if n_ in w_:
+                return False
+            j_ += 1
+        return False
     def farg_count_(k_):
         """One more than the highest float register written in the straight-line code before instruction k_ and not
         read after its last write."""
@@ -1641,7 +1671,7 @@ def gen_function(a, ins):
                 def computed_float(x):
                     if x is None or x == ("fparam", 0):
                         return False
-                    if x[0] in ("fbin", "fconst", "i2f", "funary", "fselect", "vlane"):
+                    if x[0] in ("fbin", "fconst", "i2f", "funary", "fselect", "vlane", "f2y"):
                         return True
                     if x[0] == "var":
                         tv = vars_.get(x[1])
@@ -1689,6 +1719,7 @@ def gen_function(a, ins):
                     v = fv
                     if v[0] == "var" and vars_.get(v[1]) == "?":
                         vars_[v[1]] = "f"
+                f2_type_(v)
                 items.append(("return", v if v != ("param", 0) else None))
                 returns.append(items[-1][1])
                 return items
@@ -1712,6 +1743,8 @@ def gen_function(a, ins):
                     regs[1] = ("hi", r[1])
                 regs["f"] = {n2: v2 for n2, v2 in regs["f"].items() if 8 <= n2 <= 15}
                 regs["f"][0] = r
+                if "nof2call" not in knobs and r is not None and r[0] == "var" and freg_read_next_(k, 1):
+                    regs["f"][1] = ("f2y", r)
                 regs["fw"] = set()
                 written = set()
                 flags = None
@@ -1797,8 +1830,13 @@ def gen_function(a, ins):
                         if a_ is None or b_ is None or (kind != "s" and n not in (live_f if kind else live_i)):
                             (merged["f"] if kind == "f" else merged)[n] = None
                             continue
+                        if any(x_[0] == "f2y" and vars_.get(x_[1][1]) not in ("?", "f", "Float2") for x_ in (a_, b_)):
+                            # the .y of an int call result: not a float pair, so not carried over the join
+                            (merged["f"] if kind == "f" else merged)[n] = None
+                            continue
                         name = f"m{counter[0]}"; counter[0] += 1
                         vars_[name] = ("merge", a_, b_)
+                        f2_type_(a_); f2_type_(b_)
                         decls_.append((name, a_))
                         assigns1.append((name, a_)); assigns2.append((name, b_))
                         (merged["f"] if kind == "f" else merged)[n] = ("var", name)
@@ -2521,6 +2559,9 @@ def gen_function(a, ins):
                     regs[0] = ("var", name)
                     if "novcallf" not in knobs and s0_read_next_(k):
                         regs["f"][0] = ("var", name)
+                    if "nof2call" not in knobs and freg_read_next_(k, 1):
+                        regs["f"][0] = ("var", name)
+                        regs["f"][1] = ("f2y", ("var", name))
                     written = set()
                     flags = None
                     k += 1; continue
@@ -2557,6 +2598,9 @@ def gen_function(a, ins):
                     regs[0] = ("var", name)
                     if "novcallf" not in knobs and s0_read_next_(k):
                         regs["f"][0] = ("var", name)
+                    if "nof2call" not in knobs and freg_read_next_(k, 1):
+                        regs["f"][0] = ("var", name)
+                        regs["f"][1] = ("f2y", ("var", name))
                     written = set()
                     flags = None
                     k += 1; continue
@@ -2586,6 +2630,9 @@ def gen_function(a, ins):
                 regs[0] = ("var", name)
                 if "novcallf" not in knobs and s0_read_next_(k):
                     regs["f"][0] = ("var", name)
+                if "nof2call" not in knobs and freg_read_next_(k, 1):
+                    regs["f"][0] = ("var", name)
+                    regs["f"][1] = ("f2y", ("var", name))
                 written = set()
                 flags = None
                 k += 1; continue
@@ -3024,7 +3071,7 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] == "copy":
             kids = [v[1]]
-        if v[0] in ("vlane", "vecu", "vpart", "udiv", "urem", "sdiv", "srem", "udiv64", "urem64"):
+        if v[0] in ("vlane", "vecu", "vpart", "udiv", "urem", "sdiv", "srem", "udiv64", "urem64", "f2y"):
             kids = [v[1]]
         if v[0] == "vins":
             kids = [v[1], v[2]]
@@ -3206,6 +3253,8 @@ def gen_function(a, ins):
                 raise Fail(f"merge types: {ta}|{tb}")
             if t == "f":
                 return "float"
+            if t == "Float2":
+                return "float"
             if t in ("w", "int"):
                 return "int"
             if t in ("long", "unsigned long"):
@@ -3219,6 +3268,8 @@ def gen_function(a, ins):
             return "long"
         if v[0] == "pair":
             return "Float2"
+        if v[0] == "f2y":
+            return "float"
         if v[0] == "maddr":
             return "unsigned char*" if v[3] else "void*"
         if v[0] == "range":
@@ -3431,9 +3482,14 @@ def gen_function(a, ins):
         if v[0] == "var":
             if v[1] in IDX_:
                 return f"&{v[1]}[{IDX_[v[1]]}]" if top else f"(&{v[1]}[{IDX_[v[1]]}])"
+            if vars_.get(v[1]) == "Float2":
+                return f"({inline_map[v[1]]}).x" if v[1] in inline_map else f"{v[1]}.x"
             if v[1] in inline_map:
                 return inline_map[v[1]] if top else f"({inline_map[v[1]]})"
             return v[1]
+        if v[0] == "f2y":
+            n_ = v[1][1]
+            return f"({inline_map[n_]}).y" if n_ in inline_map else f"{n_}.y"
         if v[0] == "const":
             val = v[1]
             if v[2] == "w" and val >= 1 << 31:
