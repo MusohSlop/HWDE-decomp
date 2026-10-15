@@ -10,5 +10,5 @@ tried: 1a5388 (1,648 B, 1 off: the records loop advances its destination pointer
 tried: 347928 (1,724 B, 43 off with registers abstracted: block placement of the lock branch and one more saved register; docs/s4_wip/347928.cpp)
 tried: 1179f0 (1,520 B, 8 words off, 0 with registers abstracted: three FP registers in the hit-rectangle block; docs/s4_wip/1179f0.cpp)
 tried: 31e3d0 (1,992 B, 11 off with registers abstracted: the sprite loop's induction variable and the second screen test; docs/s4_wip/31e3d0.cpp)
-tried: 294378 (12,092 B giant, AdvUnit::decide: 12,608 B, 1,169 off with registers abstracted: the shared ready/blocked tails (two forms of the may-go test) and the order of each chain's first neighbour test; its helpers can_move and can_warp are matched in misc/s4_298094.cpp; docs/s4_wip/294378.cpp with 294378.json)
+tried: 294378 (12,092 B giant, AdvUnit::decide: 12,368 B, 1,080 off with registers abstracted: the shared ready/blocked tails (two forms of the may-go test), the order of each chain's first neighbour test and the layout from case 5 on; its helpers can_move and can_warp are matched in misc/s4_298094.cpp; docs/s4_wip/294378.cpp with 294378.json)
 tried: 1e73c0 (8,468 B giant, TextRenderer::draw: set aside before writing source; its structure is described in docs/s4_wip/1e73c0.cpp)
