@@ -1,6 +1,7 @@
 """batchconv.py RANK.tsv OUT.tsv [--jobs N]: for every generated function in RANK.tsv (default knobs), try variants
 and keep the best, all from the fixalign output: G = generated + genfix (loops, panes, handles); O = generated +
-onceptr; C = class (full conversion) + genfix panes/handles; P = class prefix + body + genfix loops/panes/handles. Writes addr, size, gen ndiff, best variant, best ndiff; matches are copied to
+onceptr; A = argfix + onceptr (when calls lost their argument); C = class (full conversion) + genfix
+panes/handles; P = class prefix + body + genfix loops/panes/handles. Writes addr, size, gen ndiff, best variant, best ndiff; matches are copied to
 conv/match_ADDR.cpp with conv/match_ADDR.json and conv/match_ADDR.name."""
 import os as _os
 M = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))  # the matching/ folder
@@ -54,6 +55,11 @@ def one(row):
     o = os.path.join(d, f"o{a}.cpp")
     if re.search(r"onceptr [1-9]", run(os.path.join(SP, "onceptr.py"), src, o).stdout):
         res.append(("O", o, None) + trycpp(o, a, symj))
+    af = os.path.join(d, f"f{a}.cpp")
+    r = run(os.path.join(SP, "argfix.py"), src, af, a)
+    if r.returncode == 0 and "calls" in r.stdout:
+        run(os.path.join(SP, "onceptr.py"), af, af)
+        res.append(("A", af, None) + trycpp(af, a, symj))
     for mode in ("C", "P"):
         c = os.path.join(d, f"{mode.lower()}{a}.cpp")
         r = run(os.path.join(SP, "ctor2class.py"), src, a, c, *(["--prefix"] if mode == "P" else []))

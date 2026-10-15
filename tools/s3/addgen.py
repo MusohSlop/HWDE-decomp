@@ -66,7 +66,9 @@ oldblocks = {m.group(1): m.group(0) for m in BLK.finditer(old)}
 def dedupe(m):
     n = m.group(1)
     if n in oldblocks:
-        strip = lambda s: "\n".join(l for l in s.split("\n") if not l.startswith("//"))
+        # compare without comment lines, trailing comments and spacing
+        strip = lambda s: "\n".join(re.sub(r"\s+", " ", re.sub(r"\s*//.*$", "", l)).strip()
+                                    for l in s.split("\n") if not l.startswith("//"))
         if strip(oldblocks[n]) == strip(m.group(0)):
             return ""
         sys.exit("type %s already defined differently in the unit" % n)

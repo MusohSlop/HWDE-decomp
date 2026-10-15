@@ -26,8 +26,12 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
 - `blocks.py`, `ours.py` and `regiondiff.py` are for long functions: `blocks.py` lists the differing runs with their lengths,
   `ours.py` writes our relocated disassembly in the original's address layout, and `regiondiff.py OURS.s ORIG.s START [END] [--abs]`
   prints a side-by-side diff of one region (`--abs` hides register numbers).
-- `ordtry.py CPP ADDR SYMJSON [--limit N] [--work DIR]` (or `--list FILE`) tries orders of a straight-line
-  generated function's statements without a spec: calls keep their order, the statements between two calls are
+- `floattry.py CPP ADDR SYMJSON [--max K] [--work DIR]` (or `--list FILE`) retypes `int` fields the function
+  stores zero to as `float`, up to K at a time: Clang merges adjacent int stores into one wider store but not
+  stores of different types, so a field that is a float in the original keeps its own `str wzr` (`3322ac`); a
+  match goes to `DIR/float_match.cpp`.
+- `ordtry.py CPP ADDR SYMJSON [--limit N] [--work DIR]` (or `--list FILE`) tries orders of a generated function's
+  straight-line statements (the whole body, or those before its first branch or loop) without a spec: calls keep their order, the statements between two calls are
   permuted (a use after the statement that sets the local), up to N orders; a match goes to `DIR/ord_match.cpp`.
   Run it on the `fixalign.py` output for functions with misaligned 8-byte stores (`c5df8`, `1f18e8`).
 - `topotry.py SPEC.json [--work DIR]` tries every order of a set of statements (with dependencies and chains that
@@ -36,7 +40,7 @@ Run them with the project's Python, `python -B -I tools/s3/SCRIPT ...`, from `ma
 
 ## Unattended searches
 
-`bgsearch.py` runs one of the searches above (permtry, topotry, voltry, ordtry) detached through `tools/lowprio.py` (idle
+`bgsearch.py` runs one of the searches above (permtry, topotry, voltry, ordtry, floattry) detached through `tools/lowprio.py` (idle
 priority, one job, as `docs/second_session.md` asks of unattended searches), so it only uses spare CPU, with its
 own work folder under `build/s3_perm/NAME/` (ignored by git; nothing tracked is touched). At most two run at a
 time.
@@ -90,16 +94,21 @@ well.
   constructor, vtable GOT `0x7100c22f68`, three null fields) as `new PanelPane` from `event/layout_panes.h`, and
   layout-handle store groups as placement `new LayoutHandle` (through `handlify.py`).
 - `onceptr.py IN.cpp OUT.cpp` computes a stored field's address once when the same `p0 + X` is passed on soon
-  after (`long* hX = ...; *hX = V; ... f(hX)`): one IR value, so Clang folds the store into a pre-indexed
+  after (`auto* hX = &p0->field_X; *hX = V; ... f(hX)`): one IR value, so Clang folds the store into a pre-indexed
   `str xA, [xB, #X]!` and passes `xB` on, as the original does where an inlined handle destructor stores its vtable
   and then releases itself (`37af54`, `34d974`, `2a6fd0` and seven more). Same contract as genfix.py; prints
   `onceptr N` (the number of rewrites).
+- `argfix.py IN.cpp OUT.cpp ADDR [CALLEE...]` gives back the `this`+offset argument the generator dropped from calls
+  it wrote as `callee_X();` (destructors' member calls, often through a thunk the generator thinks takes no
+  arguments): the original's call sites are read in order, following `mov`/`movk`/`add` into `x0` from `this`.
+  Without CALLEE it fixes every callee declared without parameters (`356154`, with onceptr).
 - `fixalign.py IN.cpp OUT.cpp` marks generated struct fields that sit at an offset their type would not get (a `long`
   at `+...4`, which C++ pads to the next multiple of 8) as `__attribute__((packed))`, so they stay where the
   generator meant.
-- `batchconv.py RANK.tsv OUT.tsv [--jobs N] [--knob K]` runs the generated version through genfix, onceptr,
-  ctor2class and ctor2class `--prefix` (the class forms followed by genfix) for every generated function in a
-  rank.py table, and copies matches to `build/s3/conv/match_ADDR.cpp` with their symbol file.
+- `batchconv.py RANK.tsv OUT.tsv [--jobs N] [--knob K]` runs the generated version (after fixalign) through
+  genfix, onceptr, argfix + onceptr, ctor2class and ctor2class `--prefix` (the class forms followed by genfix) for
+  every generated function in a rank.py table, and copies matches to `build/s3/conv/match_ADDR.cpp` with their
+  symbol file.
 
 ### Command-line contract of the converters
 
