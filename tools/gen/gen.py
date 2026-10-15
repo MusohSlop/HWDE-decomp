@@ -1315,7 +1315,7 @@ def gen_function(a, ins):
         if not m_:
             raise Fail("freg " + r)
         return int(m_.group(1))
-    def is_vecval_(v):
+    def is_vecval_(v, seen_=None):
         """A 128-bit float vector value (Vec4f)."""
         if v is None:
             return False
@@ -1323,6 +1323,13 @@ def gen_function(a, ins):
             return True
         if v[0] == "var":
             tv_ = vars_.get(v[1])
+            if isinstance(tv_, tuple) and tv_[0] == "merge" and "novecmerge" not in knobs:
+                # a merge of vectors (a loop variable's own update counts as one)
+                seen_ = seen_ or set()
+                if v[1] in seen_:
+                    return True
+                seen_.add(v[1])
+                return is_vecval_(tv_[1], seen_) and is_vecval_(tv_[2], seen_)
             return tv_ == "Vec4f" or (isinstance(tv_, tuple) and tv_[0] == "load" and (
                 (len(tv_) == 3 and structs[tv_[1]].get(tv_[2], ("",))[0] in ("Vec4f", "ARRAY:Vec4f"))
                 or (len(tv_) > 3 and tv_[3] == "Vec4f")))

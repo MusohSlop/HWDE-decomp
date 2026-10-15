@@ -191,6 +191,8 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   returned or passed in x registers, the high half of an 8-byte value) is the float its low 32 bits hold, through
   `__builtin_memcpy` in a lambda; a 64-bit load whose high half goes to a float register stays one load (an int and
   a float of a struct copied as one 8-byte value);
+- a merge of vectors is a vector (knob `novecmerge`): a lane of a vector merged at a join (matrix rows from one of two
+  sources) no longer fails with "lane of scalar";
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as
