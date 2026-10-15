@@ -1081,6 +1081,10 @@ def gen_function(a, ins):
             base = base[2]
         if base is not None and base[0] == "page":
             base = ("local", base[1])
+        if base is not None and base[0] == "stackaddr" and "nobasefix" not in knobs:
+            st_ = stack_obj(base[1])
+            off += base[1] - st_
+            base = ("stackobj", st_)
         if base is not None and base[0] == "select":
             arm_a, arm_b = base[2], base[3]
             for x_, y_, swap in ((arm_a, arm_b, False), (arm_b, arm_a, True)):
@@ -1102,6 +1106,10 @@ def gen_function(a, ins):
                             st1 = stride_of(ix1)
                             if st1 and st1[1] > st[1] and B_[0] in ("param", "var", "local", "gotaddr"):
                                 return ("sub", ("elem", B_, st1[0], st1[1]), c_ + off, st[0], st[1]), 0
+                if (st and st[1] > 0 and "nobasefix" not in knobs and b_[0] == "bin" and b_[1] == "+" and b_[4] == "x"
+                        and cval_(b_[3]) is not None and b_[2][0] in ("param", "var", "local", "gotaddr")):
+                    base = ("elem", b_, st[0], st[1])
+                    break
                 if st and st[1] > 0 and b_[0] in ("param", "var", "local", "gotaddr"):
                     if st[1] <= off:
                         shift_ = (off // st[1]) * st[1]
@@ -1118,6 +1126,8 @@ def gen_function(a, ins):
                         return pwidth.get(v_[1]) not in ("w",)
                     if v_[0] == "var":
                         tv_ = vars_.get(v_[1])
+                        if "nobasefix" not in knobs and tv_ in ("?", "x") and v_[1].startswith("c"):
+                            return True
                         return isinstance(tv_, tuple) and tv_[0] == "load" and (len(tv_) > 3 and tv_[3] == "void*" or structs[tv_[1]][tv_[2]][0] == "void*")
                     return False
                 if base[0] == "bin" and pointerish(lhs) and not pointerish(rhs):
