@@ -187,6 +187,10 @@ Symbolic execution over one function at a time, written out as ordinary C++ with
   in a loop left s0 merged with the incoming s0, and the unused merge failed with "merge types: int|float";
 - a 64-bit load split into two neighbouring fields is found along the control flow (knob `nopairflow`): the scan
   for the high half follows branches and jumps instead of stopping at the first return in the layout;
+- float bits from an integer register (knob `noibits`): `fmov sN, wM` of any integer value (a union of floats
+  returned or passed in x registers, the high half of an 8-byte value) is the float its low 32 bits hold, through
+  `__builtin_memcpy` in a lambda; a 64-bit load whose high half goes to a float register stays one load (an int and
+  a float of a struct copied as one 8-byte value);
 - a memset the original calls with `bl` right before the epilogue (knob `novalinit`): an explicit `memset()` is
   marked tail and would compile to `b memset`, so the call came from MemCpyOpt (a struct assigned from a
   value-initialised temporary) or LoopIdiom (a fill loop); with constant value and size it is written as

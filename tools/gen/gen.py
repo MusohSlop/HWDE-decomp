@@ -621,6 +621,7 @@ def gen_function(a, ins):
         wp_ = re.compile(r"\bw%s\b" % rn_)
         hi_ = False
         ok_ = True
+        hif_ = False
         if "nopairflow" not in knobs:
             todo_, seen_p_ = [k_ + 1], set()
             while todo_ and ok_:
@@ -631,12 +632,18 @@ def gen_function(a, ins):
                     ops_j_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", ij_.op_str)]
                     if ij_.mnemonic in ("lsr", "asr") and len(ops_j_) == 3 and xp_.fullmatch(ops_j_[1]) and ops_j_[2] in ("#0x20", "#32"):
                         hi_ = True
+                        if "noibits" not in knobs and j_ + 1 < len(ins) and ins[j_ + 1].mnemonic == "fmov" \
+                                and ins[j_ + 1].op_str.endswith(", w" + ops_j_[0][1:]):
+                            hif_ = True
                         if xp_.fullmatch(ops_j_[0]):
                             break
                         j_ += 1; continue
                     if ij_.mnemonic == "ubfx" and len(ops_j_) == 4 and xp_.fullmatch(ops_j_[1]) and ops_j_[2] in ("#0x20", "#32") \
                             and ops_j_[3] in ("#0x20", "#32"):
                         hi_ = True
+                        if "noibits" not in knobs and j_ + 1 < len(ins) and ins[j_ + 1].mnemonic == "fmov" \
+                                and ins[j_ + 1].op_str.endswith(", w" + ops_j_[0][1:]):
+                            hif_ = True
                         if xp_.fullmatch(ops_j_[0]):
                             break
                         j_ += 1; continue
@@ -659,7 +666,7 @@ def gen_function(a, ins):
                         if tg_ in addr_index:
                             todo_.append(addr_index[tg_])
                     j_ += 1
-            if ok_ and hi_:
+            if ok_ and hi_ and not hif_:
                 pair_loads_.add(k_)
             continue
         for j_ in range(k_ + 1, min(len(ins), k_ + 40)):
@@ -2724,6 +2731,9 @@ def gen_function(a, ins):
                         structs[vt_[1]][vt_[2]] = ("float", None)
                         vars_[iv_[1]] = ("load", vt_[1], vt_[2])
                         regs["f"][fd] = iv_
+                    elif "noibits" not in knobs and iv_[0] not in ("hi", "vpart", "undef", "fparam"):
+                        # the float whose bits an integer value holds (a union passed or returned as integers)
+                        regs["f"][fd] = ("ibits", iv_)
                     else:
                         raise Fail("fmov form")
                 else:
@@ -3913,7 +3923,7 @@ def gen_function(a, ins):
             kids = [v[1]]
         if v[0] in ("vins", "vcomb"):
             kids = [v[1], v[2]]
-        if v[0] == "fbits":
+        if v[0] in ("fbits", "ibits"):
             kids = [v[1]]
         if v[0] == "vecuv":
             kids = [v[1]]
@@ -4088,6 +4098,8 @@ def gen_function(a, ins):
     def vtype(v):
         if v[0] == "fbits":
             return "unsigned int"
+        if v[0] == "ibits":
+            return "float"
         if v[0] == "hi" or (v[0] == "var" and v[1] in PAIRS_) or v[0] == "undef":
             return "long"
         if v[0] == "fundef":
@@ -4340,6 +4352,8 @@ def gen_function(a, ins):
             return f"vins({expr(v[1])}, {expr(v[2])}, {v[3]})"
         if v[0] == "fbits":
             return f"[&] {{ unsigned int b_; float f_ = {expr(v[1])}; __builtin_memcpy(&b_, &f_, 4); return b_; }}()"
+        if v[0] == "ibits":
+            return f"[&] {{ unsigned int b_ = static_cast<unsigned int>({fit(expr(v[1]), vtype(v[1]), 'long')}); float f_; __builtin_memcpy(&f_, &b_, 4); return f_; }}()"
         if v[0] == "vecuv":
             return f"{expr(v[1])}.v"
         if v[0] == "vpart" and "novcomb" not in knobs:
