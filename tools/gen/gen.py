@@ -1385,6 +1385,11 @@ def gen_function(a, ins):
                 live |= {0} - written_
                 flive |= {0} - fwritten
                 break
+            if "oldtaillive" not in knobs and (ii.mnemonic == "br" or (ii.mnemonic == "b" and imm(ii.op_str) not in addr_index)):
+                # a tail call passes the argument registers on
+                live |= set(range(8)) - written_
+                flive |= set(range(8)) - fwritten
+                break
             kk += 1
         return live, flive
     def returns_straight(kk):
