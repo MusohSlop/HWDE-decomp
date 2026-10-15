@@ -621,6 +621,47 @@ def gen_function(a, ins):
         wp_ = re.compile(r"\bw%s\b" % rn_)
         hi_ = False
         ok_ = True
+        if "nopairflow" not in knobs:
+            todo_, seen_p_ = [k_ + 1], set()
+            while todo_ and ok_:
+                j_ = todo_.pop()
+                while j_ < len(ins) and j_ not in seen_p_ and len(seen_p_) < 200:
+                    seen_p_.add(j_)
+                    ij_ = ins[j_]
+                    ops_j_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", ij_.op_str)]
+                    if ij_.mnemonic in ("lsr", "asr") and len(ops_j_) == 3 and xp_.fullmatch(ops_j_[1]) and ops_j_[2] in ("#0x20", "#32"):
+                        hi_ = True
+                        if xp_.fullmatch(ops_j_[0]):
+                            break
+                        j_ += 1; continue
+                    if ij_.mnemonic == "ubfx" and len(ops_j_) == 4 and xp_.fullmatch(ops_j_[1]) and ops_j_[2] in ("#0x20", "#32") \
+                            and ops_j_[3] in ("#0x20", "#32"):
+                        hi_ = True
+                        if xp_.fullmatch(ops_j_[0]):
+                            break
+                        j_ += 1; continue
+                    reads_ = ops_j_[1:] if ops_j_ and not ij_.mnemonic.startswith(("st", "cb", "tb", "cmp", "cmn", "tst")) else ops_j_
+                    if any(xp_.search(o_) for o_ in reads_):
+                        ok_ = False
+                        break
+                    if ops_j_ and (xp_.fullmatch(ops_j_[0]) or wp_.fullmatch(ops_j_[0])) \
+                            and not ij_.mnemonic.startswith(("st", "cb", "tb", "cmp", "cmn", "tst")):
+                        break  # redefined
+                    if ij_.mnemonic in ("ret", "br", "bl", "blr"):
+                        break
+                    isb_ = ij_.mnemonic == "b" or ij_.mnemonic.startswith("b.") or ij_.mnemonic in ("cbz", "cbnz", "tbz", "tbnz")
+                    tg_ = imm(ij_.op_str.split(", ")[-1]) if isb_ and ij_.op_str.split(", ")[-1].startswith("#") else None
+                    if ij_.mnemonic == "b":
+                        if tg_ not in addr_index:
+                            break
+                        j_ = addr_index[tg_]; continue
+                    if ij_.mnemonic.startswith("b.") or ij_.mnemonic in ("cbz", "cbnz", "tbz", "tbnz"):
+                        if tg_ in addr_index:
+                            todo_.append(addr_index[tg_])
+                    j_ += 1
+            if ok_ and hi_:
+                pair_loads_.add(k_)
+            continue
         for j_ in range(k_ + 1, min(len(ins), k_ + 40)):
             ij_ = ins[j_]
             ops_j_ = [o_.strip() for o_ in re.split(r",(?![^\[]*\])", ij_.op_str)]
