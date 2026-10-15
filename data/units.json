@@ -19270,7 +19270,20 @@
     "_Z13callee_14ff98llhPvi": "0x710014ff98",
     "_Z13callee_153bbclPvS_ii": "0x7100153bbc",
     "_Z13callee_15e1bcPvS_S_S_ii": "0x710015e1bc",
-    "_Z13callee_17792cli": "0x710017792c"
+    "_Z13callee_17792cli": "0x710017792c",
+    "got:_ZTV9Obj56e698": "0x7100c2d540",
+    "got:_ZTV10Base56e698": "0x7100c2d458",
+    "got:gHeap56e698": "0x7100c2d3e8",
+    "got:_ZTV12Screen3c5cc0": "0x7100c2b480",
+    "_ZN12Screen3c5cc05closeEv": "0x71003c5d8c",
+    "got:_ZTV13Channel5244a0": "0x7100c2d168",
+    "got:gFreeHook_c2c010": "0x7100c2c010",
+    "got:_ZTV10Page39ef38": "0x7100c2b2c8",
+    "got:_ZTV10Page3a164c": "0x7100c2b2c0",
+    "got:_ZTV12Screen3ab2bc": "0x7100c2b318",
+    "got:_ZTV16ScreenBase3ab2bc": "0x7100c2b2d0",
+    "_ZN12Player37cd6cD1Ev": "0x710037f568",
+    "_ZN12Player37cd6c4stopEv": "0x710037cd6c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -29288,6 +29301,25 @@
       "map": {
         ".rodata.cst4": "0x710073b000",
         ".rodata.cst16": "0x710073dff0"
+      }
+    },
+    "misc/s3_functions17.cpp": {
+      "map": {
+        ".rodata.cst4": "0x710073b000",
+        ".rodata.cst16": "0x710073dff0"
+      },
+      "functions": {
+        "_Z10call_a3fc0P10Arga3fc0_0": "0x71000a3fc0"
+      }
+    },
+    "misc/s3_functions19.cpp": {
+      "functions": {
+        "_ZN9Obj56e698D2Ev": "0x710056e698",
+        "_ZN12Screen3c5cc0D2Ev": "0x71003c5cc0",
+        "_ZN13Channel5244a0D2Ev": "0x71005244a0",
+        "_ZN10Page39ef38D2Ev": "0x710039ef38",
+        "_ZN10Page3a164cD2Ev": "0x71003a164c",
+        "_ZN12Screen3ab2bcD2Ev": "0x71003ab2bc"
       }
     }
   }
