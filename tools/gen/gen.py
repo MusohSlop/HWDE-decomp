@@ -1196,7 +1196,8 @@ def gen_function(a, ins):
                             vars_[rhs[1]] = ("load", tv_[1], tv_[2], "long")
                         base = ("bytes", lhs, rhs)
         return base, off
-    def field(regs, base_reg, off, ct, base=None, cstore=False):
+    bytecast_fields_ = set()   # byte arrays made only by byte-offset accesses of wider values
+    def field(regs, base_reg, off, ct, base=None, cstore=False, bytecast=False):
         if base is None and base_reg is not None:
             bn, _ = regname(base_reg)
             base = regs.get(bn)
@@ -1252,6 +1253,18 @@ def gen_function(a, ins):
         if prev and prev[0] != ct and not cstore and retype_ok_(sn, off, prev[0], ct):
             structs[sn][off] = (ct, None)
             prev = structs[sn][off]
+        if "nobytearr" not in knobs:
+            # a byte-offset access into a typed field: the field keeps (or takes) the other type
+            if bytecast and prev and prev[0] != ct:
+                note_access_(sn, off, cstore)
+                return sn, base, off
+            if bytecast and not prev:
+                bytecast_fields_.add((sn, off))
+            elif prev and prev[0] == "ARRAY:unsigned char" and (sn, off) in bytecast_fields_:
+                bytecast_fields_.discard((sn, off))
+                if ct != "ARRAY:unsigned char":
+                    structs[sn][off] = (ct, None)
+                    prev = structs[sn][off]
         if prev and prev[0] != ct:
             groups = [{"long", "void*"}, {"unsigned char", "signed char"}, {"unsigned short", "short"}]
             pun_ = prev[0] in ("int", "unsigned int", "float") and ct in ("int", "unsigned int", "float") and "float" in (prev[0], ct) and "nopun" not in knobs
@@ -1896,7 +1909,8 @@ def gen_function(a, ins):
                 if dregion is not None:
                     then_rng, else_rng, join = dregion
                     if m.startswith("b."):
-                        if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))):
+                        if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))
+                                             and not (flags[0] == "ccmp" and flags[3][0] == "fcmp" and m[2:] in ("mi", "pl") and "nofccmp" not in knobs)):
                             raise Fail("flags")
                         cnd = (flags, m[2:])
                     elif m in ("cbz", "cbnz"):
@@ -1974,7 +1988,8 @@ def gen_function(a, ins):
             if m.startswith("b.") or m in ("cbz", "cbnz", "tbz", "tbnz"):
                 t = addr_index[imm(ops[-1])]
                 if m.startswith("b."):
-                    if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))):
+                    if flags is None or (m[2:] not in CC and not (flags[0] == "fcmp" and m[2:] in ("mi", "pl"))
+                                         and not (flags[0] == "ccmp" and flags[3][0] == "fcmp" and m[2:] in ("mi", "pl") and "nofccmp" not in knobs)):
                         raise Fail("flags")
                     cnd = (flags, m[2:])
                 elif m in ("cbz", "cbnz"):
@@ -2079,7 +2094,7 @@ def gen_function(a, ins):
                     if sh not in (0, {"int": 2, "unsigned int": 2, "short": 1, "unsigned short": 1, "unsigned char": 0}[ty_]):
                         raise Fail("int vector addressing")
                     basev_ = regs.get(regname(b)[0])
-                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:" + ty_, base=basev_)
+                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:" + ty_, base=basev_, bytecast=sh == 0 and ty_ != "unsigned char")
                     iv = index_value(regs, idx, ext)
                     name = f"v{counter[0]}"; counter[0] += 1
                     vars_[name] = ("load", sn, off2, ty_)
@@ -2168,6 +2183,22 @@ def gen_function(a, ins):
                     regs["f"][fd] = ("fconst", 0.0)
                 elif re.fullmatch(r"s\d+", ops[1]):
                     regs["f"][fd] = fuse(regs["f"], ops[1])
+                elif re.fullmatch(r"w\d+", ops[1]) and "nofbits" not in knobs:
+                    iv_ = use(regs, ops[1])
+                    if iv_[0] == "fbits":
+                        regs["f"][fd] = iv_[1]
+                    elif iv_[0] == "const":
+                        import struct as _st
+                        regs["f"][fd] = ("fconst", _st.unpack("<f", _st.pack("<I", iv_[1] & 0xffffffff))[0])
+                    elif iv_[0] == "var" and isinstance(vars_.get(iv_[1]), tuple) and vars_[iv_[1]][0] == "load" \
+                            and structs[vars_[iv_[1]][1]].get(vars_[iv_[1]][2], ("",))[0] in ("int", "unsigned int"):
+                        # an int load that is really a float field
+                        vt_ = vars_[iv_[1]]
+                        structs[vt_[1]][vt_[2]] = ("float", None)
+                        vars_[iv_[1]] = ("load", vt_[1], vt_[2])
+                        regs["f"][fd] = iv_
+                    else:
+                        raise Fail("fmov form")
                 else:
                     raise Fail("fmov form")
                 regs.setdefault("fw", set()).add(fd) if fd < 8 else None
@@ -2242,6 +2273,13 @@ def gen_function(a, ins):
                 items.append(("return", r_))
                 returns.append(r_)
                 return items
+            if m in ("fccmp", "fccmpe") and len(ops) == 4 and "nofccmp" not in knobs:
+                if flags is None:
+                    raise Fail("fccmp without flags")
+                x = fuse(regs["f"], ops[0])
+                y = fuse(regs["f"], ops[1])
+                flags = ("ccmp", flags, ops[3], ("fcmp", x, y, "s"), imm(ops[2]))
+                k += 1; continue
             if m == "fcmp" and len(ops) == 2:
                 x = fuse(regs["f"], ops[0])
                 y = ("fconst", 0.0) if ops[1].startswith("#") else fuse(regs["f"], ops[1])
@@ -2270,7 +2308,7 @@ def gen_function(a, ins):
                     if sh not in (0, 2):
                         raise Fail("float addressing")
                     basev_ = regs.get(regname(b)[0])
-                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:float", base=basev_)
+                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:float", base=basev_, bytecast=sh == 0)
                     iv = index_value(regs, idx, ext)
                     name = f"v{counter[0]}"; counter[0] += 1
                     vars_[name] = ("load", sn, off2, "float")
@@ -2301,7 +2339,7 @@ def gen_function(a, ins):
                     # a Vec4f array element, or a Vec4f through a byte offset
                     qn_ = int(qregs_[0][1:])
                     basev_ = regs.get(regname(b)[0])
-                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:Vec4f", base=basev_)
+                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:Vec4f", base=basev_, bytecast=sh == 0)
                     iv = index_value(regs, idx, ext)
                     if m == "ldr":
                         name = f"v{counter[0]}"; counter[0] += 1
@@ -2376,7 +2414,7 @@ def gen_function(a, ins):
                     if sh not in (0, 2):
                         raise Fail("float addressing")
                     basev_ = regs.get(regname(b)[0])
-                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:float", base=basev_)
+                    sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char" if sh == 0 else "ARRAY:float", base=basev_, bytecast=sh == 0)
                     iv = index_value(regs, idx, ext)
                     items.append(("storei", sn, off2, base, iv, val, "float") if sh == 0 else ("storei", sn, off2, base, iv, val))
                     k += 1; continue
@@ -2709,7 +2747,7 @@ def gen_function(a, ins):
                             raise Fail("indexed pair")
                         esz = SIZE[ct]
                         if sh == 0 and esz > 1:
-                            sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char", base=basev)
+                            sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char", base=basev, bytecast=True)
                             iv = index_value(regs, idx, ext)
                             name = f"v{counter[0]}"; counter[0] += 1
                             vars_[name] = ("load", sn, off2, ct)
@@ -2879,13 +2917,15 @@ def gen_function(a, ins):
                     ct = STORE[mm] or ("long" if w == "x" else "int")
                     if mm == "str" and w == "x" and (val[0] in ("param", "var", "gotaddr", "local", "stackaddr") or (val[0] == "const" and val[1] == 0)):
                         ct = "void*"
+                    if val[0] == "fbits" and w == "w" and mm == "str":
+                        ct = "float"; val = val[1]
                     step = (8 if w == "x" else 4) * j
                     if idx is not None:
                         if pair:
                             raise Fail("indexed pair")
                         esz = SIZE[ct]
                         if sh == 0 and esz > 1:
-                            sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char", base=basev)
+                            sn, base, off2 = field(regs, None, off, "ARRAY:unsigned char", base=basev, bytecast=True)
                             items.append(("storei", sn, off2, base, index_value(regs, idx, ext), val, ct))
                             continue
                         if (1 << sh) != esz and not (sh == 0 and esz == 1):
@@ -3032,6 +3072,17 @@ def gen_function(a, ins):
                 elif m == "csinv":
                     y = ("bin", "^", y, ("const", -1, w), w, "eor")
                 regs[dn] = ("select", (flags, ops[3]), x, y, w)
+                if dn < 8: written.add(dn)
+            elif m == "fmov" and len(ops) == 2 and re.fullmatch(r"w\d+", ops[0]) and re.fullmatch(r"s\d+", ops[1]) \
+                    and "nofbits" not in knobs:
+                dn, w = regname(ops[0])
+                regs[dn] = ("fbits", fuse(regs["f"], ops[1]))
+                if dn < 8: written.add(dn)
+            elif m in ("eor", "and") and len(ops) == 3 and ops[2].startswith("#") and re.fullmatch(r"w\d+", ops[0]) \
+                    and (regs.get(regname(ops[1])[0]) or ("",))[0] == "fbits" \
+                    and (m, imm(ops[2]) & 0xffffffff) in (("eor", 0x80000000), ("and", 0x7fffffff)):
+                dn, w = regname(ops[0])
+                regs[dn] = ("fbits", ("funary", "fneg" if m == "eor" else "fabs", regs[regname(ops[1])[0]][1]))
                 if dn < 8: written.add(dn)
             elif m in BIN and len(ops) in (3, 4):
                 dn, w = regname(ops[0])
@@ -3428,6 +3479,8 @@ def gen_function(a, ins):
             return "long" if n in arith else "void*"
         return f"{p}*"
     def vtype(v):
+        if v[0] == "fbits":
+            raise Fail("float bits")
         if v[0] == "hi" or (v[0] == "var" and v[1] in PAIRS_) or v[0] == "undef":
             return "long"
         if v[0] == "retobj":
@@ -3722,7 +3775,14 @@ def gen_function(a, ins):
         if v[0] == "pair":
             return f"Float2{{{expr(v[1])}, {expr(v[2])}}}"
         if v[0] == "maddr":
-            return f"{expr(v[1])}->field_{v[2]:x}" if v[3] else f"&{expr(v[1])}->field_{v[2]:x}"
+            arr_ = v[3]
+            if "nobytearr" not in knobs:
+                try:
+                    st_ = vtype(v[1])[:-1]
+                    arr_ = structs.get(st_, {}).get(v[2], ("ARRAY:",))[0].startswith("ARRAY:")
+                except Fail:
+                    pass
+            return f"{expr(v[1])}->field_{v[2]:x}" if arr_ else f"&{expr(v[1])}->field_{v[2]:x}"
         if v[0] == "range":
             return f"static_cast<{v[3]}>({expr(v[1])} - {v[2]:#x})"
         if v[0] == "ext":
@@ -3815,7 +3875,7 @@ def gen_function(a, ins):
     def cond(f, cc):
         if f is not None and f[0] == "ccmp":
             _, prev, pcc, second, nzcv = f
-            if cc not in CC:
+            if cc not in CC and not (second[0] == "fcmp" and FCC.get(cc) and "nofccmp" not in knobs):
                 raise Fail("ccmp cc")
             first_s = cond(prev, pcc)
             second_s = cond(second, cc)
@@ -4256,11 +4316,13 @@ def gen_function(a, ins):
                 continue
             if it[0] == "leti" and len(it) > 6:
                 _, name, sn, off, base, iv, wt = it
-                outl.append(declare_line(pad, wt, name, f"*reinterpret_cast<{wt}*>(&{acc(base, off)}[{expr(iv)}])") if "declare_line" in dir() else f"{pad}{wt} {name} = *reinterpret_cast<{wt}*>(&{acc(base, off)}[{expr(iv)}]);")
+                bp_ = acc(base, off) if structs[sn].get(off, ("",))[0] == "ARRAY:unsigned char" else f"reinterpret_cast<unsigned char*>(&{acc(base, off)})"
+                outl.append(declare_line(pad, wt, name, f"*reinterpret_cast<{wt}*>(&{bp_}[{expr(iv)}])") if "declare_line" in dir() else f"{pad}{wt} {name} = *reinterpret_cast<{wt}*>(&{bp_}[{expr(iv)}]);")
                 continue
             if it[0] == "storei" and len(it) > 6:
                 _, sn, off, base, iv, val, wt = it
-                outl.append(f"{pad}*reinterpret_cast<{wt}*>(&{acc(base, off)}[{expr(iv)}]) = {fit(expr(val), vtype(val), wt)};")
+                bp_ = acc(base, off) if structs[sn].get(off, ("",))[0] == "ARRAY:unsigned char" else f"reinterpret_cast<unsigned char*>(&{acc(base, off)})"
+                outl.append(f"{pad}*reinterpret_cast<{wt}*>(&{bp_}[{expr(iv)}]) = {fit(expr(val), vtype(val), wt)};")
                 continue
             if it[0] == "leti":
                 _, name, sn, off, base, iv = it[:6]
