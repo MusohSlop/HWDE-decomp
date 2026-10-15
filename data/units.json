@@ -21230,7 +21230,99 @@
     "got:gGlobalc2cdb0_4c8b04": "0x7100c2cdb0",
     "_Z12callee_71730l": "0x7100071730",
     "_Z13callee_4a3d34Pv": "0x71004a3d34",
-    "_Z13callee_4b24b4li": "0x71004b24b4"
+    "_Z13callee_4b24b4li": "0x71004b24b4",
+    "_ZN8Renderer5setupI10Kind3da0f4EEvP4ItemP9DrawState": "0x71003da6f8",
+    "_ZN7MatPart6hook_bEP6ShaderP5PartA": "0x71003d8788",
+    "_ZN9Kind3b64c6hook_aEP6ShaderP5PartA": "0x71000363ec",
+    "_ZN9Kind3b64c6hook_bEP6ShaderP5PartA": "0x710003659c",
+    "_ZN10Kind3d7f046hook_aEP6ShaderP5PartA": "0x710043c2a8",
+    "_ZN10Kind3d90786hook_aEP6ShaderP5PartA": "0x710043ca58",
+    "_ZN10Kind3d90786hook_bEP6ShaderP5PartA": "0x710043ca84",
+    "_ZN10Kind3da0f46hook_bEP6ShaderP5PartA": "0x71003daa1c",
+    "_Z13callee_58ce5cP9DrawStateP6DeviceP6Shader": "0x710058ce5c",
+    "_Z13callee_58d6dcP9DrawStateP6DeviceP6Shader": "0x710058d6dc",
+    "_Z13callee_58de98P9DrawStateP6DeviceP6Shader": "0x710058de98",
+    "kRupeeS_2b3574": "0x71007d7bc5",
+    "kRupeeL_2b3574": "0x71007d7bcd",
+    "kRecord_2b3574": "0x71007d7bba",
+    "kBonusS_2b3574": "0x71007d7ba2",
+    "kBonusL_2b3574": "0x71007d7bae",
+    "kRupee_2b3574": "0x7100740db7",
+    "kFont_2b3574": "0x71007d60c9",
+    "kPrime_2b3574": "0x71007d7bd5",
+    "kLayout_2b3574": "0x71007d7c5f",
+    "kGradeIn_2b3574": "0x71007d7c72",
+    "kGrade_2b3574": "0x71007d7c7b",
+    "_Z21set_pane_scale_1e4570Pvf": "0x71001e4570",
+    "_Z16find_part_1e3770P15LightEffectNodePKci": "0x71001e3770",
+    "got:gResourceSet": "0x7100c22a10",
+    "_Z15resource_11a81cP11ResourceSeti": "0x71000db39c",
+    "_ZN8SlotView4bindEPvS0_": "0x71001f0df4",
+    "_ZN9SceneView8set_viewEiii": "0x710037dd20",
+    "_ZN9SceneView4drawEPv": "0x710037f5f8",
+    "_ZN11Scene3311d011tick_singleEv": "0x71003312b8",
+    "_ZN11Scene3311d04tickEv": "0x71003315b8",
+    "_ZN11Scene39a9f411tick_singleEv": "0x710039aadc",
+    "_ZN11Scene39a9f44tickEv": "0x710039ae10",
+    "_ZN13MaterialEntry7stat_a1Ev": "0x71001ff92c",
+    "_ZN13MaterialEntry8stat_a99Ev": "0x71001ff934",
+    "_ZN13MaterialEntry9stat_a150Ev": "0x71001ff9b8",
+    "_ZN13MaterialEntry9stat_a200Ev": "0x71001ff9c0",
+    "_ZN13MaterialEntry9stat_a255Ev": "0x71001ff9c8",
+    "_ZN13MaterialEntry7stat_b1Ev": "0x71001ff93c",
+    "_ZN13MaterialEntry8stat_b99Ev": "0x71001ff944",
+    "_ZN13MaterialEntry9stat_b150Ev": "0x71001ff9d0",
+    "_ZN13MaterialEntry9stat_b200Ev": "0x71001ff9d8",
+    "_ZN13MaterialEntry9stat_b255Ev": "0x71001ff9e0",
+    "_ZN11RecordEntry7value_aEv": "0x7100210624",
+    "_ZN11RecordEntry7value_bEv": "0x7100210634",
+    "_ZN11RecordEntry4kindEv": "0x710021063c",
+    "_ZN10RecordBook5entryEi": "0x71002108dc",
+    "_ZN13ShaderProgram7uniformEPKc": "0x71005a3fac",
+    "_ZN11ShaderSetup4initEv": "0x710058ff40",
+    "kDarkenScale_2198fc": "0x710073ff56",
+    "kDarkenOffset_2198fc": "0x710073ff63",
+    "kRim_2198fc": "0x710073ff71",
+    "kRogiaThreshold_2229cc": "0x710073fefc",
+    "kRogiaTexThreshold_2229cc": "0x710073ff0c",
+    "fprintf": "0x7100600a70",
+    "abort": "0x7100600a80",
+    "_ZNSt11logic_errorC2EPKc": "0x7100600a50",
+    "_ZNKSt11logic_error4whatEv": "0x7100600a60",
+    "got:stderr": "0x7100c22f18",
+    "got:_ZTVSt12length_error": "0x7100c22f10",
+    "got:gPlaceTable": "0x7100c22bd8",
+    "_ZN9PlaceGrid4findEP4Vec4P10PlaceEntryi": "0x7100153cf4",
+    "_ZN9PlaceGrid4cellEPiS0_P4Vec4": "0x710014a8f0",
+    "_Z13area_has_gridi": "0x7100148fd8",
+    "_Z15set_actor_stateP5Actori": "0x71001349c0",
+    "_Z11place_actorP5ActorP4Vec4if": "0x7100133158",
+    "_ZN10PlaceRuleA5validEP5ActorP10PlaceEntry": "0x7100135698",
+    "_ZN10PlaceRuleB5validEP5ActorP10PlaceEntry": "0x7100135748",
+    "_ZN6Placer15fallback_heightEv": "0x7100136cf0",
+    "_ZNKSt3__120__vector_base_commonILb1EE20__throw_length_errorEv": "0x7100600aa0",
+    "_ZN10Scene5f79411enter_678d4EP10SceneEntry": "0x71000678d4",
+    "_ZN10Scene5f79411reset_5f8c8Ev": "0x710005f8c8",
+    "_ZN10Scene5f79413prepare_5fae8Ev": "0x710005fae8",
+    "_ZN10Scene5f79413prepare_60d60Ev": "0x7100060d60",
+    "_ZN10Scene5f79415set_range_6a4f4Eii": "0x710006a4f4",
+    "_ZN11TrophyTimes12reset_287e40Ev": "0x7100287e40",
+    "_Z19trophy_times_28873cP12TrophyRecord": "0x710028873c",
+    "_ZN11GameOptions11init_2021e8Ev": "0x71002021e8",
+    "_Z17icon_ready_1f4918i": "0x71001f4918",
+    "_Z17icon_table_1f4940iP14IconRect28d460": "0x71001f4940",
+    "_Z17apply_icon_1f7fe4P11EffectGroupPvS1_P14IconRect28d460": "0x71001f7fe4",
+    "got:gSideTable": "0x7100c21698",
+    "_ZN10MaterialId2idEv": "0x71002005f4",
+    "_Z17stop_voice_3fecccv": "0x71003feccc",
+    "_Z18play_layout_1f7a0cPviif": "0x71001f7a0c",
+    "_ZN10TrophyView15set_mode_316b2cEi": "0x7100316b2c",
+    "_ZN10TrophyView11show_317844EP12TrophyRecord": "0x7100317844",
+    "_ZN10TrophyView11show_318a3cEP12TrophyRecord": "0x7100318a3c",
+    "_Z20unit_material_200accPv": "0x7100200acc",
+    "_ZN8UnitTask10next_b7614Ev": "0x71000b7614",
+    "_ZN8UnitTask10next_b7654Ev": "0x71000b7654",
+    "_ZN12PageScroller13update_37d96cEv": "0x710037d96c"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -31621,7 +31713,19 @@
       "functions": {
         "_ZN8Renderer10draw_itemsI9Kind3b64cEEvjP4ItemP9DrawStateh": "0x710003b64c",
         "_ZN8Renderer10draw_itemsI10Kind3d7f04EEvjP4ItemP9DrawStateh": "0x71003d7f04",
-        "_ZN8Renderer10draw_itemsI10Kind3d9078EEvjP4ItemP9DrawStateh": "0x71003d9078"
+        "_ZN8Renderer10draw_itemsI10Kind3d9078EEvjP4ItemP9DrawStateh": "0x71003d9078",
+        "_Z9draw_itemI9Kind3b64cEvP4ItemP9DrawStateP6DeviceP6Shader": "0x710003bdf4",
+        "_Z9draw_itemI10Kind3d7f04EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d86ac",
+        "_Z9draw_itemI10Kind3d9078EvP4ItemP9DrawStateP6DeviceP6Shader": "0x71003d9820",
+        "_ZN8Renderer10draw_itemsI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x71003da0f4",
+        "_ZN8Renderer9draw_listI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x71003dab18"
+      },
+      "map": {
+        ".rodata._Z9draw_itemI9Kind3b64cEvP4ItemP9DrawStateP6DeviceP6Shader": "0x710073ed70",
+        ".rodata._Z9draw_itemI10Kind3d7f04EvP4ItemP9DrawStateP6DeviceP6Shader": "0x710080c160",
+        ".rodata._Z9draw_itemI10Kind3d9078EvP4ItemP9DrawStateP6DeviceP6Shader": "0x710080c174",
+        ".rodata._ZN8Renderer10draw_itemsI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x710080c188",
+        ".rodata._ZN8Renderer9draw_listI10Kind3da0f4EEvjP4ItemP9DrawStateh": "0x710080c1c4"
       }
     },
     "misc/variant_functions96.cpp": {
@@ -31704,6 +31808,158 @@
     "misc/s3_functions33.cpp": {
       "functions": {
         "_ZN11Panel2e8c64C2EPv": "0x71002e8c64"
+      }
+    },
+    "misc/s4_3becc.cpp": {
+      "functions": {
+        "_ZN7DrawCmd4initILi0EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x710003becc",
+        "_ZN7DrawCmd4initILi1EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x71003e6020",
+        "_ZN7DrawCmd4initILi2EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x71003e63e0",
+        "_ZN7DrawCmd4initILi3EEEvPvP4PoolP6SourcehsS1_stS1_f": "0x71004439e8",
+        "_ZN5Stats3addILi0EEEvP7DrawCmd": "0x710003c108",
+        "_ZN5Stats3addILi1EEEvP7DrawCmd": "0x71003e625c",
+        "_ZN5Stats3addILi2EEEvP7DrawCmd": "0x71003e661c",
+        "_ZN5Stats3addILi3EEEvP7DrawCmd": "0x7100443c24"
+      }
+    },
+    "misc/s4_20e14c.cpp": {
+      "functions": {
+        "_Z18destroy_bgm_playerv": "0x710020e14c",
+        "_Z21destroy_unit_databasev": "0x710020ede8"
+      }
+    },
+    "misc/s4_2b3574.cpp": {
+      "functions": {
+        "_ZN12ResultRecord4initILi0EEEvP11EffectGroupii": "0x71002b3574",
+        "_ZN12ResultRecord4initILi1EEEvP11EffectGroupii": "0x71002b828c"
+      }
+    },
+    "misc/s4_11a81c.cpp": {
+      "functions": {
+        "_ZN9SlotTable4loadILi0EEEvv": "0x710011a81c",
+        "_ZN9SlotTable4loadILi1EEEvv": "0x710011ae90"
+      }
+    },
+    "misc/s4_3311d0.cpp": {
+      "functions": {
+        "_ZN11Scene3311d06updateEv": "0x71003311d0",
+        "_ZN11Scene39a9f46updateEv": "0x710039a9f4"
+      }
+    },
+    "misc/s4_1fc968.cpp": {
+      "functions": {
+        "_Z8curve_atI6CurveAEiij": "0x71001fc968",
+        "_Z8curve_atI6CurveBEiij": "0x71001fcb28"
+      }
+    },
+    "misc/s4_3305ec.cpp": {
+      "functions": {
+        "_ZN10RecordList4initILi0EEEvv": "0x71003305ec",
+        "_ZN10RecordList4initILi1EEEvv": "0x710039a010"
+      }
+    },
+    "misc/s4_36ce3c.cpp": {
+      "map": {
+        ".rodata._ZN10FadeWindow6updateILi0EEEvv": "0x7100801c80",
+        ".rodata._ZN10FadeWindow6updateILi1EEEvv": "0x7100801ca8"
+      },
+      "functions": {
+        "_ZN10FadeWindow6updateILi0EEEvv": "0x710036ce3c",
+        "_ZN10FadeWindow6updateILi1EEEvv": "0x710036f0dc"
+      }
+    },
+    "misc/s4_c554.cpp": {
+      "map": {
+        ".rodata": "0x710073d0f8"
+      },
+      "functions": {
+        "_Z13remapped_c554i": "0x710000c554",
+        "_Z13remapped_c624i": "0x710000c624"
+      }
+    },
+    "misc/s4_2198fc.cpp": {
+      "functions": {
+        "_ZN12DarkenShader5setupEv": "0x71002198fc",
+        "_ZN11RogiaShader5setupEv": "0x71002229cc"
+      }
+    },
+    "misc/s4_1e09d0.cpp": {
+      "map": {
+        ".rodata.str1.1": "0x7100740c0e"
+      },
+      "functions": {
+        "_ZN11SplitBufferIP10Elem1e0580E9push_backEOS1_": "0x71001e09d0",
+        "_ZN11SplitBufferIP10Elem1e0580E9push_backERKS1_": "0x71001e0d90",
+        "_ZN11SplitBufferIP10Elem1e0580E10push_frontEOS1_": "0x71001e0bb0",
+        "_ZN11SplitBufferIP10Elem1e0580E10push_frontERKS1_": "0x71001e0f70"
+      }
+    },
+    "misc/s4_137730.cpp": {
+      "functions": {
+        "_ZN6Placer5placeI10PlaceRuleAEEvv": "0x7100137730",
+        "_ZN6Placer5placeI10PlaceRuleBEEvv": "0x710013789c"
+      }
+    },
+    "misc/s4_2bdbd4.cpp": {
+      "map": {
+        ".rodata._ZN10PopupPanel6updateILi0EEEvv": "0x71007f9264",
+        ".rodata._ZN10PopupPanel6updateILi1EEEvv": "0x71007f928c",
+        ".rodata.cst4": "0x710073b000"
+      },
+      "functions": {
+        "_ZN10PopupPanel6updateILi0EEEvv": "0x71002bdbd4",
+        "_ZN10PopupPanel6updateILi1EEEvv": "0x71002c0348"
+      }
+    },
+    "misc/s4_2cba00.cpp": {
+      "map": {
+        ".rodata.str1.1": "0x7100740c0e"
+      },
+      "functions": {
+        "_ZN6VectorIP10Elem2cba00E19push_back_slow_pathERKS1_": "0x71002cba00",
+        "_ZN6VectorIP10Elem39721cE19push_back_slow_pathERKS1_": "0x710039721c"
+      }
+    },
+    "misc/s4_5f794.cpp": {
+      "functions": {
+        "_ZN10Scene5f7945startILi0EEEvv": "0x710005f794",
+        "_ZN10Scene5f7945startILi1EEEvv": "0x7100060c2c"
+      }
+    },
+    "misc/s4_20493c.cpp": {
+      "functions": {
+        "_ZN9GameState4initILi0EEEvv": "0x710020493c",
+        "_ZN9GameState4initILi1EEEvv": "0x7100204aac"
+      }
+    },
+    "misc/s4_28d460.cpp": {
+      "functions": {
+        "_ZN9IconPanel6updateILi0EEEvv": "0x710028d460",
+        "_ZN9IconPanel6updateILi1EEEvv": "0x710037781c"
+      }
+    },
+    "misc/s4_317754.cpp": {
+      "functions": {
+        "_ZN10TrophyView4openILi0EEEvh": "0x7100317754",
+        "_ZN10TrophyView4openILi1EEEvh": "0x710031894c"
+      }
+    },
+    "misc/s4_4f8c8.cpp": {
+      "functions": {
+        "_ZN12FrameCounter12nested_countILi0EEEjPvi": "0x710004f8c8",
+        "_ZN12FrameCounter12nested_countILi1EEEjPvi": "0x710004f994"
+      }
+    },
+    "misc/s4_b8168.cpp": {
+      "functions": {
+        "_ZN8UnitTask6updateILi0EEEvv": "0x71000b8168",
+        "_ZN8UnitTask6updateILi1EEEvv": "0x71000b821c"
+      }
+    },
+    "misc/s4_366ab0.cpp": {
+      "functions": {
+        "_ZN8PageMenu4drawILi0EEEvv": "0x7100366ab0",
+        "_ZN8PageMenu4drawILi1EEEvv": "0x7100366b64"
       }
     }
   }

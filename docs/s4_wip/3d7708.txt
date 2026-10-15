@@ -1,0 +1,11 @@
+﻿Renderer::draw_list<Kind> for the kinds whose draw_item is not inlined: 0x71003d7708 (Kind3b64c), 0x71003d887c
+(Kind3d7f04), 0x71003d98f8 (Kind3d9078), 1,220 bytes each. The template in misc/s4_3b64c.cpp matches its Kind3da0f4
+copy (0x71003dab18) exactly; for these three kinds it comes out 1,212 bytes, 2 off with registers abstracted.
+
+The only difference: the bind-fail scan loop's "found" exit (mov x23, x21; b latch) has its own block in the original
+(0x3d7b78), while ours branches to the block shared by the null-shader scan's exit and the per-item loop's break
+(0x3d7ad8). In 3dab18 the original merges all three exits as ours does, so the template is right and the difference
+comes from the instantiation's context (block placement or tail merging after placement, on a CFG without the inlined
+switch). Tried without change: draw_item declared only (no body), the scan loops written as while/for/continue
+forms, the stores of it/first in either order. A skip helper function and the null-shader scan moved into an else
+arm make it much worse.

@@ -1,7 +1,15 @@
-// A renderer's batch drawer, a template instantiated once per item kind: Renderer::draw_items<Kind3b64c>
-// (0x710003b64c), <Kind3d7f04> (0x71003d7f04) and <Kind3d9078> (0x71003d9078). It walks an item list forwards or
-// backwards, groups neighbouring items that use the same shader, binds the shader once per group and draws the group
-// once per pass. Names are descriptive placeholders; the kinds are named after their first instantiation.
+// A renderer's batch drawer, templates instantiated once per item kind (the kinds are the item materials, named
+// after their first instantiation):
+// - Renderer::draw_items<Kind> walks an item list forwards or backwards, groups neighbouring items that use the same
+//   shader, binds the shader once per group and draws the group once per pass: <Kind3b64c> (0x710003b64c),
+//   <Kind3d7f04> (0x71003d7f04), <Kind3d9078> (0x71003d9078), <Kind3da0f4> (0x71003da0f4, with draw_item inlined);
+// - draw_item<Kind> hands one item to the device by its part's kind: <Kind3b64c> (0x710003bdf4), <Kind3d7f04>
+//   (0x71003d86ac), <Kind3d9078> (0x71003d9820). Kind3da0f4's first hook is empty, which makes its draw_item cheap
+//   enough to inline;
+// - Renderer::draw_list<Kind> is draw_items with the second shader table, its null shaders skipped before the state is
+//   reset: <Kind3da0f4> (0x71003dab18). The other kinds' copies (0x71003d7708, 0x71003d887c, 0x71003d98f8) come out 8
+//   bytes short: one loop exit shares a block that the original keeps apart (docs/s4_wip/3d7708.txt).
+// Names are descriptive placeholders.
 
 struct Device {
     unsigned char pad0[0x88];
@@ -36,21 +44,25 @@ public:
 struct PartA {
     unsigned char pad0[4];
     short id;                 // +04
+    short kind;               // +06
 };
 struct PartB {
     unsigned char pad0[0x2a];
     short id;                 // +2a
+    unsigned char pad2c[0x14];
+    void* material;           // +40: the kind's material
 };
 struct Item {
     PartA* a;
     PartB* b;                 // null: skipped
 };
 
+struct MatPart;
 struct DrawState {
-    void* f0;
-    void* f8;
-    void* f10;
-    void* f18;
+    PartA* f0;
+    MatPart* f8;
+    PartB* f10;
+    PartB* f18;               // the previous item's f10
     void* f20;
     void* f28;
     void* f30;
@@ -59,22 +71,78 @@ struct DrawState {
     int index;                // +48
 };
 
-struct Kind3b64c;
-struct Kind3d7f04;
-struct Kind3d9078;
+void callee_58ce5c(DrawState*, Device*, Shader*);                           // 0x710058ce5c
+void callee_58d6dc(DrawState*, Device*, Shader*);                           // 0x710058d6dc
+void callee_58de98(DrawState*, Device*, Shader*);                           // 0x710058de98
 
-// Draws one item with the bound shader: 0x710003bdf4, 0x71003d86ac, 0x71003d9820.
-template <class Kind> void draw_item(Item* item, DrawState* st, Device* dev, Shader* shader);
+struct MatBase {
+    void* head;
+};
+struct MatPart {
+    void* head;
+    void hook_b(Shader*, PartA*);                                           // 0x71003d8788
+};
+struct Kind3b64c : MatBase, MatPart {
+    void hook_a(Shader*, PartA*);                                           // 0x71000363ec
+    void hook_b(Shader*, PartA*);                                           // 0x710003659c
+};
+struct Kind3d7f04 : MatBase, MatPart {
+    void hook_a(Shader*, PartA*);                                           // 0x710043c2a8
+};
+struct Kind3d9078 : MatBase, MatPart {
+    void hook_a(Shader*, PartA*);                                           // 0x710043ca58
+    void hook_b(Shader*, PartA*);                                           // 0x710043ca84
+};
+struct Kind3da0f4 : MatBase, MatPart {
+    void hook_a(Shader*, PartA*) {}
+    void hook_b(Shader*, PartA*);                                           // 0x71003daa1c
+};
+
+// The material is converted to its second base in a local before the previous item is read (the conversion's
+// register comes first), and the state's item pair is stored before the part pair.
+template <class Kind>
+void draw_item(Item* item, DrawState* st, Device* dev, Shader* shader) {
+    PartA* part = item->a;
+    PartB* b = item->b;
+    Kind* m = static_cast<Kind*>(b->material);
+    MatPart* mp = m;
+    PartB* prev = st->f10;
+    st->f10 = b;
+    st->f18 = prev;
+    st->f0 = part;
+    st->f8 = mp;
+    PartA* a = item->a;
+    switch (a->kind) {
+    case 0:
+    case 2:
+        m->hook_a(shader, a);
+        callee_58ce5c(st, dev, shader);
+        break;
+    case 1:
+        m->hook_b(shader, a);
+        callee_58d6dc(st, dev, shader);
+        break;
+    case 4:
+        callee_58de98(st, dev, shader);
+        break;
+    }
+}
 
 class Renderer {
 public:
     template <class Kind> void draw_items(unsigned int count, Item* items, DrawState* st, unsigned char reverse);
-    // Per-item render state: 0x710003bad0, 0x71003d8388, 0x71003d94fc.
+    // The same with the second shader table, null shaders skipped before the state is reset.
+    template <class Kind> void draw_list(unsigned int count, Item* items, DrawState* st, unsigned char reverse);
+    // Per-item render state: 0x710003bad0, 0x71003d8388, 0x71003d94fc, 0x71003da6f8 (docs/s4_wip/3bad0.cpp).
     template <class Kind> void setup(Item* item, DrawState* st);
 
     Shader* shader_for(Item* it) {
         int w = stride;
         return table[base + w * (it->b->id + it->a->id)];
+    }
+    Shader* list_shader_for(Item* it) {
+        int w = stride;
+        return list_table[base + w * (it->b->id + it->a->id)];
     }
     bool select(Shader* s) {
         if (current == s) return true;
@@ -89,7 +157,7 @@ public:
     unsigned char pad30[0x400];
     Shader* table[258];       // +430
     Shader* current;          // +c40
-    unsigned char padc48[0x800];
+    Shader* list_table[256];  // +c48
     int saved_cull;           // +1448
     int stride;               // +144c
     int base;                 // +1450
@@ -169,6 +237,88 @@ void Renderer::draw_items(unsigned int count, Item* items, DrawState* st, unsign
     callee_52ac40(dev, saved_cull);
 }
 
+template <class Kind>
+void Renderer::draw_list(unsigned int count, Item* items, DrawState* st, unsigned char reverse) {
+    saved_cull = dev->cull;
+    Item* end = reverse == 0 ? items + count : items - 1;
+    Item* it = reverse == 0 ? items : items + count - 1;
+    Item* first = it;
+    while (end != it) {
+        long step = reverse == 0 ? 1 : -1;
+        if (!it->b) { it += step; first = it; continue; }
+        Shader* s = list_shader_for(first);
+        Item* next;
+        if (!s) {
+            for (next = first; end != next; next += step)
+                if (next->b && list_shader_for(next)) break;
+            it = first = next;
+            continue;
+        }
+        st->f18 = 0;
+        st->f20 = 0;
+        st->f28 = 0;
+        st->f30 = 0;
+        st->f38 = 0;
+        st->f40 = 0;
+        st->index = -1;
+        if (!select(s)) {
+            for (next = first; end != next; next += step)
+                if (next->b && s != list_shader_for(next)) break;
+            it = first = next;
+            continue;
+        }
+        if (s->per_item & 1) {
+            for (next = first; end != next; next += step) {
+                if (!next->b) continue;
+                if (s != list_shader_for(next)) break;
+                setup<Kind>(next, st);
+                unsigned int n = s->passes();
+                for (unsigned int i = 0; i < n; i++) {
+                    if (!s->begin_pass(i)) break;
+                    st->f30 = 0;
+                    draw_item<Kind>(next, st, dev, s);
+                    s->end_pass();
+                }
+                s->end();
+            }
+            it = first = next;
+            continue;
+        }
+        unsigned int n = s->passes();
+        if (n == 0) continue;
+        if (!s->begin_pass(0)) {
+            for (next = first; end != next; next += step)
+                if (next->b && s != list_shader_for(next)) break;
+        } else {
+            st->f30 = 0;
+            for (next = first; end != next; next += step) {
+                if (!next->b) continue;
+                if (s != list_shader_for(next)) break;
+                setup<Kind>(next, st);
+                draw_item<Kind>(next, st, dev, s);
+            }
+            s->end_pass();
+            for (unsigned int i = 1; i < n; i++) {
+                if (!s->begin_pass(i)) break;
+                st->f30 = 0;
+                for (Item* p = first; next > p; p += step)
+                    if (p->b) {
+                        setup<Kind>(p, st);
+                        draw_item<Kind>(p, st, dev, s);
+                    }
+                s->end_pass();
+            }
+        }
+        s->end();
+        it = first = next;
+    }
+    callee_52ac40(dev, saved_cull);
+}
+template void draw_item<Kind3b64c>(Item*, DrawState*, Device*, Shader*);
+template void draw_item<Kind3d7f04>(Item*, DrawState*, Device*, Shader*);
+template void draw_item<Kind3d9078>(Item*, DrawState*, Device*, Shader*);
 template void Renderer::draw_items<Kind3b64c>(unsigned int, Item*, DrawState*, unsigned char);
 template void Renderer::draw_items<Kind3d7f04>(unsigned int, Item*, DrawState*, unsigned char);
 template void Renderer::draw_items<Kind3d9078>(unsigned int, Item*, DrawState*, unsigned char);
+template void Renderer::draw_items<Kind3da0f4>(unsigned int, Item*, DrawState*, unsigned char);
+template void Renderer::draw_list<Kind3da0f4>(unsigned int, Item*, DrawState*, unsigned char);
