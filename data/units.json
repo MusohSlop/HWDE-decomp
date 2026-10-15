@@ -17056,7 +17056,17 @@
     "_Z13callee_45baf8PKcjii": "0x710045baf8",
     "_Z13callee_45bf78iPh": "0x710045bf78",
     "_Z13callee_45c078PKci": "0x710045c078",
-    "gFactories_bdf230": "0x7100bdf230"
+    "gFactories_bdf230": "0x7100bdf230",
+    "got:gGlobalc21db0_2d6e8c": "0x7100c21db0",
+    "got:gGlobalc22f00_2d6e8c": "0x7100c22f00",
+    "got:gGlobalc2ab08_2d6e8c": "0x7100c2ab08",
+    "got:gGlobalc2ab30_2d6e8c": "0x7100c2ab30",
+    "got:gGlobalc21db0_29b370": "0x7100c21db0",
+    "got:gGlobalc22f00_29b370": "0x7100c22f00",
+    "got:gGlobalc21db0_300d3c": "0x7100c21db0",
+    "got:gGlobalc22f00_300d3c": "0x7100c22f00",
+    "got:gGlobalc21db0_356154": "0x7100c21db0",
+    "got:gGlobalc22f00_356154": "0x7100c22f00"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -26248,7 +26258,11 @@
         "_Z11call_1f69c8P11Arg1f69c8_0": "0x71001f69c8",
         "_Z10call_58a28P10Arg58a28_0": "0x7100058a28",
         "_Z11call_5b0124P11Arg5b0124_0": "0x71005b0124",
-        "_Z11call_3322acP11Arg3322ac_0": "0x71003322ac"
+        "_Z11call_3322acP11Arg3322ac_0": "0x71003322ac",
+        "_Z11call_2d6e8cP11Arg2d6e8c_0": "0x71002d6e8c",
+        "_Z11call_29b370P11Arg29b370_0": "0x710029b370",
+        "_Z11call_300d3cP11Arg300d3c_0": "0x7100300d3c",
+        "_Z11call_356154P11Arg356154_0": "0x7100356154"
       }
     },
     "misc/variant_functions74.cpp": {

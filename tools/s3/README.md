@@ -98,12 +98,17 @@ well.
   `str xA, [xB, #X]!` and passes `xB` on, as the original does where an inlined handle destructor stores its vtable
   and then releases itself (`37af54`, `34d974`, `2a6fd0` and seven more). Same contract as genfix.py; prints
   `onceptr N` (the number of rewrites).
+- `argfix.py IN.cpp OUT.cpp ADDR [CALLEE...]` gives back the `this`+offset argument the generator dropped from calls
+  it wrote as `callee_X();` (destructors' member calls, often through a thunk the generator thinks takes no
+  arguments): the original's call sites are read in order, following `mov`/`movk`/`add` into `x0` from `this`.
+  Without CALLEE it fixes every callee declared without parameters (`356154`, with onceptr).
 - `fixalign.py IN.cpp OUT.cpp` marks generated struct fields that sit at an offset their type would not get (a `long`
   at `+...4`, which C++ pads to the next multiple of 8) as `__attribute__((packed))`, so they stay where the
   generator meant.
-- `batchconv.py RANK.tsv OUT.tsv [--jobs N] [--knob K]` runs the generated version through genfix, onceptr,
-  ctor2class and ctor2class `--prefix` (the class forms followed by genfix) for every generated function in a
-  rank.py table, and copies matches to `build/s3/conv/match_ADDR.cpp` with their symbol file.
+- `batchconv.py RANK.tsv OUT.tsv [--jobs N] [--knob K]` runs the generated version (after fixalign) through
+  genfix, onceptr, argfix + onceptr, ctor2class and ctor2class `--prefix` (the class forms followed by genfix) for
+  every generated function in a rank.py table, and copies matches to `build/s3/conv/match_ADDR.cpp` with their
+  symbol file.
 
 ### Command-line contract of the converters
 
