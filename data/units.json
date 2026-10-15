@@ -18063,7 +18063,8 @@
     "_ZN9InfoTimerC1Ev": "0x71000e05d4",
     "_ZN12InfoMapPanelC1Ev": "0x71000e4ee0",
     "_ZN11InfoIconSetC1Ev": "0x71000e510c",
-    "_ZN13InfoIconTableC1Ev": "0x71000e51c8"
+    "_ZN13InfoIconTableC1Ev": "0x71000e51c8",
+    "_ZN10LayoutLineC1Ev": "0x71001f1594"
   },
   "units": {
     "event/resource_queue_controls.cpp": {
@@ -27753,6 +27754,12 @@
       },
       "functions": {
         "_ZN18InformationDisplayC2Ev": "0x71000e25dc"
+      }
+    },
+    "misc/s4_ffdf8.cpp": {
+      "functions": {
+        "_ZN9PlayerHudC2Ei": "0x71000ffdf8",
+        "_ZN9PlayerHudC2Eiffffffff": "0x7100101ae4"
       }
     }
   }
