@@ -11,6 +11,7 @@ tried: 3b0428 (1,800 B, 1,764 B here, 37 off abstracted: the second mode == 7 te
 tried: 423e04 (2,808 B, 61 off, same size: layout of the first test and of the shared tail, two byte loads merged; docs/s5_wip/423e04.cpp)
 tried: 3ccf84 (3,100 B, 24 off, same size: only the tail differs, the shared reset block and the keep-flag test; docs/s5_wip/3ccf84.cpp)
 tried: 3be490 (2,656 B, 2,624 B here, 16 off abstracted: the indexes derived from the loop index are sign-extended from 32 bits in the original, widened in ours; docs/s5_wip/3be490.cpp)
+tried: 3b4e98 (2,576 B, 2,580 B here, 40 off abstracted: the loop-carried y is an i32 in GPRs in the original, a float phi here in every form tried; docs/s5_wip/3b4e98.cpp)
 # The NEON matrix-inverse family (main: s5 owns the shared inline and all 23 copies, any range or size), working:
 96e0c
 a6470
