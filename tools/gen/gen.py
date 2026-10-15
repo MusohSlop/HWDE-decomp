@@ -1218,6 +1218,7 @@ def gen_function(a, ins):
         raise Fail("index ext")
     returns = []
     UNDEF_ = set()      # argument registers passed uninitialised
+    UINTLOOP_ = set()   # int loop counters used as unsigned indexes
     PAIRS_ = set()      # calls whose result is a 16-byte struct (its high half in x1 is used)
     calls_by_target_ = {}
     call_k_ = [None]
@@ -3232,6 +3233,8 @@ def gen_function(a, ins):
             if isinstance(t, tuple) and t[0] == "loopvar":
                 if v[1] in loopelem:
                     return f"{loopelem[v[1]]}*"
+                if v[1] in UINTLOOP_:
+                    return "unsigned int"
                 return vtype(t[1])
             if isinstance(t, tuple) and t[0] == "merge" and v[1] in mergestructs:
                 return f"{mergestructs[v[1]]}*"
@@ -3241,7 +3244,8 @@ def gen_function(a, ins):
                 ta, tb = vtype(t[1]), vtype(t[2])
                 if ta == tb:
                     return ta
-                if {ta, tb} <= {"int", "bool", "unsigned char", "signed char", "unsigned short", "short"}:
+                if {ta, tb} <= {"int", "bool", "unsigned char", "signed char", "unsigned short", "short"} or \
+                        ("nouintloop" not in knobs and {ta, tb} == {"int", "unsigned int"}):
                     return "int"
                 if {ta, tb} <= {"int", "bool", "long"}:
                     return "long"
@@ -4197,7 +4201,7 @@ def gen_function(a, ins):
                         v_ = ("bin", "+", v, ("const", ESHIFT_[name], "x"), "x", "add") if ESHIFT_.get(name) else v
                         outl.append(f"{pad}{loopelem[name]}* {name} = {fit(expr(v_), vtype(v_), loopelem[name] + '*')};")
                     else:
-                        outl.append(f"{pad}{vtype(v)} {name} = {expr(v)};")
+                        outl.append(f"{pad}{'unsigned int' if name in UINTLOOP_ else vtype(v)} {name} = {expr(v)};")
                 if newix_:
                     outl.append(f"{pad}long {ix_} = 0;")
                 for p_ in ptrs_:
@@ -4245,7 +4249,7 @@ def gen_function(a, ins):
                     if name in loopelem:
                         outl.append(f"{pad}{loopelem[name]}* {name} = {fit(expr(v), vtype(v), loopelem[name] + '*')};")
                     else:
-                        outl.append(f"{pad}{vtype(v)} {name} = {expr(v)};")
+                        outl.append(f"{pad}{'unsigned int' if name in UINTLOOP_ else vtype(v)} {name} = {expr(v)};")
                 hoist_stack.append([])
                 body_lines = render(body, indent + 1)
                 hoisted = hoist_stack.pop()
@@ -4361,6 +4365,19 @@ def gen_function(a, ins):
         return out_
     if "globalfirst" in knobs:
         items[:] = global_first(items)
+    def scan_uint_(o):
+        if isinstance(o, tuple):
+            if (len(o) >= 3 and o[0] == "ext" and o[1] == "unsigned int" and isinstance(o[2], tuple) and o[2][0] == "var"
+                    and isinstance(vars_.get(o[2][1]), tuple) and vars_[o[2][1]][0] == "loopvar"
+                    and o[2][1] not in loopelem and vtype(vars_[o[2][1]][1]) == "int"):
+                UINTLOOP_.add(o[2][1])
+            for x_ in o:
+                scan_uint_(x_)
+        elif isinstance(o, list):
+            for x_ in o:
+                scan_uint_(x_)
+    if "nouintloop" not in knobs:
+        scan_uint_(items)
     lines = render(items, 1)
     for p_, h_ in ESHIFT_.items():
         structs[loopelem[p_]] = {o_ - h_: v_ for o_, v_ in structs[loopelem[p_]].items()}
