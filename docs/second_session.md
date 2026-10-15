@@ -38,8 +38,8 @@ other session can port it.
 
 ## CPU
 
-The PC has 16 logical cores. Band runs: the main session uses `RV_JOBS=8`, the second session `RV_JOBS=6`, leaving
-two cores for single compiles, checks and the desktop. Only one session runs a full near-miss probe or a whole-band
+The PC has 16 logical cores. Band runs: the main session uses `RV_JOBS=6`, the second session `RV_JOBS=6` and the
+third session `RV_JOBS=2`, leaving two cores for single compiles, checks and the desktop. Only one session runs a full near-miss probe or a whole-band
 rerun at a time; say so in the report before starting one.
 
 ## Merge procedure (main session only)
@@ -59,5 +59,26 @@ rerun at a time; say so in the report before starting one.
    matches compared with both sides).
 5. The second session then runs `git merge master` in its worktree before its next commit, so the branches stay
    close.
+
+## Third session (hand matching)
+
+A third session works the same way from `F:\Claude Decomps\project1\worktrees\s3` on branch `matching-s3`, set up
+with the same recipe (junctions to `.tools` and the decompressed image, nothing else linked or copied).
+
+- It hand-matches every unmatched function over 1,500 bytes in both address ranges, the giants over 6,000 bytes
+  included (those at the highest effort). Functions on the second session's near-miss list stay with the second
+  session.
+- Order: functions that generate but mismatch first, closest first; then the ones that do not generate; then the
+  giants.
+- It never edits `matching/tools/gen/*`, `tools/check.py` or `tools/check_obj.py`; the generator stays with the main
+  and second sessions.
+- New units: `misc/s3_functionsNN.cpp`. CPU: `RV_JOBS=2`.
+- It keeps `matching/docs/s3_claims.txt` in its worktree, listing the addresses it is working on and has matched.
+  Generator runs of the other two sessions skip those: `tools/gen/run_bands.py` drops every address in the file
+  named by `RV_SKIP` (hex image offsets or full `0x71...` addresses, any separators), so both other sessions run
+  with `RV_SKIP=F:\Claude Decomps\project1\worktrees\s3\matching\docs\s3_claims.txt`.
+- It reports its commits to the coordinator, and the main session merges `matching-s3` with the procedure above.
+  A function matched on both sides keeps `master`'s copy: before the units merge, its entry is dropped from the
+  branch's `units.json` and its definition from the branch's unit.
 
 Neither session pushes anything.

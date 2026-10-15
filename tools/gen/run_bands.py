@@ -14,7 +14,7 @@ TMP = os.path.join(MATCHDIR, "build", "rvtmp")
 os.makedirs(TMP, exist_ok=True)
 py = sys.executable
 CH = int(os.environ.get("RV_CHUNK", "25"))
-JOBS = int(os.environ.get("RV_JOBS", str(max(2, (os.cpu_count() or 4) - 2))))
+JOBS = int(os.environ.get("RV_JOBS", "6"))
 TIMEOUT = int(os.environ.get("RV_TIMEOUT", "300"))
 KNOBS = ["", "sink", "callinline", "sink+callinline", "revstores", "sink+revstores", "globalfirst", "globalfirst+sink",
          "swapif", "swapif+sink", "bytecast", "ptrloop", "narrowparam", "stackpad", "stackpad+sink", "forkjoin",
@@ -269,6 +269,11 @@ def candidates():
     alo = int(os.environ.get("RV_ADDR_LO", "0"), 16); ahi = int(os.environ.get("RV_ADDR_HI", "ffffffff"), 16)
     found = {int(r[0], 16) - 0x7100000000 for r in rows if r[1] == "U" and lo <= int(r[2]) <= hi
              and alo <= int(r[0], 16) - 0x7100000000 < ahi} - taken
+    if os.environ.get("RV_SKIP") and os.path.exists(os.environ["RV_SKIP"]):
+        # addresses another session is hand-matching (hex image offsets or full 0x71... addresses)
+        for tok in re.findall(r"\b(?:0x)?([0-9a-f]{4,10})\b", open(os.environ["RV_SKIP"], encoding="utf-8-sig").read().lower()):
+            v_ = int(tok, 16)
+            found.discard(v_ - 0x7100000000 if v_ >= 0x7100000000 else v_)
     if os.environ.get("RV_ONLY"):
         # a file of hex image offsets (whitespace or comma separated): only these functions
         found &= {int(x, 16) for x in re.split(r"[\s,]+", open(os.environ["RV_ONLY"], encoding="utf-8").read()) if x}
